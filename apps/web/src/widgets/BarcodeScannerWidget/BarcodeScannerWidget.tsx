@@ -207,21 +207,17 @@ export function BarcodeScannerWidget({
         });
         scannerRef.current = scanner;
 
-        // Camera constraints requesting high-resolution back camera with autofocus
-        const cameraConfig: any = {
-          facingMode: 'environment',
-          focusMode: 'continuous',
-          width: { min: 640, ideal: 1280, max: 1920 },
-          height: { min: 480, ideal: 720, max: 1080 },
-        };
-
         await scanner.start(
-          cameraConfig,
+          { facingMode: 'environment' },
           {
             fps: 20,
-            // By omitting restrictive qrbox, the full camera feed is evaluated
             aspectRatio: 1.0,
             disableFlip: false,
+            videoConstraints: {
+              facingMode: 'environment',
+              width: { min: 640, ideal: 1280, max: 1920 },
+              height: { min: 480, ideal: 720, max: 1080 },
+            },
           },
           (decodedText: string) => {
             handleBarcodeScanned(decodedText);
