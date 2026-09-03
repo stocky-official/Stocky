@@ -60,6 +60,30 @@ function playBeepSound() {
   }
 }
 
+/**
+ * Play a subtle click sound when tapping to focus
+ */
+function playFocusTapSound() {
+  try {
+    const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+    if (!AudioContextClass) return;
+    const ctx = new AudioContextClass();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(440, ctx.currentTime);
+    gain.gain.setValueAtTime(0.08, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.05);
+
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+
+    osc.start();
+    osc.stop(ctx.currentTime + 0.05);
+  } catch {}
+}
+
 export function BarcodeScannerWidget({
   onProductFound,
   onCodeNotFound,
@@ -76,6 +100,13 @@ export function BarcodeScannerWidget({
   const [hasTorch, setHasTorch] = useState(false);
   const [manualInput, setManualInput] = useState('');
   const [showManualInput, setShowManualInput] = useState(false);
+
+  // Optical/Digital Macro Zoom & Tap-to-Focus state
+  const [zoomRange, setZoomRange] = useState<{ min: number; max: number; step: number } | null>(
+    null
+  );
+  const [currentZoom, setCurrentZoom] = useState<number>(1);
+  const [focusRing, setFocusRing] = useState<{ x: number; y: number } | null>(null);
 
   const scannerRef = useRef<Html5Qrcode | null>(null);
   const isHandlingScanRef = useRef(false);
@@ -287,6 +318,44 @@ export function BarcodeScannerWidget({
           activeStreamRef.current = videoEl.srcObject as MediaStream;
         }
 
+        // Query track capabilities for zoom, focus, and torch
+        const track = activeStreamRef.current?.getVideoTracks?.()[0];
+        if (track) {
+          try {
+            const capabilities: any = track.getCapabilities ? track.getCapabilities() : {};
+
+            // 1. Zoom support & auto macro zoom (2x for small retail barcodes)
+            if (capabilities.zoom) {
+              const minZ = capabilities.zoom.min || 1;
+              const maxZ = capabilities.zoom.max || 5;
+              const stepZ = capabilities.zoom.step || 0.1;
+              setZoomRange({ min: minZ, max: maxZ, step: stepZ });
+
+              const initialMacroZoom = Math.min(Math.max(minZ, 2.0), maxZ);
+              if (initialMacroZoom > 1) {
+                track
+                  .applyConstraints({ advanced: [{ zoom: initialMacroZoom } as any] })
+                  .catch(() => {});
+                setCurrentZoom(initialMacroZoom);
+              }
+            }
+
+            // 2. Enforce continuous autofocus
+            if (capabilities.focusMode?.includes('continuous')) {
+              track
+                .applyConstraints({ advanced: [{ focusMode: 'continuous' } as any] })
+                .catch(() => {});
+            }
+
+            // 3. Torch capability
+            if (capabilities.torch) {
+              setHasTorch(true);
+            }
+          } catch (e) {
+            console.warn('Track capabilities check error', e);
+          }
+        }
+
         // Native BarcodeDetector acceleration (for Android Chrome / Edge)
         // Directly detects barcodes off the HTMLVideoElement with near-zero latency
         if (typeof window !== 'undefined' && 'BarcodeDetector' in window) {
@@ -332,15 +401,6 @@ export function BarcodeScannerWidget({
           }
         }
 
-        // Check if torch/flashlight is supported
-        try {
-          const capabilities: any = scanner.getRunningTrackCapabilities?.();
-          if (capabilities && capabilities.torch) {
-            setHasTorch(true);
-          }
-        } catch {
-          // Ignore
-        }
       } catch (err: any) {
         console.error('Failed to start camera scanner:', err);
         setCameraError(
@@ -373,6 +433,61 @@ export function BarcodeScannerWidget({
   const handleScanAgain = () => {
     setScannedResult(null);
     isHandlingScanRef.current = false;
+  };
+
+  const handleApplyZoom = async (level: number) => {
+    const track = activeStreamRef.current?.getVideoTracks?.()[0];
+    if (track && track.applyConstraints) {
+      try {
+        await track.applyConstraints({
+          advanced: [{ zoom: level } as any],
+        });
+        setCurrentZoom(level);
+      } catch (err) {
+        console.warn('Failed to apply zoom:', err);
+      }
+    }
+  };
+
+  const handleTapToFocus = async (
+    e: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>
+  ) => {
+    const container = e.currentTarget.getBoundingClientRect();
+    let clientX = 0;
+    let clientY = 0;
+
+    if ('touches' in e && (e as React.TouchEvent).touches.length > 0) {
+      clientX = (e as React.TouchEvent).touches[0].clientX;
+      clientY = (e as React.TouchEvent).touches[0].clientY;
+    } else if ('clientX' in e) {
+      clientX = (e as React.MouseEvent).clientX;
+      clientY = (e as React.MouseEvent).clientY;
+    }
+
+    const x = clientX - container.left;
+    const y = clientY - container.top;
+
+    setFocusRing({ x, y });
+    setTimeout(() => {
+      setFocusRing(null);
+    }, 1200);
+
+    playFocusTapSound();
+
+    // Re-trigger continuous autofocus on video track
+    const track = activeStreamRef.current?.getVideoTracks?.()[0];
+    if (track && track.applyConstraints) {
+      try {
+        const capabilities: any = track.getCapabilities ? track.getCapabilities() : {};
+        if (capabilities.focusMode?.includes('continuous')) {
+          await track.applyConstraints({
+            advanced: [{ focusMode: 'continuous' } as any],
+          });
+        }
+      } catch (err) {
+        console.warn('Failed to trigger tap focus:', err);
+      }
+    }
   };
 
   const handleToggleTorch = async () => {
@@ -455,13 +570,86 @@ export function BarcodeScannerWidget({
               </div>
             </div>
 
-            {/* Viewfinder Center Container */}
-            <div className="flex-1 relative w-full h-full overflow-hidden bg-black">
+            {/* Viewfinder Center Container with Tap-To-Focus */}
+            <div
+              className="flex-1 relative w-full h-full overflow-hidden bg-black cursor-crosshair select-none"
+              onClick={handleTapToFocus}
+              onTouchStart={handleTapToFocus}
+            >
               {/* Layer 1: html5-qrcode video viewport - Enforced full cover, no flex, absolute */}
               <div
                 id="stocky-camera-viewport"
-                className="!absolute !inset-0 w-full h-full overflow-hidden block [&>video]:w-full [&>video]:h-full [&>video]:object-cover [&>canvas]:hidden"
+                className="!absolute !inset-0 w-full h-full overflow-hidden block [&>video]:w-full [&>video]:h-full [&>video]:object-cover [&>canvas]:hidden pointer-events-none"
               />
+
+              {/* Quick Macro Zoom Controls (1x / 2x / 3x) */}
+              {zoomRange && zoomRange.max > 1 && (
+                <div className="absolute top-4 left-1/2 -translate-x-1/2 z-30 flex items-center gap-1.5 bg-black/70 backdrop-blur-md px-3 py-1 rounded-full border border-white/20 shadow-xl">
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleApplyZoom(1);
+                    }}
+                    className={`px-2.5 py-0.5 rounded-full text-xs font-medium transition-all ${
+                      Math.abs(currentZoom - 1) < 0.2
+                        ? 'bg-stocky-primary text-white shadow'
+                        : 'text-white/70 hover:text-white'
+                    }`}
+                  >
+                    1x
+                  </button>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleApplyZoom(Math.min(2, zoomRange.max));
+                    }}
+                    className={`px-2.5 py-0.5 rounded-full text-xs font-medium transition-all ${
+                      Math.abs(currentZoom - 2) < 0.3
+                        ? 'bg-stocky-primary text-white shadow'
+                        : 'text-white/70 hover:text-white'
+                    }`}
+                  >
+                    2x
+                  </button>
+                  {zoomRange.max >= 3 && (
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleApplyZoom(3);
+                      }}
+                      className={`px-2.5 py-0.5 rounded-full text-xs font-medium transition-all ${
+                        Math.abs(currentZoom - 3) < 0.3
+                          ? 'bg-stocky-primary text-white shadow'
+                          : 'text-white/70 hover:text-white'
+                      }`}
+                    >
+                      3x
+                    </button>
+                  )}
+                </div>
+              )}
+
+              {/* Animated Tap-to-Focus Reticle Ring */}
+              <AnimatePresence>
+                {focusRing && (
+                  <motion.div
+                    key="focus-ring"
+                    initial={{ scale: 1.5, opacity: 1 }}
+                    animate={{ scale: 1, opacity: 0.85 }}
+                    exit={{ scale: 0.9, opacity: 0 }}
+                    transition={{ duration: 0.25 }}
+                    style={{ left: focusRing.x, top: focusRing.y }}
+                    className="absolute pointer-events-none -translate-x-1/2 -translate-y-1/2 z-30"
+                  >
+                    <div className="w-16 h-16 border-2 border-yellow-400 rounded-sm shadow-[0_0_12px_rgba(250,204,21,0.8)] flex items-center justify-center">
+                      <div className="w-1.5 h-1.5 bg-yellow-400 rounded-full" />
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
 
               {/* Layer 2: Target Scan Reticle Overlay - Guaranteed Centered Layer */}
               {!cameraError && (
@@ -561,7 +749,7 @@ export function BarcodeScannerWidget({
               ) : (
                 <div className="w-full max-w-sm flex flex-col items-center gap-2">
                   <p className="text-xs text-white/80 font-normal text-center">
-                    Align any product barcode within the reticle
+                    Tap screen to focus • Use 2x zoom for small barcodes
                   </p>
 
                   {/* Optional Manual Entry Toggle */}
