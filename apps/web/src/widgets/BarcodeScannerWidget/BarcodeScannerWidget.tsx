@@ -5,6 +5,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { CameraIcon, XIcon, ZapIcon, ZapOffIcon, RefreshIcon, CheckCircleIcon, AlertCircleIcon } from '@stocky/icons';
 import { supabase } from '@/lib/supabase/client';
 import type { Item } from '@stocky/types';
+import { Html5Qrcode } from 'html5-qrcode';
+
 
 export interface BarcodeScannerWidgetProps {
   onProductFound: (item: Item) => void;
@@ -72,10 +74,17 @@ export function BarcodeScannerWidget({
       setScannedResult(null);
       isHandlingScanRef.current = false;
 
-      try {
-        const { Html5Qrcode } = await import('html5-qrcode');
-        if (!isMounted) return;
+      // Small tick to ensure <div id="stocky-camera-viewport"> is mounted in the DOM
+      await new Promise((r) => setTimeout(r, 60));
+      if (!isMounted) return;
 
+      const viewportEl = document.getElementById('stocky-camera-viewport');
+      if (!viewportEl) {
+        console.warn('Scanner container not yet in DOM');
+        return;
+      }
+
+      try {
         const scanner = new Html5Qrcode('stocky-camera-viewport');
         scannerRef.current = scanner;
 
