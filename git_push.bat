@@ -6,11 +6,12 @@ echo =======================================================
 echo.
 echo  Target: https://github.com/stocky-official/Stocky.git
 echo  Branch: main
+echo  Author Email: stocky.admin@gmail.com
 echo.
 echo  If prompted, authorize Git Credential Manager in your browser.
 echo.
 echo =======================================================
-git push -u origin main
+git push --force origin main
 echo.
 echo =======================================================
 echo Done!
