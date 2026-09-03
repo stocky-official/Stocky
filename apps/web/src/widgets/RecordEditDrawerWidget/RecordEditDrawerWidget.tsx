@@ -77,6 +77,7 @@ export function RecordEditDrawerWidget({
             quantity: Number(formData.quantity) || 0,
             balance: Number(formData.balance) || 0,
             barcode: formData.barcode || null,
+            expiry_date: formData.expiryDate ? new Date(formData.expiryDate).toISOString() : null,
             updated_at: new Date().toISOString(),
           })
           .eq('id', formData.id);
@@ -291,6 +292,46 @@ export function RecordEditDrawerWidget({
                         onChange={(e) => handleChange('barcode', e.target.value)}
                         className="w-full bg-stocky-bg-global border border-stocky-border-subtle rounded-widget px-3 py-2 text-xs text-stocky-text-main focus:outline-none focus:border-stocky-primary transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
                         placeholder="e.g. 6222008202109"
+                      />
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <div className="flex items-center justify-between">
+                        <label className="font-medium text-stocky-text-main block text-xs">
+                          Expiry Date
+                        </label>
+                        {formData.expiryDate && (
+                          <span
+                            className={`text-[10px] px-1.5 py-0.5 rounded font-medium ${
+                              new Date(formData.expiryDate) < new Date()
+                                ? 'bg-red-500/10 text-red-500 border border-red-500/20'
+                                : new Date(formData.expiryDate).getTime() - new Date().getTime() <
+                                  30 * 24 * 60 * 60 * 1000
+                                ? 'bg-amber-500/10 text-amber-500 border border-amber-500/20'
+                                : 'bg-green-500/10 text-green-500 border border-green-500/20'
+                            }`}
+                          >
+                            {new Date(formData.expiryDate) < new Date()
+                              ? 'Expired'
+                              : new Date(formData.expiryDate).getTime() - new Date().getTime() <
+                                30 * 24 * 60 * 60 * 1000
+                              ? 'Expiring Soon'
+                              : 'Valid'}
+                          </span>
+                        )}
+                      </div>
+                      <input
+                        type="date"
+                        disabled={userRole === 'staff'}
+                        value={
+                          formData.expiryDate
+                            ? new Date(formData.expiryDate).toISOString().split('T')[0]
+                            : ''
+                        }
+                        onChange={(e) =>
+                          handleChange('expiryDate', e.target.value ? e.target.value : null)
+                        }
+                        className="w-full bg-stocky-bg-global border border-stocky-border-subtle rounded-widget px-3 py-2 text-xs text-stocky-text-main focus:outline-none focus:border-stocky-primary transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
                       />
                     </div>
                   </>

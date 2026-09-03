@@ -116,6 +116,7 @@ export function BarcodeScannerWidget({
             quantity: data.quantity,
             balance: data.balance,
             barcode: data.barcode,
+            expiryDate: data.expiry_date,
             createdAt: data.created_at,
             updatedAt: data.updated_at,
           };

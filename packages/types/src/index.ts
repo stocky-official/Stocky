@@ -59,6 +59,7 @@ export interface Item {
   barcode?: string | null; // item barcode
   balance: number;      // item Balance
   quantity: number;     // item Quantity
+  expiryDate?: string | null; // item Expiry Date
   createdAt: string;
   updatedAt: string;
 }

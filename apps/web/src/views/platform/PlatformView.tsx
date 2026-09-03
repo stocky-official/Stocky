@@ -196,6 +196,7 @@ export function PlatformView() {
             barcode: i.barcode,
             balance: Number(i.balance),
             quantity: i.quantity,
+            expiryDate: i.expiry_date,
             createdAt: i.created_at,
             updatedAt: i.updated_at,
           }));

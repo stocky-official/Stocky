@@ -25,6 +25,7 @@ export const items = pgTable('items', {
   barcode: varchar('barcode', { length: 100 }),                      // item barcode
   balance: numeric('balance', { precision: 14, scale: 2 }).default('0.00').notNull(), // item Balance
   quantity: integer('quantity').default(0).notNull(),               // item Quantity
+  expiryDate: timestamp('expiry_date', { withTimezone: true }),       // item expiry date
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
 });

@@ -13,6 +13,7 @@ import {
   ArrowUpDownIcon,
   ArrowUpIcon,
   ArrowDownIcon,
+  ClockIcon,
 } from '@stocky/icons';
 import { supabase } from '@/lib/supabase/client';
 import type { Item, CompanyUserRole } from '@stocky/types';
@@ -159,6 +160,7 @@ export function InventoryTableWidget({
                 barcode: i.barcode,
                 balance: Number(i.balance),
                 quantity: i.quantity,
+                expiryDate: i.expiry_date,
                 createdAt: i.created_at,
                 updatedAt: i.updated_at,
               }))
@@ -341,10 +343,10 @@ export function InventoryTableWidget({
                   </div>
                 </th>
 
-                {/* 5. Barcode (Logical 5th column - last data column) */}
+                {/* 5. Barcode (Logical 5th column) */}
                 <th
                   onClick={() => handleSort('barcode')}
-                  className="py-3 px-4 font-medium w-40 min-w-[140px] cursor-pointer hover:text-stocky-primary transition-colors group"
+                  className="py-3 px-4 font-medium w-36 min-w-[130px] cursor-pointer hover:text-stocky-primary transition-colors group"
                 >
                   <div className="flex items-center gap-1.5">
                     <span>Barcode</span>
@@ -352,7 +354,18 @@ export function InventoryTableWidget({
                   </div>
                 </th>
 
-                {/* 6. Actions Column */}
+                {/* 6. Expiry Date (Logical 6th column) */}
+                <th
+                  onClick={() => handleSort('expiry_date')}
+                  className="py-3 px-4 font-medium w-36 min-w-[130px] cursor-pointer hover:text-stocky-primary transition-colors group"
+                >
+                  <div className="flex items-center gap-1.5">
+                    <span>Expiry Date</span>
+                    {renderSortIndicator('expiry_date')}
+                  </div>
+                </th>
+
+                {/* 7. Actions Column */}
                 <th className="py-3 px-4 font-medium text-right w-28 min-w-[110px]">
                   Actions
                 </th>
@@ -362,7 +375,7 @@ export function InventoryTableWidget({
               {items.length === 0 ? (
                 <tr>
                   <td
-                    colSpan={6}
+                    colSpan={7}
                     className="py-12 text-center text-xs font-normal text-stocky-text-sub"
                   >
                     {loading
@@ -410,15 +423,40 @@ export function InventoryTableWidget({
                       })}
                     </td>
 
-                    {/* 5. Barcode (Last data column) */}
-                    <td className="py-3.5 px-4 whitespace-nowrap text-[11px] text-stocky-text-sub w-40 min-w-[140px]">
+                    {/* 5. Barcode */}
+                    <td className="py-3.5 px-4 whitespace-nowrap text-[11px] text-stocky-text-sub w-36 min-w-[130px]">
                       <span className="inline-flex items-center gap-1">
                         <BarcodeIcon size="xs" className="text-stocky-text-sub/70" />
                         {item.barcode || '—'}
                       </span>
                     </td>
 
-                    {/* 6. Actions (Generous Breathing Space) */}
+                    {/* 6. Expiry Date */}
+                    <td className="py-3.5 px-4 whitespace-nowrap text-[11px] w-36 min-w-[130px]">
+                      {item.expiryDate ? (
+                        <span
+                          className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-widget font-normal ${
+                            new Date(item.expiryDate) < new Date()
+                              ? 'bg-red-500/10 text-red-600 border border-red-500/20'
+                              : new Date(item.expiryDate).getTime() - new Date().getTime() <
+                                30 * 24 * 60 * 60 * 1000
+                              ? 'bg-amber-500/10 text-amber-700 border border-amber-500/20'
+                              : 'bg-stocky-bg-global text-stocky-text-main border border-stocky-border-subtle'
+                          }`}
+                        >
+                          <ClockIcon size="xs" className="opacity-60" />
+                          {new Date(item.expiryDate).toLocaleDateString(undefined, {
+                            year: 'numeric',
+                            month: 'short',
+                            day: 'numeric',
+                          })}
+                        </span>
+                      ) : (
+                        <span className="text-stocky-text-sub/40">—</span>
+                      )}
+                    </td>
+
+                    {/* 7. Actions (Generous Breathing Space) */}
                     <td className="py-3.5 px-4 text-right whitespace-nowrap w-28 min-w-[110px]">
                       <div className="flex items-center justify-end gap-2.5">
                         <button
