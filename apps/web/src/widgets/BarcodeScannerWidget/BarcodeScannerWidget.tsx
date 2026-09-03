@@ -154,23 +154,61 @@ export function BarcodeScannerWidget({
     [onProductFound, onCodeNotFound]
   );
 
-  // Cleanup helper
+  const activeStreamRef = useRef<MediaStream | null>(null);
+
+  // Bulletproof Cleanup helper to release camera hardware immediately
   const stopScanner = async () => {
     if (rafIdRef.current) {
       cancelAnimationFrame(rafIdRef.current);
       rafIdRef.current = null;
     }
 
-    if (scannerRef.current) {
+    // 1. Forcefully stop all tracks on the stored active MediaStream
+    if (activeStreamRef.current) {
       try {
-        if (scannerRef.current.isScanning) {
-          await scannerRef.current.stop();
-        }
-        scannerRef.current.clear();
+        activeStreamRef.current.getTracks().forEach((track) => {
+          try {
+            track.stop();
+          } catch {}
+        });
       } catch (err) {
-        console.error('Error stopping scanner:', err);
+        console.warn('Error stopping stored media stream:', err);
       }
+      activeStreamRef.current = null;
+    }
+
+    // 2. Query any remaining video elements in the DOM and stop their tracks
+    try {
+      const videoElements = document.querySelectorAll('video');
+      videoElements.forEach((video) => {
+        const stream = video.srcObject as MediaStream | null;
+        if (stream) {
+          stream.getTracks().forEach((track) => {
+            try {
+              track.stop();
+            } catch {}
+          });
+          video.srcObject = null;
+        }
+      });
+    } catch (err) {
+      console.warn('Error stopping DOM video tracks:', err);
+    }
+
+    // 3. Stop and clear Html5Qrcode instance
+    if (scannerRef.current) {
+      const scanner = scannerRef.current;
       scannerRef.current = null;
+      try {
+        if (scanner.isScanning) {
+          await scanner.stop();
+        }
+      } catch (err) {
+        // Ignore if already stopped
+      }
+      try {
+        scanner.clear();
+      } catch (err) {}
     }
   };
 
@@ -226,6 +264,14 @@ export function BarcodeScannerWidget({
             // Frame parsing errors are ignored
           }
         );
+
+        // Store reference to active stream for immediate shutdown
+        const videoEl = document.querySelector(
+          '#stocky-camera-viewport video'
+        ) as HTMLVideoElement | null;
+        if (videoEl && videoEl.srcObject) {
+          activeStreamRef.current = videoEl.srcObject as MediaStream;
+        }
 
         // Native BarcodeDetector acceleration (for Android Chrome / Edge)
         // Directly detects barcodes off the HTMLVideoElement with near-zero latency
