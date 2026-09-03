@@ -1,0 +1,13 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "strict": true,
+    "paths": {
+      "@stocky/tokens": ["../../packages/tokens/src"],
+      "@stocky/tokens/*": ["../../packages/tokens/src/*"],
+      "@stocky/types": ["../../packages/types/src"],
+      "@stocky/types/*": ["../../packages/types/src/*"]
+    }
+  },
+  "include": ["**/*.ts", "**/*.tsx"]
+}

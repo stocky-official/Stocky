@@ -1,0 +1,133 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ==========================================================================
+   STOCKY v0.1.0 DESIGN SYSTEM TOKENS - STRICT SPECIFICATION
+   1. All design aspects centralized and tokenized here.
+   2. Font: Geist / Inter (rem system: 1rem = 16px).
+   3. Allowed weights: 300, 400, 500 (NEVER larger).
+   4. Max font size: 32px (2rem).
+   5. STRICT: NO MONOSPACE / MONO FONTS anywhere.
+   6. Colors: #F9F9F9, #FFFFFF, #000000, #131313, #0057FF, #4D92D1.
+   7. Surfaces: NO harsh borders, NO shadows. Smooth clean border effect.
+   8. Widget roundness: 12px.
+   9. Layout: 1920x1080 optimized max-width, 16px gutter.
+   ========================================================================== */
+
+:root {
+  /* Colors */
+  --stocky-bg-global: #F9F9F9;
+  --stocky-bg-widget: #FFFFFF;
+  --stocky-text-main: #000000;
+  --stocky-text-sub: #131313;
+  --stocky-primary: #0057FF;
+  --stocky-primary-hover: #0047D4;
+  --stocky-accent: #4D92D1;
+  --stocky-accent-soft: rgba(77, 146, 209, 0.12);
+
+  /* Borders: Smooth, clean, soft blend effect - NO harsh borders */
+  --stocky-border-subtle: #EBEBEB;
+  --stocky-border-default: #E2E2E2;
+  --stocky-border-focus: #0057FF;
+
+  /* Sizing, Radius & Gutters */
+  --stocky-radius-widget: 12px;
+  --stocky-gutter: 1rem; /* 16px */
+  --stocky-max-width: 1600px; /* Optimized for 1920x1080 display */
+
+  /* Typography Scales (1rem = 16px, Max = 32px / 2rem) */
+  --stocky-font-max: 2rem;     /* 32px max font size */
+  --stocky-font-xl: 1.5rem;    /* 24px */
+  --stocky-font-lg: 1.25rem;   /* 20px */
+  --stocky-font-md: 1.125rem;  /* 18px */
+  --stocky-font-base: 1rem;    /* 16px */
+  --stocky-font-sm: 0.875rem;  /* 14px */
+  --stocky-font-xs: 0.75rem;   /* 12px */
+
+  /* Animation Timings */
+  --stocky-transition: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Global Reset & Base Setup */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  box-shadow: none !important; /* STRICT: No shadows anywhere */
+}
+
+html {
+  font-size: 16px; /* 1rem = 16px */
+}
+
+body {
+  background-color: var(--stocky-bg-global);
+  color: var(--stocky-text-sub);
+  font-family: var(--font-sans), ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-weight: 400;
+  line-height: 1.5;
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Typography: Monospace is strictly prohibited across the entire design system */
+code, kbd, samp, pre {
+  font-family: inherit !important;
+}
+
+/* Enforce max font size and allowed weights */
+h1, h2, h3, h4, h5, h6 {
+  color: var(--stocky-text-main);
+  font-weight: 500;
+  margin: 0;
+}
+
+h1 {
+  font-size: var(--stocky-font-max); /* Strictly capped at 32px */
+  line-height: 1.25;
+}
+
+h2 {
+  font-size: var(--stocky-font-xl); /* 24px */
+  line-height: 1.3;
+}
+
+h3 {
+  font-size: var(--stocky-font-lg); /* 20px */
+  line-height: 1.4;
+}
+
+/* Hyperlinks */
+a {
+  color: var(--stocky-primary);
+  text-decoration: none;
+  font-weight: 400;
+  transition: opacity var(--stocky-transition);
+}
+
+a:hover {
+  opacity: 0.85;
+}
+
+/* Custom Scrollbar styled for clean minimal design */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--stocky-bg-global);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--stocky-border-default);
+  border-radius: var(--stocky-radius-widget);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #D0D0D0;
+}

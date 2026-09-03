@@ -1,0 +1,30 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["DOM", "DOM.Iterable", "ES2022"],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "preserve",
+    "incremental": true,
+    "baseUrl": ".",
+    "paths": {
+      "@stocky/tokens": ["packages/tokens/src"],
+      "@stocky/tokens/*": ["packages/tokens/src/*"],
+      "@stocky/icons": ["packages/icons/src"],
+      "@stocky/icons/*": ["packages/icons/src/*"],
+      "@stocky/types": ["packages/types/src"],
+      "@stocky/types/*": ["packages/types/src/*"],
+      "@stocky/db": ["packages/db/src"],
+      "@stocky/db/*": ["packages/db/src/*"]
+    }
+  },
+  "exclude": ["node_modules", "dist", ".next", "_technical_support"]
+}

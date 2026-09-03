@@ -1,0 +1,40 @@
+{
+  "expo": {
+    "name": "Stocky",
+    "slug": "stocky",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "backgroundColor": "#F9F9F9",
+      "resizeMode": "contain"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.stocky.app"
+    },
+    "android": {
+      "package": "com.stocky.app",
+      "versionCode": 1,
+      "adaptiveIcon": {
+        "backgroundColor": "#0057FF"
+      },
+      "permissions": [
+        "CAMERA"
+      ]
+    },
+    "plugins": [
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Allow Stocky to use the camera to scan product barcodes."
+        }
+      ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "bf816223-b056-4deb-bfd4-f076db393182"
+      }
+    }
+  }
+}
