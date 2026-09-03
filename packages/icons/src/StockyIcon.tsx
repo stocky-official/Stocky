@@ -3,7 +3,7 @@ import type { LucideIcon } from 'lucide-react';
 import { ICON_SIZE_MAP, type StockyIconProps } from './types';
 
 export interface BaseIconWrapperProps extends StockyIconProps {
-  icon: LucideIcon;
+  icon: any;
 }
 
 export function StockyIcon({

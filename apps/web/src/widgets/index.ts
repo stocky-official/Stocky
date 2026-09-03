@@ -13,3 +13,5 @@ export * from './MobileTopBarWidget/MobileTopBarWidget';
 export * from './MobileBottomNavWidget/MobileBottomNavWidget';
 export * from './TeamManagementWidget/TeamManagementWidget';
 export * from './OrganizationOnboardingWidget/OrganizationOnboardingWidget';
+export * from './BarcodeScannerWidget/BarcodeScannerWidget';
+

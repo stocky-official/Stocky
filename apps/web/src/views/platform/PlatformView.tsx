@@ -14,6 +14,8 @@ import {
   CompanySettingsWidget,
   MobileTopBarWidget,
   MobileBottomNavWidget,
+  BarcodeScannerWidget,
+  RecordEditDrawerWidget,
 } from '@/widgets';
 import type { Branch, Item, Supplier, Company, CompanyUserRole } from '@stocky/types';
 
@@ -47,6 +49,23 @@ export function PlatformView() {
   const [categories, setCategories] = useState<string[]>([]);
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
   const [totalDatabaseItems, setTotalDatabaseItems] = useState<number>(0);
+
+  // Scanned Product state for Drawer
+  const [scannedItem, setScannedItem] = useState<Item | null>(null);
+  const [isScannedDrawerOpen, setIsScannedDrawerOpen] = useState<boolean>(false);
+
+  const handleProductScanned = (item: Item) => {
+    setScannedItem(item);
+    setIsScannedDrawerOpen(true);
+  };
+
+  const handleScannedDrawerSaveSuccess = (updatedItem: any) => {
+    setScannedItem((prev) => (prev ? { ...prev, ...updatedItem } : null));
+    setItems((prev) =>
+      prev.map((i) => (i.id === updatedItem.id ? { ...i, ...updatedItem } : i))
+    );
+  };
+
 
   // Mobile Floating Bottom Nav scroll-aware visibility
   const [isBottomNavVisible, setIsBottomNavVisible] = useState(true);
@@ -401,6 +420,20 @@ export function PlatformView() {
         activeTab={activeTab}
         onTabChange={setActiveTab}
         isVisible={isBottomNavVisible}
+      />
+
+      {/* Floating Barcode Scanner Camera (Mobile Phones) */}
+      <BarcodeScannerWidget onProductFound={handleProductScanned} />
+
+      {/* Scanned Product Details / Edit Drawer */}
+      <RecordEditDrawerWidget
+        isOpen={isScannedDrawerOpen}
+        onClose={() => setIsScannedDrawerOpen(false)}
+        recordType="item"
+        recordData={scannedItem}
+        allCategories={categories}
+        userRole={userRole}
+        onSaveSuccess={handleScannedDrawerSaveSuccess}
       />
     </div>
   );

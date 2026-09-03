@@ -40,6 +40,9 @@ import {
   ArrowDown,
   Users,
   Shield,
+  Camera,
+  Zap,
+  ZapOff,
   type LucideIcon,
 } from 'lucide-react';
 import { StockyIcon } from './StockyIcon';
@@ -48,7 +51,7 @@ import type { StockyIconProps } from './types';
 export * from './types';
 export * from './StockyIcon';
 
-function createIcon(icon: LucideIcon, displayName: string) {
+function createIcon(icon: any, displayName: string) {
   const Component = (props: StockyIconProps) => (
     <StockyIcon icon={icon} {...props} />
   );
@@ -97,3 +100,6 @@ export const ArrowUpIcon = createIcon(ArrowUp, 'ArrowUpIcon');
 export const ArrowDownIcon = createIcon(ArrowDown, 'ArrowDownIcon');
 export const UsersIcon = createIcon(Users, 'UsersIcon');
 export const ShieldIcon = createIcon(Shield, 'ShieldIcon');
+export const CameraIcon = createIcon(Camera, 'CameraIcon');
+export const ZapIcon = createIcon(Zap, 'ZapIcon');
+export const ZapOffIcon = createIcon(ZapOff, 'ZapOffIcon');
