@@ -213,12 +213,17 @@ export function BarcodeScannerWidget({
     }
   };
 
+  const isStartingRef = useRef(false);
+  const handleBarcodeScannedRef = useRef(handleBarcodeScanned);
+  handleBarcodeScannedRef.current = handleBarcodeScanned;
+
   // Start Scanner when modal opens
   useEffect(() => {
     let isMounted = true;
 
     async function startScanner() {
-      if (!isOpen) return;
+      if (!isOpen || isStartingRef.current) return;
+      isStartingRef.current = true;
       setCameraError(null);
       setScannedResult(null);
       setShowManualInput(false);
@@ -227,13 +232,21 @@ export function BarcodeScannerWidget({
 
       // Small tick to ensure container element is mounted in DOM
       await new Promise((r) => setTimeout(r, 80));
-      if (!isMounted) return;
+      if (!isMounted) {
+        isStartingRef.current = false;
+        return;
+      }
+
+      // Stop any leftover scanner and wipe previous viewport DOM elements
+      await stopScanner();
 
       const viewportEl = document.getElementById('stocky-camera-viewport');
       if (!viewportEl) {
         console.warn('Viewport element not yet mounted');
+        isStartingRef.current = false;
         return;
       }
+      viewportEl.innerHTML = '';
 
       try {
         // Initialize Html5Qrcode with full retail barcode support and hardware BarcodeDetector
@@ -259,7 +272,7 @@ export function BarcodeScannerWidget({
             },
           },
           (decodedText: string) => {
-            handleBarcodeScanned(decodedText);
+            handleBarcodeScannedRef.current(decodedText);
           },
           () => {
             // Frame parsing errors are ignored
@@ -294,15 +307,15 @@ export function BarcodeScannerWidget({
 
             const checkNativeDetection = async () => {
               if (!isMounted || !isOpen || isHandlingScanRef.current) return;
-              const videoEl = document.querySelector(
+              const currentVideo = document.querySelector(
                 '#stocky-camera-viewport video'
               ) as HTMLVideoElement | null;
 
-              if (videoEl && videoEl.readyState >= 2) {
+              if (currentVideo && currentVideo.readyState >= 2) {
                 try {
-                  const barcodes = await nativeDetector.detect(videoEl);
+                  const barcodes = await nativeDetector.detect(currentVideo);
                   if (barcodes && barcodes.length > 0 && barcodes[0].rawValue) {
-                    handleBarcodeScanned(barcodes[0].rawValue);
+                    handleBarcodeScannedRef.current(barcodes[0].rawValue);
                     return;
                   }
                 } catch {
@@ -333,6 +346,8 @@ export function BarcodeScannerWidget({
         setCameraError(
           err.message || 'Unable to access camera. Please allow camera permissions.'
         );
+      } finally {
+        isStartingRef.current = false;
       }
     }
 
@@ -344,7 +359,7 @@ export function BarcodeScannerWidget({
       isMounted = false;
       stopScanner();
     };
-  }, [isOpen, handleBarcodeScanned]);
+  }, [isOpen]);
 
   const handleClose = async () => {
     await stopScanner();
@@ -441,56 +456,60 @@ export function BarcodeScannerWidget({
             </div>
 
             {/* Viewfinder Center Container */}
-            <div className="flex-1 relative flex items-center justify-center overflow-hidden">
-              {/* html5-qrcode video viewport */}
+            <div className="flex-1 relative w-full h-full overflow-hidden bg-black">
+              {/* Layer 1: html5-qrcode video viewport - Enforced full cover, no flex, absolute */}
               <div
                 id="stocky-camera-viewport"
-                className="w-full h-full absolute inset-0 flex items-center justify-center [&>video]:w-full [&>video]:h-full [&>video]:object-cover"
+                className="!absolute !inset-0 w-full h-full overflow-hidden block [&>video]:w-full [&>video]:h-full [&>video]:object-cover [&>canvas]:hidden"
               />
 
-              {/* Target Scan Reticle Overlay */}
+              {/* Layer 2: Target Scan Reticle Overlay - Guaranteed Centered Layer */}
               {!cameraError && (
-                <div className="pointer-events-none relative w-[80vw] max-w-[340px] h-[180px] flex items-center justify-center">
-                  {/* High-Contrast Reticle Corners */}
-                  <div className="absolute -top-1 -left-1 w-7 h-7 border-t-3 border-l-3 border-stocky-primary rounded-tl-sm shadow-[0_0_8px_rgba(0,87,255,0.6)]" />
-                  <div className="absolute -top-1 -right-1 w-7 h-7 border-t-3 border-r-3 border-stocky-primary rounded-tr-sm shadow-[0_0_8px_rgba(0,87,255,0.6)]" />
-                  <div className="absolute -bottom-1 -left-1 w-7 h-7 border-b-3 border-l-3 border-stocky-primary rounded-bl-sm shadow-[0_0_8px_rgba(0,87,255,0.6)]" />
-                  <div className="absolute -bottom-1 -right-1 w-7 h-7 border-b-3 border-r-3 border-stocky-primary rounded-br-sm shadow-[0_0_8px_rgba(0,87,255,0.6)]" />
+                <div className="absolute inset-0 pointer-events-none flex items-center justify-center z-20">
+                  <div className="relative w-[80vw] max-w-[320px] h-[180px] flex items-center justify-center">
+                    {/* High-Contrast Reticle Corners */}
+                    <div className="absolute -top-1 -left-1 w-7 h-7 border-t-3 border-l-3 border-stocky-primary rounded-tl-sm shadow-[0_0_8px_rgba(0,87,255,0.6)]" />
+                    <div className="absolute -top-1 -right-1 w-7 h-7 border-t-3 border-r-3 border-stocky-primary rounded-tr-sm shadow-[0_0_8px_rgba(0,87,255,0.6)]" />
+                    <div className="absolute -bottom-1 -left-1 w-7 h-7 border-b-3 border-l-3 border-stocky-primary rounded-bl-sm shadow-[0_0_8px_rgba(0,87,255,0.6)]" />
+                    <div className="absolute -bottom-1 -right-1 w-7 h-7 border-b-3 border-r-3 border-stocky-primary rounded-br-sm shadow-[0_0_8px_rgba(0,87,255,0.6)]" />
 
-                  {/* Animated Laser Scanning Line */}
-                  {!scannedResult && (
-                    <motion.div
-                      className="w-full h-0.5 bg-green-400 shadow-[0_0_12px_rgba(74,222,128,1)]"
-                      animate={{
-                        y: [-75, 75, -75],
-                      }}
-                      transition={{
-                        duration: 2.0,
-                        repeat: Infinity,
-                        ease: 'easeInOut',
-                      }}
-                    />
-                  )}
+                    {/* Animated Laser Scanning Line */}
+                    {!scannedResult && (
+                      <motion.div
+                        className="w-full h-0.5 bg-green-400 shadow-[0_0_12px_rgba(74,222,128,1)]"
+                        animate={{
+                          y: [-75, 75, -75],
+                        }}
+                        transition={{
+                          duration: 2.0,
+                          repeat: Infinity,
+                          ease: 'easeInOut',
+                        }}
+                      />
+                    )}
+                  </div>
                 </div>
               )}
 
               {/* Camera Error Message */}
               {cameraError && (
-                <div className="z-10 p-6 bg-stocky-bg-widget/95 rounded-widget border border-stocky-border-subtle max-w-xs text-center space-y-3">
-                  <AlertCircleIcon size="lg" className="text-red-500 mx-auto" />
-                  <h3 className="text-sm font-medium text-stocky-text-main">
-                    Camera Access Required
-                  </h3>
-                  <p className="text-xs text-stocky-text-sub leading-relaxed">
-                    {cameraError}
-                  </p>
-                  <button
-                    type="button"
-                    onClick={handleClose}
-                    className="w-full py-2 bg-stocky-primary text-white text-xs font-medium rounded-widget hover:bg-stocky-primary-hover transition-colors"
-                  >
-                    Close
-                  </button>
+                <div className="absolute inset-0 z-30 flex items-center justify-center p-4">
+                  <div className="p-6 bg-stocky-bg-widget/95 rounded-widget border border-stocky-border-subtle max-w-xs text-center space-y-3 shadow-xl">
+                    <AlertCircleIcon size="lg" className="text-red-500 mx-auto" />
+                    <h3 className="text-sm font-medium text-stocky-text-main">
+                      Camera Access Required
+                    </h3>
+                    <p className="text-xs text-stocky-text-sub leading-relaxed">
+                      {cameraError}
+                    </p>
+                    <button
+                      type="button"
+                      onClick={handleClose}
+                      className="w-full py-2 bg-stocky-primary text-white text-xs font-medium rounded-widget hover:bg-stocky-primary-hover transition-colors"
+                    >
+                      Close
+                    </button>
+                  </div>
                 </div>
               )}
             </div>
