@@ -15,12 +15,10 @@ export function StockyIcon({
 }: BaseIconWrapperProps) {
   const pixelSize = typeof size === 'number' ? size : ICON_SIZE_MAP[size] || 20;
 
-  return (
-    <IconComponent
-      size={pixelSize}
-      strokeWidth={strokeWidth}
-      className={`shrink-0 inline-block align-middle ${className}`}
-      {...rest}
-    />
-  );
-};
+  return React.createElement(IconComponent, {
+    size: pixelSize,
+    strokeWidth,
+    className: `shrink-0 inline-block align-middle ${className}`,
+    ...rest,
+  });
+}
