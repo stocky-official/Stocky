@@ -46,14 +46,17 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={geistSans.variable}>
+    <html lang="en" className={geistSans.variable} suppressHydrationWarning>
       <head>
         <link rel="manifest" href="/manifest.json" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
         <meta name="apple-mobile-web-app-title" content="Stocky" />
       </head>
-      <body className="font-sans antialiased bg-stocky-bg-global text-stocky-text-sub min-h-screen">
+      <body
+        className="font-sans antialiased bg-stocky-bg-global text-stocky-text-sub min-h-screen"
+        suppressHydrationWarning
+      >
         <PWARegistration />
         {children}
       </body>
