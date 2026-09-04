@@ -59,6 +59,15 @@ export function InventoryTableWidget({
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [pageSize, setPageSize] = useState<number>(10);
   const [refreshTrigger, setRefreshTrigger] = useState<number>(0);
+  const [viewMode, setViewMode] = useState<'auto' | 'cards' | 'table'>('auto');
+
+  // Automatically select Cards mode on mobile phone screens
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.innerWidth < 768) {
+      setViewMode('cards');
+    }
+  }, []);
+
 
   // Advanced Column Filter States
   const [stockFilter, setStockFilter] = useState<'all' | 'in_stock' | 'low_stock' | 'out_of_stock'>('all');
@@ -530,8 +539,37 @@ export function InventoryTableWidget({
                 </span>
               )}
             </Button>
+
+            {/* 5. View Mode Switcher (Table vs Cards) */}
+            <div className="flex items-center bg-slate-100 p-0.5 rounded-xl border border-slate-200">
+              <button
+                type="button"
+                onClick={() => setViewMode('table')}
+                className={`px-2.5 py-1 text-xs font-medium rounded-lg transition-all cursor-pointer ${
+                  viewMode === 'table'
+                    ? 'bg-white text-slate-900 shadow-2xs font-semibold'
+                    : 'text-slate-500 hover:text-slate-900'
+                }`}
+                title="Table view"
+              >
+                Table
+              </button>
+              <button
+                type="button"
+                onClick={() => setViewMode('cards')}
+                className={`px-2.5 py-1 text-xs font-medium rounded-lg transition-all cursor-pointer ${
+                  viewMode === 'cards'
+                    ? 'bg-white text-slate-900 shadow-2xs font-semibold'
+                    : 'text-slate-500 hover:text-slate-900'
+                }`}
+                title="Cards view"
+              >
+                Cards
+              </button>
+            </div>
           </div>
         </div>
+
 
         {/* Search Bar & Primary Filter Controls */}
         <div className="px-4 sm:px-5 py-3 border-b border-stocky-border-subtle bg-stocky-bg-global/30 flex flex-wrap items-center justify-between gap-3">
@@ -660,8 +698,171 @@ export function InventoryTableWidget({
           </div>
         )}
 
-        {/* Table View */}
-        <div className="overflow-x-auto">
+        {/* Mobile / Responsive Cards Grid (Auto on mobile or when Cards mode is selected) */}
+        <div
+          className={
+            viewMode === 'table'
+              ? 'hidden'
+              : viewMode === 'cards'
+              ? 'block'
+              : 'block md:hidden'
+          }
+        >
+          {items.length === 0 ? (
+            <div className="py-12 text-center text-xs text-stocky-text-sub">
+              {loading
+                ? 'Fetching inventory from database...'
+                : 'No inventory items found matching your filter criteria.'}
+            </div>
+          ) : (
+            <div className="p-3 sm:p-4 space-y-3">
+              {/* Select All header bar for mobile */}
+              <div className="flex items-center justify-between px-3 py-2 bg-slate-50/80 rounded-2xl border border-slate-100 text-xs">
+                <label className="flex items-center gap-2 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    ref={(el) => {
+                      if (el) el.indeterminate = isIndeterminate;
+                    }}
+                    checked={isAllSelected}
+                    onChange={toggleSelectAll}
+                    aria-label="Select all visible items"
+                    className="w-4 h-4 rounded border-stocky-border-subtle text-stocky-primary focus:ring-stocky-primary/20 accent-stocky-primary cursor-pointer align-middle"
+                  />
+                  <span className="font-medium text-slate-700">Select All Visible</span>
+                </label>
+                <span className="text-[11px] text-slate-400">
+                  {items.length} items
+                </span>
+              </div>
+
+              {/* Cards list */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {items.map((item) => {
+                  const isSelected = selectedItemIds.has(item.id);
+                  const isOutOfStock = item.quantity === 0;
+                  const isLowStock = item.quantity > 0 && item.quantity <= 10;
+
+                  return (
+                    <div
+                      key={item.id}
+                      onClick={() => toggleSelectItem(item.id)}
+                      className={`p-4 rounded-2xl border transition-all cursor-pointer select-none ${
+                        isSelected
+                          ? 'bg-blue-50/60 border-stocky-primary shadow-sm'
+                          : 'bg-white border-slate-100 shadow-bevel hover:border-slate-200'
+                      }`}
+                    >
+                      {/* Top row: Checkbox, Name, and Actions */}
+                      <div className="flex items-start justify-between gap-2.5">
+                        <div className="flex items-start gap-2.5 min-w-0 flex-1">
+                          <div
+                            onClick={(e) => e.stopPropagation()}
+                            className="pt-0.5"
+                          >
+                            <input
+                              type="checkbox"
+                              checked={isSelected}
+                              onChange={() => toggleSelectItem(item.id)}
+                              aria-label={`Select ${item.name}`}
+                              className="w-4 h-4 rounded border-stocky-border-subtle text-stocky-primary focus:ring-stocky-primary/20 accent-stocky-primary cursor-pointer align-middle"
+                            />
+                          </div>
+
+                          <div className="min-w-0 flex-1">
+                            <h4 className="text-sm font-semibold text-slate-900 leading-snug break-words">
+                              {item.name}
+                            </h4>
+                            <div className="mt-1 flex items-center gap-1.5 flex-wrap">
+                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-slate-100 text-slate-600 border border-slate-200/80">
+                                <TagIcon size="xs" className="text-slate-400" />
+                                <span>{item.categoryName || 'General'}</span>
+                              </span>
+                              {item.barcode && (
+                                <span className="inline-flex items-center gap-1 text-[10px] font-mono text-slate-500 bg-slate-50 px-1.5 py-0.5 rounded-md border border-slate-100">
+                                  <BarcodeIcon size="xs" />
+                                  <span>{item.barcode}</span>
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Action buttons */}
+                        <div
+                          className="flex items-center gap-1.5 shrink-0"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <button
+                            type="button"
+                            onClick={() => handleEditClick(item)}
+                            className="w-7 h-7 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200/80 text-slate-600 hover:text-stocky-primary flex items-center justify-center transition-colors cursor-pointer"
+                            title={`Edit ${item.name}`}
+                          >
+                            <EditIcon size="xs" />
+                          </button>
+                          {userRole !== 'staff' && (
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteClick(item)}
+                              className="w-7 h-7 rounded-xl bg-slate-50 hover:bg-rose-50 border border-slate-200/80 hover:border-rose-200 text-slate-600 hover:text-rose-600 flex items-center justify-center transition-colors cursor-pointer"
+                              title={`Delete ${item.name}`}
+                            >
+                              <TrashIcon size="xs" />
+                            </button>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Metric Chips Row */}
+                      <div className="mt-3 pt-3 border-t border-slate-100/80 grid grid-cols-3 gap-2 text-center">
+                        <div className="bg-slate-50/70 p-2 rounded-xl">
+                          <span className="text-[10px] text-slate-400 block">Stock Qty</span>
+                          <span
+                            className={`text-xs font-semibold block mt-0.5 ${
+                              isOutOfStock
+                                ? 'text-rose-600'
+                                : isLowStock
+                                ? 'text-amber-600'
+                                : 'text-emerald-700'
+                            }`}
+                          >
+                            {item.quantity.toLocaleString()} units
+                          </span>
+                        </div>
+
+                        <div className="bg-slate-50/70 p-2 rounded-xl">
+                          <span className="text-[10px] text-slate-400 block">Valuation</span>
+                          <span className="text-xs font-semibold text-slate-800 block mt-0.5">
+                            ${Number(item.balance || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                          </span>
+                        </div>
+
+                        <div className="bg-slate-50/70 p-2 rounded-xl">
+                          <span className="text-[10px] text-slate-400 block">Expiry Date</span>
+                          <span className="text-[11px] font-medium text-slate-600 block mt-0.5 truncate">
+                            {item.expiryDate ? item.expiryDate.split('T')[0] : 'No expiry'}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Desktop Multi-Column Table View (Shown on md+ screens or when viewMode === 'table') */}
+        <div
+          className={
+            viewMode === 'cards'
+              ? 'hidden'
+              : viewMode === 'table'
+              ? 'block overflow-x-auto'
+              : 'hidden md:block overflow-x-auto'
+          }
+        >
           <table className="w-full text-left text-xs">
             <thead>
               <tr className="bg-stocky-bg-global text-stocky-text-sub border-b border-stocky-border-subtle select-none">

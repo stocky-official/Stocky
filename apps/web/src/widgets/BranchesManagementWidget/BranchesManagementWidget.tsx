@@ -60,6 +60,13 @@ export function BranchesManagementWidget({
     setBranches(initialBranches);
   }, [initialBranches]);
 
+  // Default to Grid / Cards mode on mobile viewport
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.innerWidth < 768) {
+      setViewMode('grid');
+    }
+  }, []);
+
   const branchMetrics = useMemo(() => {
     return branches.map((branch) => {
       const branchItems = items.filter((i) => i.branchId === branch.id);
