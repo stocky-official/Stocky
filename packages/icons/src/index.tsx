@@ -43,6 +43,14 @@ import {
   Camera,
   Zap,
   ZapOff,
+  Check,
+  Activity,
+  Sparkles,
+  Timer,
+  RotateCcw,
+  SlidersHorizontal,
+  BarChart3,
+  Calendar,
   type LucideIcon,
 } from 'lucide-react';
 import { StockyIcon } from './StockyIcon';
@@ -103,3 +111,11 @@ export const ShieldIcon = createIcon(Shield, 'ShieldIcon');
 export const CameraIcon = createIcon(Camera, 'CameraIcon');
 export const ZapIcon = createIcon(Zap, 'ZapIcon');
 export const ZapOffIcon = createIcon(ZapOff, 'ZapOffIcon');
+export const CheckIcon = createIcon(Check, 'CheckIcon');
+export const ActivityIcon = createIcon(Activity, 'ActivityIcon');
+export const SparklesIcon = createIcon(Sparkles, 'SparklesIcon');
+export const TimerIcon = createIcon(Timer, 'TimerIcon');
+export const RotateCcwIcon = createIcon(RotateCcw, 'RotateCcwIcon');
+export const SlidersIcon = createIcon(SlidersHorizontal, 'SlidersIcon');
+export const BarChartIcon = createIcon(BarChart3, 'BarChartIcon');
+export const CalendarIcon = createIcon(Calendar, 'CalendarIcon');

@@ -51,10 +51,17 @@ const config: Config = {
       },
       borderRadius: {
         widget: '12px',
+        card: '24px',
+        '3xl': '1.5rem',
+        pill: '9999px',
         DEFAULT: '12px',
       },
       boxShadow: {
-        none: 'none', // Strict: No shadows allowed
+        bevel: '0 2px 14px -2px rgba(15, 23, 42, 0.04)',
+        'bevel-hover': '0 6px 20px -3px rgba(15, 23, 42, 0.07)',
+        'bevel-dock': '0 10px 32px -4px rgba(0, 0, 0, 0.08), 0 2px 8px -2px rgba(0, 0, 0, 0.04)',
+        'bevel-float': '0 20px 40px -10px rgba(0, 0, 0, 0.12)',
+        none: 'none',
       },
       spacing: {
         gutter: '1rem', // 16px

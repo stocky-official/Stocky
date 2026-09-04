@@ -16,6 +16,8 @@ import {
   MobileBottomNavWidget,
   BarcodeScannerWidget,
   RecordEditDrawerWidget,
+  ItemAnalyticsSheetWidget,
+  StockAuditWidget,
 } from '@/widgets';
 import type { Branch, Item, Supplier, Company, CompanyUserRole } from '@stocky/types';
 
@@ -54,6 +56,19 @@ export function PlatformView() {
   const [scannedItem, setScannedItem] = useState<Item | null>(null);
   const [isScannedDrawerOpen, setIsScannedDrawerOpen] = useState<boolean>(false);
 
+  // Bevel-Inspired Rapid Audit Modal State
+  const [isAuditModalOpen, setIsAuditModalOpen] = useState<boolean>(false);
+  const [auditShelfName, setAuditShelfName] = useState<string>('Aisle 04 • Cold Display Shelf B');
+
+  // Bevel-Inspired SKU Velocity Analytics Sheet State
+  const [isAnalyticsSheetOpen, setIsAnalyticsSheetOpen] = useState<boolean>(false);
+  const [analyticsItem, setAnalyticsItem] = useState<{
+    name: string;
+    category: string;
+    stock: number;
+    price: number;
+  } | null>(null);
+
   const handleProductScanned = (item: Item) => {
     setScannedItem(item);
     setIsScannedDrawerOpen(true);
@@ -65,6 +80,7 @@ export function PlatformView() {
       prev.map((i) => (i.id === updatedItem.id ? { ...i, ...updatedItem } : i))
     );
   };
+
 
 
   // Mobile Floating Bottom Nav scroll-aware visibility
@@ -372,6 +388,19 @@ export function PlatformView() {
                   selectedBranchId={selectedBranchId}
                   selectedBranchName={selectedBranchName}
                   totalDatabaseItems={totalDatabaseItems}
+                  onOpenAudit={(shelf) => {
+                    setAuditShelfName(shelf || 'Aisle 04 • Cold Display Shelf B');
+                    setIsAuditModalOpen(true);
+                  }}
+                  onOpenAnalytics={(itemName, catName) => {
+                    setAnalyticsItem({
+                      name: itemName || 'Whole Milk 1L Pasteurized',
+                      category: catName || 'Dairy & Fresh',
+                      stock: 340,
+                      price: 2.45,
+                    });
+                    setIsAnalyticsSheetOpen(true);
+                  }}
                 />
               )}
 
@@ -421,6 +450,8 @@ export function PlatformView() {
         activeTab={activeTab}
         onTabChange={setActiveTab}
         isVisible={isBottomNavVisible}
+        onQuickSearch={() => setActiveTab('inventory')}
+        onQuickAudit={() => setIsAuditModalOpen(true)}
       />
 
       {/* Floating Barcode Scanner Camera (Mobile Phones) */}
@@ -435,6 +466,27 @@ export function PlatformView() {
         allCategories={categories}
         userRole={userRole}
         onSaveSuccess={handleScannedDrawerSaveSuccess}
+      />
+
+      {/* Bevel Rapid Stock Audit Widget (Cycle Count Logger) */}
+      <StockAuditWidget
+        isOpen={isAuditModalOpen}
+        onClose={() => setIsAuditModalOpen(false)}
+        shelfName={auditShelfName}
+        onCompleteAudit={(results) => {
+          const verified = results.filter((r) => r.isReconciled).length;
+          alert(`Cycle Count Completed! ${verified} of ${results.length} items reconciled.`);
+        }}
+      />
+
+      {/* Bevel SKU Velocity & Analytics Slide-up Sheet */}
+      <ItemAnalyticsSheetWidget
+        isOpen={isAnalyticsSheetOpen}
+        onClose={() => setIsAnalyticsSheetOpen(false)}
+        itemName={analyticsItem?.name}
+        categoryName={analyticsItem?.category}
+        currentStock={analyticsItem?.stock}
+        unitPrice={analyticsItem?.price}
       />
     </div>
   );

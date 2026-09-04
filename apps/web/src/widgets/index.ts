@@ -15,3 +15,5 @@ export * from './TeamManagementWidget/TeamManagementWidget';
 export * from './OrganizationOnboardingWidget/OrganizationOnboardingWidget';
 export * from './BarcodeScannerWidget/BarcodeScannerWidget';
 export * from './ExcelImportModalWidget/ExcelImportModalWidget';
+export * from './ItemAnalyticsSheetWidget/ItemAnalyticsSheetWidget';
+export * from './StockAuditWidget/StockAuditWidget';

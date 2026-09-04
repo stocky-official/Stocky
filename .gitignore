@@ -24,9 +24,10 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 
-# OS Files
+# OS Files & Media
 .DS_Store
 Thumbs.db
+*.mp4
 
 # IDE Files
 .vscode/*
