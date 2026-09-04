@@ -13,10 +13,13 @@ import {
   ArrowUpDownIcon,
   ArrowUpIcon,
   ArrowDownIcon,
+  PlusIcon,
+  FilterIcon,
 } from '@stocky/icons';
 import { supabase } from '@/lib/supabase/client';
 import type { Supplier } from '@stocky/types';
 import { RecordEditDrawerWidget } from '../RecordEditDrawerWidget/RecordEditDrawerWidget';
+import { exportSuppliersToExcel } from '@/lib/excel/export';
 
 export interface SuppliersManagementWidgetProps {
   suppliers: Supplier[];
@@ -25,21 +28,25 @@ export interface SuppliersManagementWidgetProps {
 /**
  * SuppliersManagementWidget (v0.1.0 Design System)
  * Displays company suppliers directory:
- * - Logical column order: Supplier Name -> Contact Person -> Phone -> Email -> Items Supplied -> Actions
+ * - Multi-column filters: Search, Supplied Item Category, Contact Email Status, Catalog Status
+ * - Toolbar actions: + Add Supplier, Export Excel (.xlsx)
  * - Excel-style clickable sort headers on all columns
- * - Spacious breathing room for action buttons (gap-2.5 with individual pill containers)
- * - Interactive Edit Drawer (RecordEditDrawerWidget) saving directly to Supabase
- * - Client-side pagination (25 suppliers/page) and live search
+ * - Interactive Edit & Create Drawers (RecordEditDrawerWidget) saving directly to Supabase
  */
 export function SuppliersManagementWidget({
   suppliers: initialSuppliers,
 }: SuppliersManagementWidgetProps) {
   const [suppliers, setSuppliers] = useState<Supplier[]>(initialSuppliers);
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedTag, setSelectedTag] = useState('all');
+  const [emailFilter, setEmailFilter] = useState<'all' | 'has_email' | 'missing_email'>('all');
+  const [catalogFilter, setCatalogFilter] = useState<'all' | 'has_items' | 'no_items'>('all');
+  const [showFilterPanel, setShowFilterPanel] = useState(false);
+
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
 
-  // Dynamic viewport-adaptive pagination: fit records to viewport so pagination is always visible
+  // Dynamic viewport-adaptive pagination
   useEffect(() => {
     const calculatePageRows = () => {
       const vh = window.innerHeight;
@@ -61,9 +68,10 @@ export function SuppliersManagementWidget({
   const [sortColumn, setSortColumn] = useState<string>('name');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
 
-  // Drawer state
+  // Drawer states
   const [editingSupplier, setEditingSupplier] = useState<Supplier | null>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [isCreateDrawerOpen, setIsCreateDrawerOpen] = useState(false);
 
   useEffect(() => {
     setSuppliers(initialSuppliers);
@@ -71,7 +79,34 @@ export function SuppliersManagementWidget({
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchQuery, sortColumn, sortDirection]);
+  }, [searchQuery, selectedTag, emailFilter, catalogFilter, sortColumn, sortDirection]);
+
+  // Unique tags across all suppliers
+  const allSuppliedTags = useMemo(() => {
+    const tags = new Set<string>();
+    suppliers.forEach((s) => {
+      (s.itemsSupplied || []).forEach((t) => {
+        if (t && t.trim()) tags.add(t.trim());
+      });
+    });
+    return Array.from(tags).sort();
+  }, [suppliers]);
+
+  // Active filters count
+  const activeFiltersCount = useMemo(() => {
+    let count = 0;
+    if (selectedTag !== 'all') count++;
+    if (emailFilter !== 'all') count++;
+    if (catalogFilter !== 'all') count++;
+    return count;
+  }, [selectedTag, emailFilter, catalogFilter]);
+
+  const handleClearAllFilters = () => {
+    setSelectedTag('all');
+    setEmailFilter('all');
+    setCatalogFilter('all');
+    setSearchQuery('');
+  };
 
   // Excel-style sort toggle
   const handleSort = (columnKey: string) => {
@@ -87,6 +122,7 @@ export function SuppliersManagementWidget({
   const filteredAndSortedSuppliers = useMemo(() => {
     let result = suppliers;
 
+    // Search query
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
       result = result.filter((s) => {
@@ -99,6 +135,25 @@ export function SuppliersManagementWidget({
           itemsSupplied.includes(q)
         );
       });
+    }
+
+    // Tag filter
+    if (selectedTag !== 'all') {
+      result = result.filter((s) => (s.itemsSupplied || []).includes(selectedTag));
+    }
+
+    // Email status
+    if (emailFilter === 'has_email') {
+      result = result.filter((s) => !!s.contactEmail);
+    } else if (emailFilter === 'missing_email') {
+      result = result.filter((s) => !s.contactEmail);
+    }
+
+    // Catalog status
+    if (catalogFilter === 'has_items') {
+      result = result.filter((s) => (s.itemCount || 0) > 0 || (s.itemsSupplied || []).length > 0);
+    } else if (catalogFilter === 'no_items') {
+      result = result.filter((s) => (s.itemCount || 0) === 0 && (s.itemsSupplied || []).length === 0);
     }
 
     return result.slice().sort((a, b) => {
@@ -119,7 +174,7 @@ export function SuppliersManagementWidget({
 
       return sortDirection === 'asc' ? (valA > valB ? 1 : -1) : (valA < valB ? 1 : -1);
     });
-  }, [suppliers, searchQuery, sortColumn, sortDirection]);
+  }, [suppliers, searchQuery, selectedTag, emailFilter, catalogFilter, sortColumn, sortDirection]);
 
   // Pagination calculations
   const totalPages = Math.ceil(filteredAndSortedSuppliers.length / pageSize) || 1;
@@ -180,7 +235,7 @@ export function SuppliersManagementWidget({
   return (
     <>
       <Card className="p-0 overflow-hidden bg-stocky-bg-widget border border-stocky-border-subtle rounded-widget">
-        {/* Header Bar & Search Filter */}
+        {/* Header Bar & Actions */}
         <div className="p-4 sm:p-5 border-b border-stocky-border-subtle flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <h2 className="text-base font-medium text-stocky-text-main">
@@ -191,29 +246,143 @@ export function SuppliersManagementWidget({
             </p>
           </div>
 
-          <div className="relative w-full sm:w-72">
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-stocky-text-sub pointer-events-none">
-              <SearchIcon size="xs" />
-            </span>
-            <input
-              type="text"
-              placeholder="Search suppliers, contact, category..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full h-8 bg-stocky-bg-global border border-stocky-border-subtle rounded-widget pl-8 pr-8 text-xs text-stocky-text-main placeholder:text-stocky-text-sub focus:outline-none focus:border-stocky-primary transition-colors"
-            />
-            {searchQuery && (
-              <button
-                type="button"
-                onClick={() => setSearchQuery('')}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-stocky-text-sub hover:text-stocky-text-main transition-colors p-0.5 cursor-pointer"
-                title="Clear search"
-              >
-                <XIcon size="xs" />
-              </button>
-            )}
+          {/* Action Toolbar */}
+          <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+            {/* 1. Add Supplier */}
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={() => setIsCreateDrawerOpen(true)}
+              className="h-8 px-3 text-xs flex items-center gap-1.5 shadow-sm"
+            >
+              <PlusIcon size="xs" />
+              <span>Add Supplier</span>
+            </Button>
+
+            {/* 2. Export Excel */}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => exportSuppliersToExcel(filteredAndSortedSuppliers)}
+              className="h-8 px-3 text-xs flex items-center gap-1.5 border-stocky-border-subtle hover:text-stocky-primary"
+            >
+              <ArrowDownIcon size="xs" />
+              <span>Export Excel</span>
+            </Button>
+
+            {/* 3. Filters Toggle */}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowFilterPanel((prev) => !prev)}
+              className={`h-8 px-3 text-xs flex items-center gap-1.5 border-stocky-border-subtle ${
+                showFilterPanel || activeFiltersCount > 0
+                  ? 'border-stocky-primary text-stocky-primary bg-stocky-primary/5'
+                  : 'hover:text-stocky-primary'
+              }`}
+            >
+              <FilterIcon size="xs" />
+              <span>Filters</span>
+              {activeFiltersCount > 0 && (
+                <span className="w-4 h-4 rounded-full bg-stocky-primary text-white text-[10px] font-medium flex items-center justify-center">
+                  {activeFiltersCount}
+                </span>
+              )}
+            </Button>
           </div>
         </div>
+
+        {/* Search Bar & Tag Select */}
+        <div className="px-4 sm:px-5 py-3 border-b border-stocky-border-subtle bg-stocky-bg-global/30 flex flex-wrap items-center justify-between gap-3">
+          <div className="flex flex-wrap items-center gap-2 flex-1 min-w-[240px]">
+            {/* Search Input */}
+            <div className="relative flex-1 max-w-sm">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-stocky-text-sub pointer-events-none">
+                <SearchIcon size="xs" />
+              </span>
+              <input
+                type="text"
+                placeholder="Search suppliers, contact, email..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full h-8 bg-stocky-bg-global border border-stocky-border-subtle rounded-widget pl-8 pr-8 text-xs text-stocky-text-main placeholder:text-stocky-text-sub focus:outline-none focus:border-stocky-primary transition-colors"
+              />
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={() => setSearchQuery('')}
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-stocky-text-sub hover:text-stocky-text-main transition-colors p-0.5 cursor-pointer"
+                  title="Clear search"
+                >
+                  <XIcon size="xs" />
+                </button>
+              )}
+            </div>
+
+            {/* Tag / Category Filter */}
+            {allSuppliedTags.length > 0 && (
+              <select
+                value={selectedTag}
+                onChange={(e) => setSelectedTag(e.target.value)}
+                className="h-8 bg-stocky-bg-global border border-stocky-border-subtle rounded-widget text-xs text-stocky-text-main px-3 focus:outline-none focus:border-stocky-primary cursor-pointer max-w-[180px] truncate"
+              >
+                <option value="all">All Supplied Items ({allSuppliedTags.length})</option>
+                {allSuppliedTags.map((t) => (
+                  <option key={t} value={t}>
+                    {t}
+                  </option>
+                ))}
+              </select>
+            )}
+          </div>
+
+          {activeFiltersCount > 0 && (
+            <button
+              type="button"
+              onClick={handleClearAllFilters}
+              className="text-xs text-stocky-primary hover:underline flex items-center gap-1 cursor-pointer font-medium"
+            >
+              Reset all filters ({activeFiltersCount})
+            </button>
+          )}
+        </div>
+
+        {/* Multi-Column Filter Panel */}
+        {showFilterPanel && (
+          <div className="px-4 sm:px-5 py-3.5 border-b border-stocky-border-subtle bg-stocky-bg-global/60 grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+            {/* Column 1: Contact Email Status */}
+            <div className="space-y-1">
+              <label className="text-[11px] font-medium text-stocky-text-sub block">
+                Contact Email Status
+              </label>
+              <select
+                value={emailFilter}
+                onChange={(e: any) => setEmailFilter(e.target.value)}
+                className="w-full h-8 px-2.5 bg-stocky-bg-widget border border-stocky-border-subtle rounded-widget text-xs text-stocky-text-main focus:outline-none focus:border-stocky-primary cursor-pointer"
+              >
+                <option value="all">All Suppliers</option>
+                <option value="has_email">Has Registered Email</option>
+                <option value="missing_email">Missing Email</option>
+              </select>
+            </div>
+
+            {/* Column 2: Catalog / Items Supplied Status */}
+            <div className="space-y-1">
+              <label className="text-[11px] font-medium text-stocky-text-sub block">
+                Catalog Status
+              </label>
+              <select
+                value={catalogFilter}
+                onChange={(e: any) => setCatalogFilter(e.target.value)}
+                className="w-full h-8 px-2.5 bg-stocky-bg-widget border border-stocky-border-subtle rounded-widget text-xs text-stocky-text-main focus:outline-none focus:border-stocky-primary cursor-pointer"
+              >
+                <option value="all">All Suppliers</option>
+                <option value="has_items">Active (Has Supplied Items)</option>
+                <option value="no_items">Inactive (0 Items)</option>
+              </select>
+            </div>
+          </div>
+        )}
 
         {/* Table View */}
         <div className="overflow-x-auto">
@@ -432,7 +601,20 @@ export function SuppliersManagementWidget({
         onClose={() => setIsDrawerOpen(false)}
         recordType="supplier"
         recordData={editingSupplier}
+        mode="edit"
         onSaveSuccess={handleSaveSuccess}
+      />
+
+      {/* Interactive Create Drawer for Supplier */}
+      <RecordEditDrawerWidget
+        isOpen={isCreateDrawerOpen}
+        onClose={() => setIsCreateDrawerOpen(false)}
+        recordType="supplier"
+        recordData={null}
+        mode="create"
+        onSaveSuccess={(newSup) => {
+          setSuppliers((prev) => [newSup, ...prev]);
+        }}
       />
     </>
   );

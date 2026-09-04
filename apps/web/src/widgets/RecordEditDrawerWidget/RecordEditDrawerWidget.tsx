@@ -15,9 +15,11 @@ export interface RecordEditDrawerWidgetProps {
   onClose: () => void;
   recordType: 'item' | 'supplier' | 'branch';
   recordData: any;
+  mode?: 'edit' | 'create';
+  defaultBranchId?: string;
   allCategories?: string[];
   userRole?: CompanyUserRole;
-  onSaveSuccess?: (updatedData: any) => void;
+  onSaveSuccess?: (savedData: any) => void;
 }
 
 /**
@@ -25,7 +27,7 @@ export interface RecordEditDrawerWidgetProps {
  * Slide-over drawer portaled directly to document.body:
  * - 100% full-viewport backdrop coverage with zero gaps or unshaded top sections
  * - Framer Motion slide-in and fade animations
- * - Live editing for Inventory Items, Suppliers, and Branches
+ * - Live editing AND creating for Inventory Items, Suppliers, and Branches
  * - Saves directly to Supabase Postgres
  */
 export function RecordEditDrawerWidget({
@@ -33,6 +35,8 @@ export function RecordEditDrawerWidget({
   onClose,
   recordType,
   recordData,
+  mode = 'edit',
+  defaultBranchId,
   allCategories = [],
   userRole = 'owner',
   onSaveSuccess,
@@ -52,8 +56,26 @@ export function RecordEditDrawerWidget({
       setFormData({ ...recordData });
       setErrorMsg(null);
       setSuccessMsg(null);
+    } else if (mode === 'create') {
+      setFormData({
+        name: '',
+        categoryName: allCategories[0] || 'General',
+        quantity: 0,
+        balance: 0,
+        barcode: '',
+        expiryDate: '',
+        contactName: '',
+        contactPhone: '',
+        contactEmail: '',
+        itemsSupplied: [],
+        code: '',
+        address: '',
+        phone: '',
+      });
+      setErrorMsg(null);
+      setSuccessMsg(null);
     }
-  }, [recordData]);
+  }, [recordData, mode, allCategories]);
 
   if (!mounted) return null;
 
@@ -68,52 +90,169 @@ export function RecordEditDrawerWidget({
     setSuccessMsg(null);
 
     try {
-      if (recordType === 'item') {
-        const { error } = await supabase
-          .from('items')
-          .update({
-            name: formData.name,
-            category_name: formData.categoryName,
-            quantity: Number(formData.quantity) || 0,
-            balance: Number(formData.balance) || 0,
-            barcode: formData.barcode || null,
-            expiry_date: formData.expiryDate ? new Date(formData.expiryDate).toISOString() : null,
-            updated_at: new Date().toISOString(),
-          })
-          .eq('id', formData.id);
+      let savedData: any = null;
 
-        if (error) throw error;
-      } else if (recordType === 'supplier') {
-        const { error } = await supabase
-          .from('suppliers')
-          .update({
-            name: formData.name,
-            contact_name: formData.contactName,
-            contact_phone: formData.contactPhone,
-            contact_email: formData.contactEmail || null,
-            updated_at: new Date().toISOString(),
-          })
-          .eq('id', formData.id);
+      // Handle CREATE mode
+      if (mode === 'create') {
+        // Resolve company_id
+        let companyId = formData.companyId;
+        if (!companyId) {
+          const {
+            data: { user },
+          } = await supabase.auth.getUser();
+          if (user) {
+            const { data: profile } = await supabase
+              .from('company_users')
+              .select('company_id')
+              .or(`auth_user_id.eq.${user.id},email.eq.${user.email}`)
+              .limit(1)
+              .maybeSingle();
+            companyId = profile?.company_id;
+          }
+        }
 
-        if (error) throw error;
-      } else if (recordType === 'branch') {
-        const { error } = await supabase
-          .from('branches')
-          .update({
-            name: formData.name,
-            code: formData.code,
-            address: formData.address || null,
-            phone: formData.phone || null,
-            updated_at: new Date().toISOString(),
-          })
-          .eq('id', formData.id);
+        if (recordType === 'item') {
+          // Resolve branch_id
+          let targetBranch = formData.branchId || defaultBranchId;
+          if (!targetBranch || targetBranch === 'all') {
+            const { data: bList } = await supabase.from('branches').select('id').limit(1);
+            if (bList && bList.length > 0) targetBranch = bList[0].id;
+          }
 
-        if (error) throw error;
+          const { data: inserted, error } = await supabase
+            .from('items')
+            .insert({
+              company_id: companyId,
+              branch_id: targetBranch,
+              name: formData.name,
+              category_name: formData.categoryName || 'General',
+              quantity: Number(formData.quantity) || 0,
+              balance: Number(formData.balance) || 0,
+              barcode: formData.barcode || null,
+              expiry_date: formData.expiryDate ? new Date(formData.expiryDate).toISOString() : null,
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString(),
+            })
+            .select()
+            .single();
+
+          if (error) throw error;
+          savedData = {
+            id: inserted.id,
+            name: inserted.name,
+            categoryName: inserted.category_name,
+            quantity: inserted.quantity,
+            balance: inserted.balance,
+            barcode: inserted.barcode,
+            expiryDate: inserted.expiry_date,
+            branchId: inserted.branch_id,
+            createdAt: inserted.created_at,
+            updatedAt: inserted.updated_at,
+          };
+        } else if (recordType === 'supplier') {
+          const { data: inserted, error } = await supabase
+            .from('suppliers')
+            .insert({
+              company_id: companyId,
+              name: formData.name,
+              contact_name: formData.contactName,
+              contact_phone: formData.contactPhone,
+              contact_email: formData.contactEmail || null,
+              items_supplied: formData.itemsSupplied || [],
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString(),
+            })
+            .select()
+            .single();
+
+          if (error) throw error;
+          savedData = {
+            id: inserted.id,
+            name: inserted.name,
+            contactName: inserted.contact_name,
+            contactPhone: inserted.contact_phone,
+            contactEmail: inserted.contact_email,
+            itemsSupplied: inserted.items_supplied || [],
+            itemCount: 0,
+            createdAt: inserted.created_at,
+          };
+        } else if (recordType === 'branch') {
+          const { data: inserted, error } = await supabase
+            .from('branches')
+            .insert({
+              company_id: companyId,
+              name: formData.name,
+              code: formData.code,
+              address: formData.address || null,
+              phone: formData.phone || null,
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString(),
+            })
+            .select()
+            .single();
+
+          if (error) throw error;
+          savedData = {
+            id: inserted.id,
+            name: inserted.name,
+            code: inserted.code,
+            address: inserted.address,
+            phone: inserted.phone,
+            createdAt: inserted.created_at,
+          };
+        }
+      } else {
+        // Handle EDIT mode
+        if (recordType === 'item') {
+          const { error } = await supabase
+            .from('items')
+            .update({
+              name: formData.name,
+              category_name: formData.categoryName,
+              quantity: Number(formData.quantity) || 0,
+              balance: Number(formData.balance) || 0,
+              barcode: formData.barcode || null,
+              expiry_date: formData.expiryDate ? new Date(formData.expiryDate).toISOString() : null,
+              updated_at: new Date().toISOString(),
+            })
+            .eq('id', formData.id);
+
+          if (error) throw error;
+          savedData = formData;
+        } else if (recordType === 'supplier') {
+          const { error } = await supabase
+            .from('suppliers')
+            .update({
+              name: formData.name,
+              contact_name: formData.contactName,
+              contact_phone: formData.contactPhone,
+              contact_email: formData.contactEmail || null,
+              updated_at: new Date().toISOString(),
+            })
+            .eq('id', formData.id);
+
+          if (error) throw error;
+          savedData = formData;
+        } else if (recordType === 'branch') {
+          const { error } = await supabase
+            .from('branches')
+            .update({
+              name: formData.name,
+              code: formData.code,
+              address: formData.address || null,
+              phone: formData.phone || null,
+              updated_at: new Date().toISOString(),
+            })
+            .eq('id', formData.id);
+
+          if (error) throw error;
+          savedData = formData;
+        }
       }
 
-      setSuccessMsg('Record saved successfully!');
-      if (onSaveSuccess) {
-        onSaveSuccess(formData);
+      setSuccessMsg(mode === 'create' ? 'Record created successfully!' : 'Record saved successfully!');
+      if (onSaveSuccess && savedData) {
+        onSaveSuccess(savedData);
       }
 
       // Close after a brief moment
@@ -130,7 +269,7 @@ export function RecordEditDrawerWidget({
 
   return createPortal(
     <AnimatePresence>
-      {isOpen && recordData && (
+      {isOpen && (recordData || mode === 'create') && (
         <div
           key="drawer-wrapper"
           className="fixed inset-0 z-[100] overflow-hidden"
@@ -165,14 +304,17 @@ export function RecordEditDrawerWidget({
                 <div>
                   <div className="flex items-center gap-2">
                     <span className="text-base font-medium text-stocky-text-main">
-                      Edit {recordType === 'item' ? 'Inventory Item' : recordType === 'supplier' ? 'Supplier' : 'Branch'}
+                      {mode === 'create' ? 'Add New' : 'Edit'}{' '}
+                      {recordType === 'item' ? 'Inventory Item' : recordType === 'supplier' ? 'Supplier' : 'Branch'}
                     </span>
                     <Badge className="bg-stocky-primary/10 text-stocky-primary border-stocky-primary/20 text-[10px]">
-                      ID: {String(recordData.id).slice(0, 8)}...
+                      {mode === 'create'
+                        ? 'New Record'
+                        : `ID: ${String(recordData?.id || '').slice(0, 8)}...`}
                     </Badge>
                   </div>
                   <p className="text-xs font-normal text-stocky-text-sub mt-0.5 truncate max-w-xs">
-                    {formData.name || 'Update record information'}
+                    {formData.name || (mode === 'create' ? 'Enter record information' : 'Update record information')}
                   </p>
                 </div>
 
@@ -470,7 +612,7 @@ export function RecordEditDrawerWidget({
                   disabled={saving}
                   className="px-5 py-2 text-xs"
                 >
-                  {saving ? 'Saving...' : 'Save Changes'}
+                  {saving ? 'Saving...' : mode === 'create' ? 'Create Record' : 'Save Changes'}
                 </Button>
               </div>
             </motion.div>
