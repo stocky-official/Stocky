@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Card } from '@/components/ui/Card';
@@ -54,6 +54,73 @@ export function TeamManagementWidget({
   // Drawer state for Invite / Edit
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [editingMember, setEditingMember] = useState<TeamMemberWithBranches | null>(null);
+
+  // Multiple Selection State
+  const [selectedUserIds, setSelectedUserIds] = useState<Set<string>>(new Set());
+
+  // Only non-owner members can be selected for bulk removal
+  const selectableMembers = useMemo(() => {
+    return teamMembers.filter((m: TeamMemberWithBranches) => m.role !== 'owner');
+  }, [teamMembers]);
+
+  const isAllSelected = useMemo(() => {
+    return (
+      selectableMembers.length > 0 &&
+      selectableMembers.every((m: TeamMemberWithBranches) => selectedUserIds.has(m.id))
+    );
+  }, [selectableMembers, selectedUserIds]);
+
+  const isIndeterminate = useMemo(() => {
+    const count = selectableMembers.filter((m: TeamMemberWithBranches) => selectedUserIds.has(m.id)).length;
+    return count > 0 && count < selectableMembers.length;
+  }, [selectableMembers, selectedUserIds]);
+
+  const toggleSelectUser = (id: string) => {
+    setSelectedUserIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  };
+
+  const toggleSelectAll = () => {
+    if (isAllSelected) {
+      setSelectedUserIds(new Set());
+    } else {
+      setSelectedUserIds(new Set(selectableMembers.map((m: TeamMemberWithBranches) => m.id)));
+    }
+  };
+
+  const clearSelection = () => {
+    setSelectedUserIds(new Set());
+  };
+
+  const handleBulkRemove = async () => {
+    const count = selectedUserIds.size;
+    if (count === 0) return;
+    if (
+      !confirm(
+        `Are you sure you want to revoke access for ${count} selected team member${
+          count > 1 ? 's' : ''
+        }?`
+      )
+    ) {
+      return;
+    }
+    try {
+      const ids = Array.from(selectedUserIds);
+      const { error } = await supabase.from('company_users').delete().in('id', ids);
+      if (error) throw error;
+      setTeamMembers((prev) => prev.filter((m) => !selectedUserIds.has(m.id)));
+      clearSelection();
+    } catch (err: any) {
+      alert(`Failed to remove team members: ${err.message}`);
+    }
+  };
 
   // Form inputs
   const [emailInput, setEmailInput] = useState('');
@@ -308,6 +375,19 @@ export function TeamManagementWidget({
         <table className="w-full text-left text-xs">
           <thead>
             <tr className="bg-stocky-bg-global text-stocky-text-sub border-b border-stocky-border-subtle select-none">
+              {/* 0. Select Box */}
+              <th className="py-2.5 px-3 w-10 min-w-[40px] text-center">
+                <input
+                  type="checkbox"
+                  ref={(el) => {
+                    if (el) el.indeterminate = isIndeterminate;
+                  }}
+                  checked={isAllSelected}
+                  onChange={toggleSelectAll}
+                  aria-label="Select all team members"
+                  className="w-4 h-4 rounded border-stocky-border-subtle text-stocky-primary focus:ring-stocky-primary/20 accent-stocky-primary cursor-pointer align-middle"
+                />
+              </th>
               <th className="py-2.5 px-4 font-medium min-w-[200px]">User / Email</th>
               <th className="py-2.5 px-4 font-medium w-40">Role Hierarchy</th>
               <th className="py-2.5 px-4 font-medium min-w-[200px]">Branch Scope</th>
@@ -319,20 +399,45 @@ export function TeamManagementWidget({
           <tbody className="divide-y divide-stocky-border-subtle">
             {loading ? (
               <tr>
-                <td colSpan={6} className="py-8 text-center text-stocky-text-sub">
+                <td colSpan={7} className="py-8 text-center text-stocky-text-sub">
                   Loading authorized team members...
                 </td>
               </tr>
             ) : teamMembers.length === 0 ? (
               <tr>
-                <td colSpan={6} className="py-8 text-center text-stocky-text-sub">
+                <td colSpan={7} className="py-8 text-center text-stocky-text-sub">
                   No team members added yet. Click &quot;Add Team Member&quot; to invite users.
                 </td>
               </tr>
             ) : (
-              teamMembers.map((member) => (
-                <tr key={member.id} className="hover:bg-stocky-bg-global/40 transition-colors">
-                  {/* User / Email */}
+              teamMembers.map((member) => {
+                const isSelected = selectedUserIds.has(member.id);
+                const isOwner = member.role === 'owner';
+                return (
+                  <tr
+                    key={member.id}
+                    className={`transition-colors ${
+                      isSelected
+                        ? 'bg-stocky-primary/10 hover:bg-stocky-primary/15'
+                        : 'hover:bg-stocky-bg-global/40'
+                    }`}
+                  >
+                    {/* 0. Select Box */}
+                    <td
+                      className="py-3 px-3 w-10 min-w-[40px] text-center"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <input
+                        type="checkbox"
+                        disabled={isOwner}
+                        checked={isSelected}
+                        onChange={() => toggleSelectUser(member.id)}
+                        aria-label={`Select member ${member.email}`}
+                        className="w-4 h-4 rounded border-stocky-border-subtle text-stocky-primary focus:ring-stocky-primary/20 accent-stocky-primary cursor-pointer align-middle disabled:opacity-30 disabled:cursor-not-allowed"
+                      />
+                    </td>
+
+                    {/* User / Email */}
                   <td className="py-3 px-4">
                     <div className="flex items-center gap-2.5">
                       <div className="w-7 h-7 rounded-full bg-stocky-primary/10 text-stocky-primary flex items-center justify-center font-medium text-xs shrink-0">
@@ -429,11 +534,57 @@ export function TeamManagementWidget({
                     </div>
                   </td>
                 </tr>
-              ))
+                );
+              })
             )}
           </tbody>
         </table>
       </div>
+
+      {/* Floating Bulk Action Bar */}
+      <AnimatePresence>
+        {selectedUserIds.size > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 24, scale: 0.96 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 24, scale: 0.96 }}
+            transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+            className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 bg-stocky-bg-widget/95 backdrop-blur-md border border-stocky-border-subtle shadow-2xl rounded-widget px-4 py-2.5 flex items-center gap-3"
+          >
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-stocky-primary animate-pulse" />
+              <span className="text-xs font-medium text-stocky-text-main">
+                <span className="font-semibold">{selectedUserIds.size}</span> member
+                {selectedUserIds.size > 1 ? 's' : ''} selected
+              </span>
+            </div>
+
+            <div className="h-4 w-px bg-stocky-border-subtle" />
+
+            <button
+              type="button"
+              onClick={handleBulkRemove}
+              className="text-xs text-red-600 hover:text-red-700 flex items-center gap-1.5 font-medium transition-colors cursor-pointer py-1 px-2 rounded-widget hover:bg-red-50"
+              title="Revoke access for selected team members"
+            >
+              <TrashIcon size="xs" />
+              <span>Revoke Selected</span>
+            </button>
+
+            <div className="h-4 w-px bg-stocky-border-subtle" />
+
+            <button
+              type="button"
+              onClick={clearSelection}
+              className="text-xs text-stocky-text-sub hover:text-stocky-text-main flex items-center gap-1 transition-colors cursor-pointer py-1 px-2 rounded-widget hover:bg-stocky-bg-global"
+              title="Deselect all"
+            >
+              <XIcon size="xs" />
+              <span>Deselect</span>
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Slide-over Drawer for Inviting / Editing Team Members (Portaled) */}
       {mounted &&

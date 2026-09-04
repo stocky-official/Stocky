@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useMemo, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import {
@@ -186,6 +187,74 @@ export function SuppliersManagementWidget({
   const startRange =
     filteredAndSortedSuppliers.length === 0 ? 0 : (currentPage - 1) * pageSize + 1;
   const endRange = Math.min(currentPage * pageSize, filteredAndSortedSuppliers.length);
+
+  // Multiple Selection State
+  const [selectedSupplierIds, setSelectedSupplierIds] = useState<Set<string>>(new Set());
+
+  const isAllSelected = useMemo(() => {
+    return (
+      paginatedSuppliers.length > 0 &&
+      paginatedSuppliers.every((s) => selectedSupplierIds.has(s.id))
+    );
+  }, [paginatedSuppliers, selectedSupplierIds]);
+
+  const isIndeterminate = useMemo(() => {
+    const count = paginatedSuppliers.filter((s) => selectedSupplierIds.has(s.id)).length;
+    return count > 0 && count < paginatedSuppliers.length;
+  }, [paginatedSuppliers, selectedSupplierIds]);
+
+  const toggleSelectSupplier = (id: string) => {
+    setSelectedSupplierIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  };
+
+  const toggleSelectAll = () => {
+    if (isAllSelected) {
+      setSelectedSupplierIds(new Set());
+    } else {
+      setSelectedSupplierIds(new Set(paginatedSuppliers.map((s) => s.id)));
+    }
+  };
+
+  const clearSelection = () => {
+    setSelectedSupplierIds(new Set());
+  };
+
+  const handleBulkExport = () => {
+    const selected = suppliers.filter((s) => selectedSupplierIds.has(s.id));
+    if (selected.length === 0) return;
+    exportSuppliersToExcel(selected, `suppliers-selected-${selected.length}`);
+  };
+
+  const handleBulkDelete = async () => {
+    const count = selectedSupplierIds.size;
+    if (count === 0) return;
+    if (
+      !confirm(
+        `Are you sure you want to delete ${count} selected supplier${
+          count > 1 ? 's' : ''
+        }? This cannot be undone.`
+      )
+    ) {
+      return;
+    }
+    try {
+      const ids = Array.from(selectedSupplierIds);
+      const { error } = await supabase.from('suppliers').delete().in('id', ids);
+      if (error) throw error;
+      setSuppliers((prev) => prev.filter((s) => !selectedSupplierIds.has(s.id)));
+      clearSelection();
+    } catch (err: any) {
+      alert(`Failed to delete selected suppliers: ${err.message}`);
+    }
+  };
 
   // Edit / Delete handlers
   const handleEditClick = (supplier: Supplier) => {
@@ -389,6 +458,20 @@ export function SuppliersManagementWidget({
           <table className="w-full text-left text-xs">
             <thead>
               <tr className="bg-stocky-bg-global text-stocky-text-sub border-b border-stocky-border-subtle select-none">
+                {/* 0. Select Box */}
+                <th className="py-3 px-3 w-10 min-w-[40px] text-center">
+                  <input
+                    type="checkbox"
+                    ref={(el) => {
+                      if (el) el.indeterminate = isIndeterminate;
+                    }}
+                    checked={isAllSelected}
+                    onChange={toggleSelectAll}
+                    aria-label="Select all visible suppliers"
+                    className="w-4 h-4 rounded border-stocky-border-subtle text-stocky-primary focus:ring-stocky-primary/20 accent-stocky-primary cursor-pointer align-middle"
+                  />
+                </th>
+
                 {/* 1. Supplier Name */}
                 <th
                   onClick={() => handleSort('name')}
@@ -454,7 +537,7 @@ export function SuppliersManagementWidget({
               {paginatedSuppliers.length === 0 ? (
                 <tr>
                   <td
-                    colSpan={6}
+                    colSpan={7}
                     className="py-12 text-center text-xs font-normal text-stocky-text-sub"
                   >
                     No suppliers found matching your query.
@@ -462,12 +545,31 @@ export function SuppliersManagementWidget({
                 </tr>
               ) : (
                 paginatedSuppliers.map((supplier) => {
+                  const isSelected = selectedSupplierIds.has(supplier.id);
                   const suppliedList = supplier.itemsSupplied || ['General Inventory'];
                   return (
                     <tr
                       key={supplier.id}
-                      className="hover:bg-stocky-bg-global/50 transition-colors"
+                      className={`transition-colors ${
+                        isSelected
+                          ? 'bg-stocky-primary/10 hover:bg-stocky-primary/15'
+                          : 'hover:bg-stocky-bg-global/50'
+                      }`}
                     >
+                      {/* 0. Select Box */}
+                      <td
+                        className="py-3.5 px-3 w-10 min-w-[40px] text-center"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={isSelected}
+                          onChange={() => toggleSelectSupplier(supplier.id)}
+                          aria-label={`Select supplier ${supplier.name}`}
+                          className="w-4 h-4 rounded border-stocky-border-subtle text-stocky-primary focus:ring-stocky-primary/20 accent-stocky-primary cursor-pointer align-middle"
+                        />
+                      </td>
+
                       {/* 1. Supplier Name */}
                       <td className="py-3.5 px-4 font-medium text-stocky-text-main min-w-[220px]">
                         <div className="flex items-center gap-2">
@@ -616,6 +718,61 @@ export function SuppliersManagementWidget({
           setSuppliers((prev) => [newSup, ...prev]);
         }}
       />
+
+      {/* Floating Bulk Action Bar */}
+      <AnimatePresence>
+        {selectedSupplierIds.size > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 24, scale: 0.96 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 24, scale: 0.96 }}
+            transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+            className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 bg-stocky-bg-widget/95 backdrop-blur-md border border-stocky-border-subtle shadow-2xl rounded-widget px-4 py-2.5 flex items-center gap-3"
+          >
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-stocky-primary animate-pulse" />
+              <span className="text-xs font-medium text-stocky-text-main">
+                <span className="font-semibold">{selectedSupplierIds.size}</span> supplier
+                {selectedSupplierIds.size > 1 ? 's' : ''} selected
+              </span>
+            </div>
+
+            <div className="h-4 w-px bg-stocky-border-subtle" />
+
+            <button
+              type="button"
+              onClick={handleBulkExport}
+              className="text-xs text-stocky-text-main hover:text-stocky-primary flex items-center gap-1.5 font-medium transition-colors cursor-pointer py-1 px-2 rounded-widget hover:bg-stocky-bg-global"
+              title="Download selected suppliers as Excel spreadsheet"
+            >
+              <ArrowDownIcon size="xs" />
+              <span>Export Selected</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={handleBulkDelete}
+              className="text-xs text-red-600 hover:text-red-700 flex items-center gap-1.5 font-medium transition-colors cursor-pointer py-1 px-2 rounded-widget hover:bg-red-50"
+              title="Delete selected suppliers from database"
+            >
+              <TrashIcon size="xs" />
+              <span>Delete Selected</span>
+            </button>
+
+            <div className="h-4 w-px bg-stocky-border-subtle" />
+
+            <button
+              type="button"
+              onClick={clearSelection}
+              className="text-xs text-stocky-text-sub hover:text-stocky-text-main flex items-center gap-1 transition-colors cursor-pointer py-1 px-2 rounded-widget hover:bg-stocky-bg-global"
+              title="Deselect all"
+            >
+              <XIcon size="xs" />
+              <span>Deselect</span>
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </>
   );
 }

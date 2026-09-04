@@ -62,8 +62,9 @@ export function exportInventoryToExcel(
 /**
  * Export Suppliers Directory to .xlsx
  */
-export function exportSuppliersToExcel(suppliers: Supplier[]) {
-  const filename = `Stocky_Suppliers_${new Date().toISOString().split('T')[0]}.xlsx`;
+export function exportSuppliersToExcel(suppliers: Supplier[], customPrefix?: string) {
+  const prefix = customPrefix || 'Stocky_Suppliers';
+  const filename = `${prefix}_${new Date().toISOString().split('T')[0]}.xlsx`;
 
   const rows = suppliers.map((sup, idx) => ({
     '#': idx + 1,
@@ -87,8 +88,9 @@ export function exportSuppliersToExcel(suppliers: Supplier[]) {
 /**
  * Export Branches to .xlsx
  */
-export function exportBranchesToExcel(branches: Branch[]) {
-  const filename = `Stocky_Branches_${new Date().toISOString().split('T')[0]}.xlsx`;
+export function exportBranchesToExcel(branches: Branch[], customPrefix?: string) {
+  const prefix = customPrefix || 'Stocky_Branches';
+  const filename = `${prefix}_${new Date().toISOString().split('T')[0]}.xlsx`;
 
   const rows = branches.map((b, idx) => ({
     '#': idx + 1,
