@@ -4,7 +4,7 @@ import * as schema from './schema';
 
 const connectionString =
   process.env.DATABASE_URL ||
-  'postgresql://postgres.qwgpykxjzgqbdzakhchm:50yfVTT4uUxVsY1z@aws-1-eu-west-1.pooler.supabase.com:6543/postgres';
+  'postgresql://postgres.qrxrvfchqxwvfwmszssm:RvDVMIOBshEdzXTE@aws-1-eu-west-1.pooler.supabase.com:6543/postgres';
 
 /**
  * PostgreSQL connection client.

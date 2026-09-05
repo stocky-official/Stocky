@@ -7,7 +7,7 @@ const postgres = require('../../packages/db/node_modules/postgres');
 
 const connectionString =
   process.env.DATABASE_URL ||
-  'postgresql://postgres.qwgpykxjzgqbdzakhchm:50yfVTT4uUxVsY1z@aws-1-eu-west-1.pooler.supabase.com:6543/postgres';
+  'postgresql://postgres.qrxrvfchqxwvfwmszssm:RvDVMIOBshEdzXTE@aws-1-eu-west-1.pooler.supabase.com:6543/postgres';
 
 const sql = postgres(connectionString, {
   prepare: false,
@@ -48,11 +48,11 @@ async function setupTrigger() {
           COALESCE(new.raw_user_meta_data->>'full_name', new.raw_user_meta_data->>'name', split_part(new.email, '@', 1)),
           COALESCE(new.raw_user_meta_data->>'avatar_url', new.raw_user_meta_data->>'picture', ''),
           CASE 
-            WHEN new.email = 'stocky.admin@gmail.com' THEN 'owner'::public.company_user_role
+            WHEN new.email IN ('overted.technologies@gmail.com', 'stocky.admin@gmail.com') THEN 'owner'::public.company_user_role
             ELSE 'staff'::public.company_user_role
           END,
           true,
-          CASE WHEN new.email = 'stocky.admin@gmail.com' THEN true ELSE false END
+          CASE WHEN new.email IN ('overted.technologies@gmail.com', 'stocky.admin@gmail.com') THEN true ELSE false END
         )
         ON CONFLICT (id) DO UPDATE
         SET
