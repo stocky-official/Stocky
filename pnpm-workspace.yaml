@@ -6,4 +6,5 @@ allowBuilds:
   dtrace-provider: false
   esbuild: true
   protobufjs: false
-  tesseract.js: set this to true or false
+  tesseract.js: false
+

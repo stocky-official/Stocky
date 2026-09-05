@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   CameraIcon,
@@ -158,7 +159,7 @@ export function ExpiryDateScannerModalWidget({
   onClose,
   onDateSelected,
   initialDate,
-}: ExpiryDateScannerModalWidgetProps) {
+}: ExpiryDateScannerModalWidgetProps): any {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const targetBoxRef = useRef<HTMLDivElement | null>(null);
   const activeStreamRef = useRef<MediaStream | null>(null);
@@ -186,23 +187,83 @@ export function ExpiryDateScannerModalWidget({
   const scanLoopTimerRef = useRef<NodeJS.Timeout | null>(null);
   const countdownTimerRef = useRef<NodeJS.Timeout | null>(null);
 
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   // 1. Hardware MediaStream Shutdown
   const stopCameraStream = useCallback(() => {
+    if (scanLoopTimerRef.current) {
+      clearInterval(scanLoopTimerRef.current);
+      scanLoopTimerRef.current = null;
+    }
+    if (countdownTimerRef.current) {
+      clearTimeout(countdownTimerRef.current);
+      countdownTimerRef.current = null;
+    }
+    isProcessingFrameRef.current = false;
+    isLockedRef.current = false;
+
+    // Stop stored stream tracks
     if (activeStreamRef.current) {
       try {
-        activeStreamRef.current.getTracks().forEach((t) => {
+        activeStreamRef.current.getTracks().forEach((track) => {
           try {
-            t.stop();
+            track.stop();
           } catch {}
         });
-      } catch {}
+      } catch (err) {
+        console.warn('Error stopping activeStream tracks:', err);
+      }
       activeStreamRef.current = null;
     }
 
+    // Stop tracks attached to videoRef
     if (videoRef.current) {
+      const stream = videoRef.current.srcObject as MediaStream | null;
+      if (stream) {
+        try {
+          stream.getTracks().forEach((track) => {
+            try {
+              track.stop();
+            } catch {}
+          });
+        } catch {}
+      }
       videoRef.current.srcObject = null;
     }
+
+    // Force query all videos in DOM to release camera hardware on mobile
+    try {
+      const videoElements = document.querySelectorAll('video');
+      videoElements.forEach((video) => {
+        const stream = video.srcObject as MediaStream | null;
+        if (stream) {
+          stream.getTracks().forEach((track) => {
+            try {
+              track.stop();
+            } catch {}
+          });
+          video.srcObject = null;
+        }
+      });
+    } catch {}
   }, []);
+
+  // Guarantee camera shutdown whenever isOpen is false or component unmounts
+  useEffect(() => {
+    if (!isOpen) {
+      stopCameraStream();
+    }
+  }, [isOpen, stopCameraStream]);
+
+  useEffect(() => {
+    return () => {
+      stopCameraStream();
+    };
+  }, [stopCameraStream]);
 
   // 2. Initialize Tesseract Worker once on modal open
   useEffect(() => {
@@ -439,8 +500,8 @@ export function ExpiryDateScannerModalWidget({
     if (!detectedResult) return;
     const resultToApply = detectedResult;
     stopCameraStream();
-    onDateSelected(resultToApply.isoDate, resultToApply);
     onClose();
+    onDateSelected(resultToApply.isoDate, resultToApply);
   };
 
   // Reset lock and scan again
@@ -533,14 +594,16 @@ export function ExpiryDateScannerModalWidget({
     }
   };
 
-  return (
+  if (!mounted) return null;
+
+  return createPortal(
     <AnimatePresence>
       {isOpen && (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-50 bg-black flex flex-col select-none"
+          className="fixed inset-0 z-[99999] bg-black flex flex-col select-none"
         >
           {/* Top Header Bar */}
           <div className="relative z-20 flex items-center justify-between px-4 py-3 pt-5 bg-gradient-to-b from-black/90 via-black/60 to-transparent">
@@ -845,6 +908,7 @@ export function ExpiryDateScannerModalWidget({
           </div>
         </motion.div>
       )}
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body
   );
 }

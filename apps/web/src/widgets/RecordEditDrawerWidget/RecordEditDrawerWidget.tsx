@@ -11,7 +11,7 @@ import dynamic from 'next/dynamic';
 import { supabase } from '@/lib/supabase/client';
 import type { Item, Supplier, Branch, CompanyUserRole } from '@stocky/types';
 
-const ExpiryDateScannerModalWidget = dynamic(
+const ExpiryDateScannerModalWidget = dynamic<any>(
   () =>
     import('../ExpiryDateScannerModalWidget').then(
       (m) => m.ExpiryDateScannerModalWidget
@@ -60,6 +60,12 @@ export function RecordEditDrawerWidget({
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  useEffect(() => {
+    if (!isOpen) {
+      setIsExpiryScannerOpen(false);
+    }
+  }, [isOpen]);
 
   useEffect(() => {
     if (recordData) {
@@ -664,8 +670,9 @@ export function RecordEditDrawerWidget({
         isOpen={isExpiryScannerOpen}
         onClose={() => setIsExpiryScannerOpen(false)}
         initialDate={formData.expiryDate}
-        onDateSelected={(isoDate) => {
+        onDateSelected={(isoDate: string) => {
           handleChange('expiryDate', isoDate);
+          setIsExpiryScannerOpen(false);
         }}
       />
     )}
