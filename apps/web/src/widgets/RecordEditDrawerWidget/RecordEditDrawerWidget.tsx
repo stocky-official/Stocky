@@ -7,9 +7,17 @@ import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { XIcon, CheckCircleIcon, AlertCircleIcon, CameraIcon } from '@stocky/icons';
+import dynamic from 'next/dynamic';
 import { supabase } from '@/lib/supabase/client';
 import type { Item, Supplier, Branch, CompanyUserRole } from '@stocky/types';
-import { ExpiryDateScannerModalWidget } from '../ExpiryDateScannerModalWidget';
+
+const ExpiryDateScannerModalWidget = dynamic(
+  () =>
+    import('../ExpiryDateScannerModalWidget').then(
+      (m) => m.ExpiryDateScannerModalWidget
+    ),
+  { ssr: false }
+);
 
 export interface RecordEditDrawerWidgetProps {
   isOpen: boolean;
@@ -651,14 +659,16 @@ export function RecordEditDrawerWidget({
     </AnimatePresence>
 
     {/* In-Browser Camera Expiry Date Scanner Modal */}
-    <ExpiryDateScannerModalWidget
-      isOpen={isExpiryScannerOpen}
-      onClose={() => setIsExpiryScannerOpen(false)}
-      initialDate={formData.expiryDate}
-      onDateSelected={(isoDate) => {
-        handleChange('expiryDate', isoDate);
-      }}
-    />
+    {isExpiryScannerOpen && (
+      <ExpiryDateScannerModalWidget
+        isOpen={isExpiryScannerOpen}
+        onClose={() => setIsExpiryScannerOpen(false)}
+        initialDate={formData.expiryDate}
+        onDateSelected={(isoDate) => {
+          handleChange('expiryDate', isoDate);
+        }}
+      />
+    )}
   </>,
   document.body
 );

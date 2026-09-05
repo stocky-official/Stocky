@@ -13,7 +13,7 @@ import {
   CalendarIcon,
   SparklesIcon,
 } from '@stocky/icons';
-import { createWorker, type Worker } from 'tesseract.js';
+import type { Worker } from 'tesseract.js';
 import { parseExpiryDateFromText, type ParsedDateResult } from '@/lib/ocr/dateParser';
 
 export interface ExpiryDateScannerModalWidgetProps {
@@ -214,6 +214,7 @@ export function ExpiryDateScannerModalWidget({
 
     async function initWorker() {
       try {
+        const { createWorker } = await import('tesseract.js');
         // Whitelist numbers and common packaging characters to achieve ~5x faster recognition
         const worker = await createWorker('eng');
         await worker.setParameters({
