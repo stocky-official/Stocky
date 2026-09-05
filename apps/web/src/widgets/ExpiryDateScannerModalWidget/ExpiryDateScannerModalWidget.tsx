@@ -20,7 +20,7 @@ import { parseExpiryDateFromText, type ParsedDateResult } from '@/lib/ocr/datePa
 export interface ExpiryDateScannerModalWidgetProps {
   isOpen: boolean;
   onClose: () => void;
-  onDateSelected: (isoDate: string, result: ParsedDateResult) => void;
+  onDateSelected: (isoDate: string, result?: ParsedDateResult) => void;
   initialDate?: string | null;
 }
 
@@ -83,73 +83,31 @@ function playFocusTapSound() {
 }
 
 /**
- * Crop targeted sub-rectangle from HTMLVideoElement into an off-screen canvas
- * with grayscale & contrast enhancement.
+ * Capture high-resolution center scanning region from the live video stream.
+ * Captures the center 85% width and 60% height of intrinsic camera feed,
+ * guaranteeing anything in or near the visual target box is captured.
  */
-function captureTargetCanvas(
-  video: HTMLVideoElement,
-  targetBox: HTMLElement
-): HTMLCanvasElement | null {
-  if (!video.videoWidth || !video.videoHeight) return null;
+function captureTargetCanvas(video: HTMLVideoElement): HTMLCanvasElement | null {
+  if (!video.videoWidth || !video.videoHeight || video.readyState < 2) return null;
 
-  const videoRect = video.getBoundingClientRect();
-  const boxRect = targetBox.getBoundingClientRect();
-
-  const renderWidth = videoRect.width;
-  const renderHeight = videoRect.height;
   const intrinsicWidth = video.videoWidth;
   const intrinsicHeight = video.videoHeight;
 
-  const renderAspect = renderWidth / renderHeight;
-  const intrinsicAspect = intrinsicWidth / intrinsicHeight;
-
-  let displayedW = renderWidth;
-  let displayedH = renderHeight;
-  let offsetX = 0;
-  let offsetY = 0;
-
-  if (renderAspect > intrinsicAspect) {
-    displayedH = renderWidth / intrinsicAspect;
-    offsetY = (displayedH - renderHeight) / 2;
-  } else {
-    displayedW = renderHeight * intrinsicAspect;
-    offsetX = (displayedW - renderWidth) / 2;
-  }
-
-  const scale = intrinsicWidth / displayedW;
-
-  const relativeX = boxRect.left - videoRect.left + offsetX;
-  const relativeY = boxRect.top - videoRect.top + offsetY;
-
-  const sourceX = Math.max(0, relativeX * scale);
-  const sourceY = Math.max(0, relativeY * scale);
-  const sourceW = Math.min(intrinsicWidth - sourceX, boxRect.width * scale);
-  const sourceH = Math.min(intrinsicHeight - sourceY, boxRect.height * scale);
+  // Center crop: 85% width, 60% height
+  const sourceW = Math.round(intrinsicWidth * 0.85);
+  const sourceH = Math.round(intrinsicHeight * 0.60);
+  const sourceX = Math.round((intrinsicWidth - sourceW) / 2);
+  const sourceY = Math.round((intrinsicHeight - sourceH) / 2);
 
   const canvas = document.createElement('canvas');
-  const targetW = Math.round(boxRect.width * 2);
-  const targetH = Math.round(boxRect.height * 2);
-  canvas.width = targetW;
-  canvas.height = targetH;
+  canvas.width = sourceW;
+  canvas.height = sourceH;
 
   const ctx = canvas.getContext('2d', { willReadFrequently: true });
   if (!ctx) return null;
 
-  ctx.drawImage(video, sourceX, sourceY, sourceW, sourceH, 0, 0, targetW, targetH);
-
-  // Apply Grayscale + High-Contrast stretch to improve dot-matrix readability
-  try {
-    const imgData = ctx.getImageData(0, 0, targetW, targetH);
-    const pixels = imgData.data;
-    for (let i = 0; i < pixels.length; i += 4) {
-      const lum = 0.299 * pixels[i] + 0.587 * pixels[i + 1] + 0.114 * pixels[i + 2];
-      const enhanced = lum < 120 ? lum * 0.7 : Math.min(255, lum * 1.3);
-      pixels[i] = enhanced;
-      pixels[i + 1] = enhanced;
-      pixels[i + 2] = enhanced;
-    }
-    ctx.putImageData(imgData, 0, 0);
-  } catch {}
+  // Draw clean, uncorrupted video frame
+  ctx.drawImage(video, sourceX, sourceY, sourceW, sourceH, 0, 0, sourceW, sourceH);
 
   return canvas;
 }
@@ -161,10 +119,10 @@ export function ExpiryDateScannerModalWidget({
   initialDate,
 }: ExpiryDateScannerModalWidgetProps): any {
   const videoRef = useRef<HTMLVideoElement | null>(null);
-  const targetBoxRef = useRef<HTMLDivElement | null>(null);
   const activeStreamRef = useRef<MediaStream | null>(null);
   const workerRef = useRef<Worker | null>(null);
 
+  const [mounted, setMounted] = useState(false);
   const [isEngineReady, setIsEngineReady] = useState(false);
   const [engineStatus, setEngineStatus] = useState('Initializing OCR engine...');
   const [cameraError, setCameraError] = useState<string | null>(null);
@@ -177,17 +135,20 @@ export function ExpiryDateScannerModalWidget({
   );
   const [focusRing, setFocusRing] = useState<{ x: number; y: number } | null>(null);
 
-  // Detection Results
+  // Live OCR feedback & results
+  const [liveOcrText, setLiveOcrText] = useState<string>('');
   const [detectedResult, setDetectedResult] = useState<ParsedDateResult | null>(null);
   const [autoApplyCountdown, setAutoApplyCountdown] = useState<number | null>(null);
   const [autoScanEnabled, setAutoScanEnabled] = useState(true);
+
+  // Manual fallback input
+  const [showManualInput, setShowManualInput] = useState(false);
+  const [manualDateInput, setManualDateInput] = useState(initialDate || '');
 
   const isProcessingFrameRef = useRef(false);
   const isLockedRef = useRef(false);
   const scanLoopTimerRef = useRef<NodeJS.Timeout | null>(null);
   const countdownTimerRef = useRef<NodeJS.Timeout | null>(null);
-
-  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -235,7 +196,7 @@ export function ExpiryDateScannerModalWidget({
       videoRef.current.srcObject = null;
     }
 
-    // Force query all videos in DOM to release camera hardware on mobile
+    // Force query all videos in DOM to release camera hardware
     try {
       const videoElements = document.querySelectorAll('video');
       videoElements.forEach((video) => {
@@ -272,15 +233,22 @@ export function ExpiryDateScannerModalWidget({
     let isCancelled = false;
     setIsEngineReady(false);
     setEngineStatus('Loading neural OCR engine...');
+    setLiveOcrText('');
 
     async function initWorker() {
       try {
         const { createWorker } = await import('tesseract.js');
-        // Whitelist numbers and common packaging characters to achieve ~5x faster recognition
-        const worker = await createWorker('eng');
+        const worker = await createWorker('eng', 1, {
+          logger: (m) => {
+            if (m.status && m.progress !== undefined && m.progress < 1) {
+              setEngineStatus(`${m.status.replace(/_/g, ' ')} (${Math.round(m.progress * 100)}%)`);
+            }
+          },
+        });
+
+        // Set PSM to SPARSE_TEXT (11) for scattered packaging labels without corrupting whitelist
         await worker.setParameters({
-          tessedit_char_whitelist:
-            '0123456789/.-:EXPBBPRODEDUSEBYVALMFGMDjanfebmaraprmayjunjulaugsepoctnovdecJANFEBMARAPRMAYJUNJULAUGSEPOCTNOVDEC ',
+          tessedit_pageseg_mode: '11' as any,
         });
 
         if (!isCancelled) {
@@ -293,7 +261,7 @@ export function ExpiryDateScannerModalWidget({
       } catch (err: any) {
         console.error('Failed to initialize Tesseract worker:', err);
         if (!isCancelled) {
-          setEngineStatus('OCR initialization notice: running in lightweight fallback mode');
+          setEngineStatus(`OCR engine notice: ${err.message || 'Ready'}`);
           setIsEngineReady(true);
         }
       }
@@ -318,6 +286,8 @@ export function ExpiryDateScannerModalWidget({
     setCameraError(null);
     setDetectedResult(null);
     setAutoApplyCountdown(null);
+    setShowManualInput(false);
+    setLiveOcrText('');
     isLockedRef.current = false;
     isProcessingFrameRef.current = false;
 
@@ -405,8 +375,7 @@ export function ExpiryDateScannerModalWidget({
       isLockedRef.current ||
       isProcessingFrameRef.current ||
       !workerRef.current ||
-      !videoRef.current ||
-      !targetBoxRef.current
+      !videoRef.current
     ) {
       return;
     }
@@ -418,7 +387,7 @@ export function ExpiryDateScannerModalWidget({
     setIsScanning(true);
 
     try {
-      const canvas = captureTargetCanvas(video, targetBoxRef.current);
+      const canvas = captureTargetCanvas(video);
       if (!canvas) return;
 
       const worker = workerRef.current;
@@ -427,6 +396,9 @@ export function ExpiryDateScannerModalWidget({
       } = await worker.recognize(canvas);
 
       if (text && text.trim().length > 0) {
+        const cleanSnippet = text.replace(/[\r\n]+/g, ' ').trim();
+        setLiveOcrText(cleanSnippet.slice(0, 40));
+
         const parsed = parseExpiryDateFromText(text);
 
         if (parsed && !isLockedRef.current) {
@@ -444,7 +416,7 @@ export function ExpiryDateScannerModalWidget({
         }
       }
     } catch (err) {
-      // Frame processing errors are ignored during live continuous scanning
+      console.warn('Frame scan notice:', err);
     } finally {
       isProcessingFrameRef.current = false;
       setIsScanning(false);
@@ -463,7 +435,7 @@ export function ExpiryDateScannerModalWidget({
 
     scanLoopTimerRef.current = setInterval(() => {
       processCurrentFrame();
-    }, 650);
+    }, 700);
 
     return () => {
       if (scanLoopTimerRef.current) {
@@ -504,6 +476,15 @@ export function ExpiryDateScannerModalWidget({
     onDateSelected(resultToApply.isoDate, resultToApply);
   };
 
+  // Manual date apply
+  const handleManualDateApply = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!manualDateInput) return;
+    stopCameraStream();
+    onClose();
+    onDateSelected(manualDateInput);
+  };
+
   // Reset lock and scan again
   const handleRescan = () => {
     if (countdownTimerRef.current) {
@@ -511,6 +492,7 @@ export function ExpiryDateScannerModalWidget({
     }
     setDetectedResult(null);
     setAutoApplyCountdown(null);
+    setLiveOcrText('');
     isLockedRef.current = false;
     isProcessingFrameRef.current = false;
   };
@@ -732,8 +714,7 @@ export function ExpiryDateScannerModalWidget({
             {!cameraError && (
               <div className="absolute inset-0 pointer-events-none flex flex-col items-center justify-center z-20 px-4">
                 <div
-                  ref={targetBoxRef}
-                  className={`relative w-[86vw] max-w-[340px] h-[104px] rounded-2xl flex items-center justify-center transition-all duration-300 ${
+                  className={`relative w-[86vw] max-w-[340px] h-[110px] rounded-2xl flex items-center justify-center transition-all duration-300 ${
                     detectedResult
                       ? 'border-2 border-emerald-400 shadow-[0_0_24px_rgba(16,185,129,0.5)] bg-emerald-950/20 backdrop-blur-[2px]'
                       : 'border-2 border-white/40 shadow-[0_0_16px_rgba(0,0,0,0.5)]'
@@ -750,7 +731,7 @@ export function ExpiryDateScannerModalWidget({
                     <motion.div
                       className="w-full h-0.5 bg-emerald-400 shadow-[0_0_12px_rgba(52,211,153,1)]"
                       animate={{
-                        y: [-42, 42, -42],
+                        y: [-45, 45, -45],
                       }}
                       transition={{
                         duration: 1.8,
@@ -773,8 +754,21 @@ export function ExpiryDateScannerModalWidget({
                   )}
                 </div>
 
+                {/* Real-time OCR Text Feedback */}
+                {liveOcrText && !detectedResult && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 5 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="mt-3 px-3 py-1 bg-black/75 backdrop-blur-md rounded-full border border-white/20 text-[11px] text-white/90 max-w-xs truncate shadow-lg flex items-center gap-1.5"
+                  >
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping shrink-0" />
+                    <span className="text-emerald-400 font-medium shrink-0">Reading:</span>
+                    <span className="truncate">&ldquo;{liveOcrText}&rdquo;</span>
+                  </motion.div>
+                )}
+
                 {/* Guide Text */}
-                <p className="mt-4 text-xs font-medium text-white/85 text-center drop-shadow-md max-w-xs">
+                <p className="mt-3 text-xs font-medium text-white/85 text-center drop-shadow-md max-w-xs">
                   {detectedResult
                     ? 'Confirm date below or tap Rescan'
                     : 'Align date stamp (e.g. EXP 12/2026 or 15.10.25) within box'}
@@ -859,6 +853,45 @@ export function ExpiryDateScannerModalWidget({
                   </button>
                 </div>
               </motion.div>
+            ) : showManualInput ? (
+              /* Manual Date Entry Fallback Form */
+              <form
+                onSubmit={handleManualDateApply}
+                className="w-full max-w-md bg-slate-900/95 border border-white/20 rounded-3xl p-4 shadow-2xl backdrop-blur-xl text-white space-y-3"
+              >
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-medium text-white">Enter Expiry Date Manually</span>
+                  <button
+                    type="button"
+                    onClick={() => setShowManualInput(false)}
+                    className="text-xs text-white/60 hover:text-white"
+                  >
+                    Back to Camera
+                  </button>
+                </div>
+                <input
+                  type="date"
+                  value={manualDateInput}
+                  onChange={(e) => setManualDateInput(e.target.value)}
+                  className="w-full bg-black/50 border border-white/20 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-400"
+                />
+                <div className="grid grid-cols-2 gap-2 pt-1">
+                  <button
+                    type="button"
+                    onClick={() => setShowManualInput(false)}
+                    className="py-2 px-3 bg-white/10 hover:bg-white/15 text-white rounded-xl text-xs font-semibold"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={!manualDateInput}
+                    className="py-2 px-3 bg-emerald-500 hover:bg-emerald-400 disabled:opacity-50 text-white rounded-xl text-xs font-semibold"
+                  >
+                    Confirm Date
+                  </button>
+                </div>
+              </form>
             ) : (
               /* Shutter & Manual Capture Controls */
               <div className="w-full max-w-md flex flex-col items-center gap-3">
@@ -881,7 +914,7 @@ export function ExpiryDateScannerModalWidget({
                     type="button"
                     onClick={processCurrentFrame}
                     disabled={isScanning || !isEngineReady}
-                    className="w-16 h-16 rounded-full border-4 border-white/80 p-1 flex items-center justify-center hover:scale-105 active:scale-95 transition-all disabled:opacity-50"
+                    className="w-16 h-16 rounded-full border-4 border-white/80 p-1 flex items-center justify-center hover:scale-105 active:scale-95 transition-all disabled:opacity-50 shadow-xl"
                     aria-label="Capture and Read Expiry Date"
                   >
                     <div
@@ -894,15 +927,24 @@ export function ExpiryDateScannerModalWidget({
                   <div className="w-16 text-right">
                     {isScanning && (
                       <span className="text-[10px] text-emerald-400 animate-pulse font-medium">
-                        Reading...
+                        Scanning...
                       </span>
                     )}
                   </div>
                 </div>
 
-                <p className="text-[11px] text-white/50 text-center">
-                  Tap shutter button or hold still for auto-detection
-                </p>
+                <div className="flex flex-col items-center gap-1.5">
+                  <p className="text-[11px] text-white/60 text-center">
+                    Tap white shutter button or hold steady over date
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => setShowManualInput(true)}
+                    className="text-[11px] text-emerald-400/90 hover:text-emerald-300 underline underline-offset-2 transition-colors"
+                  >
+                    Can&apos;t scan? Enter date manually
+                  </button>
+                </div>
               </div>
             )}
           </div>

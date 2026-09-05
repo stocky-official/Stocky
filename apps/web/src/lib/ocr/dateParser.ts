@@ -92,8 +92,41 @@ export function parseExpiryDateFromText(rawText: string): ParsedDateResult | nul
   let text = normalizeArabicDigits(rawText);
   text = text.replace(/[\r\n]+/g, ' ');
 
+  // 2. OCR Letter-Digit Repair:
+  // Convert OCR misread digits only in numeric contexts (avoid corrupting named months like FEB)
+  text = text
+    .replace(/(?<=\d)O(?=\d|\b)/g, '0')
+    .replace(/(?<=\b|\/|\.|\-)O(?=\d)/g, '0')
+    .replace(/(?<=\d)o(?=\d|\b)/g, '0')
+    .replace(/(?<=\b|\/|\.|\-)o(?=\d)/g, '0')
+    .replace(/(?<=\d)[Il|](?=\d|\b)/g, '1')
+    .replace(/(?<=\b|\/|\.|\-)[Il|](?=\d)/g, '1')
+    .replace(/(?<=\d)[Bb](?=\d|\b)/g, '8')
+    .replace(/(?<=\b)[Bb](?=\d)/g, '8')
+    .replace(/(?<=\d)[Ss](?=\d|\b)/g, '5')
+    .replace(/(?<=\b)[Ss](?=\d)/g, '5')
+    .replace(/(?<=\d)[Zz](?=\d|\b)/g, '2')
+    .replace(/(?<=\b)[Zz](?=\d)/g, '2');
+
   const candidates: ParsedDateResult[] = [];
-  const hasExpKeyword = /\b(EXP|BB|BEST\s*BEFORE|USE\s*BY|EXPIRY|ED|VAL|BBD|E:)\b/i.test(text);
+  const checkContext = (matchIndex: number): boolean => {
+    const ctx = text.slice(Math.max(0, matchIndex - 30), matchIndex);
+    let lastProd = -1;
+    const prodRegex = /\b(PROD|PRD|MFG|MFD)\b|(?:\b[PM][:.\s])|(?:ال)?إنتاج|(?:ال)?انتاج|صنع/gi;
+    let pm;
+    while ((pm = prodRegex.exec(ctx)) !== null) {
+      lastProd = pm.index + pm[0].length;
+    }
+    let lastExp = -1;
+    const expRegex = /\b(EXP|BB|BEST\s*BEFORE|USE\s*BY|EXPIRY|ED|VAL|BBD|EX)\b|(?:\b[Ee][:.\s])|(?:ال)?انتهاء|(?:ال)?صلاحية|صالح/gi;
+    let em;
+    while ((em = expRegex.exec(ctx)) !== null) {
+      lastExp = em.index + em[0].length;
+    }
+    if (lastExp > lastProd) return true;
+    if (lastProd > lastExp) return false;
+    return expRegex.test(text);
+  };
 
   // Helper to test and add candidate
   const testCandidate = (
@@ -132,42 +165,36 @@ export function parseExpiryDateFromText(rawText: string): ParsedDateResult | nul
     });
   };
 
-  // 1. Search ISO: YYYY/MM/DD, YYYY-MM-DD, YYYY.MM.DD
-  const isoRegex = /(?<![-/.0-9])(20[2-4]\d)[-/.](0?[1-9]|1[0-2])[-/.](0?[1-9]|[12]\d|3[01])(?!\d)/g;
+  // 1. Search ISO: YYYY/MM/DD, YYYY-MM-DD, YYYY.MM.DD, YYYY MM DD
+  const isoRegex = /(?<![-/.0-9])(20[2-4]\d)[\s/.-]+(0?[1-9]|1[0-2])[\s/.-]+(0?[1-9]|[12]\d|3[01])(?!\d)/g;
   let match: RegExpExecArray | null;
   while ((match = isoRegex.exec(text)) !== null) {
     const y = parseInt(match[1], 10);
     const m = parseInt(match[2], 10);
     const d = parseInt(match[3], 10);
-    const ctx = text.slice(Math.max(0, match.index - 12), match.index);
-    const isExp = /(EXP|BB|USE|BEST|ED)/i.test(ctx);
-    testCandidate(y, m, d, match[0], isExp, true, 0.9);
+    testCandidate(y, m, d, match[0], checkContext(match.index), true, 0.9);
   }
 
-  // 2. Search DD/MM/YYYY or DD.MM.YYYY or DD-MM-YYYY
-  const dmyFullRegex = /(?<![-/.0-9])(0?[1-9]|[12]\d|3[01])[-/.](0?[1-9]|1[0-2])[-/.](20[2-4]\d)(?!\d)/g;
+  // 2. Search DD/MM/YYYY or DD.MM.YYYY or DD-MM-YYYY or DD MM YYYY
+  const dmyFullRegex = /(?<![-/.0-9])(0?[1-9]|[12]\d|3[01])[\s/.-]+(0?[1-9]|1[0-2])[\s/.-]+(20[2-4]\d)(?!\d)/g;
   while ((match = dmyFullRegex.exec(text)) !== null) {
     const d = parseInt(match[1], 10);
     const m = parseInt(match[2], 10);
     const y = parseInt(match[3], 10);
-    const ctx = text.slice(Math.max(0, match.index - 12), match.index);
-    const isExp = /(EXP|BB|USE|BEST|ED)/i.test(ctx);
-    testCandidate(y, m, d, match[0], isExp, true, 0.9);
+    testCandidate(y, m, d, match[0], checkContext(match.index), true, 0.9);
   }
 
-  // 3. Search DD/MM/YY or DD.MM.YY (e.g. 15.10.26)
-  const dmyShortRegex = /(?<![-/.0-9])(0?[1-9]|[12]\d|3[01])[-/.](0?[1-9]|1[0-2])[-/.](2[3-9]|3[0-9]|4[0-5])(?!\d)/g;
+  // 3. Search DD/MM/YY or DD.MM.YY or DD MM YY (e.g. 15.10.26)
+  const dmyShortRegex = /(?<![-/.0-9])(0?[1-9]|[12]\d|3[01])[\s/.-]+(0?[1-9]|1[0-2])[\s/.-]+(2[3-9]|3[0-9]|4[0-5])(?!\d)/g;
   while ((match = dmyShortRegex.exec(text)) !== null) {
     const d = parseInt(match[1], 10);
     const m = parseInt(match[2], 10);
     const y = parseInt(match[3], 10);
-    const ctx = text.slice(Math.max(0, match.index - 12), match.index);
-    const isExp = /(EXP|BB|USE|BEST|ED)/i.test(ctx);
-    testCandidate(y, m, d, match[0], isExp, true, 0.85);
+    testCandidate(y, m, d, match[0], checkContext(match.index), true, 0.85);
   }
 
   // 4. Search Named Months (e.g. 28-FEB-26, 15 OCT 2026, OCT 2026)
-  const namedMonthRegex = /(?<![A-Z0-9])(?:(0?[1-9]|[12]\d|3[01])[-/\s]*)?(JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC)[A-Z]*[-/\s]*(20[2-4]\d|2[3-9]|3[0-9]|4[0-5])(?!\d)/gi;
+  const namedMonthRegex = /(?<![A-Z0-9])(?:(0?[1-9]|[12]\d|3[01])[\s/.-]*)?(JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC)[A-Z]*[\s/.-]*(20[2-4]\d|2[3-9]|3[0-9]|4[0-5])(?!\d)/gi;
   while ((match = namedMonthRegex.exec(text)) !== null) {
     const rawDay = match[1];
     const monthStr = match[2].toLowerCase().slice(0, 3);
@@ -176,32 +203,35 @@ export function parseExpiryDateFromText(rawText: string): ParsedDateResult | nul
     const fullYear = normalizeYear(y);
     const hasDay = Boolean(rawDay);
     const d = hasDay ? parseInt(rawDay, 10) : getLastDayOfMonth(fullYear, m);
-    const ctx = text.slice(Math.max(0, match.index - 12), match.index);
-    const isExp = /(EXP|BB|USE|BEST|ED)/i.test(ctx);
-    testCandidate(fullYear, m, d, match[0], isExp, hasDay, 0.9);
+    testCandidate(fullYear, m, d, match[0], checkContext(match.index), hasDay, 0.9);
   }
 
   // 5. Search MM/YYYY (prevent matching if preceded or followed by date separator or digit)
-  const myFullRegex = /(?<![-/.0-9])(0?[1-9]|1[0-2])[-/.](20[2-4]\d)(?![-/.0-9])/g;
+  const myFullRegex = /(?<![-/.0-9])(0?[1-9]|1[0-2])[\s/.-]+(20[2-4]\d)(?![-/.0-9])/g;
   while ((match = myFullRegex.exec(text)) !== null) {
     const m = parseInt(match[1], 10);
     const y = parseInt(match[2], 10);
     const d = getLastDayOfMonth(y, m);
-    const ctx = text.slice(Math.max(0, match.index - 12), match.index);
-    const isExp = /(EXP|BB|USE|BEST|ED)/i.test(ctx);
-    testCandidate(y, m, d, match[0], isExp, false, 0.75);
+    testCandidate(y, m, d, match[0], checkContext(match.index), false, 0.8);
   }
 
   // 6. Search MM/YY (prevent matching if preceded or followed by date separator or digit)
-  const myShortRegex = /(?<![-/.0-9])(0?[1-9]|1[0-2])[-/.](2[4-9]|3[0-9]|4[0-5])(?![-/.0-9])/g;
+  const myShortRegex = /(?<![-/.0-9])(0?[1-9]|1[0-2])[\s/.-]+(2[4-9]|3[0-9]|4[0-5])(?![-/.0-9])/g;
   while ((match = myShortRegex.exec(text)) !== null) {
     const m = parseInt(match[1], 10);
     const y = parseInt(match[2], 10);
     const fullYear = normalizeYear(y);
     const d = getLastDayOfMonth(fullYear, m);
-    const ctx = text.slice(Math.max(0, match.index - 12), match.index);
-    const isExp = /(EXP|BB|USE|BEST|ED)/i.test(ctx) || hasExpKeyword;
-    testCandidate(fullYear, m, d, match[0], isExp, false, 0.65);
+    testCandidate(fullYear, m, d, match[0], checkContext(match.index), false, 0.75);
+  }
+
+  // 7. Search Year first with month: e.g. EXP 2026/12 or 2026-10
+  const ymFullRegex = /(?<![-/.0-9])(20[2-4]\d)[\s/.-]+(0?[1-9]|1[0-2])(?![-/.0-9])/g;
+  while ((match = ymFullRegex.exec(text)) !== null) {
+    const y = parseInt(match[1], 10);
+    const m = parseInt(match[2], 10);
+    const d = getLastDayOfMonth(y, m);
+    testCandidate(y, m, d, match[0], checkContext(match.index), false, 0.8);
   }
 
   if (candidates.length === 0) {
