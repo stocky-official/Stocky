@@ -63,4 +63,7 @@ _technical_support/tools/
 # OCR trained data
 *.traineddata*
 
-
+# Credentials & Service Accounts
+*client_secret*.json
+google_client_secret.json
+service_account*.json
