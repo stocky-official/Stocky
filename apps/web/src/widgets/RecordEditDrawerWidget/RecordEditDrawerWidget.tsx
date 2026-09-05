@@ -6,9 +6,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
-import { XIcon, CheckCircleIcon, AlertCircleIcon } from '@stocky/icons';
+import { XIcon, CheckCircleIcon, AlertCircleIcon, CameraIcon } from '@stocky/icons';
 import { supabase } from '@/lib/supabase/client';
 import type { Item, Supplier, Branch, CompanyUserRole } from '@stocky/types';
+import { ExpiryDateScannerModalWidget } from '../ExpiryDateScannerModalWidget';
 
 export interface RecordEditDrawerWidgetProps {
   isOpen: boolean;
@@ -46,6 +47,7 @@ export function RecordEditDrawerWidget({
   const [saving, setSaving] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
+  const [isExpiryScannerOpen, setIsExpiryScannerOpen] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -268,7 +270,8 @@ export function RecordEditDrawerWidget({
   };
 
   return createPortal(
-    <AnimatePresence>
+    <>
+      <AnimatePresence>
       {isOpen && (recordData || mode === 'create') && (
         <div
           key="drawer-wrapper"
@@ -439,9 +442,22 @@ export function RecordEditDrawerWidget({
 
                     <div className="space-y-1.5">
                       <div className="flex items-center justify-between">
-                        <label className="font-medium text-stocky-text-main block text-xs">
-                          Expiry Date
-                        </label>
+                        <div className="flex items-center gap-2">
+                          <label className="font-medium text-stocky-text-main block text-xs">
+                            Expiry Date
+                          </label>
+                          {userRole !== 'staff' && (
+                            <button
+                              type="button"
+                              onClick={() => setIsExpiryScannerOpen(true)}
+                              className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200/80 text-[10px] font-medium transition-all active:scale-95 shadow-xs"
+                              title="Scan printed expiration date with camera"
+                            >
+                              <CameraIcon size="xs" className="text-emerald-600" />
+                              <span>Scan Date</span>
+                            </button>
+                          )}
+                        </div>
                         {formData.expiryDate && (
                           <span
                             className={`text-[10px] px-1.5 py-0.5 rounded font-medium ${
@@ -462,19 +478,32 @@ export function RecordEditDrawerWidget({
                           </span>
                         )}
                       </div>
-                      <input
-                        type="date"
-                        disabled={userRole === 'staff'}
-                        value={
-                          formData.expiryDate
-                            ? new Date(formData.expiryDate).toISOString().split('T')[0]
-                            : ''
-                        }
-                        onChange={(e) =>
-                          handleChange('expiryDate', e.target.value ? e.target.value : null)
-                        }
-                        className="w-full bg-stocky-bg-global border border-stocky-border-subtle rounded-widget px-3 py-2 text-xs text-stocky-text-main focus:outline-none focus:border-stocky-primary transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
-                      />
+                      <div className="relative flex items-center">
+                        <input
+                          type="date"
+                          disabled={userRole === 'staff'}
+                          value={
+                            formData.expiryDate
+                              ? new Date(formData.expiryDate).toISOString().split('T')[0]
+                              : ''
+                          }
+                          onChange={(e) =>
+                            handleChange('expiryDate', e.target.value ? e.target.value : null)
+                          }
+                          className="w-full bg-stocky-bg-global border border-stocky-border-subtle rounded-widget px-3 py-2 text-xs text-stocky-text-main focus:outline-none focus:border-stocky-primary transition-colors disabled:opacity-60 disabled:cursor-not-allowed pr-10"
+                        />
+                        {userRole !== 'staff' && (
+                          <button
+                            type="button"
+                            onClick={() => setIsExpiryScannerOpen(true)}
+                            className="absolute right-2.5 p-1 text-stocky-text-sub hover:text-emerald-600 hover:bg-emerald-50 rounded-md transition-colors"
+                            title="Scan date with camera"
+                            aria-label="Scan Expiry Date"
+                          >
+                            <CameraIcon size="xs" />
+                          </button>
+                        )}
+                      </div>
                     </div>
                   </>
                 )}
@@ -619,7 +648,18 @@ export function RecordEditDrawerWidget({
           </div>
         </div>
       )}
-    </AnimatePresence>,
-    document.body
-  );
+    </AnimatePresence>
+
+    {/* In-Browser Camera Expiry Date Scanner Modal */}
+    <ExpiryDateScannerModalWidget
+      isOpen={isExpiryScannerOpen}
+      onClose={() => setIsExpiryScannerOpen(false)}
+      initialDate={formData.expiryDate}
+      onDateSelected={(isoDate) => {
+        handleChange('expiryDate', isoDate);
+      }}
+    />
+  </>,
+  document.body
+);
 }

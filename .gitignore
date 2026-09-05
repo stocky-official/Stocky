@@ -60,3 +60,7 @@ _technical_support/tools/
 *.apk
 *.aab
 
+# OCR trained data
+*.traineddata*
+
+
