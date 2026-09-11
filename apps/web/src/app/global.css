@@ -141,7 +141,7 @@
 .meridian-landing button { font: inherit; }
 .meridian-hero { position: relative; display: flex; min-height: min(900px, 100svh); flex-direction: column; overflow: hidden; color: #fff; background: #131612; isolation: isolate; }
 .meridian-hero-photo, .meridian-hero-overlay { position: absolute; inset: -3%; pointer-events: none; }
-.meridian-hero-photo { z-index: -2; background: #25301e url('https://framerusercontent.com/images/h83kZyNG3riCwL7I8v1oGKBlTcA.jpg?height=2000&width=1500') center center / cover no-repeat; transform: scale(1.02); }
+.meridian-hero-photo { z-index: -2; background: #25301e url('/hero.jpg') center center / cover no-repeat; transform: scale(1.02); }
 .meridian-hero-overlay { z-index: -1; background: linear-gradient(180deg, rgba(5, 8, 5, .56), rgba(5, 8, 5, .32) 38%, rgba(5, 8, 5, .7)); }
 .meridian-nav { position: relative; z-index: 2; display: flex; width: min(1320px, calc(100% - 64px)); align-items: center; justify-content: space-between; margin: 0 auto; padding: 24px 0; color: rgba(255,255,255,.92); }
 .meridian-brand { display: inline-flex; align-items: center; gap: 9px; font-size: 15px; font-weight: 500; letter-spacing: -.04em; }
