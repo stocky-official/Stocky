@@ -33,7 +33,7 @@ export function Button({
     primary:
       'bg-stocky-primary text-white hover:bg-stocky-primary-hover',
     secondary:
-      'bg-stocky-bg-global text-stocky-text-main hover:bg-[#F0F0F0] border border-stocky-border-subtle',
+      'bg-stocky-bg-global text-stocky-text-main hover:bg-stocky-bg-hover border border-stocky-border-subtle',
     outline:
       'bg-stocky-bg-widget text-stocky-text-main border border-stocky-border-subtle hover:bg-stocky-bg-global',
     ghost:

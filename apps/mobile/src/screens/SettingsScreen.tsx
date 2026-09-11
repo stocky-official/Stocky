@@ -26,10 +26,11 @@ export function SettingsScreen({
   onSignOut,
 }: SettingsScreenProps) {
   const [teamMembers, setTeamMembers] = useState<CompanyUser[]>([]);
+  const canViewTeam = userRole === 'owner' || userRole === 'admin';
 
   useEffect(() => {
     async function loadTeam() {
-      if (company?.id) {
+      if (canViewTeam && company?.id) {
         const { data } = await supabase
           .from('company_users')
           .select('*')
@@ -57,7 +58,7 @@ export function SettingsScreen({
       }
     }
     loadTeam();
-  }, [company?.id]);
+  }, [canViewTeam, company?.id]);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -72,8 +73,8 @@ export function SettingsScreen({
               <Image source={{ uri: company.logoUrl }} style={styles.logo} resizeMode="contain" />
             )}
             <View>
-              <Text style={styles.orgName}>{company?.name || 'Stocky Organization'}</Text>
-              <Text style={styles.subText}>Code: {company?.code || 'CRK'} • Active</Text>
+              <Text style={styles.orgName}>{company?.name || 'Your company'}</Text>
+              <Text style={styles.subText}>{company?.code ? `Code: ${company.code} • Active` : 'Active company profile'}</Text>
             </View>
           </View>
         </View>
@@ -81,7 +82,7 @@ export function SettingsScreen({
         {/* Current Session */}
         <View style={styles.card}>
           <Text style={styles.cardHeader}>Active User Session</Text>
-          <Text style={styles.userEmail}>{userEmail || 'stocky.admin@gmail.com'}</Text>
+          <Text style={styles.userEmail}>{userEmail || 'Signed-in email unavailable'}</Text>
           <View style={styles.badgeRow}>
             <View style={styles.roleBadge}>
               <Text style={styles.roleText}>
@@ -90,14 +91,14 @@ export function SettingsScreen({
             </View>
             <View style={styles.tenantBadge}>
               <Text style={styles.tenantText}>
-                Tenant: {company?.name || 'Circle K'}
+                Company: {company?.name || 'Your company'}
               </Text>
             </View>
           </View>
         </View>
 
-        {/* Team Members */}
-        <View style={styles.card}>
+        {/* Team Members: company-wide people management is owner/admin only. */}
+        {canViewTeam && <View style={styles.card}>
           <Text style={styles.cardHeader}>
             Team & Authorizations ({teamMembers.length})
           </Text>
@@ -115,7 +116,7 @@ export function SettingsScreen({
               </View>
             </View>
           ))}
-        </View>
+        </View>}
 
         {/* Sign Out Button */}
         <TouchableOpacity activeOpacity={0.8} onPress={onSignOut} style={styles.signOutBtn}>

@@ -102,7 +102,7 @@ export function PWARegistration() {
             </div>
 
             <div className="flex-1 min-w-0">
-              <h4 className="text-xs font-semibold text-stocky-text-main">
+              <h4 className="text-xs font-medium text-stocky-text-main">
                 Install Stocky App
               </h4>
               <p className="text-[11px] text-stocky-text-sub truncate">

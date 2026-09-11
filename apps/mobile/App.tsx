@@ -1,312 +1,68 @@
-import React, { useState, useEffect } from 'react';
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-  ActivityIndicator,
-  SafeAreaView,
-  StatusBar,
-} from 'react-native';
+import React, { useEffect, useMemo, useState } from 'react';
+import { ActivityIndicator, SafeAreaView, StatusBar, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { supabase } from './src/lib/supabase';
-import { DashboardScreen } from './src/screens/DashboardScreen';
-import { InventoryScreen } from './src/screens/InventoryScreen';
-import { SettingsScreen } from './src/screens/SettingsScreen';
 import { BarcodeScannerModal } from './src/components/BarcodeScannerModal';
-import type { Branch, Company, CompanyUserRole } from '@stocky/types';
+import { MobileTodayScreen } from './src/screens/MobileTodayScreen';
+import { MobileStockScreen } from './src/screens/MobileStockScreen';
+import { SettingsScreen } from './src/screens/SettingsScreen';
+import { MobileActionModal } from './src/screens/MobileActionModal';
+import type { Company, CompanyUserRole, Location, Product, StockLot } from '@stocky/types';
+
+type AppTab = 'home' | 'stock' | 'expiry' | 'settings';
+
+function mapLocation(row: any): Location { return { id: row.id, companyId: row.company_id, name: row.name, code: row.code, type: row.type, address: row.address, phone: row.phone, managerUserId: row.manager_user_id, isActive: Boolean(row.is_active), createdAt: row.created_at, updatedAt: row.updated_at }; }
+function mapProduct(row: any): Product { return { id: row.id, companyId: row.company_id, name: row.name, barcode: row.barcode, categoryId: row.category_id, categoryName: row.category_name || 'General', unitName: row.unit_name || 'unit', reorderPoint: Number(row.reorder_point || 0), defaultExpiryNotificationDays: row.default_expiry_notification_days, defaultSupplierId: row.default_supplier_id, unitCost: Number(row.unit_cost || 0), isActive: Boolean(row.is_active), createdAt: row.created_at, updatedAt: row.updated_at }; }
+function mapLot(row: any): StockLot { return { id: row.id, companyId: row.company_id, productId: row.product_id, locationId: row.location_id, supplierId: row.supplier_id, lotNumber: row.lot_number, receivedAt: row.received_at, manufacturedAt: row.manufactured_at, expiryDate: row.expiry_date, expiryNotificationDays: row.expiry_notification_days, quantityOnHand: Number(row.quantity_on_hand || 0), unitCost: Number(row.unit_cost || 0), status: row.status, notes: row.notes, createdAt: row.created_at, updatedAt: row.updated_at }; }
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'inventory' | 'settings'>('dashboard');
+  const [activeTab, setActiveTab] = useState<AppTab>('home');
   const [isScannerOpen, setIsScannerOpen] = useState(false);
   const [loading, setLoading] = useState(true);
-
-  // Core Platform Data
   const [company, setCompany] = useState<Company | null>(null);
-  const [branches, setBranches] = useState<Branch[]>([]);
-  const [selectedBranchId, setSelectedBranchId] = useState('all');
-  const [userEmail, setUserEmail] = useState<string | null>('stocky.admin@gmail.com');
-  const [userRole, setUserRole] = useState<CompanyUserRole>('owner');
-  const [assignedBranchIds, setAssignedBranchIds] = useState<string[]>([]);
+  const [locations, setLocations] = useState<Location[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [lots, setLots] = useState<StockLot[]>([]);
+  const [selectedLocationId, setSelectedLocationId] = useState('all');
+  const [userEmail, setUserEmail] = useState<string | null>(null);
+  const [userName, setUserName] = useState<string | null>(null);
+  const [userRole, setUserRole] = useState<CompanyUserRole>('staff');
+  const [scannedBarcode, setScannedBarcode] = useState('');
+  const [reloadKey, setReloadKey] = useState(0);
+  const [openCounts, setOpenCounts] = useState(0);
+  const [action, setAction] = useState<{ mode: 'receive' | 'count'; product?: Product; lot?: StockLot } | null>(null);
 
   useEffect(() => {
-    async function initMobile() {
-      try {
-        // 1. Fetch Company
-        const { data: comp } = await supabase
-          .from('companies')
-          .select('*')
-          .limit(1)
-          .maybeSingle();
-
-        if (comp) {
-          setCompany({
-            id: comp.id,
-            name: comp.name,
-            code: comp.code,
-            logoUrl: comp.logo_url,
-            createdAt: comp.created_at,
-            updatedAt: comp.updated_at,
-          });
-        }
-
-        // 2. Fetch Branches
-        const { data: dbBranches } = await supabase
-          .from('branches')
-          .select('*')
-          .order('name');
-
-        if (dbBranches) {
-          const mapped: Branch[] = dbBranches.map((b: any) => ({
-            id: b.id,
-            companyId: b.company_id,
-            name: b.name,
-            code: b.code,
-            address: b.address,
-            phone: b.phone,
-            isActive: b.is_active,
-            createdAt: b.created_at,
-            updatedAt: b.updated_at,
-          }));
-          setBranches(mapped);
-        }
-
-        // 3. Fetch User session
-        const { data: { user } } = await supabase.auth.getUser();
-        if (user) {
-          setUserEmail(user.email ?? null);
-          const { data: profile } = await supabase
-            .from('company_users')
-            .select('*')
-            .or(`auth_user_id.eq.${user.id},email.eq.${user.email}`)
-            .limit(1)
-            .maybeSingle();
-
-          if (profile) {
-            setUserRole(profile.role);
-            const { data: ub } = await supabase
-              .from('user_branches')
-              .select('branch_id')
-              .eq('user_id', profile.id);
-
-            if (ub && ub.length > 0) {
-              const bIds = ub.map((r: any) => r.branch_id);
-              setAssignedBranchIds(bIds);
-              if (profile.role === 'manager' || profile.role === 'staff') {
-                setSelectedBranchId(bIds[0]);
-              }
-            }
-          }
-        }
-      } catch (err) {
-        console.error('Mobile initialization note:', err);
-      } finally {
-        setLoading(false);
-      }
+    async function init() {
+      const { data: auth } = await supabase.auth.getUser();
+      if (!auth.user) { setLoading(false); return; }
+      setUserEmail(auth.user.email || null); setUserName(auth.user.user_metadata?.full_name || auth.user.user_metadata?.name || null);
+      const { data: profile } = await supabase.from('company_users').select('*').or(`auth_user_id.eq.${auth.user.id},email.eq.${auth.user.email}`).limit(1).maybeSingle();
+      if (!profile?.company_id) { setLoading(false); return; }
+      setUserRole(profile.role);
+      const [{ data: comp }, { data: dbLocations }, { data: userLocations }, { data: dbProducts }, { data: dbLots }, { data: dbCounts }] = await Promise.all([
+        supabase.from('companies').select('*').eq('id', profile.company_id).maybeSingle(),
+        supabase.from('locations').select('*').eq('company_id', profile.company_id).eq('is_active', true).order('name'),
+        supabase.from('user_locations').select('location_id').eq('user_id', profile.id),
+        supabase.from('products').select('*').eq('company_id', profile.company_id).eq('is_active', true).order('name'),
+        supabase.from('stock_lots').select('*').eq('company_id', profile.company_id).order('expiry_date'),
+        supabase.from('stock_count_sessions').select('status').eq('company_id', profile.company_id).in('status', ['open', 'submitted']),
+      ]);
+      if (comp) setCompany({ id: comp.id, name: comp.name, code: comp.code, logoUrl: comp.logo_url, status: comp.status, verifiedAt: comp.verified_at, verifiedByAuthUserId: comp.verified_by_auth_user_id, verificationNote: comp.verification_note, createdAt: comp.created_at, updatedAt: comp.updated_at });
+      const mappedLocations = (dbLocations || []).map(mapLocation); const assigned = Array.from(new Set([...(userLocations || []).map((row: any) => row.location_id), ...mappedLocations.filter((location) => location.managerUserId === profile.id).map((location) => location.id)])); const visible = profile.role === 'owner' || profile.role === 'admin' ? mappedLocations : mappedLocations.filter((location) => assigned.includes(location.id));
+      setLocations(visible); setProducts((dbProducts || []).map(mapProduct)); setLots((dbLots || []).map(mapLot));
+      setOpenCounts((dbCounts || []).length);
+      if (profile.role !== 'owner' && profile.role !== 'admin') setSelectedLocationId(visible[0]?.id || '');
+      setLoading(false);
     }
+    init().catch((error) => { console.error('Mobile Stocky initialization failed', error); setLoading(false); });
+  }, [reloadKey]);
 
-    initMobile();
-  }, []);
+  const scopedLots = useMemo(() => lots.filter((lot) => selectedLocationId === 'all' || lot.locationId === selectedLocationId), [lots, selectedLocationId]);
+  const metrics = useMemo(() => { const today = Date.now(); const expiry = scopedLots.filter((lot) => lot.quantityOnHand > 0 && lot.expiryDate).map((lot) => ({ lot, days: Math.ceil((new Date(lot.expiryDate as string).getTime() - today) / 86400000) })); const totals = new Map<string, number>(); scopedLots.forEach((lot) => totals.set(lot.productId, (totals.get(lot.productId) || 0) + lot.quantityOnHand)); return { expired: expiry.filter(({ days }) => days < 0).length, expiring: expiry.filter(({ lot, days }) => days >= 0 && days <= (lot.expiryNotificationDays || 0)).length, lowStock: products.filter((product) => (totals.get(product.id) || 0) <= product.reorderPoint).length, openCounts }; }, [openCounts, products, scopedLots]);
+  const currentLocation = locations.find((location) => location.id === selectedLocationId);
 
-  const visibleBranches = React.useMemo(() => {
-    if (userRole === 'owner' || userRole === 'admin' || assignedBranchIds.length === 0) {
-      return branches;
-    }
-    return branches.filter((b) => assignedBranchIds.includes(b.id));
-  }, [branches, userRole, assignedBranchIds]);
-
-  if (loading) {
-    return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator color="#0057FF" size="large" />
-        <Text style={styles.loadingText}>Connecting to Stocky Catalog...</Text>
-      </View>
-    );
-  }
-
-  return (
-    <SafeAreaView style={styles.appContainer}>
-      <StatusBar barStyle="dark-content" />
-
-      {/* Screen Content */}
-      <View style={styles.screenWrapper}>
-        {activeTab === 'dashboard' && (
-          <DashboardScreen
-            company={company}
-            branches={visibleBranches}
-            selectedBranchId={selectedBranchId}
-            onSelectBranch={setSelectedBranchId}
-            userEmail={userEmail}
-            userRole={userRole}
-            onNavigateToInventory={() => setActiveTab('inventory')}
-            onOpenScanner={() => setIsScannerOpen(true)}
-          />
-        )}
-
-        {activeTab === 'inventory' && (
-          <InventoryScreen
-            branches={visibleBranches}
-            selectedBranchId={selectedBranchId}
-            onSelectBranch={setSelectedBranchId}
-            userRole={userRole}
-          />
-        )}
-
-        {activeTab === 'settings' && (
-          <SettingsScreen
-            company={company}
-            userEmail={userEmail}
-            userRole={userRole}
-            onSignOut={() => supabase.auth.signOut()}
-          />
-        )}
-      </View>
-
-      {/* Floating Bottom Navigation Bar */}
-      <View style={styles.bottomNavContainer}>
-        <View style={styles.bottomNavPill}>
-          <TouchableOpacity
-            onPress={() => setActiveTab('dashboard')}
-            style={[styles.navTab, activeTab === 'dashboard' && styles.navTabActive]}
-          >
-            <Text style={[styles.navIcon, activeTab === 'dashboard' && styles.navTextActive]}>
-              📊
-            </Text>
-            <Text style={[styles.navLabel, activeTab === 'dashboard' && styles.navTextActive]}>
-              Dashboard
-            </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            onPress={() => setActiveTab('inventory')}
-            style={[styles.navTab, activeTab === 'inventory' && styles.navTabActive]}
-          >
-            <Text style={[styles.navIcon, activeTab === 'inventory' && styles.navTextActive]}>
-              📦
-            </Text>
-            <Text style={[styles.navLabel, activeTab === 'inventory' && styles.navTextActive]}>
-              Inventory
-            </Text>
-          </TouchableOpacity>
-
-          {/* Quick Camera Barcode Scan Trigger */}
-          <TouchableOpacity
-            onPress={() => setIsScannerOpen(true)}
-            style={styles.navScanTab}
-          >
-            <View style={styles.navScanCircle}>
-              <Text style={styles.navScanIcon}>📷</Text>
-            </View>
-            <Text style={styles.navScanLabel}>Scan</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            onPress={() => setActiveTab('settings')}
-            style={[styles.navTab, activeTab === 'settings' && styles.navTabActive]}
-          >
-            <Text style={[styles.navIcon, activeTab === 'settings' && styles.navTextActive]}>
-              ⚙️
-            </Text>
-            <Text style={[styles.navLabel, activeTab === 'settings' && styles.navTextActive]}>
-              Settings
-            </Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-
-      {/* Global Barcode Scanner */}
-      <BarcodeScannerModal
-        visible={isScannerOpen}
-        onClose={() => setIsScannerOpen(false)}
-        onScanned={(barcode) => {
-          setActiveTab('inventory');
-        }}
-      />
-    </SafeAreaView>
-  );
+  if (loading) return <View style={styles.loading}><ActivityIndicator color="#0057FF" size="large" /><Text style={styles.loadingText}>Loading your Stocky workspace...</Text></View>;
+  return <SafeAreaView style={styles.app}><StatusBar barStyle="dark-content" /><View style={styles.screen}>{activeTab === 'home' && <MobileTodayScreen userName={userName} userRole={userRole} location={currentLocation} metrics={metrics} onScan={() => { setActiveTab('stock'); setIsScannerOpen(true); }} onReceive={() => setActiveTab('stock')} onCount={() => setActiveTab('stock')} onOpenStock={() => setActiveTab('stock')} onOpenExpiry={() => setActiveTab('expiry')} />}{activeTab === 'stock' && <MobileStockScreen products={products} lots={lots} locations={locations} selectedLocationId={selectedLocationId} mode="stock" initialSearch={scannedBarcode} onScan={() => setIsScannerOpen(true)} onReceive={(product, lot) => setAction({ mode: 'receive', product, lot })} onCount={(product, lot) => setAction({ mode: 'count', product, lot })} />}{activeTab === 'expiry' && <MobileStockScreen products={products} lots={lots} locations={locations} selectedLocationId={selectedLocationId} mode="expiry" onScan={() => setIsScannerOpen(true)} onReceive={(product, lot) => setAction({ mode: 'receive', product, lot })} onCount={(product, lot) => setAction({ mode: 'count', product, lot })} />}{activeTab === 'settings' && <SettingsScreen company={company} userEmail={userEmail} userRole={userRole} onSignOut={() => supabase.auth.signOut()} />}</View><View style={styles.bottomNav}><TouchableOpacity onPress={() => setActiveTab('home')} style={[styles.navTab, activeTab === 'home' && styles.navActive]}><Text style={styles.navIcon}>⌂</Text><Text style={styles.navLabel}>Today</Text></TouchableOpacity><TouchableOpacity onPress={() => setActiveTab('stock')} style={[styles.navTab, activeTab === 'stock' && styles.navActive]}><Text style={styles.navIcon}>▦</Text><Text style={styles.navLabel}>Stock</Text></TouchableOpacity><TouchableOpacity onPress={() => setIsScannerOpen(true)} style={styles.scanTab}><View style={styles.scanCircle}><Text style={styles.scanIcon}>⌕</Text></View><Text style={styles.scanLabel}>Scan</Text></TouchableOpacity><TouchableOpacity onPress={() => setActiveTab('expiry')} style={[styles.navTab, activeTab === 'expiry' && styles.navActive]}><Text style={styles.navIcon}>◷</Text><Text style={styles.navLabel}>Expiring</Text></TouchableOpacity><TouchableOpacity onPress={() => setActiveTab('settings')} style={[styles.navTab, activeTab === 'settings' && styles.navActive]}><Text style={styles.navIcon}>⋯</Text><Text style={styles.navLabel}>More</Text></TouchableOpacity></View><BarcodeScannerModal visible={isScannerOpen} onClose={() => setIsScannerOpen(false)} onScanned={(barcode) => { setScannedBarcode(barcode); setIsScannerOpen(false); setActiveTab('stock'); }} /><MobileActionModal visible={Boolean(action)} mode={action?.mode || 'count'} product={action?.product} lot={action?.lot} lots={lots} barcode={scannedBarcode} locationId={selectedLocationId === 'all' ? locations[0]?.id || '' : selectedLocationId} onClose={() => setAction(null)} onSaved={() => { setAction(null); setReloadKey((value) => value + 1); }} /></SafeAreaView>;
 }
 
-const styles = StyleSheet.create({
-  appContainer: {
-    flex: 1,
-    backgroundColor: '#F9F9F9',
-  },
-  loadingContainer: {
-    flex: 1,
-    backgroundColor: '#F9F9F9',
-    justifyContent: 'center',
-    alignItems: 'center',
-    gap: 12,
-  },
-  loadingText: {
-    fontSize: 13,
-    color: '#777777',
-  },
-  screenWrapper: {
-    flex: 1,
-  },
-  bottomNavContainer: {
-    position: 'absolute',
-    bottom: 24,
-    left: 20,
-    right: 20,
-    alignItems: 'center',
-  },
-  bottomNavPill: {
-    flexDirection: 'row',
-    backgroundColor: '#FFFFFF',
-    borderRadius: 24,
-    borderWidth: 1,
-    borderColor: '#EBEBEB',
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    width: '100%',
-    maxWidth: 360,
-  },
-  navTab: {
-    alignItems: 'center',
-    paddingVertical: 4,
-    paddingHorizontal: 10,
-    borderRadius: 16,
-  },
-  navTabActive: {
-    backgroundColor: 'rgba(0, 87, 255, 0.08)',
-  },
-  navIcon: {
-    fontSize: 16,
-    marginBottom: 2,
-  },
-  navLabel: {
-    fontSize: 10,
-    color: '#777777',
-    fontWeight: '400',
-  },
-  navTextActive: {
-    color: '#0057FF',
-    fontWeight: '500',
-  },
-  navScanTab: {
-    alignItems: 'center',
-    top: -10,
-  },
-  navScanCircle: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: '#0057FF',
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 3,
-    borderColor: '#FFFFFF',
-  },
-  navScanIcon: {
-    fontSize: 18,
-  },
-  navScanLabel: {
-    fontSize: 9,
-    color: '#0057FF',
-    fontWeight: '500',
-    marginTop: 2,
-  },
-});
+const styles = StyleSheet.create({ app: { flex: 1, backgroundColor: '#F8FAFC' }, screen: { flex: 1 }, loading: { flex: 1, backgroundColor: '#F8FAFC', alignItems: 'center', justifyContent: 'center', gap: 12 }, loadingText: { color: '#64748B', fontSize: 13 }, bottomNav: { position: 'absolute', bottom: 20, left: 14, right: 14, height: 64, borderRadius: 22, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#E2E8F0', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-around', elevation: 8 }, navTab: { alignItems: 'center', justifyContent: 'center', minWidth: 52, height: 52, borderRadius: 16 }, navActive: { backgroundColor: '#EFF6FF' }, navIcon: { color: '#334155', fontSize: 19 }, navLabel: { color: '#64748B', fontSize: 10, marginTop: 3 }, scanTab: { alignItems: 'center', marginTop: -19 }, scanCircle: { width: 48, height: 48, borderRadius: 24, backgroundColor: '#0057FF', alignItems: 'center', justifyContent: 'center', borderWidth: 3, borderColor: '#FFFFFF' }, scanIcon: { color: '#FFFFFF', fontSize: 22 }, scanLabel: { color: '#0057FF', fontSize: 10, marginTop: 3, fontWeight: '500' } });

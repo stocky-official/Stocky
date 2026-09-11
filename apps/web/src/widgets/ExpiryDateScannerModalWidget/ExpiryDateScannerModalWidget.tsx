@@ -594,7 +594,7 @@ export function ExpiryDateScannerModalWidget({
                 <CalendarIcon size="sm" />
               </div>
               <div>
-                <h3 className="text-sm font-semibold text-white tracking-tight leading-tight">
+                <h3 className="text-sm font-medium text-white tracking-tight leading-tight">
                   Scan Expiry Date
                 </h3>
                 <p className="text-[11px] text-white/60 font-normal">
@@ -781,7 +781,7 @@ export function ExpiryDateScannerModalWidget({
               <div className="absolute inset-0 z-30 flex items-center justify-center p-4">
                 <div className="p-6 bg-slate-900/95 rounded-3xl border border-white/10 max-w-xs text-center space-y-3 shadow-2xl text-white">
                   <AlertCircleIcon size="lg" className="text-red-400 mx-auto" />
-                  <h3 className="text-sm font-semibold">Camera Access Required</h3>
+                  <h3 className="text-sm font-medium">Camera Access Required</h3>
                   <p className="text-xs text-white/70 leading-relaxed">{cameraError}</p>
                   <button
                     type="button"
@@ -813,7 +813,7 @@ export function ExpiryDateScannerModalWidget({
                       <span className="text-[11px] font-medium uppercase tracking-wider text-emerald-400">
                         Expiration Detected
                       </span>
-                      <h4 className="text-lg font-bold tracking-tight text-white">
+                      <h4 className="text-lg font-medium tracking-tight text-white">
                         {detectedResult.displayDate}
                       </h4>
                     </div>
@@ -835,7 +835,7 @@ export function ExpiryDateScannerModalWidget({
                   <button
                     type="button"
                     onClick={handleRescan}
-                    className="py-2.5 px-3 bg-white/10 hover:bg-white/15 active:scale-98 text-white rounded-2xl text-xs font-semibold flex items-center justify-center gap-1.5 transition-all"
+                    className="py-2.5 px-3 bg-white/10 hover:bg-white/15 active:scale-98 text-white rounded-2xl text-xs font-medium flex items-center justify-center gap-1.5 transition-all"
                   >
                     <RefreshIcon size="xs" />
                     <span>Rescan</span>
@@ -844,7 +844,7 @@ export function ExpiryDateScannerModalWidget({
                   <button
                     type="button"
                     onClick={handleConfirmDate}
-                    className="py-2.5 px-3 bg-emerald-500 hover:bg-emerald-400 active:scale-98 text-white rounded-2xl text-xs font-semibold flex items-center justify-center gap-1.5 transition-all shadow-lg shadow-emerald-500/20"
+                    className="py-2.5 px-3 bg-emerald-500 hover:bg-emerald-400 active:scale-98 text-white rounded-2xl text-xs font-medium flex items-center justify-center gap-1.5 transition-all shadow-lg shadow-emerald-500/20"
                   >
                     <CheckCircleIcon size="xs" />
                     <span>
@@ -879,14 +879,14 @@ export function ExpiryDateScannerModalWidget({
                   <button
                     type="button"
                     onClick={() => setShowManualInput(false)}
-                    className="py-2 px-3 bg-white/10 hover:bg-white/15 text-white rounded-xl text-xs font-semibold"
+                    className="py-2 px-3 bg-white/10 hover:bg-white/15 text-white rounded-xl text-xs font-medium"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
                     disabled={!manualDateInput}
-                    className="py-2 px-3 bg-emerald-500 hover:bg-emerald-400 disabled:opacity-50 text-white rounded-xl text-xs font-semibold"
+                    className="py-2 px-3 bg-emerald-500 hover:bg-emerald-400 disabled:opacity-50 text-white rounded-xl text-xs font-medium"
                   >
                     Confirm Date
                   </button>

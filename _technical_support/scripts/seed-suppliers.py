@@ -11,7 +11,7 @@ import openpyxl
 import psycopg2
 from psycopg2.extras import execute_values
 
-DB_URL = "postgresql://postgres.qwgpykxjzgqbdzakhchm:50yfVTT4uUxVsY1z@aws-1-eu-west-1.pooler.supabase.com:6543/postgres"
+DB_URL = os.environ["DATABASE_URL"]
 FILEPATH = r"c:\Users\abdelrahman.mamdouh_\Desktop\Stocky\data\Supplier.xlsx"
 
 def clean_phone_str(raw_phone):

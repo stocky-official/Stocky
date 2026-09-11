@@ -1,303 +1,131 @@
 'use client';
 
-import React, { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { motion, AnimatePresence } from 'framer-motion';
-import { supabase } from '@/lib/supabase/client';
-import {
-  DashboardIcon,
-  BoxesIcon,
-  WarehouseIcon,
-  TruckIcon,
-  BellIcon,
-  SettingsIcon,
-  PanelLeftCloseIcon,
-  PanelLeftOpenIcon,
-} from '@stocky/icons';
-
-export interface NavTabItem {
-  id: string;
-  label: string;
-  icon: React.ReactNode;
-}
+import React, { useEffect, useState } from 'react';
+import { BellIcon, BoxesIcon, SearchIcon, XIcon } from '@stocky/icons';
+import type { CompanyUserRole } from '@stocky/types';
+import { getActivePlatformGroup, getPlatformNavigation } from '../platformNavigation';
+import { PlatformAccountMenuWidget } from '../PlatformAccountMenuWidget/PlatformAccountMenuWidget';
 
 export interface SidebarNavWidgetProps {
   activeTab: string;
   onTabChange: (tabId: string) => void;
-  userEmail?: string | null;
-  companyName?: string;
+  userRole?: CompanyUserRole;
+  notificationCount?: number;
+  onNotificationsClick?: () => void;
+  companyName?: string | null;
   companyLogoUrl?: string | null;
+  searchQuery?: string;
+  onSearch?: (query: string) => void;
+  userEmail?: string | null;
+  userName?: string | null;
+  userTitle?: string | null;
+  userAvatarUrl?: string | null;
+  onSettingsClick?: () => void;
 }
 
 /**
- * SidebarNavWidget (Bevel-Elevated Design System)
- * - Collapsed width: 64px (w-16) for balanced breathing room.
- * - Expands to 230px on hover or when pinned open.
- * - Stationary icon alignment with zero vertical or horizontal jumping.
- * - Deep slate / soft pill active indicator matching Bevel aesthetics.
- * - Hover tooltip when collapsed.
- * - Expand/collapse pin toggle.
+ * Desktop workspace navigation. Root destinations stay visible at all times;
+ * related destinations are shown by context tabs in the content pane.
  */
 export function SidebarNavWidget({
   activeTab,
   onTabChange,
-  userEmail,
+  userRole = 'owner',
+  notificationCount = 0,
+  onNotificationsClick,
   companyName,
   companyLogoUrl,
+  searchQuery = '',
+  onSearch,
+  userEmail,
+  userName,
+  userTitle,
+  userAvatarUrl,
+  onSettingsClick,
 }: SidebarNavWidgetProps) {
-  const router = useRouter();
-  const [isHovered, setIsHovered] = useState(false);
-  const [isPinned, setIsPinned] = useState(false);
+  const [logoFailed, setLogoFailed] = useState(false);
 
-  const isExpanded = isPinned || isHovered;
+  useEffect(() => {
+    setLogoFailed(false);
+  }, [companyLogoUrl]);
 
-  const mainTabs: NavTabItem[] = [
-    {
-      id: 'dashboard',
-      label: 'Operations',
-      icon: <DashboardIcon size="xs" />,
-    },
-    {
-      id: 'inventory',
-      label: 'Inventory',
-      icon: <BoxesIcon size="xs" />,
-    },
-    {
-      id: 'branches',
-      label: 'Stores & Branches',
-      icon: <WarehouseIcon size="xs" />,
-    },
-    {
-      id: 'suppliers',
-      label: 'Suppliers',
-      icon: <TruckIcon size="xs" />,
-    },
-    {
-      id: 'alerts',
-      label: 'Alerts',
-      icon: <BellIcon size="xs" />,
-    },
-  ];
+  const groups = getPlatformNavigation(userRole);
+  const activeGroupId = getActivePlatformGroup(groups, activeTab)?.id;
+  const workspaceGroups = groups.filter((group) => group.id !== 'organization');
+  const organizationGroups = groups.filter((group) => group.id === 'organization');
 
-  const handleSignOut = async () => {
-    try {
-      await supabase.auth.signOut();
-      router.push('/');
-    } catch (err) {
-      console.error('Error signing out:', err);
-    }
+  const renderGroup = (group: (typeof groups)[number]) => {
+    const isActive = activeGroupId === group.id;
+    return (
+      <button
+        key={group.id}
+        type="button"
+        onClick={() => onTabChange(group.items[0].id)}
+        aria-current={isActive ? 'page' : undefined}
+        className={`stocky-workspace-nav-item ${isActive ? 'stocky-workspace-nav-item--active' : ''}`}
+      >
+        <span className="stocky-workspace-nav-item__icon" aria-hidden="true">{group.icon}</span>
+        <span>{group.label}</span>
+      </button>
+    );
   };
 
   return (
-    <motion.aside
-      initial={{ width: 64 }}
-      animate={{ width: isExpanded ? 230 : 64 }}
-      transition={{ type: 'spring', stiffness: 350, damping: 30 }}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-      className="hidden md:flex h-full shrink-0 bg-white border-r border-slate-200/80 shadow-[1px_0_12px_rgba(0,0,0,0.02)] flex-col justify-between py-5 select-none overflow-hidden z-30"
-      aria-label="Sidebar Navigation"
-    >
-      {/* Top Section: Brand Header & Main Nav */}
-      <div className="space-y-6">
-        {/* Brand Mark Tile */}
-        <div className="h-11 flex items-center px-3 overflow-hidden">
-          {companyLogoUrl ? (
-            <div
-              className="w-10 h-10 rounded-2xl border border-slate-200 bg-white overflow-hidden flex items-center justify-center shrink-0 shadow-sm"
-              title={companyName || 'Organization Workspace'}
-            >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={companyLogoUrl}
-                alt={companyName || 'Logo'}
-                className="w-full h-full object-contain p-1"
-              />
-            </div>
+    <aside className="stocky-workspace-sidebar hidden md:flex" aria-label={`Primary navigation for ${companyName || 'Stocky'}`}>
+      <div className="stocky-workspace-sidebar__surface">
+        <div className="stocky-workspace-sidebar__brand">
+          {companyLogoUrl && !logoFailed ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={companyLogoUrl}
+              alt={companyName || 'Stocky'}
+              referrerPolicy="no-referrer"
+              onError={() => setLogoFailed(true)}
+            />
           ) : (
-            <div
-              className="w-10 h-10 rounded-2xl bg-stocky-primary text-white flex items-center justify-center shrink-0 shadow-sm shadow-blue-500/20"
-              title={companyName || 'Stocky Multi-Branch Platform'}
-            >
-              <BoxesIcon size="xs" />
-            </div>
+            <span className="stocky-workspace-sidebar__brand-mark"><BoxesIcon size="xs" /></span>
           )}
-
-          <AnimatePresence>
-            {isExpanded && (
-              <motion.div
-                initial={{ opacity: 0, x: -6 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.15 }}
-                className="pl-3 min-w-0 flex-1 flex items-center justify-between whitespace-nowrap overflow-hidden"
-              >
-                <div className="min-w-0 flex-1">
-                  <span className="text-sm font-semibold text-slate-900 tracking-tight block truncate">
-                    {companyName || 'Stocky'}
-                  </span>
-                  <span className="text-[10px] text-slate-400 block truncate">
-                    {companyName ? 'Organization' : 'Inventory Platform'}
-                  </span>
-                </div>
-
-                {/* Pin / Unpin toggle */}
-                <button
-                  type="button"
-                  onClick={() => setIsPinned(!isPinned)}
-                  className="p-1 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer shrink-0 ml-1"
-                  title={isPinned ? 'Unpin sidebar' : 'Pin sidebar open'}
-                >
-                  {isPinned ? <PanelLeftCloseIcon size="xs" /> : <PanelLeftOpenIcon size="xs" />}
-                </button>
-              </motion.div>
-            )}
-          </AnimatePresence>
+          <span className="stocky-workspace-sidebar__brand-copy">
+            <strong>Stocky</strong>
+            <small>{companyName || 'Operations'}</small>
+          </span>
         </div>
-
-        {/* Main Navigation Tabs */}
-        <nav className="space-y-1.5 px-2.5" aria-label="Main Navigation Tabs">
-          {mainTabs.map((tab) => {
-            const isActive = activeTab === tab.id;
-            return (
-              <div key={tab.id} className="relative group">
-                <button
-                  type="button"
-                  onClick={() => onTabChange(tab.id)}
-                  className={`w-full h-10 flex items-center rounded-2xl text-xs transition-all duration-150 cursor-pointer overflow-hidden ${
-                    isActive
-                      ? 'bg-slate-900 text-white font-medium shadow-sm'
-                      : 'text-slate-600 font-normal hover:bg-slate-100/90 hover:text-slate-900'
-                  }`}
-                >
-                  {/* Stationary Icon Container */}
-                  <span className="w-11 h-10 flex items-center justify-center shrink-0">
-                    {tab.icon}
-                  </span>
-
-                  <AnimatePresence>
-                    {isExpanded && (
-                      <motion.span
-                        initial={{ opacity: 0, x: -6 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        exit={{ opacity: 0 }}
-                        transition={{ duration: 0.15 }}
-                        className="truncate whitespace-nowrap pl-1.5 text-xs font-medium"
-                      >
-                        {tab.label}
-                      </motion.span>
-                    )}
-                  </AnimatePresence>
-                </button>
-
-                {/* Collapsed Tooltip */}
-                {!isExpanded && (
-                  <div className="absolute left-[70px] top-1/2 -translate-y-1/2 bg-slate-900 text-white text-[11px] font-medium px-2.5 py-1 rounded-xl shadow-lg opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity duration-150 whitespace-nowrap z-50 border border-slate-800">
-                    {tab.label}
-                  </div>
-                )}
-              </div>
-            );
-          })}
+        <div className="stocky-workspace-sidebar__search">
+          <SearchIcon size="xs" aria-hidden="true" />
+          <input type="search" value={searchQuery} onChange={(event) => onSearch?.(event.target.value)} placeholder="Search" aria-label="Search Stocky" />
+          {searchQuery && <button type="button" onClick={() => onSearch?.('')} aria-label="Clear search"><XIcon size="xs" /></button>}
+        </div>
+        <nav className="stocky-workspace-sidebar__nav" aria-label="Workspace">
+          <p className="stocky-workspace-sidebar__label">Workspace</p>
+          {workspaceGroups.map(renderGroup)}
+          {organizationGroups.length > 0 && <p className="stocky-workspace-sidebar__label stocky-workspace-sidebar__label--spaced">Organization</p>}
+          {organizationGroups.map(renderGroup)}
         </nav>
-      </div>
 
-      {/* Bottom Section: Settings & User Account Profile */}
-      <div className="space-y-2 pt-3 border-t border-slate-100 px-2.5">
-        {/* Settings Tab */}
-        <div className="relative group">
+        <div className="stocky-workspace-sidebar__footer">
           <button
             type="button"
-            onClick={() => onTabChange('settings')}
-            className={`w-full h-10 flex items-center rounded-2xl text-xs transition-all duration-150 cursor-pointer overflow-hidden ${
-              activeTab === 'settings'
-                ? 'bg-slate-900 text-white font-medium shadow-sm'
-                : 'text-slate-600 font-normal hover:bg-slate-100/90 hover:text-slate-900'
-            }`}
+            onClick={onNotificationsClick}
+            className="stocky-workspace-nav-item stocky-workspace-nav-item--utility"
+            aria-label={`Notifications${notificationCount > 0 ? `, ${notificationCount} to review` : ''}`}
           >
-            <span className="w-11 h-10 flex items-center justify-center shrink-0">
-              <SettingsIcon size="xs" />
+            <span className="stocky-workspace-nav-item__icon relative" aria-hidden="true">
+              <BellIcon size="xs" />
+              {notificationCount > 0 && <span className="stocky-workspace-notification-count">{notificationCount > 9 ? '9+' : notificationCount}</span>}
             </span>
-
-            <AnimatePresence>
-              {isExpanded && (
-                <motion.span
-                  initial={{ opacity: 0, x: -6 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.15 }}
-                  className="truncate whitespace-nowrap pl-1.5 text-xs font-medium"
-                >
-                  Settings
-                </motion.span>
-              )}
-            </AnimatePresence>
+            <span>Notifications</span>
           </button>
-
-          {!isExpanded && (
-            <div className="absolute left-[70px] top-1/2 -translate-y-1/2 bg-slate-900 text-white text-[11px] font-medium px-2.5 py-1 rounded-xl shadow-lg opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity duration-150 whitespace-nowrap z-50 border border-slate-800">
-              Settings
-            </div>
-          )}
-        </div>
-
-        {/* User Profile Avatar */}
-        <div className="h-11 flex items-center px-0.5 overflow-hidden">
-          <div
-            className="w-10 h-10 rounded-2xl bg-slate-100 border border-slate-200/80 flex items-center justify-center text-xs font-semibold text-slate-700 shrink-0 shadow-2xs"
-            title={userEmail ? `User: ${userEmail}` : 'Preview Mode'}
-          >
-            {userEmail ? userEmail.charAt(0).toUpperCase() : 'G'}
-          </div>
-
-          <AnimatePresence>
-            {isExpanded && (
-              <motion.div
-                initial={{ opacity: 0, x: -6 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.15 }}
-                className="pl-2.5 flex-1 min-w-0 flex items-center justify-between gap-1 overflow-hidden"
-              >
-                <div className="min-w-0 flex-1">
-                  <span className="text-[11px] font-semibold text-slate-900 block truncate">
-                    {userEmail || 'Guest Explorer'}
-                  </span>
-                  <span className="text-[9px] text-slate-400 block truncate">
-                    {userEmail ? 'Active Session' : 'Preview Mode'}
-                  </span>
-                </div>
-
-                {userEmail ? (
-                  <button
-                    type="button"
-                    onClick={handleSignOut}
-                    className="text-[10px] text-slate-400 hover:text-red-600 px-2 py-1 rounded-lg hover:bg-red-50 transition-colors cursor-pointer shrink-0"
-                    title="Sign out"
-                  >
-                    Exit
-                  </button>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={async () => {
-                      const origin = window.location.origin;
-                      await supabase.auth.signInWithOAuth({
-                        provider: 'google',
-                        options: { redirectTo: `${origin}/auth/callback?next=/platform` },
-                      });
-                    }}
-                    className="text-[10px] font-medium text-stocky-primary hover:text-stocky-primary-hover px-2 py-1 rounded-lg bg-blue-50 hover:bg-blue-100 transition-colors cursor-pointer shrink-0"
-                    title="Sign in with Google"
-                  >
-                    Login
-                  </button>
-                )}
-              </motion.div>
-            )}
-          </AnimatePresence>
+          <PlatformAccountMenuWidget
+            className="stocky-sidebar-account"
+            menuPlacement="top"
+            userEmail={userEmail}
+            userName={userName}
+            userTitle={userTitle}
+            userAvatarUrl={userAvatarUrl}
+            onSettingsClick={onSettingsClick}
+          />
         </div>
       </div>
-    </motion.aside>
+    </aside>
   );
 }

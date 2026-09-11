@@ -26,6 +26,7 @@ export const items = pgTable('items', {
   balance: numeric('balance', { precision: 14, scale: 2 }).default('0.00').notNull(), // item Balance
   quantity: integer('quantity').default(0).notNull(),               // item Quantity
   expiryDate: timestamp('expiry_date', { withTimezone: true }),       // item expiry date
+  expiryNotificationDays: integer('expiry_notification_days'),       // item-specific expiry notification window
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
 });

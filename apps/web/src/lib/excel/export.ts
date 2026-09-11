@@ -47,6 +47,7 @@ export function exportInventoryToExcel(
     'Balance ($)': Number(item.balance).toFixed(2),
     'Barcode': item.barcode || 'N/A',
     'Expiry Date': formatDate(item.expiryDate),
+    'Notify Before Expiry (Days)': item.expiryNotificationDays ?? 'N/A',
     'Created At': formatDate(item.createdAt),
     'Updated At': formatDate(item.updatedAt),
   }));

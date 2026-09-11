@@ -34,10 +34,15 @@ echo  -- Press Ctrl+C anytime to stop the server.
 echo =======================================================
 echo.
 
+:: Browsers share cookies across every localhost port. During local Supabase
+:: development those cookies can exceed Node's 16 KB default header limit and
+:: make an otherwise healthy app return HTTP 431. Keep enough headroom for the
+:: local session while still retaining a finite request-header limit.
+set "NODE_OPTIONS=--max-http-header-size=65536"
+
 where pnpm.cmd >nul 2>&1
 if %ERRORLEVEL% EQU 0 (
-    call pnpm.cmd --filter web dev
+    call pnpm.cmd --filter web exec next dev --hostname :: --port 3000
 ) else (
-    call pnpm --filter web dev
+    call pnpm --filter web exec next dev --hostname :: --port 3000
 )
-

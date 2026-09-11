@@ -52,15 +52,15 @@ export function DashboardScreen({
             )}
 
             <View style={styles.orgMeta}>
-              <Text style={styles.orgName}>{company?.name || 'Stocky Organization'}</Text>
-              <Text style={styles.orgCode}>Code: {company?.code || 'CRK'} • Mobile Platform</Text>
+              <Text style={styles.orgName}>{company?.name || 'Your company'}</Text>
+              <Text style={styles.orgCode}>{company?.code ? `Code: ${company.code}` : 'Mobile workspace'}</Text>
             </View>
           </View>
 
           {/* User Session Bar */}
           <View style={styles.sessionRow}>
             <Text style={styles.userEmail} numberOfLines={1}>
-              {userEmail || 'stocky.admin@gmail.com'}
+              {userEmail || 'Signed-in email unavailable'}
             </Text>
             <View style={styles.roleBadge}>
               <Text style={styles.roleText}>
@@ -85,8 +85,8 @@ export function DashboardScreen({
         <View style={styles.kpiGrid}>
           <View style={styles.kpiCard}>
             <Text style={styles.kpiLabel}>Catalog SKUs</Text>
-            <Text style={styles.kpiValue}>31,488</Text>
-            <Text style={styles.kpiSub}>Active products live</Text>
+            <Text style={styles.kpiValue}>—</Text>
+            <Text style={styles.kpiSub}>Open Home to see live stock</Text>
           </View>
 
           <View style={styles.kpiCard}>
@@ -105,8 +105,8 @@ export function DashboardScreen({
 
           <View style={styles.kpiCard}>
             <Text style={styles.kpiLabel}>Categories</Text>
-            <Text style={styles.kpiValue}>42</Text>
-            <Text style={styles.kpiSub}>Retail item types</Text>
+            <Text style={styles.kpiValue}>—</Text>
+            <Text style={styles.kpiSub}>Open Home to see live categories</Text>
           </View>
         </View>
 

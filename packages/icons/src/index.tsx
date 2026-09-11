@@ -5,6 +5,7 @@ import {
   Barcode,
   AlertTriangle,
   AlertCircle,
+  Info,
   CheckCircle2,
   TrendingUp,
   TrendingDown,
@@ -38,6 +39,8 @@ import {
   X,
   ArrowUp,
   ArrowDown,
+  CloudUpload,
+  CloudDownload,
   Users,
   Shield,
   Camera,
@@ -51,6 +54,9 @@ import {
   SlidersHorizontal,
   BarChart3,
   Calendar,
+  LogOut,
+  Mail,
+  MessageCircle,
   type LucideIcon,
 } from 'lucide-react';
 import { StockyIcon } from './StockyIcon';
@@ -73,6 +79,7 @@ export const WarehouseIcon = createIcon(Warehouse, 'WarehouseIcon');
 export const BarcodeIcon = createIcon(Barcode, 'BarcodeIcon');
 export const AlertTriangleIcon = createIcon(AlertTriangle, 'AlertTriangleIcon');
 export const AlertCircleIcon = createIcon(AlertCircle, 'AlertCircleIcon');
+export const InfoIcon = createIcon(Info, 'InfoIcon');
 export const CheckCircleIcon = createIcon(CheckCircle2, 'CheckCircleIcon');
 export const TrendingUpIcon = createIcon(TrendingUp, 'TrendingUpIcon');
 export const TrendingDownIcon = createIcon(TrendingDown, 'TrendingDownIcon');
@@ -106,6 +113,8 @@ export const PanelLeftOpenIcon = createIcon(PanelLeftOpen, 'PanelLeftOpenIcon');
 export const XIcon = createIcon(X, 'XIcon');
 export const ArrowUpIcon = createIcon(ArrowUp, 'ArrowUpIcon');
 export const ArrowDownIcon = createIcon(ArrowDown, 'ArrowDownIcon');
+export const CloudUploadIcon = createIcon(CloudUpload, 'CloudUploadIcon');
+export const CloudDownloadIcon = createIcon(CloudDownload, 'CloudDownloadIcon');
 export const UsersIcon = createIcon(Users, 'UsersIcon');
 export const ShieldIcon = createIcon(Shield, 'ShieldIcon');
 export const CameraIcon = createIcon(Camera, 'CameraIcon');
@@ -119,3 +128,6 @@ export const RotateCcwIcon = createIcon(RotateCcw, 'RotateCcwIcon');
 export const SlidersIcon = createIcon(SlidersHorizontal, 'SlidersIcon');
 export const BarChartIcon = createIcon(BarChart3, 'BarChartIcon');
 export const CalendarIcon = createIcon(Calendar, 'CalendarIcon');
+export const LogOutIcon = createIcon(LogOut, 'LogOutIcon');
+export const MailIcon = createIcon(Mail, 'MailIcon');
+export const MessageCircleIcon = createIcon(MessageCircle, 'MessageCircleIcon');

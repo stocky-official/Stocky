@@ -19,6 +19,7 @@ import { Html5Qrcode, Html5QrcodeSupportedFormats } from 'html5-qrcode';
 export interface BarcodeScannerWidgetProps {
   onProductFound: (item: Item) => void;
   onCodeNotFound?: (barcode: string) => void;
+  onBarcodeFound?: (barcode: string) => void;
 }
 
 // All major retail 1D & 2D barcode formats
@@ -87,6 +88,7 @@ function playFocusTapSound() {
 export function BarcodeScannerWidget({
   onProductFound,
   onCodeNotFound,
+  onBarcodeFound,
 }: BarcodeScannerWidgetProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
@@ -128,6 +130,12 @@ export function BarcodeScannerWidget({
       setIsSearching(true);
 
       try {
+        if (onBarcodeFound) {
+          await stopScanner();
+          setIsOpen(false);
+          onBarcodeFound(cleanCode);
+          return;
+        }
         const { data, error } = await supabase
           .from('items')
           .select('*')
@@ -148,6 +156,7 @@ export function BarcodeScannerWidget({
             balance: data.balance,
             barcode: data.barcode,
             expiryDate: data.expiry_date,
+            expiryNotificationDays: data.expiry_notification_days,
             createdAt: data.created_at,
             updatedAt: data.updated_at,
           };
@@ -183,7 +192,7 @@ export function BarcodeScannerWidget({
         setIsSearching(false);
       }
     },
-    [onProductFound, onCodeNotFound]
+    [onBarcodeFound, onProductFound, onCodeNotFound]
   );
 
   const activeStreamRef = useRef<MediaStream | null>(null);

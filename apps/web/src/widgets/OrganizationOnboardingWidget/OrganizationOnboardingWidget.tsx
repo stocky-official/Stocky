@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import {
@@ -16,23 +15,21 @@ import { supabase } from '@/lib/supabase/client';
 
 export interface OrganizationOnboardingWidgetProps {
   userEmail?: string | null;
-  onSuccess?: (companyId: string) => void;
+  onSuccess?: () => void;
 }
 
 /**
  * OrganizationOnboardingWidget (v0.1.0 Design System)
- * Multi-tenant onboarding step for creating an organization workspace:
+ * Multi-tenant onboarding step for submitting a company verification request:
  * - Company Name & Code
- * - Optional Logo upload to stocky-private bucket with isolated folder hierarchy ({companyId}/profile-imgs/)
- * - Initial branch initialization
- * - Owner role assignment
+ * - Optional Logo upload to stocky-private bucket under the application id
+ * - Initial branch request
+ * - Owner membership is created only after Stocky admin approval
  */
 export function OrganizationOnboardingWidget({
   userEmail,
   onSuccess,
 }: OrganizationOnboardingWidgetProps) {
-  const router = useRouter();
-
   // Form states
   const [orgName, setOrgName] = useState('');
   const [orgCode, setOrgCode] = useState('');
@@ -46,20 +43,12 @@ export function OrganizationOnboardingWidget({
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
 
-  // Auto-suggest code from name if user hasn't typed one
+  // Auto-suggest URL slug/code from name if user hasn't typed one
   const handleNameChange = (val: string) => {
     setOrgName(val);
     if (!codeManuallyEdited) {
-      const words = val.trim().split(/\s+/);
-      let suggested = '';
-      if (words.length >= 2) {
-        suggested = (words[0][0] + words[1][0] + (words[2]?.[0] || '')).toUpperCase();
-      } else if (val.length >= 3) {
-        suggested = val.slice(0, 3).toUpperCase();
-      } else {
-        suggested = val.toUpperCase();
-      }
-      setOrgCode(suggested.replace(/[^A-Z0-9]/g, ''));
+      const suggested = val.toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 24);
+      setOrgCode(suggested);
     }
   };
 
@@ -114,14 +103,39 @@ export function OrganizationOnboardingWidget({
         throw new Error('You must be signed in to create an organization.');
       }
 
-      // 2. Generate new company UUID
-      const companyId = crypto.randomUUID();
-      let uploadedLogoUrl: string | null = null;
+      // The application id is used to keep each upload unique. The user's
+      // auth id is the first storage path segment so the pending applicant can
+      // upload before the application row exists.
+      const applicationId = crypto.randomUUID();
+      let uploadedLogoPath: string | null = null;
 
-      // 3. Upload Logo to stocky-private bucket under {companyId}/profile-imgs/
+      // 2. Submit the application through a SECURITY DEFINER function. This
+      // prevents a browser client from creating companies or memberships.
+      const cleanCode = (orgCode.trim() || orgName.trim())
+        .toLowerCase()
+        .replace(/[^a-z0-9-]/g, '')
+        .slice(0, 30);
+
+      const reservedSlugs = ['platform', 'admin', 'auth', 'onboarding', 'verification-pending', 'api', 'app', '_next'];
+      if (reservedSlugs.includes(cleanCode)) {
+        throw new Error(`“${cleanCode}” is a reserved system route. Please choose a different workspace URL slug.`);
+      }
+
+      const initialBranchName = branchName.trim() || 'Main Branch';
+      const { error: applicationError } = await supabase.rpc('submit_company_application', {
+        application_id: applicationId,
+        requested_company_name: orgName.trim(),
+        requested_company_code: cleanCode,
+        requested_logo_path: null,
+        requested_initial_branch_name: initialBranchName,
+      });
+
+      if (applicationError) throw applicationError;
+
+      // 3. Upload the optional logo under the authenticated applicant.
       if (logoFile) {
         const fileExt = logoFile.name.split('.').pop() || 'png';
-        const logoStoragePath = `${companyId}/profile-imgs/logo-${Date.now()}.${fileExt}`;
+        const logoStoragePath = `${user.id}/applications/${applicationId}/logo-${Date.now()}.${fileExt}`;
 
         const { error: uploadError } = await supabase.storage
           .from('stocky-private')
@@ -131,98 +145,24 @@ export function OrganizationOnboardingWidget({
           });
 
         if (uploadError) {
-          console.warn('Storage upload note:', uploadError);
-        } else {
-          // Generate 1-year signed URL for seamless client rendering
-          const { data: signedData } = await supabase.storage
-            .from('stocky-private')
-            .createSignedUrl(logoStoragePath, 60 * 60 * 24 * 365);
-
-          uploadedLogoUrl = signedData?.signedUrl || logoStoragePath;
+          throw uploadError;
         }
-      }
 
-      // 4. Initialize folder structure in stocky-private with placeholder keepfiles
-      try {
-        const keepBlob = new Blob([''], { type: 'text/plain' });
-        await supabase.storage
-          .from('stocky-private')
-          .upload(`${companyId}/profile-imgs/.keep`, keepBlob, { upsert: true });
-        await supabase.storage
-          .from('stocky-private')
-          .upload(`${companyId}/documents/.keep`, keepBlob, { upsert: true });
-      } catch (storageInitErr) {
-        console.warn('Folder initialization note:', storageInitErr);
-      }
+        uploadedLogoPath = logoStoragePath;
 
-      // 5. Insert Company Entity in public.companies
-      const cleanCode = orgCode.trim().toUpperCase() || orgName.slice(0, 3).toUpperCase();
-      const { data: createdCompany, error: companyErr } = await supabase
-        .from('companies')
-        .insert({
-          id: companyId,
-          name: orgName.trim(),
-          code: cleanCode,
-          logo_url: uploadedLogoUrl,
-        })
-        .select()
-        .single();
-
-      if (companyErr) throw companyErr;
-
-      // 6. Create initial branch in public.branches
-      const branchId = crypto.randomUUID();
-      const initialBranchName = branchName.trim() || 'Main Branch';
-      const { error: branchErr } = await supabase.from('branches').insert({
-        id: branchId,
-        company_id: companyId,
-        name: initialBranchName,
-        code: 'BR-01',
-        is_active: true,
-      });
-
-      if (branchErr) console.warn('Branch creation note:', branchErr);
-
-      // 7. Register user as Owner in public.company_users
-      const { data: createdUser, error: userErr } = await supabase
-        .from('company_users')
-        .insert({
-          id: crypto.randomUUID(),
-          auth_user_id: user.id,
-          company_id: companyId,
-          email: user.email?.toLowerCase() || userEmail?.toLowerCase(),
-          full_name:
-            user.user_metadata?.full_name ||
-            user.user_metadata?.name ||
-            user.email?.split('@')[0],
-          avatar_url: user.user_metadata?.avatar_url || user.user_metadata?.picture || null,
-          role: 'owner',
-          can_edit: true,
-          can_delete: true,
-          status: 'active',
-        })
-        .select()
-        .single();
-
-      if (userErr) console.warn('Company user registration note:', userErr);
-
-      // 8. Assign user to initial branch
-      if (createdUser?.id) {
-        await supabase.from('user_branches').insert({
-          user_id: createdUser.id,
-          branch_id: branchId,
+        const { error: logoPathError } = await supabase.rpc('set_company_application_logo', {
+          p_application_id: applicationId,
+          p_logo_path: uploadedLogoPath,
         });
+
+        if (logoPathError) throw logoPathError;
       }
 
-      setSuccessMsg(`Welcome to ${orgName.trim()}! Initializing your workspace...`);
+      setSuccessMsg('Application submitted. Stocky will review your company before access is enabled.');
 
       if (onSuccess) {
-        onSuccess(companyId);
+        onSuccess();
       }
-
-      setTimeout(() => {
-        router.push('/platform');
-      }, 1000);
     } catch (err: any) {
       console.error('Failed to create organization:', err);
       setErrorMsg(err.message || 'Failed to create organization. Please try again.');
@@ -237,7 +177,7 @@ export function OrganizationOnboardingWidget({
         <div className="border-b border-stocky-border-subtle pb-5 space-y-2">
           <div className="flex items-center justify-between">
             <span className="text-[11px] font-medium text-stocky-primary uppercase tracking-wider bg-stocky-primary/10 px-2.5 py-0.5 rounded-widget border border-stocky-primary/20">
-              Workspace Setup
+              Verification Request
             </span>
             {userEmail && (
               <span className="text-xs text-stocky-text-sub truncate max-w-[200px]">
@@ -247,10 +187,10 @@ export function OrganizationOnboardingWidget({
           </div>
 
           <h1 className="text-xl sm:text-2xl font-medium text-stocky-text-main tracking-tight">
-            Create Your Organization
+            Submit Your Company
           </h1>
           <p className="text-xs sm:text-sm font-normal text-stocky-text-sub leading-relaxed">
-            Set up your organization entity to manage branch stores, inventory catalogs, suppliers, and team members.
+            Tell us about your company. After Stocky verifies it, you will be able to manage branches, inventory, suppliers, and team members.
           </p>
         </div>
 
@@ -274,7 +214,7 @@ export function OrganizationOnboardingWidget({
           {/* Organization Name */}
           <div className="space-y-1.5">
             <label className="font-medium text-stocky-text-main block">
-              Organization Name <span className="text-red-500">*</span>
+              Company Name <span className="text-red-500">*</span>
             </label>
             <input
               type="text"
@@ -290,19 +230,19 @@ export function OrganizationOnboardingWidget({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <label className="font-medium text-stocky-text-main block flex items-center justify-between">
-                <span>Company Code</span>
-                <span className="text-[10px] text-stocky-text-sub font-normal">Auto-generated</span>
+                <span>Workspace URL Slug</span>
+                <span className="text-[10px] text-stocky-text-sub font-mono font-normal">/{orgCode || 'company'}</span>
               </label>
               <input
                 type="text"
-                maxLength={10}
+                maxLength={30}
                 value={orgCode}
                 onChange={(e) => {
                   setCodeManuallyEdited(true);
-                  setOrgCode(e.target.value.toUpperCase());
+                  setOrgCode(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''));
                 }}
-                placeholder="e.g. CRK"
-                className="w-full bg-stocky-bg-global border border-stocky-border-subtle rounded-widget px-3 py-2.5 text-xs text-stocky-text-main focus:outline-none focus:border-stocky-primary transition-colors uppercase"
+                placeholder="e.g. appleco"
+                className="w-full bg-stocky-bg-global border border-stocky-border-subtle rounded-widget px-3 py-2.5 text-xs text-stocky-text-main focus:outline-none focus:border-stocky-primary transition-colors font-mono lowercase"
               />
             </div>
 
@@ -323,7 +263,7 @@ export function OrganizationOnboardingWidget({
           {/* Organization Logo Upload */}
           <div className="space-y-2">
             <label className="font-medium text-stocky-text-main block flex items-center justify-between">
-              <span>Organization Logo</span>
+                <span>Company Logo</span>
               <span className="text-[10px] text-stocky-text-sub font-normal">Optional • Max 5MB</span>
             </label>
 
@@ -388,7 +328,7 @@ export function OrganizationOnboardingWidget({
               disabled={loading || !orgName.trim()}
               className="w-full sm:w-auto px-6 py-2 text-xs flex items-center justify-center gap-2 cursor-pointer"
             >
-              <span>{loading ? 'Creating Workspace...' : 'Launch Organization Platform'}</span>
+                <span>{loading ? 'Submitting for Review...' : 'Submit for Verification'}</span>
               <ArrowUpRightIcon size="xs" />
             </Button>
           </div>

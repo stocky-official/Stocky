@@ -30,6 +30,7 @@ const config: Config = {
           bg: {
             global: 'var(--stocky-bg-global)',   // #F9F9F9
             widget: 'var(--stocky-bg-widget)',   // #FFFFFF
+            hover: 'var(--stocky-bg-hover)',
           },
           text: {
             main: 'var(--stocky-text-main)',     // #000000

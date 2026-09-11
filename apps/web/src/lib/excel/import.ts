@@ -64,6 +64,21 @@ export const INVENTORY_TARGET_FIELDS: TargetFieldDef[] = [
     description: 'Expiration or best-before date',
     aliases: ['expiry', 'expiry date', 'expiration', 'exp date', 'exp', 'best before', 'bb date'],
   },
+  {
+    key: 'expiry_notification_days',
+    label: 'Notify Before Expiry (Days)',
+    required: false,
+    type: 'number',
+    description: 'Number of days before this item expires to trigger its alert',
+    aliases: [
+      'notification days',
+      'notify before',
+      'notify before expiry',
+      'expiry notification days',
+      'alert days',
+      'days before expiry',
+    ],
+  },
 ];
 
 /**

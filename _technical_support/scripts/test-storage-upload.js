@@ -5,8 +5,12 @@
 
 const { createClient } = require('../../node_modules/.pnpm/@supabase+supabase-js@2.113.0/node_modules/@supabase/supabase-js');
 
-const supabaseUrl = 'https://qwgpykxjzgqbdzakhchm.supabase.co';
-const supabaseKey = 'sb_secret_REDACTED_MOCK_KEY_FOR_LOCAL_TESTS'; // Service role key for admin verification
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+if (!supabaseUrl || !supabaseKey) {
+  throw new Error('NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are required.');
+}
 
 const supabase = createClient(supabaseUrl, supabaseKey);
 

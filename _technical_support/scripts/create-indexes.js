@@ -5,9 +5,9 @@
 
 const postgres = require('../../packages/db/node_modules/postgres');
 
-const connectionString =
-  process.env.DATABASE_URL ||
-  'postgresql://postgres.qwgpykxjzgqbdzakhchm:50yfVTT4uUxVsY1z@aws-1-eu-west-1.pooler.supabase.com:6543/postgres';
+const connectionString = process.env.DATABASE_URL;
+
+if (!connectionString) throw new Error('DATABASE_URL is required.');
 
 const sql = postgres(connectionString, {
   prepare: false,

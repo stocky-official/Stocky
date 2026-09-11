@@ -1,8 +1,27 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { getCanonicalAuthOrigin } from '@/lib/authRedirect';
 
 export async function GET(request: Request) {
-  const { searchParams, origin } = new URL(request.url);
+  const requestUrl = new URL(request.url);
+  const { searchParams } = requestUrl;
+  // In Next dev, request.url may be reconstructed with a different local
+  // hostname. The Host header represents the origin the browser actually
+  // used, then the canonicalizer below keeps the redirect one-way.
+  const host = process.env.NODE_ENV === 'development'
+    ? request.headers.get('host')
+    : request.headers.get('x-forwarded-host') || request.headers.get('host');
+  const protocol = request.headers.get('x-forwarded-proto') || requestUrl.protocol.replace(':', '');
+  const requestOrigin = host ? `${protocol}://${host}` : requestUrl.origin;
+  const origin = getCanonicalAuthOrigin(requestOrigin);
+
+  // Complete the code exchange on the canonical local origin. Redirecting
+  // before exchanging is important because cookies issued for localhost are
+  // not available to 127.0.0.1, and vice versa.
+  if (process.env.NODE_ENV === 'development' && origin !== requestOrigin) {
+    return NextResponse.redirect(`${origin}${requestUrl.pathname}${requestUrl.search}`);
+  }
+
   const code = searchParams.get('code');
   const next = searchParams.get('next') ?? '/platform';
 
@@ -16,16 +35,40 @@ export async function GET(request: Request) {
       } = await supabase.auth.getUser();
 
       let destination = next;
-      if (user) {
-        const { data: membership } = await supabase
+      // Platform-admin routes must remain accessible to admins who do not yet
+      // belong to a company. Regular users without a membership go through
+      // organization onboarding as before.
+      const isPlatformAdminRoute = next.startsWith('/admin/');
+      if (user && !isPlatformAdminRoute) {
+        const { data: memberships } = await supabase
           .from('company_users')
           .select('company_id, status')
-          .or(`auth_user_id.eq.${user.id},email.eq.${user.email}`)
-          .limit(1)
-          .maybeSingle();
+          .eq('auth_user_id', user.id)
+          .limit(1);
+        let membership = memberships?.[0] ?? null;
+
+        if (!membership && user.email) {
+          const { data: emailMemberships } = await supabase
+            .from('company_users')
+            .select('company_id, status')
+            .eq('email', user.email.toLowerCase())
+            .limit(1);
+          membership = emailMemberships?.[0] ?? null;
+        }
 
         if (!membership || !membership.company_id) {
           destination = '/onboarding';
+        } else if (destination === '/platform' || destination.startsWith('/platform/')) {
+          const { data: comp } = await supabase
+            .from('companies')
+            .select('code')
+            .eq('id', membership.company_id)
+            .maybeSingle();
+
+          if (comp?.code) {
+            const companySlug = comp.code.toLowerCase();
+            destination = destination === '/platform' ? `/${companySlug}` : destination.replace('/platform', `/${companySlug}`);
+          }
         }
       }
 

@@ -1,102 +1,401 @@
 'use client';
 
-import React from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
-import {
-  DashboardIcon,
-  BoxesIcon,
-  WarehouseIcon,
-  TruckIcon,
-  BellIcon,
-  SettingsIcon,
-  SearchIcon,
-  SparklesIcon,
-} from '@stocky/icons';
+import type { CompanyUserRole } from '@stocky/types';
 
 export interface MobileBottomNavWidgetProps {
   activeTab: string;
+  userRole?: CompanyUserRole;
+  hidden?: boolean;
   onTabChange: (tabId: string) => void;
-  isVisible: boolean;
-  onQuickSearch?: () => void;
-  onQuickAudit?: () => void;
+  userAvatarUrl?: string | null;
+  userName?: string | null;
+  notificationCount?: number;
+  onPostClick?: () => void;
 }
 
+type NavItemId = 'dashboard' | 'stock' | 'suppliers' | 'notifications' | 'settings';
+
+interface NavItemConfig {
+  id: NavItemId;
+  label: string;
+  routeTab: string;
+}
+
+const NAV_ITEMS: NavItemConfig[] = [
+  { id: 'dashboard', label: 'Dashboard', routeTab: 'home' },
+  { id: 'stock', label: 'Stock', routeTab: 'stock' },
+  { id: 'suppliers', label: 'Suppliers', routeTab: 'suppliers' },
+  { id: 'notifications', label: 'Notifications', routeTab: 'notifications' },
+  { id: 'settings', label: 'Settings', routeTab: 'settings' },
+];
+
 /**
- * MobileBottomNavWidget (Bevel-Elevated Design System)
- * Floating frosted glass dock with:
- * - Rounded-full capsule layout with 20px blur and specular border
- * - Floating "Search catalog or SKU..." capsule pill above dock
- * - Spring-animated tab highlights
+ * MobileBottomNavWidget
+ * 1-to-1 reproduction of the phone navigation bar in navbarphone.gif adapted for Stocky:
+ * - 5 core operational pages: Dashboard, Stock, Suppliers, Notifications, Settings
+ * - Edge-to-edge solid white bar with flat top line (#EAEAEA) and safe-area inset padding
+ * - Elevated circular dark bubble (#191B1F, 50px) with 3.5px solid white ring that pops above the top edge
+ * - Instant optimistic tab switching + route prefetching (zero perceived lag)
+ * - Smooth Framer Motion spring physics (stiffness: 420, damping: 30)
+ * - Micro-interactions:
+ *   - Dashboard: layout quad-grid with subtle fill
+ *   - Stock: 3D inventory package with sparkling star
+ *   - Suppliers: delivery truck with spring drive micro-bounce
+ *   - Notifications: ringing bell keyframe animation with active badge
+ *   - Settings: sleek gear icon with spring rotation micro-animation
  */
 export function MobileBottomNavWidget({
   activeTab,
+  hidden = false,
   onTabChange,
-  isVisible,
-  onQuickSearch,
-  onQuickAudit,
+  notificationCount = 0,
 }: MobileBottomNavWidgetProps) {
-  const tabs = [
-    { id: 'dashboard', label: 'Insights', icon: <DashboardIcon size="xs" /> },
-    { id: 'inventory', label: 'Catalog', icon: <BoxesIcon size="xs" /> },
-    { id: 'branches', label: 'Hubs', icon: <WarehouseIcon size="xs" /> },
-    { id: 'suppliers', label: 'Vendors', icon: <TruckIcon size="xs" /> },
-    { id: 'alerts', label: 'Alerts', icon: <BellIcon size="xs" /> },
-    { id: 'settings', label: 'Settings', icon: <SettingsIcon size="xs" /> },
-  ];
+  const router = useRouter();
+  const [optimisticNavId, setOptimisticNavId] = useState<NavItemId | null>(null);
+
+  // Map platform activeTab to the corresponding navigation destination
+  const routeNavId = useMemo<NavItemId>(() => {
+    if (
+      activeTab === 'home' ||
+      activeTab === 'dashboard' ||
+      activeTab === 'logs' ||
+      activeTab === 'activity'
+    ) {
+      return 'dashboard';
+    }
+    if (
+      activeTab === 'stock' ||
+      activeTab === 'transfers' ||
+      activeTab === 'expiry' ||
+      activeTab === 'expiring' ||
+      activeTab === 'tasks' ||
+      activeTab === 'receive'
+    ) {
+      return 'stock';
+    }
+    if (activeTab === 'suppliers') {
+      return 'suppliers';
+    }
+    if (activeTab === 'notifications') {
+      return 'notifications';
+    }
+    if (activeTab === 'settings' || activeTab === 'team' || activeTab === 'locations') {
+      return 'settings';
+    }
+    return 'dashboard';
+  }, [activeTab]);
+
+  // Reset optimistic state once the actual route tab catches up
+  useEffect(() => {
+    setOptimisticNavId(null);
+  }, [activeTab]);
+
+  const currentNavId = optimisticNavId ?? routeNavId;
+
+  // Prefetch all platform tab routes on mobile so navigation is instant
+  useEffect(() => {
+    NAV_ITEMS.forEach((item) => {
+      const path = item.routeTab === 'home' ? '/platform' : `/platform/${item.routeTab}`;
+      router.prefetch(path);
+    });
+  }, [router]);
+
+  const handleItemClick = (item: NavItemConfig) => {
+    setOptimisticNavId(item.id);
+    onTabChange(item.routeTab);
+  };
+
+  const renderInactiveIcon = (id: NavItemId) => {
+    switch (id) {
+      case 'dashboard':
+        return (
+          <svg
+            width="22"
+            height="22"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="#191B1F"
+            strokeWidth="1.85"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <rect width="7" height="9" x="3" y="3" rx="1.5" />
+            <rect width="7" height="5" x="14" y="3" rx="1.5" />
+            <rect width="7" height="9" x="14" y="12" rx="1.5" />
+            <rect width="7" height="5" x="3" y="16" rx="1.5" />
+          </svg>
+        );
+      case 'stock':
+        return (
+          <svg
+            width="22"
+            height="22"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="#191B1F"
+            strokeWidth="1.85"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z" />
+            <path d="m3.3 7 8.7 5 8.7-5" />
+            <path d="M12 22V12" />
+          </svg>
+        );
+      case 'suppliers':
+        return (
+          <svg
+            width="22"
+            height="22"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="#191B1F"
+            strokeWidth="1.85"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2" />
+            <path d="M15 18H9" />
+            <path d="M19 18h2a1 1 0 0 0 1-1v-3.65a1 1 0 0 0-.22-.62l-3.48-4.35A1 1 0 0 0 17.52 8H14v10Z" />
+            <circle cx="7" cy="18" r="2" />
+            <circle cx="17" cy="18" r="2" />
+          </svg>
+        );
+      case 'notifications':
+        return (
+          <div className="relative flex items-center justify-center">
+            <svg
+              width="22"
+              height="22"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="#191B1F"
+              strokeWidth="1.85"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
+              <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" />
+            </svg>
+            {notificationCount > 0 && (
+              <span className="absolute -top-1 -right-1 w-2 h-2 bg-[#191B1F] rounded-full ring-2 ring-white" />
+            )}
+          </div>
+        );
+      case 'settings':
+        return (
+          <svg
+            width="22"
+            height="22"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="#191B1F"
+            strokeWidth="1.85"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" />
+            <circle cx="12" cy="12" r="3" />
+          </svg>
+        );
+    }
+  };
+
+  const renderActiveIcon = (id: NavItemId) => {
+    switch (id) {
+      case 'dashboard':
+        return (
+          <motion.div
+            initial={{ scale: 0.8 }}
+            animate={{ scale: 1 }}
+            transition={{ duration: 0.25 }}
+            className="relative flex items-center justify-center"
+          >
+            <svg
+              width="22"
+              height="22"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="white"
+              strokeWidth="1.9"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <rect width="7" height="9" x="3" y="3" rx="1.5" fill="white" fillOpacity="0.25" />
+              <rect width="7" height="5" x="14" y="3" rx="1.5" fill="white" fillOpacity="0.25" />
+              <rect width="7" height="9" x="14" y="12" rx="1.5" fill="white" fillOpacity="0.25" />
+              <rect width="7" height="5" x="3" y="16" rx="1.5" fill="white" fillOpacity="0.25" />
+            </svg>
+          </motion.div>
+        );
+      case 'stock':
+        return (
+          <motion.div
+            initial={{ scale: 0.8 }}
+            animate={{ scale: 1 }}
+            transition={{ duration: 0.25 }}
+            className="relative flex items-center justify-center"
+          >
+            <svg
+              width="22"
+              height="22"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="white"
+              strokeWidth="1.85"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z" />
+              <path d="m3.3 7 8.7 5 8.7-5" />
+              <path d="M12 22V12" />
+              {/* 4-point sparkle star */}
+              <path
+                d="M17 4 C17 5.2 17 5.2 18.2 5.2 C17 5.2 17 5.2 17 6.4 C17 5.2 17 5.2 15.8 5.2 C17 5.2 17 5.2 17 4 Z"
+                fill="white"
+                stroke="none"
+              />
+            </svg>
+          </motion.div>
+        );
+      case 'suppliers':
+        return (
+          <motion.div
+            initial={{ x: -3, scale: 0.85 }}
+            animate={{ x: 0, scale: 1 }}
+            transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+            className="relative flex items-center justify-center"
+          >
+            <svg
+              width="22"
+              height="22"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="white"
+              strokeWidth="1.9"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2" />
+              <path d="M15 18H9" />
+              <path d="M19 18h2a1 1 0 0 0 1-1v-3.65a1 1 0 0 0-.22-.62l-3.48-4.35A1 1 0 0 0 17.52 8H14v10Z" />
+              <circle cx="7" cy="18" r="2" fill="white" />
+              <circle cx="17" cy="18" r="2" fill="white" />
+            </svg>
+          </motion.div>
+        );
+      case 'notifications':
+        return (
+          <motion.div
+            initial={{ rotate: 0 }}
+            animate={{ rotate: [0, -14, 12, -8, 5, 0] }}
+            transition={{ duration: 0.6, ease: 'easeInOut' }}
+            className="relative flex items-center justify-center"
+          >
+            <svg
+              width="22"
+              height="22"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="white"
+              strokeWidth="1.85"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
+              <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" />
+            </svg>
+            {notificationCount > 0 && (
+              <span className="absolute -top-1 -right-1 w-2 h-2 bg-stocky-accent rounded-full ring-2 ring-[#191B1F]" />
+            )}
+          </motion.div>
+        );
+      case 'settings':
+        return (
+          <motion.div
+            initial={{ rotate: -40, scale: 0.85 }}
+            animate={{ rotate: 0, scale: 1 }}
+            transition={{ type: 'spring', stiffness: 420, damping: 24 }}
+            className="relative flex items-center justify-center"
+          >
+            <svg
+              width="22"
+              height="22"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="white"
+              strokeWidth="1.9"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" />
+              <circle cx="12" cy="12" r="3" />
+            </svg>
+          </motion.div>
+        );
+    }
+  };
 
   return (
-    <motion.div
-      initial={false}
-      animate={{
-        y: isVisible ? 0 : 120,
-        opacity: isVisible ? 1 : 0,
-      }}
-      transition={{ type: 'spring', stiffness: 350, damping: 30 }}
-      className="fixed bottom-4 inset-x-4 max-w-sm mx-auto z-40 md:hidden flex flex-col gap-2 pointer-events-auto select-none"
+    <div
+      className={`fixed inset-x-0 bottom-0 z-40 md:hidden transition-transform duration-300 ease-out select-none ${
+        hidden ? 'translate-y-[calc(100%+1rem)] pointer-events-none' : 'translate-y-0'
+      }`}
+      aria-label="Mobile navigation"
     >
-      {/* Floating Prompt Pill (Bevel "Ask Bevel anything" translated to Stocky catalog search) */}
-      <div
-        onClick={onQuickSearch || (() => onTabChange('inventory'))}
-        className="bevel-glass-dock rounded-full py-2 px-4 flex items-center justify-between cursor-pointer shadow-bevel transition-all active:scale-98"
-      >
-        <div className="flex items-center gap-2 text-slate-500">
-          <SparklesIcon size="xs" className="text-stocky-primary" />
-          <span className="text-xs font-medium text-slate-700">
-            Search catalog, SKU, barcode...
-          </span>
-        </div>
-        <span className="text-[10px] font-medium bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full border border-slate-200">
-          ⌘K
-        </span>
-      </div>
+      <nav className="relative bg-white border-t border-[#EAEAEA] shadow-[0_-2px_12px_rgba(0,0,0,0.04)] pb-[max(env(safe-area-inset-bottom),0.5rem)] overflow-visible">
+        <div className="h-[62px] flex items-stretch relative px-0.5">
+          {NAV_ITEMS.map((item) => {
+            const isActive = currentNavId === item.id;
 
-      {/* Floating Frosted Glass Dock */}
-      <nav
-        className="bevel-glass-dock rounded-full p-1.5 flex items-center justify-between shadow-bevel-dock"
-        aria-label="Mobile Bottom Navigation"
-      >
-        {tabs.map((tab) => {
-          const isActive = activeTab === tab.id;
-          return (
-            <button
-              key={tab.id}
-              type="button"
-              onClick={() => onTabChange(tab.id)}
-              className={`relative flex flex-col items-center justify-center py-2 px-2.5 rounded-full transition-all duration-200 cursor-pointer flex-1 ${
-                isActive
-                  ? 'bg-slate-900 text-white shadow-md font-semibold'
-                  : 'text-slate-500 hover:text-slate-900'
-              }`}
-            >
-              <span className="shrink-0">{tab.icon}</span>
-              <span className="text-[9px] mt-0.5 leading-none truncate max-w-[45px]">
-                {tab.label}
-              </span>
-            </button>
-          );
-        })}
+            return (
+              <button
+                key={item.id}
+                type="button"
+                onClick={() => handleItemClick(item)}
+                aria-current={isActive ? 'page' : undefined}
+                className="flex-1 relative flex flex-col items-center justify-end pb-2 pt-1 h-full cursor-pointer group focus:outline-none min-w-0"
+              >
+                {isActive ? (
+                  <>
+                    {/* Elevated circular bubble popping above navbar */}
+                    <motion.div
+                      layoutId="mobileActiveNavBubble"
+                      className="absolute -top-3.5 w-[50px] h-[50px] rounded-full bg-[#191B1F] ring-[3.5px] ring-white shadow-[0_4px_14px_rgba(0,0,0,0.18)] flex items-center justify-center overflow-hidden z-10"
+                      transition={{
+                        type: 'spring',
+                        stiffness: 420,
+                        damping: 30,
+                        mass: 0.8,
+                      }}
+                    >
+                      {renderActiveIcon(item.id)}
+                    </motion.div>
+                    {/* Placeholder space in the default icon position */}
+                    <div className="h-[24px] w-[24px] mb-1 opacity-0 pointer-events-none" aria-hidden="true" />
+                  </>
+                ) : (
+                  <div className="h-[24px] w-[24px] mb-1 flex items-center justify-center transition-transform group-active:scale-90">
+                    {renderInactiveIcon(item.id)}
+                  </div>
+                )}
+
+                {/* Typography Label */}
+                <span
+                  className={`text-[10px] sm:text-[11px] tracking-tight leading-none transition-all truncate max-w-[64px] ${
+                    isActive ? 'font-bold text-[#191B1F]' : 'font-medium text-[#191B1F]/75'
+                  }`}
+                >
+                  {item.label}
+                </span>
+              </button>
+            );
+          })}
+        </div>
       </nav>
-    </motion.div>
+    </div>
   );
 }
-

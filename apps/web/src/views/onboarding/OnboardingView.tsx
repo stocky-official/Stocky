@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase/client';
 import { OrganizationOnboardingWidget } from '@/widgets/OrganizationOnboardingWidget/OrganizationOnboardingWidget';
 import { BoxesIcon } from '@stocky/icons';
+import { PageContent, PageFooter, PageHeader, PageLayout } from '@/components/ui/PageLayout';
 
 /**
  * OnboardingView (PageView)
@@ -43,8 +44,33 @@ export function OnboardingView() {
           .maybeSingle();
 
         if (existingMembership?.company_id && existingMembership.status === 'active') {
-          // Already belongs to an organization -> skip to platform
-          router.replace('/platform');
+          const { data: company } = await supabase
+            .from('companies')
+            .select('code, status')
+            .eq('id', existingMembership.company_id)
+            .maybeSingle();
+
+          if (company?.status && company.status !== 'verified') {
+            router.replace('/verification-pending');
+          } else {
+            // Legacy companies without a status column remain accessible until
+            // the reviewed verification migration is applied.
+            const tenantUrl = company?.code ? `/${company.code.toLowerCase()}` : '/platform';
+            router.replace(tenantUrl);
+          }
+          return;
+        }
+
+        const { data: existingApplication } = await supabase
+          .from('company_applications')
+          .select('status')
+          .eq('requested_by_auth_user_id', user.id)
+          .in('status', ['pending', 'approved'])
+          .limit(1)
+          .maybeSingle();
+
+        if (existingApplication) {
+          router.replace('/verification-pending');
           return;
         }
       } catch (err) {
@@ -59,19 +85,20 @@ export function OnboardingView() {
 
   if (checking) {
     return (
-      <div className="min-h-screen w-screen bg-stocky-bg-global flex flex-col items-center justify-center gap-3 select-none">
-        <div className="w-8 h-8 rounded-widget border-2 border-stocky-primary border-t-transparent animate-spin" />
-        <span className="text-xs text-stocky-text-sub font-normal">
-          Checking your organization profile...
-        </span>
-      </div>
+      <PageLayout className="w-screen flex flex-col items-center justify-center gap-3 select-none">
+        <div className="w-full max-w-md bg-stocky-bg-widget border border-stocky-border-subtle rounded-widget p-8 shadow-bevel flex flex-col items-center gap-4 animate-pulse">
+          <div className="w-12 h-12 rounded-full bg-stocky-border-default/60" />
+          <div className="h-5 w-48 rounded-md bg-stocky-border-default/80" />
+          <div className="h-3.5 w-64 rounded bg-stocky-border-default/40" />
+        </div>
+      </PageLayout>
     );
   }
 
   return (
-    <div className="min-h-screen w-screen bg-stocky-bg-global flex flex-col justify-between select-none">
+    <PageLayout className="w-screen flex flex-col justify-between select-none">
       {/* Top Simple Brand Header */}
-      <header className="h-16 px-6 border-b border-stocky-border-subtle bg-stocky-bg-widget flex items-center justify-between">
+      <PageHeader>
         <div className="flex items-center gap-2.5">
           <div className="w-8 h-8 rounded-widget bg-stocky-primary text-white flex items-center justify-center shrink-0">
             <BoxesIcon size="xs" />
@@ -84,22 +111,22 @@ export function OnboardingView() {
         <div className="text-xs text-stocky-text-sub">
           Signed in as <span className="font-medium text-stocky-text-main">{userEmail}</span>
         </div>
-      </header>
+      </PageHeader>
 
       {/* Main Centered Onboarding Workspace */}
-      <main className="flex-1 flex items-center justify-center py-10">
+      <PageContent className="flex-1 flex items-center justify-center py-10">
         <OrganizationOnboardingWidget
           userEmail={userEmail}
           onSuccess={() => {
-            router.push('/platform');
+            router.push('/verification-pending');
           }}
         />
-      </main>
+      </PageContent>
 
       {/* Minimal Footer */}
-      <footer className="py-4 text-center text-[11px] text-stocky-text-sub border-t border-stocky-border-subtle bg-stocky-bg-widget">
+      <PageFooter className="py-4 text-[11px]">
         Stocky Multi-Tenant B2B Inventory Architecture • v0.1.0
-      </footer>
-    </div>
+      </PageFooter>
+    </PageLayout>
   );
 }

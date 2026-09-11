@@ -3,9 +3,10 @@ Audit and Purge all Mock Data from Database
 Rule 2 Mandate: Resides strictly in _technical_support/scripts/
 """
 
+import os
 import psycopg2
 
-DB_URL = "postgresql://postgres.qwgpykxjzgqbdzakhchm:50yfVTT4uUxVsY1z@aws-1-eu-west-1.pooler.supabase.com:6543/postgres"
+DB_URL = os.environ["DATABASE_URL"]
 
 def clean_and_audit():
     print("==================================================")

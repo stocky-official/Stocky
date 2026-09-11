@@ -1,8 +1,9 @@
 'use client';
 
 import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { XIcon, CheckIcon, TrendingUpIcon, CalendarIcon, BoxesIcon } from '@stocky/icons';
+import { SideDrawer } from '@/components/ui/SideDrawer';
 
 export interface ItemAnalyticsSheetWidgetProps {
   isOpen: boolean;
@@ -89,28 +90,12 @@ export function ItemAnalyticsSheetWidget({
   const avgY = height - paddingY - ((avgValue - minVal) / range) * (height - paddingY * 2);
 
   return (
-    <AnimatePresence>
-      {isOpen && (
-        <>
-          {/* Backdrop */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={onClose}
-            className="fixed inset-0 z-50 bg-slate-900/30 backdrop-blur-sm"
-          />
-
-          {/* Slide-up Sheet */}
-          <motion.div
-            initial={{ y: '100%' }}
-            animate={{ y: 0 }}
-            exit={{ y: '100%' }}
-            transition={{ type: 'spring', damping: 32, stiffness: 350 }}
-            className="fixed inset-x-0 bottom-0 z-50 max-w-2xl mx-auto bg-white rounded-t-[32px] border-t border-x border-slate-200 shadow-2xl p-6 pb-10 flex flex-col space-y-6 max-h-[90vh] overflow-y-auto"
-          >
-            {/* Grab Handle for sheet gesture */}
-            <div className="w-12 h-1.5 bg-slate-200 rounded-full mx-auto -mt-1 cursor-grab" />
+    <SideDrawer
+      isOpen={isOpen}
+      onClose={onClose}
+      ariaLabel={`${itemName} analytics`}
+      panelClassName="space-y-6 overflow-y-auto p-6 pb-10"
+    >
 
             {/* Header */}
             <div className="flex items-start justify-between">
@@ -118,11 +103,11 @@ export function ItemAnalyticsSheetWidget({
                 <span className="text-xs font-medium text-emerald-600 uppercase tracking-wider">
                   {categoryName} • Velocity Analytics
                 </span>
-                <h3 className="text-xl font-semibold text-slate-900 tracking-tight mt-0.5">
+                <h3 className="text-xl font-medium text-slate-900 tracking-tight mt-0.5">
                   {itemName}
                 </h3>
                 <p className="text-xs text-slate-400 mt-0.5">
-                  Current Stock: <span className="font-semibold text-slate-700">{currentStock} units</span> (${(currentStock * unitPrice).toFixed(2)})
+                  Current Stock: <span className="font-medium text-slate-700">{currentStock} units</span> (${(currentStock * unitPrice).toFixed(2)})
                 </p>
               </div>
 
@@ -144,7 +129,7 @@ export function ItemAnalyticsSheetWidget({
                   onClick={() => setTimeframe(tf)}
                   className={`flex-1 py-1.5 rounded-xl text-xs font-medium transition-all cursor-pointer ${
                     timeframe === tf
-                      ? 'bg-white text-slate-900 shadow-sm font-semibold'
+                      ? 'bg-white text-slate-900 shadow-sm font-medium'
                       : 'text-slate-500 hover:text-slate-800'
                   }`}
                 >
@@ -159,7 +144,7 @@ export function ItemAnalyticsSheetWidget({
                 <div>
                   <span className="text-xs text-slate-400 block">Daily Consumption Velocity</span>
                   <div className="flex items-baseline gap-2">
-                    <span className="text-2xl font-bold text-slate-900">
+                    <span className="text-2xl font-medium text-slate-900">
                       {hoveredPoint ? `${hoveredPoint.value} units` : `${avgValue} units/day`}
                     </span>
                     <span className="text-xs text-slate-400">
@@ -255,7 +240,7 @@ export function ItemAnalyticsSheetWidget({
               {/* Card 1: Reorder Trigger */}
               <div className="bg-slate-50/70 border border-slate-100 rounded-2xl p-3.5">
                 <span className="text-[11px] text-slate-400 block">Reorder Buffer Target</span>
-                <span className="text-base font-semibold text-slate-900 mt-0.5 block">
+                <span className="text-base font-medium text-slate-900 mt-0.5 block">
                   180 units
                 </span>
                 <span className="text-[10px] text-emerald-600 mt-0.5 block font-medium">
@@ -271,7 +256,7 @@ export function ItemAnalyticsSheetWidget({
                     <CheckIcon size="xs" />
                   </div>
                 </div>
-                <span className="text-base font-semibold text-slate-900 mt-0.5 block">
+                <span className="text-base font-medium text-slate-900 mt-0.5 block">
                   98.4%
                 </span>
                 <span className="text-[10px] text-slate-400 mt-0.5 block">
@@ -282,7 +267,7 @@ export function ItemAnalyticsSheetWidget({
               {/* Card 3: Lead Time */}
               <div className="bg-slate-50/70 border border-slate-100 rounded-2xl p-3.5">
                 <span className="text-[11px] text-slate-400 block">Lead Time Window</span>
-                <span className="text-base font-semibold text-slate-900 mt-0.5 block">
+                <span className="text-base font-medium text-slate-900 mt-0.5 block">
                   2.4 Days
                 </span>
                 <span className="text-[10px] text-slate-400 mt-0.5 block">
@@ -308,9 +293,6 @@ export function ItemAnalyticsSheetWidget({
                 Done
               </button>
             </div>
-          </motion.div>
-        </>
-      )}
-    </AnimatePresence>
+    </SideDrawer>
   );
 }

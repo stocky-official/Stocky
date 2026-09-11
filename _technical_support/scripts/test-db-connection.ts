@@ -12,9 +12,9 @@ import * as path from 'path';
 // Load environment from packages/db/.env
 dotenv.config({ path: path.resolve(__dirname, '../../packages/db/.env') });
 
-const connectionString =
-  process.env.DATABASE_URL ||
-  'postgresql://postgres.qwgpykxjzgqbdzakhchm:50yfVTT4uUxVsY1z@aws-1-eu-west-1.pooler.supabase.com:6543/postgres';
+const connectionString = process.env.DATABASE_URL;
+
+if (!connectionString) throw new Error('DATABASE_URL is required.');
 
 console.log('--- Testing Supabase Database Connection ---');
 console.log('Host: aws-1-eu-west-1.pooler.supabase.com (Port 6543, Shared Pooler)');

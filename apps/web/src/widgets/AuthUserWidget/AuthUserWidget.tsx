@@ -2,8 +2,10 @@
 
 import React, { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase/client';
+import { getAuthRedirectOrigin } from '@/lib/authRedirect';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
+import { UserAvatar } from '@/components/ui/UserAvatar';
 import { SettingsIcon, CheckCircleIcon, ArrowUpDownIcon } from '@stocky/icons';
 import type { User } from '@supabase/supabase-js';
 
@@ -37,7 +39,7 @@ export function AuthUserWidget() {
     await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
+        redirectTo: `${getAuthRedirectOrigin()}/auth/callback`,
       },
     });
   };
@@ -59,17 +61,13 @@ export function AuthUserWidget() {
     return (
       <div className="flex items-center gap-2.5">
         <div className="flex items-center gap-2">
-          {avatar ? (
-            <img
-              src={avatar}
-              alt={name}
-              className="w-8 h-8 rounded-full border border-stocky-border-default object-cover"
-            />
-          ) : (
-            <div className="w-8 h-8 rounded-full bg-stocky-brand-primary text-white flex items-center justify-center text-xs font-bold">
-              {name?.charAt(0).toUpperCase()}
-            </div>
-          )}
+          <UserAvatar
+            src={avatar}
+            name={name}
+            email={user.email}
+            size="md"
+            className="border border-stocky-border-default"
+          />
           <div className="hidden sm:block text-left">
             <div className="text-xs font-medium text-stocky-text-primary leading-tight">
               {name}

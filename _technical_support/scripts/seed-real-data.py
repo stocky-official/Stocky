@@ -10,7 +10,7 @@ import openpyxl
 import psycopg2
 from psycopg2.extras import execute_values
 
-DB_URL = "postgresql://postgres.qwgpykxjzgqbdzakhchm:50yfVTT4uUxVsY1z@aws-1-eu-west-1.pooler.supabase.com:6543/postgres"
+DB_URL = os.environ["DATABASE_URL"]
 DATA_DIR = r"c:\Users\abdelrahman.mamdouh_\Desktop\Stocky\data"
 
 def run_seed():

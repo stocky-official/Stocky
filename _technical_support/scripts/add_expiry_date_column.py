@@ -1,7 +1,7 @@
 import psycopg2
 import os
 
-DATABASE_URL = "postgresql://postgres.qwgpykxjzgqbdzakhchm:50yfVTT4uUxVsY1z@aws-1-eu-west-1.pooler.supabase.com:6543/postgres"
+DATABASE_URL = os.environ["DATABASE_URL"]
 
 def main():
     print("1. Connecting to Supabase Postgres...")

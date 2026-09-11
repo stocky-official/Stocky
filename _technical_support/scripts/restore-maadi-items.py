@@ -1,6 +1,7 @@
+import os
 import psycopg2
 
-conn = psycopg2.connect('postgresql://postgres.qwgpykxjzgqbdzakhchm:50yfVTT4uUxVsY1z@aws-1-eu-west-1.pooler.supabase.com:6543/postgres', sslmode='require')
+conn = psycopg2.connect(os.environ["DATABASE_URL"], sslmode='require')
 cur = conn.cursor()
 
 # Find Maadi Mobil Branch

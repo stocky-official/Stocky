@@ -3,8 +3,8 @@ import json
 import urllib.request
 import uuid
 
-SUPABASE_URL = "https://qwgpykxjzgqbdzakhchm.supabase.co"
-SERVICE_ROLE_KEY = "sb_secret_REDACTED_MOCK_KEY_FOR_LOCAL_TESTS"
+SUPABASE_URL = os.environ["NEXT_PUBLIC_SUPABASE_URL"]
+SERVICE_ROLE_KEY = os.environ["SUPABASE_SERVICE_ROLE_KEY"]
 
 headers = {
     "apikey": SERVICE_ROLE_KEY,
