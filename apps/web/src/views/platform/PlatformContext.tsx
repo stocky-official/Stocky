@@ -46,8 +46,8 @@ const roleTitles: Record<CompanyUserRole, string> = {
 };
 
 const adminRoles: CompanyUserRole[] = ['owner', 'admin'];
-const staffTabs = ['home', 'stock', 'expiry', 'tasks', 'notifications', 'settings', 'receive'];
-const managerTabs = ['home', 'stock', 'expiry', 'tasks', 'notifications', 'settings', 'receive', 'logs', 'suppliers', 'transfers'];
+const staffTabs = ['home', 'stock', 'expiry', 'tasks', 'notifications', 'settings', 'receive', 'logs', 'locations', 'supplier-requests', 'tasks-completed'];
+const managerTabs = ['home', 'stock', 'expiry', 'tasks', 'notifications', 'settings', 'receive', 'logs', 'suppliers', 'transfers', 'locations', 'supplier-requests', 'tasks-completed'];
 
 export function canOpenTab(role: CompanyUserRole, tab: string) {
   if (adminRoles.includes(role)) return true;
@@ -126,6 +126,10 @@ export interface PlatformContextValue {
   setSupplierProductId: (id?: string) => void;
   activeTab: string;
   tenantPrefix: string;
+  supplierTab: 'suppliers' | 'requests';
+  setSupplierTab: (tab: 'suppliers' | 'requests') => void;
+  taskTab: 'ongoing' | 'completed';
+  setTaskTab: (tab: 'ongoing' | 'completed') => void;
   canManage: boolean;
   canManageTasks: boolean;
   navigateToTab: (tab: string) => void;
@@ -290,6 +294,8 @@ export function PlatformProvider({
   const [notificationSyncAvailable, setNotificationSyncAvailable] = useState(false);
   const [transferProductId, setTransferProductId] = useState<string | undefined>();
   const [supplierProductId, setSupplierProductId] = useState<string | undefined>();
+  const [supplierTab, setSupplierTab] = useState<'suppliers' | 'requests'>('suppliers');
+  const [taskTab, setTaskTab] = useState<'ongoing' | 'completed'>('ongoing');
   const [tasks, setTasks] = useState<StockTask[]>([]);
   const [taskItems, setTaskItems] = useState<StockTaskItem[]>([]);
   const [taskExpected, setTaskExpected] = useState<StockTaskExpected[]>([]);
@@ -298,6 +304,38 @@ export function PlatformProvider({
   const refresh = () => setReloadKey((value) => value + 1);
 
   const navigateToTab = useCallback((tab: string) => {
+    if (tab === 'supplier-requests') {
+      setSupplierTab('requests');
+      if (activeTab !== 'suppliers') {
+        const path = TAB_TO_PATH.suppliers;
+        const targetHref = (!effectiveTenantPrefix || effectiveTenantPrefix === '/platform')
+          ? path
+          : (path === '/platform' ? effectiveTenantPrefix : path.replace('/platform', effectiveTenantPrefix));
+        React.startTransition(() => {
+          router.push(targetHref || '/');
+        });
+      }
+      return;
+    }
+    if (tab === 'suppliers') {
+      setSupplierTab('suppliers');
+    }
+    if (tab === 'tasks-completed') {
+      setTaskTab('completed');
+      if (activeTab !== 'tasks') {
+        const path = TAB_TO_PATH.tasks;
+        const targetHref = (!effectiveTenantPrefix || effectiveTenantPrefix === '/platform')
+          ? path
+          : (path === '/platform' ? effectiveTenantPrefix : path.replace('/platform', effectiveTenantPrefix));
+        React.startTransition(() => {
+          router.push(targetHref || '/');
+        });
+      }
+      return;
+    }
+    if (tab === 'tasks') {
+      setTaskTab('ongoing');
+    }
     if (!canOpenTab(userRole, tab)) return;
     const path = TAB_TO_PATH[tab] || `/platform/${tab}`;
     const targetHref = (!effectiveTenantPrefix || effectiveTenantPrefix === '/platform')
@@ -306,7 +344,7 @@ export function PlatformProvider({
     React.startTransition(() => {
       router.push(targetHref || '/');
     });
-  }, [userRole, effectiveTenantPrefix, router]);
+  }, [userRole, effectiveTenantPrefix, router, activeTab]);
 
   // Warm client router cache so all platform transitions feel instantaneous
   useEffect(() => {
@@ -1019,6 +1057,10 @@ export function PlatformProvider({
     setSupplierProductId,
     activeTab,
     tenantPrefix,
+    supplierTab,
+    setSupplierTab,
+    taskTab,
+    setTaskTab,
     canManage: adminRoles.includes(userRole),
     canManageTasks: adminRoles.includes(userRole) || userRole === 'manager',
     navigateToTab,

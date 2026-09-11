@@ -84,7 +84,6 @@ export function StockInventoryTableWidget({ rows = [], locations = [], onReceive
   const [filters, setFilters] = useState<TableFilters>({ product: '', productValues: [], barcode: '', barcodeValues: [], category: '', categoryValues: [], locations: '', locationValues: [], quantity: '', price: '', expiry: [], audit: [] });
   const locationNames = useMemo(() => new Map(locations.map((location) => [location.id, location.name])), [locations]);
   const selectedProductId = onSelectProduct ? controlledSelectedProductId : internalSelectedProductId;
-  const isMasterDetail = Boolean(selectedProductId);
 
   const selectProduct = (productId: string) => {
     const nextProductId = selectedProductId === productId ? null : productId;
@@ -251,43 +250,32 @@ export function StockInventoryTableWidget({ rows = [], locations = [], onReceive
   );
 
   return (
-    <div className={`stocky-board-table-wrap ${isMasterDetail ? 'stocky-board-table-wrap--master' : ''}`}>
+    <div className="stocky-board-table-wrap">
       <div className="overflow-x-auto">
-        <table className={`stocky-board-table stocky-board-table--inventory w-full ${isMasterDetail ? 'stocky-board-table--master' : ''}`}>
+        <table className="stocky-board-table stocky-board-table--inventory w-full">
           <colgroup>
             {canSelect && <col className="stocky-table-col-selection" />}
-            {isMasterDetail ? <>
-              <col className="stocky-table-col-product" />
-              <col className="stocky-table-col-barcode" />
-              <col className="stocky-table-col-actions" />
-            </> : <>
-              <col className="stocky-table-col-product" />
-              <col className="stocky-table-col-barcode" />
-              <col className="stocky-table-col-category" />
-              <col className="stocky-table-col-locations" />
-              <col className="stocky-table-col-quantity" />
-              <col className="stocky-table-col-price" />
-              <col className="stocky-table-col-expiry" />
-              <col className="stocky-table-col-audit" />
-              <col className="stocky-table-col-actions" />
-            </>}
+            <col className="stocky-table-col-product" />
+            <col className="stocky-table-col-barcode" />
+            <col className="stocky-table-col-category" />
+            <col className="stocky-table-col-locations" />
+            <col className="stocky-table-col-quantity" />
+            <col className="stocky-table-col-price" />
+            <col className="stocky-table-col-expiry" />
+            <col className="stocky-table-col-audit" />
+            <col className="stocky-table-col-actions" />
           </colgroup>
           <thead>
             <tr className="stocky-board-table__column-row text-[10px] uppercase tracking-wide text-stocky-text-sub">
               {canSelect && <th className="stocky-board-table__selection-cell"><input type="checkbox" checked={allSelected} onClick={(event) => event.stopPropagation()} onChange={() => onToggleAll?.(allSelected ? [] : visibleProductIds)} aria-label="Select all filtered products" className="h-3.5 w-3.5 accent-stocky-primary" /></th>}
-              {isMasterDetail ? <>
-                {header('Product', 'product')}
-                {header('Barcode', 'barcode')}
-              </> : <>
-                {header('Product', 'product')}
-                {header('Barcode', 'barcode')}
-                {header('Category', 'category')}
-                {header('Locations', 'locations')}
-                {header('Total quantity', 'quantity', 'left')}
-                {header('Price', 'price', 'left')}
-                {header('Next expiry date', 'expiry')}
-                {header('Last audit date', 'audit')}
-              </>}
+              {header('Product', 'product')}
+              {header('Barcode', 'barcode')}
+              {header('Category', 'category')}
+              {header('Locations', 'locations')}
+              {header('Total quantity', 'quantity', 'left')}
+              {header('Price', 'price', 'left')}
+              {header('Next expiry date', 'expiry')}
+              {header('Last audit date', 'audit')}
               <th className="stocky-board-table__header-cell text-left" aria-label="Row actions"><span className="stocky-table-header-label font-medium text-[10px] uppercase tracking-wide text-stocky-text-sub">Actions</span></th>
             </tr>
           </thead>
@@ -298,23 +286,18 @@ export function StockInventoryTableWidget({ rows = [], locations = [], onReceive
               const totalValue = row.product.unitCost * row.totalQuantity;
               return <tr key={row.product.id} className={`stocky-board-row align-middle ${selectedProductId === row.product.id ? 'stocky-board-row--selected' : ''}`} onClick={() => selectProduct(row.product.id)} onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); selectProduct(row.product.id); } }} tabIndex={0}>
                   {canSelect && <td className="stocky-board-table__selection-cell"><input type="checkbox" checked={selectedProductIds.includes(row.product.id)} onClick={(event) => event.stopPropagation()} onChange={() => onToggleProduct?.(row.product.id)} aria-label={`Select ${row.product.name}`} className="h-3.5 w-3.5 accent-stocky-primary" /></td>}
-                  {isMasterDetail ? <>
-                    <td className="px-2.5 py-3"><div className="stocky-board-product-cell"><span className="block truncate text-xs font-medium text-stocky-text-main">{row.product.name}</span></div></td>
-                    <td className="px-2.5 py-3"><div className="stocky-board-barcode"><BarcodeIcon size="xs" className="stocky-board-barcode__icon" /><span className="truncate text-xs text-stocky-text-main">{row.product.barcode || 'No barcode'}</span></div></td>
-                  </> : <>
-                    <td className="px-2.5 py-3"><div className="stocky-board-product-cell"><span className="block truncate text-xs font-medium text-stocky-text-main">{row.product.name}</span></div></td>
-                    <td className="px-2.5 py-3"><div className="stocky-board-barcode"><BarcodeIcon size="xs" className="stocky-board-barcode__icon" /><span className="truncate text-xs text-stocky-text-main">{row.product.barcode || 'No barcode'}</span></div></td>
-                    <td className="px-2.5 py-3"><span className="block truncate text-xs text-stocky-text-sub">{row.product.categoryName || 'General'}</span></td>
-                    <td className="px-2.5 py-3"><div className="stocky-board-location-tags">{locationTags(row)}</div></td>
-                    <td className="px-2.5 py-3 text-left"><span className="stocky-board-total block text-xs font-medium text-stocky-text-main">{row.totalQuantity.toLocaleString()}</span><span className="mt-0.5 block text-[10px] text-stocky-text-sub">{row.product.unitName}{row.totalQuantity === 1 ? '' : 's'}</span></td>
-                    <td className="px-2.5 py-3 text-left"><div className="stocky-board-value-stack"><span className="stocky-board-value-main">{formatCurrency(row.product.unitCost)}</span><span className="stocky-board-value-sub">{formatCurrency(totalValue)} total</span></div></td>
-                    <td className="px-2.5 py-3"><div className="stocky-board-date-stack"><span className="stocky-board-date-main">{formatDate(row.earliestExpiry?.expiryDate)}</span><span className={`stocky-board-date-tag ${expiryState.tone === 'critical' ? 'stocky-status-critical' : expiryState.tone === 'warning' ? 'stocky-status-warning' : 'stocky-status-success'}`}>{expiryState.label}</span></div></td>
-                    <td className="px-2.5 py-3"><div className="stocky-board-date-stack"><span className="stocky-board-date-main">{auditDate ? formatDate(auditDate) : 'No audit date'}</span><span className={`stocky-board-date-tag ${auditDate ? 'stocky-status-muted' : 'stocky-status-warning'}`}>{auditDate ? 'Audited' : 'Never audited'}</span></div></td>
-                  </>}
+                  <td className="px-2.5 py-3"><div className="stocky-board-product-cell"><span className="block truncate text-xs font-medium text-stocky-text-main">{row.product.name}</span></div></td>
+                  <td className="px-2.5 py-3"><div className="stocky-board-barcode"><BarcodeIcon size="xs" className="stocky-board-barcode__icon" /><span className="truncate text-xs text-stocky-text-main">{row.product.barcode || 'No barcode'}</span></div></td>
+                  <td className="px-2.5 py-3"><span className="block truncate text-xs text-stocky-text-sub">{row.product.categoryName || 'General'}</span></td>
+                  <td className="px-2.5 py-3"><div className="stocky-board-location-tags">{locationTags(row)}</div></td>
+                  <td className="px-2.5 py-3 text-left"><span className="stocky-board-total block text-xs font-medium text-stocky-text-main">{row.totalQuantity.toLocaleString()}</span><span className="mt-0.5 block text-[10px] text-stocky-text-sub">{row.product.unitName}{row.totalQuantity === 1 ? '' : 's'}</span></td>
+                  <td className="px-2.5 py-3 text-left"><div className="stocky-board-value-stack"><span className="stocky-board-value-main">{formatCurrency(row.product.unitCost)}</span><span className="stocky-board-value-sub">{formatCurrency(totalValue)} total</span></div></td>
+                  <td className="px-2.5 py-3"><div className="stocky-board-date-stack"><span className="stocky-board-date-main">{formatDate(row.earliestExpiry?.expiryDate)}</span><span className={`stocky-board-date-tag ${expiryState.tone === 'critical' ? 'stocky-status-critical' : expiryState.tone === 'warning' ? 'stocky-status-warning' : 'stocky-status-success'}`}>{expiryState.label}</span></div></td>
+                  <td className="px-2.5 py-3"><div className="stocky-board-date-stack"><span className="stocky-board-date-main">{auditDate ? formatDate(auditDate) : 'No audit date'}</span><span className={`stocky-board-date-tag ${auditDate ? 'stocky-status-muted' : 'stocky-status-warning'}`}>{auditDate ? 'Audited' : 'Never audited'}</span></div></td>
                   {rowActions(row)}
                 </tr>
             })}
-            {pageRows.length === 0 && <tr><td colSpan={isMasterDetail ? (canSelect ? 4 : 3) : (canSelect ? 10 : 9)} className="px-4 py-12 text-center text-xs text-stocky-text-sub">No products match these filters.</td></tr>}
+            {pageRows.length === 0 && <tr><td colSpan={canSelect ? 10 : 9} className="px-4 py-12 text-center text-xs text-stocky-text-sub">No products match these filters.</td></tr>}
           </tbody>
         </table>
       </div>

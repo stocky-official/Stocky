@@ -4,6 +4,8 @@ import type { SupplierContactInput } from '@/widgets';
 import { PlatformPageLayout } from './PlatformPageLayout';
 import { SupplierRequestsWidget } from '@/widgets';
 
+import { useOptionalPlatform } from '@/views/platform/PlatformContext';
+
 export interface SuppliersPlatformViewProps {
   requests: SupplierRequest[];
   products: Product[];
@@ -14,6 +16,8 @@ export interface SuppliersPlatformViewProps {
   userRole: CompanyUserRole;
   selectedLocationId: string;
   defaultProductId?: string;
+  activeSupplierTab?: 'suppliers' | 'requests';
+  onSupplierTabChange?: (tab: 'suppliers' | 'requests') => void;
   onCreate: (input: { productId: string; locationId: string; supplierId?: string; requestType: 'replenish' | 'return' | 'replace'; quantity?: number }) => void;
   onCreateSupplier: (input: { name: string; address?: string; contactName: string; contactPhone: string; contactEmail?: string }) => Promise<unknown>;
   onCreateSupplierContact: (input: SupplierContactInput) => Promise<void>;
@@ -30,13 +34,21 @@ export interface SuppliersPlatformViewProps {
  * Orchestrates layout, header, and the supplier management / requests workspace.
  */
 export function SuppliersPlatformView(props: SuppliersPlatformViewProps) {
+  const platform = useOptionalPlatform();
+  const activeSupplierTab = props.activeSupplierTab ?? platform?.supplierTab;
+  const onSupplierTabChange = props.onSupplierTabChange ?? platform?.setSupplierTab;
+
   return (
     <PlatformPageLayout
       eyebrow="Supplier follow-up"
       title="Suppliers"
       subtitle="Manage supplier contacts, catalog links, and replenishment requests."
     >
-      <SupplierRequestsWidget {...props} />
+      <SupplierRequestsWidget
+        {...props}
+        activeSupplierTab={activeSupplierTab}
+        onSupplierTabChange={onSupplierTabChange}
+      />
     </PlatformPageLayout>
   );
 }

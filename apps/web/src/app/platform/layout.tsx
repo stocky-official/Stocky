@@ -148,6 +148,10 @@ function PlatformShell({ children }: { children?: React.ReactNode }) {
         userRole={platform.userRole}
         hidden={!isChromeVisible}
         onTabChange={platform.navigateToTab}
+        supplierTab={platform.supplierTab}
+        onSupplierTabChange={platform.setSupplierTab}
+        taskTab={platform.taskTab}
+        onTaskTabChange={platform.setTaskTab}
       />
       <div className="stocky-platform-body flex flex-1 min-h-0 min-w-0">
         <SidebarNavWidget

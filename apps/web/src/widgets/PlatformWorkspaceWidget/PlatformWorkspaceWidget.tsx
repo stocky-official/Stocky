@@ -100,6 +100,10 @@ export interface PlatformWorkspaceWidgetProps {
   onUnassignLocation: (assignmentId: string) => Promise<void>;
   onExport?: () => void;
   onImportSuccess?: () => void;
+  supplierTab?: 'suppliers' | 'requests';
+  onSupplierTabChange?: (tab: 'suppliers' | 'requests') => void;
+  taskTab?: 'ongoing' | 'completed';
+  onTaskTabChange?: (tab: 'ongoing' | 'completed') => void;
 }
 
 export function PlatformWorkspaceWidget({
@@ -108,6 +112,10 @@ export function PlatformWorkspaceWidget({
   userName,
   companyId,
   userRole,
+  supplierTab,
+  onSupplierTabChange,
+  taskTab,
+  onTaskTabChange,
   companyName,
   locationName,
   metrics,
@@ -182,7 +190,15 @@ export function PlatformWorkspaceWidget({
       <div className="stocky-platform-content flex flex-col gap-4">
         {!loading && (
           <div className="hidden md:block">
-            <PlatformContextTabsWidget activeTab={activeTab} onTabChange={onTabChange} userRole={userRole} />
+            <PlatformContextTabsWidget
+              activeTab={activeTab}
+              onTabChange={onTabChange}
+              userRole={userRole}
+              supplierTab={supplierTab}
+              onSupplierTabChange={onSupplierTabChange}
+              taskTab={taskTab}
+              onTaskTabChange={onTaskTabChange}
+            />
           </div>
         )}
         {loading ? (
@@ -226,6 +242,8 @@ export function PlatformWorkspaceWidget({
                 userRole={userRole}
                 currentUserId={currentUserId}
                 scanQuery={taskScanQuery}
+                activeTaskTab={taskTab}
+                onTaskTabChange={onTaskTabChange}
                 onStartTask={onStartTask}
                 onSubmitTask={onSubmitTask}
                 onReviewTask={onReviewTask}
@@ -300,6 +318,8 @@ export function PlatformWorkspaceWidget({
                 userRole={userRole}
                 selectedLocationId={locationScope}
                 defaultProductId={defaultSupplierProductId}
+                activeSupplierTab={supplierTab}
+                onSupplierTabChange={onSupplierTabChange}
                 onCreate={onCreateSupplierRequest}
                 onCreateSupplier={onCreateSupplier}
                 onCreateSupplierContact={onCreateSupplierContact}

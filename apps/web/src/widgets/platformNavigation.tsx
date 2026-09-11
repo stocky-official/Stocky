@@ -2,9 +2,12 @@ import React from 'react';
 import {
   ActivityIcon,
   ArrowUpDownIcon,
+  BellIcon,
   BoxesIcon,
   CheckCircleIcon,
+  ClockIcon,
   DashboardIcon,
+  SettingsIcon,
   TruckIcon,
   UsersIcon,
   WarehouseIcon,
@@ -31,7 +34,9 @@ export const TAB_TO_PATH: Record<string, string> = {
   stock: '/platform/stock',
   transfers: '/platform/transfers',
   suppliers: '/platform/suppliers',
+  'supplier-requests': '/platform/suppliers',
   tasks: '/platform/tasks',
+  'tasks-completed': '/platform/tasks',
   locations: '/platform/locations',
   team: '/platform/team',
   notifications: '/platform/notifications',
@@ -66,28 +71,37 @@ export function getPlatformNavigation(userRole: CompanyUserRole, tenantPrefix = 
 
   const dashboardItems: PlatformNavItem[] = [
     { id: 'home', label: 'Dashboard', icon: <DashboardIcon size="xs" />, href: makeHref('home') },
-    ...(!isStaff ? [{ id: 'logs', label: 'Logs', icon: <ActivityIcon size="xs" />, href: makeHref('logs') }] : []),
+    { id: 'logs', label: 'Activity Logs', icon: <ActivityIcon size="xs" />, href: makeHref('logs') },
+    { id: 'notifications', label: 'Notifications', icon: <BellIcon size="xs" />, href: makeHref('notifications') },
   ];
 
-  // Stock operations live in one workspace. Its context tabs keep the main
-  // inventory and transfer views together without adding another navigation group.
   const supplyChainItems: PlatformNavItem[] = [
     { id: 'stock', label: 'Stock', icon: <BoxesIcon size="xs" />, href: makeHref('stock') },
     ...(!isStaff ? [{ id: 'transfers', label: 'Transfers', icon: <ArrowUpDownIcon size="xs" />, href: makeHref('transfers') }] : []),
+    { id: 'expiry', label: 'Expiring', icon: <ClockIcon size="xs" />, href: makeHref('expiry') },
   ];
 
-  const organizationItems: PlatformNavItem[] = canManageOrganization
-    ? [
-        { id: 'locations', label: 'Locations', icon: <WarehouseIcon size="xs" />, href: makeHref('locations') },
-        { id: 'team', label: 'Team', icon: <UsersIcon size="xs" />, href: makeHref('team') },
-      ]
-    : [];
+  const supplierItems: PlatformNavItem[] = [
+    { id: 'suppliers', label: 'Suppliers', icon: <TruckIcon size="xs" />, href: makeHref('suppliers') },
+    { id: 'supplier-requests', label: 'Requests', icon: <ClockIcon size="xs" />, href: makeHref('suppliers') },
+  ];
+
+  const taskItems: PlatformNavItem[] = [
+    { id: 'tasks', label: 'Ongoing', icon: <ActivityIcon size="xs" />, href: makeHref('tasks') },
+    { id: 'tasks-completed', label: 'Completed', icon: <CheckCircleIcon size="xs" />, href: makeHref('tasks') },
+  ];
+
+  const organizationItems: PlatformNavItem[] = [
+    { id: 'locations', label: 'Locations', icon: <WarehouseIcon size="xs" />, href: makeHref('locations') },
+    ...(canManageOrganization ? [{ id: 'team', label: 'Team', icon: <UsersIcon size="xs" />, href: makeHref('team') }] : []),
+    { id: 'settings', label: 'Settings', icon: <SettingsIcon size="xs" />, href: makeHref('settings') },
+  ];
 
   return [
     { id: 'dashboard', label: 'Dashboard', icon: <DashboardIcon size="xs" />, items: dashboardItems },
     { id: 'supply-chain', label: 'Supply Chain', icon: <BoxesIcon size="xs" />, items: supplyChainItems },
-    ...(!isStaff ? [{ id: 'suppliers', label: 'Suppliers', icon: <TruckIcon size="xs" />, items: [{ id: 'suppliers', label: 'Suppliers', icon: <TruckIcon size="xs" />, href: makeHref('suppliers') }] }] : []),
-    { id: 'tasks', label: 'Tasks', icon: <CheckCircleIcon size="xs" />, items: [{ id: 'tasks', label: 'Tasks', icon: <CheckCircleIcon size="xs" />, href: makeHref('tasks') }] },
+    ...(!isStaff ? [{ id: 'suppliers', label: 'Suppliers', icon: <TruckIcon size="xs" />, items: supplierItems }] : []),
+    { id: 'tasks', label: 'Tasks', icon: <CheckCircleIcon size="xs" />, items: taskItems },
     { id: 'organization', label: 'Organization', icon: <WarehouseIcon size="xs" />, items: organizationItems },
   ].filter((group) => group.items.length > 0);
 }

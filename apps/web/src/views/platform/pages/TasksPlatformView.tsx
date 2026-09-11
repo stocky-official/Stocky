@@ -4,6 +4,8 @@ import { ActivityIcon } from '@stocky/icons';
 import { PlatformPageLayout } from './PlatformPageLayout';
 import { StockTaskCenterWidget } from '@/widgets';
 
+import { useOptionalPlatform } from '@/views/platform/PlatformContext';
+
 export interface TasksPlatformViewProps {
   tasks: StockTask[];
   taskItems: StockTaskItem[];
@@ -14,6 +16,8 @@ export interface TasksPlatformViewProps {
   userRole: CompanyUserRole;
   currentUserId?: string | null;
   scanQuery?: string;
+  activeTaskTab?: 'ongoing' | 'completed';
+  onTaskTabChange?: (tab: 'ongoing' | 'completed') => void;
   onStartTask: (taskId: string) => Promise<void>;
   onSubmitTask: (taskId: string, items: Array<{ taskItemId: string; countedQuantity?: number | null; observedExpiryDate?: string | null; note?: string | null }>) => Promise<void>;
   onReviewTask: (taskId: string, approve: boolean, note?: string) => Promise<void>;
@@ -24,6 +28,9 @@ export interface TasksPlatformViewProps {
  * Orchestrates layout, header, ongoing badge, and task center queue.
  */
 export function TasksPlatformView(props: TasksPlatformViewProps) {
+  const platform = useOptionalPlatform();
+  const activeTaskTab = props.activeTaskTab ?? platform?.taskTab;
+  const onTaskTabChange = props.onTaskTabChange ?? platform?.setTaskTab;
   const ongoingCount = props.tasks.filter((task) => ['assigned', 'in_progress', 'rejected', 'submitted'].includes(task.status)).length;
 
   return (
@@ -38,7 +45,11 @@ export function TasksPlatformView(props: TasksPlatformViewProps) {
         </span>
       }
     >
-      <StockTaskCenterWidget {...props} />
+      <StockTaskCenterWidget
+        {...props}
+        activeTaskTab={activeTaskTab}
+        onTaskTabChange={onTaskTabChange}
+      />
     </PlatformPageLayout>
   );
 }

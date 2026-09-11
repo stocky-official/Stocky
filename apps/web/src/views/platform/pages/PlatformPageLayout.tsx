@@ -40,6 +40,10 @@ export function PlatformPageLayout({
         activeTab={platform.activeTab}
         onTabChange={platform.navigateToTab}
         userRole={platform.userRole}
+        supplierTab={platform.supplierTab}
+        onSupplierTabChange={platform.setSupplierTab}
+        taskTab={platform.taskTab}
+        onTaskTabChange={platform.setTaskTab}
       />
     );
   }

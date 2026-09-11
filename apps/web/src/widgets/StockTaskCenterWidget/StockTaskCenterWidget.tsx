@@ -22,6 +22,8 @@ export interface StockTaskCenterWidgetProps {
   onStartTask: (taskId: string) => Promise<void>;
   onSubmitTask: (taskId: string, items: Array<{ taskItemId: string; countedQuantity?: number | null; observedExpiryDate?: string | null; note?: string | null }>) => Promise<void>;
   onReviewTask: (taskId: string, approve: boolean, note?: string) => Promise<void>;
+  activeTaskTab?: 'ongoing' | 'completed';
+  onTaskTabChange?: (tab: 'ongoing' | 'completed') => void;
 }
 
 function taskTypeLabel(taskType: StockTask['taskType']) { return taskType === 'count' ? 'Count quantities' : 'Check expiry dates'; }
@@ -34,7 +36,8 @@ function elapsedLabel(milliseconds: number) {
   return hours > 0 ? `${hours}h ${minutes % 60}m` : `${minutes}m`;
 }
 
-export function StockTaskCenterWidget({ tasks, taskItems, taskExpected, products, locations, members, userRole, currentUserId, scanQuery = '', onStartTask, onSubmitTask, onReviewTask }: StockTaskCenterWidgetProps) {
+export function StockTaskCenterWidget(props: StockTaskCenterWidgetProps) {
+  const { tasks, taskItems, taskExpected, products, locations, members, userRole, currentUserId, scanQuery = '', onStartTask, onSubmitTask, onReviewTask } = props;
   const [runnerTask, setRunnerTask] = useState<StockTask | null>(null);
   const [reviewTask, setReviewTask] = useState<StockTask | null>(null);
   const [taskDetails, setTaskDetails] = useState<StockTask | null>(null);
@@ -48,7 +51,12 @@ export function StockTaskCenterWidget({ tasks, taskItems, taskExpected, products
   const [reviewSaving, setReviewSaving] = useState(false);
   const [reviewError, setReviewError] = useState<string | null>(null);
   const [now, setNow] = useState(Date.now());
-  const [activeTaskTab, setActiveTaskTab] = useState<TaskTab>('ongoing');
+  const [internalActiveTaskTab, setInternalActiveTaskTab] = useState<TaskTab>('ongoing');
+  const activeTaskTab = props.activeTaskTab ?? internalActiveTaskTab;
+  const setActiveTaskTab = (tab: TaskTab) => {
+    setInternalActiveTaskTab(tab);
+    props.onTaskTabChange?.(tab);
+  };
   const [taskSearch, setTaskSearch] = useState('');
   const autoStartedTaskIds = useRef(new Set<string>());
 
@@ -189,7 +197,7 @@ export function StockTaskCenterWidget({ tasks, taskItems, taskExpected, products
 
   return <>
     <div className="stocky-task-workspace flex flex-col gap-4">
-      <nav className="stocky-context-tabs" aria-label="Task views">
+      <nav className="stocky-context-tabs hidden md:flex" aria-label="Task views">
         <div className="stocky-context-tabs__list">
           <button type="button" onClick={() => setActiveTaskTab('ongoing')} aria-current={activeTaskTab === 'ongoing' ? 'page' : undefined} className={`stocky-context-tabs__item ${activeTaskTab === 'ongoing' ? 'stocky-context-tabs__item--active' : ''}`}>Ongoing<span className="ml-1 text-[10px]">{ongoingTasks.length}</span></button>
           <button type="button" onClick={() => setActiveTaskTab('completed')} aria-current={activeTaskTab === 'completed' ? 'page' : undefined} className={`stocky-context-tabs__item ${activeTaskTab === 'completed' ? 'stocky-context-tabs__item--active' : ''}`}>Completed<span className="ml-1 text-[10px]">{completedTasks.length}</span></button>

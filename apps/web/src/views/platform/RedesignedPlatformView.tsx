@@ -20,8 +20,8 @@ import {
 
 const roleTitles: Record<CompanyUserRole, string> = { owner: 'Owner', admin: 'Administrator', manager: 'Branch Manager', staff: 'Staff Member' };
 const adminRoles: CompanyUserRole[] = ['owner', 'admin'];
-const staffTabs = ['home', 'stock', 'expiry', 'tasks', 'notifications', 'settings', 'receive'];
-const managerTabs = ['home', 'stock', 'expiry', 'tasks', 'notifications', 'settings', 'receive', 'logs', 'suppliers', 'transfers'];
+const staffTabs = ['home', 'stock', 'expiry', 'tasks', 'notifications', 'settings', 'receive', 'logs', 'locations', 'supplier-requests', 'tasks-completed'];
+const managerTabs = ['home', 'stock', 'expiry', 'tasks', 'notifications', 'settings', 'receive', 'logs', 'suppliers', 'transfers', 'locations', 'supplier-requests', 'tasks-completed'];
 
 function canOpenTab(role: CompanyUserRole, tab: string) {
   if (adminRoles.includes(role)) return true;
@@ -46,6 +46,8 @@ function mapActivityLog(row: any): StockActivityLog { return { id: row.id, compa
 export function RedesignedPlatformView() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState('home');
+  const [supplierTab, setSupplierTab] = useState<'suppliers' | 'requests'>('suppliers');
+  const [taskTab, setTaskTab] = useState<'ongoing' | 'completed'>('ongoing');
   const [isChromeVisible, setIsChromeVisible] = useState(true);
   const lastScrollTopRef = useRef(0);
   const chromeVisibilityRef = useRef(true);
@@ -475,6 +477,22 @@ export function RedesignedPlatformView() {
     chromeVisibilityRef.current = true;
     setIsChromeVisible(true);
     lastScrollTopRef.current = 0;
+    if (tab === 'supplier-requests') {
+      setSupplierTab('requests');
+      setActiveTab('suppliers');
+      return;
+    }
+    if (tab === 'suppliers') {
+      setSupplierTab('suppliers');
+    }
+    if (tab === 'tasks-completed') {
+      setTaskTab('completed');
+      setActiveTab('tasks');
+      return;
+    }
+    if (tab === 'tasks') {
+      setTaskTab('ongoing');
+    }
     if (!canOpenTab(userRole, tab)) return;
     setActiveTab(tab);
   };
@@ -501,7 +519,16 @@ export function RedesignedPlatformView() {
         onSearch={(query) => { setGlobalSearchQuery(query); if (query.trim()) setActiveTab('stock'); }}
         onSettingsClick={() => handleNavigationChange('settings')}
       />
-      <MobileSubNavWidget activeTab={activeTab} userRole={userRole} hidden={!isChromeVisible} onTabChange={handleNavigationChange} />
+      <MobileSubNavWidget
+        activeTab={activeTab}
+        userRole={userRole}
+        hidden={!isChromeVisible}
+        onTabChange={handleNavigationChange}
+        supplierTab={supplierTab}
+        onSupplierTabChange={setSupplierTab}
+        taskTab={taskTab}
+        onTaskTabChange={setTaskTab}
+      />
       <div className="stocky-platform-body flex flex-1 min-h-0 min-w-0">
         <SidebarNavWidget activeTab={activeTab} onTabChange={handleNavigationChange} userRole={userRole} companyName={company?.name} companyLogoUrl={company?.logo_url} notificationCount={notificationItems.length} onNotificationsClick={() => handleNavigationChange('notifications')} searchQuery={globalSearchQuery} onSearch={(query) => { setGlobalSearchQuery(query); if (query.trim()) setActiveTab('stock'); }} userEmail={userEmail} userName={userName} userTitle={userTitle} userAvatarUrl={userAvatarUrl} onSettingsClick={() => handleNavigationChange('settings')} />
         <PlatformWorkspaceWidget
@@ -511,6 +538,10 @@ export function RedesignedPlatformView() {
           companyId={companyId}
           companyName={company?.name}
           userRole={userRole}
+          supplierTab={supplierTab}
+          onSupplierTabChange={setSupplierTab}
+          taskTab={taskTab}
+          onTaskTabChange={setTaskTab}
           locationName={locationName}
           metrics={metrics}
           notificationItems={notificationItems}

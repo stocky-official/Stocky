@@ -25,6 +25,8 @@ export interface SupplierRequestsWidgetProps {
   onStatusChange: (request: SupplierRequest, status: SupplierRequest['status']) => void;
   onLinkProduct: (input: { supplierId: string; productId: string; supplierSku?: string; unitCost?: number }) => Promise<void>;
   onUnlinkProduct: (supplierProductId: string) => Promise<void>;
+  activeSupplierTab?: 'suppliers' | 'requests';
+  onSupplierTabChange?: (tab: 'suppliers' | 'requests') => void;
 }
 
 const statusOrder: SupplierRequest['status'][] = ['open', 'contacted', 'ordered', 'received', 'closed'];
@@ -53,8 +55,14 @@ const supplierPhoneCountries = [
   { code: '+27', country: 'South Africa', flag: '🇿🇦' }
 ] as const;
 
-export function SupplierRequestsWidget({ requests, products, locations, suppliers, supplierContacts, supplierProducts, userRole, selectedLocationId, defaultProductId, onCreate, onCreateSupplier, onCreateSupplierContact, onUpdateSupplierContact, onDeleteSupplierContact, onSetPrimarySupplierContact, onStatusChange, onLinkProduct, onUnlinkProduct }: SupplierRequestsWidgetProps) {
-  const [activeSupplierTab, setActiveSupplierTab] = useState<'suppliers' | 'requests'>('suppliers');
+export function SupplierRequestsWidget(props: SupplierRequestsWidgetProps) {
+  const { requests, products, locations, suppliers, supplierContacts, supplierProducts, userRole, selectedLocationId, defaultProductId, onCreate, onCreateSupplier, onCreateSupplierContact, onUpdateSupplierContact, onDeleteSupplierContact, onSetPrimarySupplierContact, onStatusChange, onLinkProduct, onUnlinkProduct } = props;
+  const [internalActiveSupplierTab, setInternalActiveSupplierTab] = useState<'suppliers' | 'requests'>('suppliers');
+  const activeSupplierTab = props.activeSupplierTab ?? internalActiveSupplierTab;
+  const setActiveSupplierTab = (tab: 'suppliers' | 'requests') => {
+    setInternalActiveSupplierTab(tab);
+    props.onSupplierTabChange?.(tab);
+  };
   const [supplierSearchQuery, setSupplierSearchQuery] = useState('');
   const [showForm, setShowForm] = useState(false);
   const [showSupplierForm, setShowSupplierForm] = useState(false);
@@ -282,13 +290,13 @@ export function SupplierRequestsWidget({ requests, products, locations, supplier
 
   return <div className="stocky-suppliers-workspace flex flex-col gap-4">
     <div className="flex items-center justify-between gap-3 flex-wrap">
-      <nav className="stocky-context-tabs" aria-label="Supplier views">
+      <nav className="stocky-context-tabs hidden md:flex" aria-label="Supplier views">
         <div className="stocky-context-tabs__list">
           <button type="button" onClick={() => setActiveSupplierTab('suppliers')} aria-current={activeSupplierTab === 'suppliers' ? 'page' : undefined} className={`stocky-context-tabs__item ${activeSupplierTab === 'suppliers' ? 'stocky-context-tabs__item--active' : ''}`}>Suppliers</button>
           <button type="button" onClick={() => setActiveSupplierTab('requests')} aria-current={activeSupplierTab === 'requests' ? 'page' : undefined} className={`stocky-context-tabs__item ${activeSupplierTab === 'requests' ? 'stocky-context-tabs__item--active' : ''}`}>Requests</button>
         </div>
       </nav>
-      {activeSupplierTab === 'requests' && <button type="button" onClick={() => setShowForm((value) => !value)} className="h-9 rounded-full bg-stocky-primary px-3 text-xs font-medium text-white cursor-pointer inline-flex items-center gap-1.5"><PlusIcon size="xs" />New request</button>}
+      {activeSupplierTab === 'requests' && <button type="button" onClick={() => setShowForm((value) => !value)} className="h-9 rounded-full bg-stocky-primary px-3 text-xs font-medium text-white cursor-pointer inline-flex items-center gap-1.5 ml-auto"><PlusIcon size="xs" />New request</button>}
     </div>
 
     {activeSupplierTab === 'suppliers' && <>
