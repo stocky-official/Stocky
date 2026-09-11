@@ -49,7 +49,7 @@ function copyResponseCookies(source: NextResponse, target: NextResponse): NextRe
   return target;
 }
 
-export async function middleware(req: NextRequest) {
+export async function proxy(req: NextRequest) {
   const url = req.nextUrl.clone();
   const hostname = req.headers.get('host') || '';
   const pathname = url.pathname;
@@ -115,7 +115,7 @@ export async function middleware(req: NextRequest) {
       } = await supabase.auth.getUser();
       user = authUser;
     } catch (err) {
-      console.error('Middleware Supabase auth check error:', err);
+      console.error('Proxy Supabase auth check error:', err);
     }
   }
 
@@ -200,6 +200,8 @@ export async function middleware(req: NextRequest) {
 
   return supabaseResponse;
 }
+
+export default proxy;
 
 export const config = {
   matcher: [

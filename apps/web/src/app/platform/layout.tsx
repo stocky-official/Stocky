@@ -224,7 +224,9 @@ function PlatformShell({ children }: { children?: React.ReactNode }) {
 
 export default function PlatformLayout({
   children,
-}: any) {
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <PlatformProvider tenantPrefix="/platform">
       <PlatformShell>{children}</PlatformShell>

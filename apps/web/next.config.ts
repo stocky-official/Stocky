@@ -1,5 +1,6 @@
-/** @type {import('next').NextConfig} */
-const nextConfig = {
+import type { NextConfig } from 'next';
+
+const nextConfig: NextConfig = {
   transpilePackages: ['@stocky/icons', '@stocky/tokens', '@stocky/types'],
   reactStrictMode: true,
   allowedDevOrigins: ['localhost', '127.0.0.1'],
