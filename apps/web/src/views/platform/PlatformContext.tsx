@@ -71,6 +71,12 @@ function mapActivityLog(row: any): StockActivityLog { return { id: row.id, compa
 
 export interface PlatformContextValue {
   loading: boolean;
+  unauthorizedTenant?: {
+    requestedTenantCode: string;
+    requestedCompanyName?: string;
+    userCompanyName?: string;
+    userCompanyCode?: string;
+  } | null;
   userEmail: string | null;
   userName: string | null;
   userTitle: string | null;
@@ -231,7 +237,8 @@ export function PlatformProvider({
   const [userName, setUserName] = useState<string | null>(null);
   const [userTitle, setUserTitle] = useState<string | null>(null);
   const [userAvatarUrl, setUserAvatarUrl] = useState<string | null>(null);
-  const [userRole, setUserRole] = useState<CompanyUserRole>('owner');
+  const [userRole, setUserRole] = useState<CompanyUserRole>('staff');
+  const [unauthorizedTenant, setUnauthorizedTenant] = useState<PlatformContextValue['unauthorizedTenant']>(null);
   const [companyUserId, setCompanyUserId] = useState<string | null>(null);
   const [companyId, setCompanyId] = useState('');
   const [company, setCompany] = useState<any>(null);
@@ -315,6 +322,7 @@ export function PlatformProvider({
     let cancelled = false;
     async function load() {
       setLoading(true);
+      setUnauthorizedTenant(null);
       const { data: auth, error: authError } = await supabase.auth.getUser();
       if (authError) console.error('Unable to restore the Stocky session', authError);
       const user = auth.user;
@@ -325,46 +333,62 @@ export function PlatformProvider({
       setUserAvatarUrl(user.user_metadata?.avatar_url || user.user_metadata?.picture || null);
 
       let targetCompanyId: string | null = null;
+      let requestedCompany: any = null;
       if (clientTenant.code) {
         const { data: tenantCompany } = await supabase
           .from('companies')
-          .select('id')
+          .select('*')
           .ilike('code', clientTenant.code)
           .maybeSingle();
         if (tenantCompany) {
           targetCompanyId = tenantCompany.id;
+          requestedCompany = tenantCompany;
         }
       }
 
-      let profileQuery = supabase
+      // Check all memberships for the signed-in user
+      const { data: authMemberships, error: authMembershipError } = await supabase
         .from('company_users')
-        .select('*')
+        .select('*, company:companies(*)')
         .eq('auth_user_id', user.id);
-      
-      if (targetCompanyId) {
-        profileQuery = profileQuery.eq('company_id', targetCompanyId);
+      if (authMembershipError) console.error('Unable to load memberships', authMembershipError);
+
+      let userMemberships = authMemberships || [];
+      if (userMemberships.length === 0 && user.email) {
+        const { data: emailMemberships, error: emailMembershipError } = await supabase
+          .from('company_users')
+          .select('*, company:companies(*)')
+          .eq('email', user.email.toLowerCase());
+        if (emailMembershipError) console.error('Unable to load email memberships', emailMembershipError);
+        userMemberships = emailMemberships || [];
       }
 
-      const { data: authProfiles, error: authProfileError } = await profileQuery
-        .order('created_at', { ascending: false })
-        .limit(1);
+      // If user has zero company memberships anywhere in Stocky:
+      if (userMemberships.length === 0) {
+        setLoading(false);
+        router.replace('/onboarding');
+        return;
+      }
 
-      if (authProfileError) console.error('Unable to load signed-in company membership', authProfileError);
-      let profile = authProfiles?.[0] ?? null;
-
-      if (!profile && user.email) {
-        let emailQuery = supabase
-          .from('company_users')
-          .select('*')
-          .eq('email', user.email.toLowerCase());
-        if (targetCompanyId) {
-          emailQuery = emailQuery.eq('company_id', targetCompanyId);
+      // If a specific tenant code was visited (e.g. /circlek or circlek.stocky.app):
+      let profile = null;
+      if (targetCompanyId) {
+        profile = userMemberships.find((m) => m.company_id === targetCompanyId) ?? null;
+        if (!profile) {
+          // Cross-company access violation!
+          const primaryComp = userMemberships[0]?.company;
+          const requestedCode = clientTenant.code || '';
+          setUnauthorizedTenant({
+            requestedTenantCode: requestedCode,
+            requestedCompanyName: requestedCompany?.name || requestedCode.toUpperCase(),
+            userCompanyName: primaryComp?.name || 'Your Company',
+            userCompanyCode: primaryComp?.code?.toLowerCase() || 'platform',
+          });
+          setLoading(false);
+          return;
         }
-        const { data: emailProfiles, error: emailProfileError } = await emailQuery
-          .order('created_at', { ascending: false })
-          .limit(1);
-        if (emailProfileError) console.error('Unable to load email-based company membership', emailProfileError);
-        profile = emailProfiles?.[0] ?? null;
+      } else {
+        profile = userMemberships[0];
       }
 
       if (!profile?.company_id) { setLoading(false); router.replace('/onboarding'); return; }
@@ -952,6 +976,7 @@ export function PlatformProvider({
 
   const contextValue: PlatformContextValue = {
     loading,
+    unauthorizedTenant,
     userEmail,
     userName,
     userTitle,

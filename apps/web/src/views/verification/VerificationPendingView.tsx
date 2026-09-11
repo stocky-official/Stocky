@@ -6,6 +6,7 @@ import { AlertCircleIcon, BoxesIcon, CheckCircleIcon } from '@stocky/icons';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { supabase } from '@/lib/supabase/client';
+import { signOutUser } from '@/lib/auth';
 import { PageContent, PageHeader, PageLayout } from '@/components/ui/PageLayout';
 
 type VerificationState = 'pending' | 'rejected' | 'suspended' | 'unknown';
@@ -105,8 +106,7 @@ export function VerificationPendingView() {
   }, [loadVerificationState]);
 
   const handleSignOut = async () => {
-    await supabase.auth.signOut();
-    router.replace('/');
+    await signOutUser();
   };
 
   if (loading) {

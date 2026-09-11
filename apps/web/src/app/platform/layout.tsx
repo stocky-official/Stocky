@@ -3,11 +3,13 @@
 import React, { type UIEvent, useRef, useState, useEffect } from 'react';
 import { PlatformProvider, usePlatform } from '@/views/platform/PlatformContext';
 import { PageLayout } from '@/components/ui/PageLayout';
+import { signOutUser } from '@/lib/auth';
 import {
   BarcodeScannerWidget,
   MobileBottomNavWidget,
   MobileSubNavWidget,
   PlatformTopBarWidget,
+  PlatformWorkspaceSkeleton,
   ProductEditDrawerWidget,
   ReceiveStockDrawerWidget,
   SidebarNavWidget,
@@ -59,6 +61,70 @@ function PlatformShell({ children }: { children?: React.ReactNode }) {
   useEffect(() => () => {
     if (chromeTransitionTimerRef.current !== null) window.clearTimeout(chromeTransitionTimerRef.current);
   }, []);
+
+  if (platform.loading) {
+    return (
+      <PageLayout className="stocky-platform-shell">
+        <PlatformWorkspaceSkeleton variant="dashboard" hasTabs={true} />
+      </PageLayout>
+    );
+  }
+
+  if (platform.unauthorizedTenant) {
+    const { requestedCompanyName, requestedTenantCode, userCompanyName, userCompanyCode } = platform.unauthorizedTenant;
+    const hasUserCompany = Boolean(userCompanyCode && userCompanyCode !== 'platform');
+    return (
+      <PageLayout className="stocky-platform-shell flex items-center justify-center min-h-screen p-4 bg-stocky-bg-global select-none">
+        <div className="max-w-md w-full bg-white border border-stocky-border-subtle rounded-2xl p-6 shadow-bevel text-center space-y-4">
+          <div className="w-12 h-12 rounded-full bg-amber-50 border border-amber-200 text-amber-600 flex items-center justify-center mx-auto text-xl font-bold">
+            !
+          </div>
+          <div className="space-y-1">
+            <h2 className="text-base font-semibold text-stocky-text-main">
+              Workspace Access Restricted
+            </h2>
+            <p className="text-xs text-stocky-text-sub leading-relaxed">
+              You are signed in as <span className="font-medium text-stocky-text-main">{platform.userEmail}</span>, but your account is not authorized to access the <span className="font-medium text-stocky-text-main">{requestedCompanyName || requestedTenantCode}</span> workspace.
+            </p>
+          </div>
+          <div className="pt-2 flex flex-col gap-2">
+            {hasUserCompany ? (
+              <button
+                type="button"
+                onClick={() => { window.location.href = `/${userCompanyCode}`; }}
+                className="w-full py-2.5 px-4 rounded-xl bg-stocky-primary text-white text-xs font-medium hover:opacity-95 transition-opacity cursor-pointer shadow-sm"
+              >
+                Go to {userCompanyName} Workspace
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={() => { window.location.href = '/onboarding'; }}
+                className="w-full py-2.5 px-4 rounded-xl bg-stocky-primary text-white text-xs font-medium hover:opacity-95 transition-opacity cursor-pointer shadow-sm"
+              >
+                Go to Onboarding
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={() => signOutUser()}
+              className="w-full py-2.5 px-4 rounded-xl border border-stocky-border-subtle text-xs font-medium text-stocky-text-sub hover:bg-stocky-bg-global transition-colors cursor-pointer"
+            >
+              Sign Out / Switch Account
+            </button>
+          </div>
+        </div>
+      </PageLayout>
+    );
+  }
+
+  if (!platform.companyId || !platform.userEmail) {
+    return (
+      <PageLayout className="stocky-platform-shell">
+        <PlatformWorkspaceSkeleton variant="dashboard" hasTabs={true} />
+      </PageLayout>
+    );
+  }
 
   return (
     <PageLayout className="stocky-platform-shell">

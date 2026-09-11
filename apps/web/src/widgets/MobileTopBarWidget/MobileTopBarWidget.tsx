@@ -2,8 +2,7 @@
 
 import React, { useState } from 'react';
 import { SearchIcon, BellIcon, XIcon } from '@stocky/icons';
-import { supabase } from '@/lib/supabase/client';
-import { getAuthRedirectOrigin } from '@/lib/authRedirect';
+import { signInWithGoogle, signOutUser } from '@/lib/auth';
 
 export interface MobileTopBarWidgetProps {
   userEmail?: string | null;
@@ -43,16 +42,9 @@ export function MobileTopBarWidget({
       return;
     }
     if (!userEmail) {
-      const origin = getAuthRedirectOrigin();
-      await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: { redirectTo: `${origin}/auth/callback?next=/platform` },
-      });
+      await signInWithGoogle('/platform');
     } else {
-      if (confirm(`Signed in as: ${userEmail}\nDo you want to sign out?`)) {
-        await supabase.auth.signOut();
-        window.location.href = '/';
-      }
+      await signOutUser();
     }
   };
 

@@ -6,7 +6,7 @@ import { AlertCircleIcon, BoxesIcon, CheckCircleIcon, XIcon } from '@stocky/icon
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { supabase } from '@/lib/supabase/client';
-import { getAuthRedirectOrigin } from '@/lib/authRedirect';
+import { signInWithGoogle } from '@/lib/auth';
 import { PageContent, PageHeader, PageLayout } from '@/components/ui/PageLayout';
 
 interface CompanyApplicationRow {
@@ -81,15 +81,10 @@ export function PlatformVerificationView() {
     setSigningIn(true);
     setErrorMessage(null);
 
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        redirectTo: `${getAuthRedirectOrigin()}/auth/callback?next=/admin/verifications`,
-      },
-    });
-
-    if (error) {
-      setErrorMessage(error.message || 'Unable to start Google sign-in.');
+    try {
+      await signInWithGoogle('/admin/verifications');
+    } catch (error: any) {
+      setErrorMessage(error?.message || 'Unable to start Google sign-in.');
       setSigningIn(false);
     }
   };

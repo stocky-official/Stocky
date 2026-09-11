@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase/client';
-import { getAuthRedirectOrigin } from '@/lib/authRedirect';
+import { signInWithGoogle, signOutUser } from '@/lib/auth';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { UserAvatar } from '@/components/ui/UserAvatar';
@@ -36,16 +36,11 @@ export function AuthUserWidget() {
   }, []);
 
   const handleGoogleSignIn = async () => {
-    await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        redirectTo: `${getAuthRedirectOrigin()}/auth/callback`,
-      },
-    });
+    await signInWithGoogle();
   };
 
   const handleSignOut = async () => {
-    await supabase.auth.signOut();
+    await signOutUser();
   };
 
   if (loading) {

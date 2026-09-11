@@ -1,8 +1,7 @@
 'use client';
 
 import React, { useEffect, useRef, useState } from 'react';
-import { supabase } from '@/lib/supabase/client';
-import { getAuthRedirectOrigin } from '@/lib/authRedirect';
+import { signInWithGoogle, signOutUser } from '@/lib/auth';
 import { ChevronDownIcon, LogOutIcon, SettingsIcon } from '@stocky/icons';
 import { UserAvatar } from '@/components/ui/UserAvatar';
 
@@ -60,21 +59,12 @@ export function PlatformAccountMenuWidget({
   }, [isOpen]);
 
   const handleSignIn = async () => {
-    const origin = getAuthRedirectOrigin();
-    await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: { redirectTo: `${origin}/auth/callback?next=/platform` },
-    });
+    await signInWithGoogle('/platform');
   };
 
   const handleSignOut = async () => {
     setIsOpen(false);
-    if (!userEmail) return;
-
-    if (confirm(`Signed in as: ${userEmail}\nDo you want to sign out?`)) {
-      await supabase.auth.signOut();
-      window.location.href = '/';
-    }
+    await signOutUser();
   };
 
   const handleTriggerClick = async () => {
