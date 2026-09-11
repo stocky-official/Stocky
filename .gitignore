@@ -31,6 +31,7 @@ Thumbs.db
 *.mp4
 /navbarphone.gif
 /pexels-*.jpg
+/hero.jpg
 
 # Large raw datasets & dumps
 data/

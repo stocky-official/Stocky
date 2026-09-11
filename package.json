@@ -15,5 +15,13 @@
   "packageManager": "pnpm@11.24.0",
   "engines": {
     "node": ">=20.0.0"
+  },
+  "overrides": {
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0"
+  },
+  "resolutions": {
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0"
   }
 }

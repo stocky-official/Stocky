@@ -3,7 +3,7 @@ import type { LucideIcon } from 'lucide-react';
 import { ICON_SIZE_MAP, type StockyIconProps } from './types';
 
 export interface BaseIconWrapperProps extends StockyIconProps {
-  icon: any;
+  icon: React.ComponentType<any>;
 }
 
 export function StockyIcon({
@@ -15,10 +15,12 @@ export function StockyIcon({
 }: BaseIconWrapperProps) {
   const pixelSize = typeof size === 'number' ? size : ICON_SIZE_MAP[size] || 20;
 
-  return React.createElement(IconComponent, {
-    size: pixelSize,
-    strokeWidth,
-    className: `shrink-0 inline-block align-middle ${className}`,
-    ...rest,
-  });
+  return (
+    <IconComponent
+      size={pixelSize}
+      strokeWidth={strokeWidth}
+      className={`shrink-0 inline-block align-middle ${className}`}
+      {...rest}
+    />
+  );
 }

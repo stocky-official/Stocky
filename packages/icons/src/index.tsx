@@ -65,7 +65,7 @@ import type { StockyIconProps } from './types';
 export * from './types';
 export * from './StockyIcon';
 
-function createIcon(icon: any, displayName: string) {
+function createIcon(icon: LucideIcon, displayName: string) {
   const Component = (props: StockyIconProps) => (
     <StockyIcon icon={icon} {...props} />
   );
