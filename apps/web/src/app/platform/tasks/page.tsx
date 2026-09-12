@@ -8,7 +8,7 @@ export default function TasksRoutePage() {
   const platform = usePlatform();
 
   if (platform.loading) {
-    return <PlatformWorkspaceSkeleton variant="table" />;
+    return <PlatformWorkspaceSkeleton variant="tasks" />;
   }
 
   return (

@@ -8,7 +8,7 @@ export default function PlatformHomePage() {
   const platform = usePlatform();
 
   if (platform.loading) {
-    return <PlatformWorkspaceSkeleton variant="dashboard" hasTabs={false} />;
+    return <PlatformWorkspaceSkeleton variant="dashboard" hasTabs={true} />;
   }
 
   return (

@@ -48,6 +48,7 @@ export function LandingHeroWidget() {
   const [activeFeature, setActiveFeature] = useState<(typeof features)[number]['id']>('stock');
   const [openFaq, setOpenFaq] = useState<number | null>(0);
   const [locations, setLocations] = useState(6);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -60,9 +61,22 @@ export function LandingHeroWidget() {
       }
     }
 
-    supabase.auth.getUser().then(({ data: { user } }) => {
+    supabase.auth.getUser().then(async ({ data: { user } }) => {
       if (user && !cancelled) {
         setIsAuthenticated(true);
+        try {
+          const { data: memberships } = await supabase
+            .from('company_users')
+            .select('company:companies(code)')
+            .eq('auth_user_id', user.id)
+            .limit(1);
+          const compCode = (memberships?.[0]?.company as any)?.code;
+          if (compCode && !cancelled) {
+            setNextDestination(`/${compCode.toLowerCase()}`);
+          }
+        } catch {
+          // Keep default destination
+        }
       }
     });
 
@@ -95,6 +109,15 @@ export function LandingHeroWidget() {
     return () => ctx.revert();
   }, []);
 
+  const navigateToWorkspace = (target = nextDestination) => {
+    setLoading(true);
+    if (typeof window !== 'undefined') {
+      window.location.href = target;
+    } else {
+      router.push(target);
+    }
+  };
+
   const handleAuth = async (targetDestination = nextDestination) => {
     try {
       setLoading(true);
@@ -110,8 +133,88 @@ export function LandingHeroWidget() {
   return <main ref={rootRef} className="meridian-landing">
     <section id="top" className="meridian-hero">
       <div className="meridian-hero-photo" aria-hidden="true" /><div className="meridian-hero-overlay" aria-hidden="true" />
-      <nav className="meridian-nav" aria-label="Main navigation"><a href="#top" className="meridian-brand"><span className="meridian-brand-mark"><BoxesIcon size="sm" /></span><span>stocky</span></a><div className="meridian-nav-links"><a href="#product">Product</a><a href="#workflow">Workflow</a><a href="#teams">Teams</a><a href="#faq">FAQ</a></div><div className="meridian-nav-actions">{isAuthenticated ? (<button type="button" className="meridian-pill meridian-pill--lime meridian-pill--nav" onClick={() => router.push(nextDestination)}>Go to Workspace <ChevronRightIcon size="xs" /></button>) : (<><button type="button" className="meridian-nav-login" onClick={() => handleAuth(nextDestination)}>{loading ? 'Signing in…' : 'Sign in'}</button><button type="button" className="meridian-pill meridian-pill--lime meridian-pill--nav" onClick={() => handleAuth(nextDestination)}>{loading ? 'Opening…' : 'Get Started Free'}</button></>)}</div><button type="button" className="meridian-menu-button" aria-label="Open menu"><span /><span /><span /></button></nav>
-      <div className="meridian-hero-copy"><div className="meridian-hero-rating"><span>✦</span> 4.9 on G2.com</div><h1>Stock today.<br /><span>Clarity tomorrow.</span></h1><p>Unlock a clearer way to manage every product, location, and decision your operation depends on.</p><button type="button" className="meridian-pill meridian-pill--lime meridian-hero-cta" onClick={() => isAuthenticated ? router.push(nextDestination) : handleAuth(nextDestination)}>{loading ? 'Opening workspace…' : isAuthenticated ? 'Go to Workspace' : 'Get Started Free'}<ChevronRightIcon size="xs" /></button></div>
+      <nav className="meridian-nav" aria-label="Main navigation">
+        <a href="#top" className="meridian-brand"><span className="meridian-brand-mark"><BoxesIcon size="sm" /></span><span>stocky</span></a>
+        <div className="meridian-nav-links"><a href="#product">Product</a><a href="#workflow">Workflow</a><a href="#teams">Teams</a><a href="#faq">FAQ</a></div>
+        <div className="meridian-nav-actions">
+          {isAuthenticated ? (
+            <button type="button" className="meridian-pill meridian-pill--lime meridian-pill--nav" onClick={() => navigateToWorkspace(nextDestination)}>
+              {loading ? 'Opening…' : 'Go to Workspace'} <ChevronRightIcon size="xs" />
+            </button>
+          ) : (
+            <>
+              <button type="button" className="meridian-nav-login" onClick={() => handleAuth(nextDestination)}>{loading ? 'Signing in…' : 'Sign in'}</button>
+              <button type="button" className="meridian-pill meridian-pill--lime meridian-pill--nav" onClick={() => handleAuth(nextDestination)}>{loading ? 'Opening…' : 'Get Started Free'}</button>
+            </>
+          )}
+        </div>
+        <button
+          type="button"
+          className="meridian-menu-button"
+          aria-label="Toggle menu"
+          onClick={() => setMobileMenuOpen((prev) => !prev)}
+        >
+          <span /><span /><span />
+        </button>
+        {mobileMenuOpen && (
+          <div className="meridian-mobile-drawer sm:hidden">
+            <a href="#product" onClick={() => setMobileMenuOpen(false)}>Product</a>
+            <a href="#workflow" onClick={() => setMobileMenuOpen(false)}>Workflow</a>
+            <a href="#teams" onClick={() => setMobileMenuOpen(false)}>Teams</a>
+            <a href="#faq" onClick={() => setMobileMenuOpen(false)}>FAQ</a>
+            <div className="pt-2 border-t border-white/20 flex flex-col gap-2">
+              {isAuthenticated ? (
+                <button
+                  type="button"
+                  className="meridian-pill meridian-pill--lime w-full text-center"
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    navigateToWorkspace(nextDestination);
+                  }}
+                >
+                  {loading ? 'Opening…' : 'Go to Workspace'} <ChevronRightIcon size="xs" />
+                </button>
+              ) : (
+                <>
+                  <button
+                    type="button"
+                    className="w-full py-2.5 text-center text-xs text-white/90 font-medium"
+                    onClick={() => {
+                      setMobileMenuOpen(false);
+                      handleAuth(nextDestination);
+                    }}
+                  >
+                    {loading ? 'Signing in…' : 'Sign in'}
+                  </button>
+                  <button
+                    type="button"
+                    className="meridian-pill meridian-pill--lime w-full text-center"
+                    onClick={() => {
+                      setMobileMenuOpen(false);
+                      handleAuth(nextDestination);
+                    }}
+                  >
+                    {loading ? 'Opening…' : 'Get Started Free'}
+                  </button>
+                </>
+              )}
+            </div>
+          </div>
+        )}
+      </nav>
+      <div className="meridian-hero-copy">
+        <div className="meridian-hero-rating"><span>✦</span> 4.9 on G2.com</div>
+        <h1>Stock today.<br /><span>Clarity tomorrow.</span></h1>
+        <p>Unlock a clearer way to manage every product, location, and decision your operation depends on.</p>
+        <button
+          type="button"
+          className="meridian-pill meridian-pill--lime meridian-hero-cta"
+          onClick={() => isAuthenticated ? navigateToWorkspace(nextDestination) : handleAuth(nextDestination)}
+        >
+          {loading ? 'Opening workspace…' : isAuthenticated ? 'Go to Workspace' : 'Get Started Free'}
+          <ChevronRightIcon size="xs" />
+        </button>
+      </div>
       <div className="meridian-hero-award"><span className="meridian-award-laurel">✺</span><b>Built for</b><small>busy operators</small></div>
       <div className="meridian-float-chip meridian-float-chip--one"><ActivityIcon size="xs" /><span><b>+18.6%</b><small>stock health</small></span></div><div className="meridian-float-chip meridian-float-chip--two"><ClockIcon size="xs" /><span><b>12 tasks</b><small>ready today</small></span></div>
     </section>
@@ -120,17 +223,17 @@ export function LandingHeroWidget() {
 
     <section id="product" className="meridian-section meridian-intro meridian-reveal"><div className="meridian-heading-block"><p className="meridian-overline">ONE CLEAR EXPERIENCE</p><h2>A clean experience<br /><span>for a messy operation.</span></h2><p>Stocky gives businesses of every size the essential tools to modernise inventory operations and keep the next move obvious.</p></div><div className="meridian-intro-grid"><article className="meridian-intro-card"><div className="meridian-card-art meridian-card-art--receiving"><div className="meridian-receiving-window"><span>RECEIVE STOCK</span><strong>3 items ready</strong><div><i /><i /><i /></div><b>Confirm delivery <ChevronRightIcon size="xs" /></b></div></div><h3>From receiving to transfer, keep the workflow moving.</h3></article><article className="meridian-intro-card"><div className="meridian-card-art meridian-card-art--scan"><div className="meridian-scan-phone"><div className="meridian-scan-top"><span>SCAN PRODUCT</span><span>×</span></div><div className="meridian-scan-barcode"><i /><i /><i /><i /><i /><i /><i /></div><strong>Test Item</strong><small>Barcode matched · 1234</small><b>Added to Main Branch</b></div></div><h3>Scan a product and let the right location, quantity, and expiry follow.</h3></article></div></section>
 
-    <section id="workflow" className="meridian-section meridian-control meridian-reveal"><div className="meridian-heading-block meridian-heading-block--center"><p className="meridian-overline">CONTROL THE OPERATION IN SECONDS</p><h2>Know what is moving<br /><span>before it becomes a problem.</span></h2><p>See stock, transfers, expiry, and team work in one quiet system built for real-world pace.</p><button type="button" className="meridian-pill meridian-pill--lime" onClick={() => isAuthenticated ? router.push(nextDestination) : handleAuth(nextDestination)}>{isAuthenticated ? 'Open Workspace' : 'Explore Stocky'} <ChevronRightIcon size="xs" /></button></div><div className="meridian-control-grid"><div className="meridian-control-tabs" role="tablist" aria-label="Stocky capabilities">{features.map((feature) => <button key={feature.id} type="button" role="tab" aria-selected={activeFeature === feature.id} onClick={() => setActiveFeature(feature.id)} className={activeFeature === feature.id ? 'is-active' : ''}><span>{feature.number}</span><strong>{feature.title}</strong><ChevronRightIcon size="xs" /><small>{activeFeature === feature.id ? feature.body : ''}</small></button>)}</div><div className="meridian-control-preview"><div className="meridian-control-preview-copy"><small>{selectedFeature.statLabel}</small><strong>{selectedFeature.stat}</strong></div><FeatureVisual feature={selectedFeature} /></div></div></section>
+    <section id="workflow" className="meridian-section meridian-control meridian-reveal"><div className="meridian-heading-block meridian-heading-block--center"><p className="meridian-overline">CONTROL THE OPERATION IN SECONDS</p><h2>Know what is moving<br /><span>before it becomes a problem.</span></h2><p>See stock, transfers, expiry, and team work in one quiet system built for real-world pace.</p><button type="button" className="meridian-pill meridian-pill--lime" onClick={() => isAuthenticated ? navigateToWorkspace(nextDestination) : handleAuth(nextDestination)}>{isAuthenticated ? 'Open Workspace' : 'Explore Stocky'} <ChevronRightIcon size="xs" /></button></div><div className="meridian-control-grid"><div className="meridian-control-tabs" role="tablist" aria-label="Stocky capabilities">{features.map((feature) => <button key={feature.id} type="button" role="tab" aria-selected={activeFeature === feature.id} onClick={() => setActiveFeature(feature.id)} className={activeFeature === feature.id ? 'is-active' : ''}><span>{feature.number}</span><strong>{feature.title}</strong><ChevronRightIcon size="xs" /><small>{activeFeature === feature.id ? feature.body : ''}</small></button>)}</div><div className="meridian-control-preview"><div className="meridian-control-preview-copy"><small>{selectedFeature.statLabel}</small><strong>{selectedFeature.stat}</strong></div><FeatureVisual feature={selectedFeature} /></div></div></section>
 
-    <section id="teams" className="meridian-section meridian-relief meridian-reveal"><div className="meridian-relief-copy"><p className="meridian-overline">LESS HUNTING. MORE KNOWING.</p><h2>Make the next action<br /><span>feel effortless.</span></h2><p>Fast decisions need faster tools. That is why growing teams rely on Stocky to keep locations, suppliers, and people moving together.</p><button type="button" className="meridian-pill meridian-pill--dark" onClick={() => isAuthenticated ? router.push(nextDestination) : handleAuth(nextDestination)}>{isAuthenticated ? 'Open Workspace' : 'Start with clarity'} <ChevronRightIcon size="xs" /></button></div><div className="meridian-relief-art"><div className="meridian-relief-image"><StockSnapshot /></div><div className="meridian-money-chip meridian-money-chip--one"><b>100 units</b><small>received today</small></div><div className="meridian-money-chip meridian-money-chip--two"><b>Main Branch → Warehouse</b><small>transfer completed</small></div></div></section>
+    <section id="teams" className="meridian-section meridian-relief meridian-reveal"><div className="meridian-relief-copy"><p className="meridian-overline">LESS HUNTING. MORE KNOWING.</p><h2>Make the next action<br /><span>feel effortless.</span></h2><p>Fast decisions need faster tools. That is why growing teams rely on Stocky to keep locations, suppliers, and people moving together.</p><button type="button" className="meridian-pill meridian-pill--dark" onClick={() => isAuthenticated ? navigateToWorkspace(nextDestination) : handleAuth(nextDestination)}>{isAuthenticated ? 'Open Workspace' : 'Start with clarity'} <ChevronRightIcon size="xs" /></button></div><div className="meridian-relief-art"><div className="meridian-relief-image"><StockSnapshot /></div><div className="meridian-money-chip meridian-money-chip--one"><b>100 units</b><small>received today</small></div><div className="meridian-money-chip meridian-money-chip--two"><b>Main Branch → Warehouse</b><small>transfer completed</small></div></div></section>
 
-    <section className="meridian-section meridian-calculator meridian-reveal"><div className="meridian-heading-block"><p className="meridian-overline">SEE THE DIFFERENCE</p><h2>Find out what<br /><span>your inventory can do.</span></h2><p>See how much time and visibility you unlock when every location works from the same picture.</p><button type="button" className="meridian-pill meridian-pill--lime" onClick={() => isAuthenticated ? router.push(nextDestination) : handleAuth(nextDestination)}>{loading ? 'Opening…' : isAuthenticated ? 'Open Workspace' : 'Get Started Free'} <ChevronRightIcon size="xs" /></button></div><div className="meridian-calculator-card"><div className="meridian-calculator-top"><div><small>LOCATIONS IN YOUR OPERATION</small><strong>{locations}</strong></div><div><small>VISIBLE EVERY DAY</small><strong>{locations * 248}</strong><span>stock positions</span></div></div><input type="range" min="1" max="12" value={locations} onChange={(event) => setLocations(Number(event.target.value))} aria-label="Number of locations" /><div className="meridian-calculator-labels"><span>1 location</span><span>12 locations</span></div><div className="meridian-compare-list"><div><span><i className="is-stocky" />Stocky</span><b>{locations * 18} hrs saved</b><em>{locations * 18}</em></div><div><span><i />Spreadsheets</span><b>Manual work</b><em>{Math.max(12, locations * 4)}</em></div><div><span><i />Disconnected tools</span><b>Hidden work</b><em>{Math.max(8, locations * 3)}</em></div></div></div></section>
+    <section className="meridian-section meridian-calculator meridian-reveal"><div className="meridian-heading-block"><p className="meridian-overline">SEE THE DIFFERENCE</p><h2>Find out what<br /><span>your inventory can do.</span></h2><p>See how much time and visibility you unlock when every location works from the same picture.</p><button type="button" className="meridian-pill meridian-pill--lime" onClick={() => isAuthenticated ? navigateToWorkspace(nextDestination) : handleAuth(nextDestination)}>{loading ? 'Opening…' : isAuthenticated ? 'Open Workspace' : 'Get Started Free'} <ChevronRightIcon size="xs" /></button></div><div className="meridian-calculator-card"><div className="meridian-calculator-top"><div><small>LOCATIONS IN YOUR OPERATION</small><strong>{locations}</strong></div><div><small>VISIBLE EVERY DAY</small><strong>{locations * 248}</strong><span>stock positions</span></div></div><input type="range" min="1" max="12" value={locations} onChange={(event) => setLocations(Number(event.target.value))} aria-label="Number of locations" /><div className="meridian-calculator-labels"><span>1 location</span><span>12 locations</span></div><div className="meridian-compare-list"><div><span><i className="is-stocky" />Stocky</span><b>{locations * 18} hrs saved</b><em>{locations * 18}</em></div><div><span><i />Spreadsheets</span><b>Manual work</b><em>{Math.max(12, locations * 4)}</em></div><div><span><i />Disconnected tools</span><b>Hidden work</b><em>{Math.max(8, locations * 3)}</em></div></div></div></section>
 
     <section className="meridian-section meridian-results meridian-reveal"><div className="meridian-heading-block meridian-heading-block--center"><h2>Real results from<br /><span>real operators.</span></h2></div><div className="meridian-results-grid"><article><div className="meridian-result-art meridian-result-art--one"><BoxesIcon size="md" /></div><strong>2.4×</strong><p>faster receiving decisions</p></article><article><div className="meridian-result-art meridian-result-art--two"><ArrowUpDownIcon size="md" /></div><strong>20%</strong><p>less stock lost to expiry</p></article><article><div className="meridian-result-art meridian-result-art--three"><TruckIcon size="md" /></div><strong>41%</strong><p>more supplier follow-through</p></article></div></section>
 
-    <section id="faq" className="meridian-section meridian-faq meridian-reveal"><div className="meridian-faq-heading"><p className="meridian-overline">QUESTIONS, RESOLVED</p><h2>Everything you need<br /><span>in one place.</span></h2><button type="button" className="meridian-pill meridian-pill--lime" onClick={() => isAuthenticated ? router.push(nextDestination) : handleAuth(nextDestination)}>{loading ? 'Opening…' : isAuthenticated ? 'Open Workspace' : 'Get Started Free'} <ChevronRightIcon size="xs" /></button></div><div className="meridian-faq-list">{faqs.map(([question, answer], index) => <div className={`meridian-faq-item ${openFaq === index ? 'is-open' : ''}`} key={question}><button type="button" onClick={() => setOpenFaq(openFaq === index ? null : index)}><span>{question}</span><b>+</b></button><div><p>{answer}</p></div></div>)}</div></section>
+    <section id="faq" className="meridian-section meridian-faq meridian-reveal"><div className="meridian-faq-heading"><p className="meridian-overline">QUESTIONS, RESOLVED</p><h2>Everything you need<br /><span>in one place.</span></h2><button type="button" className="meridian-pill meridian-pill--lime" onClick={() => isAuthenticated ? navigateToWorkspace(nextDestination) : handleAuth(nextDestination)}>{loading ? 'Opening…' : isAuthenticated ? 'Open Workspace' : 'Get Started Free'} <ChevronRightIcon size="xs" /></button></div><div className="meridian-faq-list">{faqs.map(([question, answer], index) => <div className={`meridian-faq-item ${openFaq === index ? 'is-open' : ''}`} key={question}><button type="button" onClick={() => setOpenFaq(openFaq === index ? null : index)}><span>{question}</span><b>+</b></button><div><p>{answer}</p></div></div>)}</div></section>
 
-    <section className="meridian-final-cta meridian-reveal"><p className="meridian-overline">BUILT FOR THE WORK THAT MATTERS</p><h2>Make every location<br /><span>feel close.</span></h2><button type="button" className="meridian-pill meridian-pill--lime" onClick={() => isAuthenticated ? router.push(nextDestination) : handleAuth(nextDestination)}>{loading ? 'Opening workspace…' : isAuthenticated ? 'Open Workspace' : 'Get Started Free'}<ChevronRightIcon size="xs" /></button></section>
+    <section className="meridian-final-cta meridian-reveal"><p className="meridian-overline">BUILT FOR THE WORK THAT MATTERS</p><h2>Make every location<br /><span>feel close.</span></h2><button type="button" className="meridian-pill meridian-pill--lime" onClick={() => isAuthenticated ? navigateToWorkspace(nextDestination) : handleAuth(nextDestination)}>{loading ? 'Opening workspace…' : isAuthenticated ? 'Open Workspace' : 'Get Started Free'}<ChevronRightIcon size="xs" /></button></section>
     <footer className="meridian-footer"><a href="#top" className="meridian-brand"><span className="meridian-brand-mark"><BoxesIcon size="sm" /></span><span>stocky</span></a><span>Inventory, in the moment.</span><div><a href="#product">Product</a><a href="#workflow">Workflow</a><a href="#teams">Teams</a><a href="#faq">FAQ</a></div></footer>
   </main>;
 }

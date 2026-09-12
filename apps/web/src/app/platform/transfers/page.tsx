@@ -8,7 +8,7 @@ export default function TransfersRoutePage() {
   const platform = usePlatform();
 
   if (platform.loading) {
-    return <PlatformWorkspaceSkeleton variant="table" />;
+    return <PlatformWorkspaceSkeleton variant="transfers" />;
   }
 
   return (

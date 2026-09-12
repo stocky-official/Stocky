@@ -8,7 +8,7 @@ export default function SettingsRoutePage() {
   const platform = usePlatform();
 
   if (platform.loading) {
-    return <PlatformWorkspaceSkeleton variant="cards" />;
+    return <PlatformWorkspaceSkeleton variant="settings" />;
   }
 
   return (

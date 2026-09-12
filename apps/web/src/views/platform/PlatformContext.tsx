@@ -443,11 +443,9 @@ export function PlatformProvider({
         // Automatically upgrade generic /platform URL to the company's tenant path in the address bar
         if (comp.code) {
           const companySlug = comp.code.toLowerCase();
-          const isSubdomain = typeof window !== 'undefined' && (() => {
-            const host = window.location.hostname.toLowerCase().split(':')[0];
-            const parts = host.split('.');
-            return parts.length > 1 && !['www', 'api', 'admin', 'auth', 'app', 'localhost', '127.0.0.1'].includes(parts[0]);
-          })();
+          const isSubdomain =
+            typeof window !== 'undefined' &&
+            Boolean(parseTenantDomain(window.location.hostname).subdomain);
 
           const currentPath = typeof window !== 'undefined' ? window.location.pathname : pathname;
           if (currentPath === '/platform' || currentPath.startsWith('/platform/')) {

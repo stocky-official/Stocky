@@ -8,7 +8,7 @@ export default function StockRoutePage() {
   const platform = usePlatform();
 
   if (platform.loading) {
-    return <PlatformWorkspaceSkeleton variant="table" />;
+    return <PlatformWorkspaceSkeleton variant="stock" />;
   }
 
   return (

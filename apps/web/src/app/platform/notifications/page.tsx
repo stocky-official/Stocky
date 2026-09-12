@@ -8,7 +8,7 @@ export default function NotificationsRoutePage() {
   const platform = usePlatform();
 
   if (platform.loading) {
-    return <PlatformWorkspaceSkeleton variant="table" hasTabs={false} />;
+    return <PlatformWorkspaceSkeleton variant="notifications" />;
   }
 
   return (

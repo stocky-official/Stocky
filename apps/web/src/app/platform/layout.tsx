@@ -62,14 +62,6 @@ function PlatformShell({ children }: { children?: React.ReactNode }) {
     if (chromeTransitionTimerRef.current !== null) window.clearTimeout(chromeTransitionTimerRef.current);
   }, []);
 
-  if (platform.loading) {
-    return (
-      <PageLayout className="stocky-platform-shell">
-        <PlatformWorkspaceSkeleton variant="dashboard" hasTabs={true} />
-      </PageLayout>
-    );
-  }
-
   if (platform.unauthorizedTenant) {
     const { requestedCompanyName, requestedTenantCode, userCompanyName, userCompanyCode } = platform.unauthorizedTenant;
     const hasUserCompany = Boolean(userCompanyCode && userCompanyCode !== 'platform');
@@ -114,14 +106,6 @@ function PlatformShell({ children }: { children?: React.ReactNode }) {
             </button>
           </div>
         </div>
-      </PageLayout>
-    );
-  }
-
-  if (!platform.companyId || !platform.userEmail) {
-    return (
-      <PageLayout className="stocky-platform-shell">
-        <PlatformWorkspaceSkeleton variant="dashboard" hasTabs={true} />
       </PageLayout>
     );
   }
@@ -177,7 +161,11 @@ function PlatformShell({ children }: { children?: React.ReactNode }) {
           className="stocky-platform-content flex-1 overflow-y-auto min-w-0"
           onScroll={handleMainScroll}
         >
-          {children}
+          {platform.loading || !platform.companyId || !platform.userEmail ? (
+            <PlatformWorkspaceSkeleton variant={platform.activeTab as any} />
+          ) : (
+            children
+          )}
         </main>
       </div>
       <ReceiveStockDrawerWidget

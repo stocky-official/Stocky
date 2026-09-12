@@ -8,7 +8,7 @@ export default function SuppliersRoutePage() {
   const platform = usePlatform();
 
   if (platform.loading) {
-    return <PlatformWorkspaceSkeleton variant="table" />;
+    return <PlatformWorkspaceSkeleton variant="suppliers" />;
   }
 
   return (

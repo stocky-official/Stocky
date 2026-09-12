@@ -8,7 +8,7 @@ export default function LocationsRoutePage() {
   const platform = usePlatform();
 
   if (platform.loading) {
-    return <PlatformWorkspaceSkeleton variant="cards" />;
+    return <PlatformWorkspaceSkeleton variant="locations" />;
   }
 
   return (
