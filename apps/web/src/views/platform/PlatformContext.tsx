@@ -11,6 +11,7 @@ import React, {
 } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase/client';
+import { parseTenantDomain } from '@/lib/domain';
 import type {
   CompanyUserRole,
   CreateStockTaskCommand,
@@ -213,15 +214,9 @@ export function PlatformProvider({
     if (typeof window === 'undefined') {
       return { code: null, prefix: tenantPrefix };
     }
-    const hostWithoutPort = window.location.hostname.toLowerCase();
-    const isIpAddress = /^(?:\d{1,3}\.){3}\d{1,3}$/.test(hostWithoutPort);
-    const hostParts = hostWithoutPort.split('.');
-    if (!isIpAddress && hostParts.length > 1) {
-      const sub = hostParts[0];
-      const reserved = ['www', 'api', 'admin', 'auth', 'app', 'localhost'];
-      if (!reserved.includes(sub)) {
-        return { code: sub, prefix: '' };
-      }
+    const { subdomain } = parseTenantDomain(window.location.hostname);
+    if (subdomain) {
+      return { code: subdomain, prefix: '' };
     }
     const currentPath = typeof window !== 'undefined' ? window.location.pathname : pathname;
     const segments = currentPath.split('/').filter(Boolean);
@@ -253,14 +248,9 @@ export function PlatformProvider({
     }
     if (company?.code) {
       if (typeof window !== 'undefined') {
-        const hostWithoutPort = window.location.hostname.toLowerCase().split(':')[0];
-        const hostParts = hostWithoutPort.split('.');
-        if (hostParts.length > 1) {
-          const sub = hostParts[0];
-          const reserved = ['www', 'api', 'admin', 'auth', 'app', 'localhost', '127.0.0.1'];
-          if (!reserved.includes(sub)) {
-            return '';
-          }
+        const { subdomain } = parseTenantDomain(window.location.hostname);
+        if (subdomain) {
+          return '';
         }
       }
       return `/${company.code.toLowerCase()}`;

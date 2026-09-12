@@ -1,15 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
+import { parseTenantDomain } from '@/lib/domain';
 
-const RESERVED_SUBDOMAINS = new Set([
-  'www',
-  'api',
-  'admin',
-  'auth',
-  'app',
-  'localhost',
-  '127.0.0.1',
-]);
 
 const RESERVED_ROOT_PATHS = new Set([
   'platform',
@@ -61,17 +53,7 @@ export async function proxy(req: NextRequest) {
   });
 
   // 1. Check Subdomain Multi-tenancy (e.g. circlek.stocky.app, crk.localhost:3000)
-  let subdomain: string | null = null;
-  const hostWithoutPort = hostname.split(':')[0].toLowerCase();
-  const isIpAddress = /^(\d{1,3}\.){3}\d{1,3}$/.test(hostWithoutPort);
-  const hostParts = hostWithoutPort.split('.');
-
-  if (!isIpAddress && hostParts.length > 1) {
-    const potentialSub = hostParts[0];
-    if (!RESERVED_SUBDOMAINS.has(potentialSub)) {
-      subdomain = potentialSub;
-    }
-  }
+  const { subdomain, rootDomain } = parseTenantDomain(hostname);
 
   // 2. Identify Public vs Protected Routes
   const isAuthRoute = pathname.startsWith('/auth');
@@ -112,10 +94,31 @@ export async function proxy(req: NextRequest) {
 
       const {
         data: { user: authUser },
+        error: authError,
       } = await supabase.auth.getUser();
-      user = authUser;
+
+      if (authError) {
+        // If refresh token is missing/invalid/expired, clear stale auth cookies so
+        // the client browser stops sending invalid cookies on every request.
+        const isRefreshFailure =
+          authError.status === 400 ||
+          authError.status === 401 ||
+          authError.code === 'refresh_token_not_found' ||
+          authError.message?.toLowerCase().includes('refresh token');
+
+        if (isRefreshFailure) {
+          req.cookies.getAll().forEach((cookie) => {
+            if (cookie.name.startsWith('sb-') || cookie.name.includes('auth-token')) {
+              req.cookies.delete(cookie.name);
+              supabaseResponse.cookies.delete(cookie.name);
+            }
+          });
+        }
+      } else {
+        user = authUser;
+      }
     } catch (err) {
-      console.error('Proxy Supabase auth check error:', err);
+      console.warn('Proxy Supabase auth check warning:', err);
     }
   }
 
@@ -126,11 +129,10 @@ export async function proxy(req: NextRequest) {
     const targetPath = pathname + (url.search || '');
     redirectUrl.search = `?next=${encodeURIComponent(targetPath)}`;
 
-    if (subdomain) {
+    if (subdomain && rootDomain) {
       // Reconstruct main host without the tenant subdomain
       const port = hostname.split(':')[1];
-      const mainHostWithoutPort = hostParts.slice(1).join('.');
-      redirectUrl.host = port ? `${mainHostWithoutPort}:${port}` : mainHostWithoutPort;
+      redirectUrl.host = port ? `${rootDomain}:${port}` : rootDomain;
     }
 
     const redirectResponse = NextResponse.redirect(redirectUrl);
