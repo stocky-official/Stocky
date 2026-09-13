@@ -16,7 +16,7 @@ import { TimeOffWidget } from './TimeOffWidget';
 import { AttendanceKioskWidget } from './AttendanceKioskWidget';
 import { RequestTimeOffDrawerWidget } from './RequestTimeOffDrawerWidget';
 import { ShiftDetailsDrawerWidget } from './ShiftDetailsDrawerWidget';
-import { exportTimesheetsToExcel } from '@/lib/excel/export';
+import { TimesheetsExportModalWidget } from './TimesheetsExportModalWidget';
 
 export interface AttendanceWorkspaceWidgetProps {
   shifts: AttendanceShift[];
@@ -58,6 +58,7 @@ export function AttendanceWorkspaceWidget({
   const [activeTab, setActiveTab] = useState<AttendanceTab>('timesheets');
   const [search, setSearch] = useState('');
   const [isLeaveDrawerOpen, setIsLeaveDrawerOpen] = useState(false);
+  const [isExportModalOpen, setIsExportModalOpen] = useState(false);
   const [selectedShift, setSelectedShift] = useState<AttendanceShift | null>(null);
 
   const locationMap = useMemo(() => new Map(locations.map((l) => [l.id, l.name])), [locations]);
@@ -80,26 +81,6 @@ export function AttendanceWorkspaceWidget({
     });
   }, [shifts, search, memberMap, locationMap]);
 
-  const handleExportExcel = () => {
-    const exportRows = filteredShifts.map((shift) => {
-      const member = memberMap.get(shift.companyUserId);
-      const locName = locationMap.get(shift.locationId) || 'Main Branch';
-      return {
-        employeeName: member?.full_name || member?.email?.split('@')[0] || 'Staff Member',
-        employeeEmail: member?.email || 'N/A',
-        locationName: locName,
-        shiftDate: shift.shiftDate,
-        clockInAt: shift.clockInAt,
-        clockOutAt: shift.clockOutAt,
-        totalMinutes: shift.totalMinutes,
-        status: shift.status,
-        punchInMethod: shift.punchInMethod,
-        notes: shift.notes,
-      };
-    });
-    exportTimesheetsToExcel(exportRows, new Date().toISOString().slice(0, 10), 'All_Branches');
-  };
-
   return (
     <div className="w-full space-y-4">
       {/* Unified Card Container */}
@@ -111,7 +92,7 @@ export function AttendanceWorkspaceWidget({
             onSearchChange={setSearch}
             activeTab={activeTab}
             onTabChange={setActiveTab}
-            onExportExcel={handleExportExcel}
+            onExportExcel={() => setIsExportModalOpen(true)}
             onRequestLeave={() => setIsLeaveDrawerOpen(true)}
             userRole={userRole}
           />
@@ -172,6 +153,15 @@ export function AttendanceWorkspaceWidget({
         isOpen={Boolean(selectedShift)}
         onClose={() => setSelectedShift(null)}
         shift={selectedShift}
+        locations={locations}
+        members={members}
+      />
+
+      {/* Export Timesheets Modal */}
+      <TimesheetsExportModalWidget
+        isOpen={isExportModalOpen}
+        onClose={() => setIsExportModalOpen(false)}
+        shifts={shifts}
         locations={locations}
         members={members}
       />

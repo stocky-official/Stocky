@@ -5,4 +5,5 @@ export * from './TimeOffWidget';
 export * from './AttendanceKioskWidget';
 export * from './RequestTimeOffDrawerWidget';
 export * from './ShiftDetailsDrawerWidget';
+export * from './TimesheetsExportModalWidget';
 export * from './AttendanceWorkspaceWidget';
