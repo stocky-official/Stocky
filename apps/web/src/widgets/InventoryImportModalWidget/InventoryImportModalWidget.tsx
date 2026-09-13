@@ -39,7 +39,7 @@ interface ImportRow {
   errors: string[];
 }
 
-interface StockImportModalWidgetProps {
+export interface InventoryImportModalWidgetProps {
   isOpen: boolean;
   onClose: () => void;
   companyId: string;
@@ -48,6 +48,8 @@ interface StockImportModalWidgetProps {
   selectedLocationId: string;
   onImportSuccess: () => void;
 }
+
+export type StockImportModalWidgetProps = InventoryImportModalWidgetProps;
 
 function cleanNumber(value: string) {
   if (!value.trim()) return null;
@@ -61,7 +63,7 @@ function cleanDate(value: string) {
   return Number.isNaN(parsed.getTime()) ? null : parsed.toISOString();
 }
 
-export function StockImportModalWidget({ isOpen, onClose, companyId, products, locations, selectedLocationId, onImportSuccess }: StockImportModalWidgetProps) {
+export function InventoryImportModalWidget({ isOpen, onClose, companyId, products, locations, selectedLocationId, onImportSuccess }: InventoryImportModalWidgetProps) {
   const [file, setFile] = useState<File | null>(null);
   const [parsedData, setParsedData] = useState<ParsedExcelData | null>(null);
   const [columnMapping, setColumnMapping] = useState<Record<string, string>>({});
@@ -230,7 +232,7 @@ export function StockImportModalWidget({ isOpen, onClose, companyId, products, l
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-3 sm:p-6" role="dialog" aria-modal="true" aria-labelledby="stock-import-title">
       <section className="flex max-h-[min(92vh,900px)] w-full max-w-5xl flex-col overflow-hidden rounded-2xl border border-stocky-border-subtle bg-stocky-bg-widget shadow-2xl">
         <header className="flex items-start justify-between gap-4 border-b border-stocky-border-subtle px-5 py-4 sm:px-6">
-          <div className="flex items-start gap-3"><span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-stocky-primary/10 text-stocky-primary"><BoxesIcon size="sm" /></span><div><p className="stocky-page-eyebrow">Update stock</p><h2 id="stock-import-title" className="mt-1 text-lg font-medium text-stocky-text-main">Import stock data</h2><p className="mt-1 max-w-2xl text-xs text-stocky-text-sub">Match your CSV columns, then Stocky finds products by barcode and updates their quantity and batch details.</p></div></div>
+          <div className="flex items-start gap-3"><span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-stocky-primary/10 text-stocky-primary"><BoxesIcon size="sm" /></span><div><h2 id="stock-import-title" className="text-lg font-medium text-stocky-text-main">Import stock data</h2><p className="mt-1 max-w-2xl text-xs text-stocky-text-sub">Match your CSV columns, then Stocky finds products by barcode and updates their quantity and batch details.</p></div></div>
           <button type="button" onClick={close} disabled={isImporting} className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-stocky-text-sub hover:bg-stocky-bg-global hover:text-stocky-text-main disabled:opacity-50" aria-label="Close import dialog"><XIcon size="xs" /></button>
         </header>
 
@@ -258,3 +260,5 @@ export function StockImportModalWidget({ isOpen, onClose, companyId, products, l
     </div>
   );
 }
+
+export const StockImportModalWidget = InventoryImportModalWidget;

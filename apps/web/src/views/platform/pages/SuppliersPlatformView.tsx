@@ -2,7 +2,7 @@ import React from 'react';
 import type { Location, Product, Supplier, SupplierContact, SupplierProduct, SupplierRequest, CompanyUserRole } from '@stocky/types';
 import type { SupplierContactInput } from '@/widgets';
 import { PlatformPageLayout } from './PlatformPageLayout';
-import { SupplierRequestsWidget } from '@/widgets';
+import { SuppliersWorkspaceWidget } from '@/widgets';
 
 import { useOptionalPlatform } from '@/views/platform/PlatformContext';
 
@@ -19,7 +19,7 @@ export interface SuppliersPlatformViewProps {
   activeSupplierTab?: 'suppliers' | 'requests';
   onSupplierTabChange?: (tab: 'suppliers' | 'requests') => void;
   onCreate: (input: { productId: string; locationId: string; supplierId?: string; requestType: 'replenish' | 'return' | 'replace'; quantity?: number }) => void;
-  onCreateSupplier: (input: { name: string; address?: string; contactName: string; contactPhone: string; contactEmail?: string }) => Promise<unknown>;
+  onCreateSupplier: (input: { name: string; address?: string; contactName: string; contactPhone: string; contactEmail?: string; imageUrl?: string }) => Promise<unknown>;
   onCreateSupplierContact: (input: SupplierContactInput) => Promise<void>;
   onUpdateSupplierContact: (contact: SupplierContact, input: SupplierContactInput) => Promise<void>;
   onDeleteSupplierContact: (contact: SupplierContact) => Promise<void>;
@@ -40,11 +40,10 @@ export function SuppliersPlatformView(props: SuppliersPlatformViewProps) {
 
   return (
     <PlatformPageLayout
-      eyebrow="Supplier follow-up"
       title="Suppliers"
       subtitle="Manage supplier contacts, catalog links, and replenishment requests."
     >
-      <SupplierRequestsWidget
+      <SuppliersWorkspaceWidget
         {...props}
         activeSupplierTab={activeSupplierTab}
         onSupplierTabChange={onSupplierTabChange}

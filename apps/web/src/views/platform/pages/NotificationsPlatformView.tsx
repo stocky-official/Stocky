@@ -13,7 +13,6 @@ export interface NotificationsPlatformViewProps {
 export function NotificationsPlatformView({ items }: NotificationsPlatformViewProps) {
   return (
     <PlatformPageLayout
-      eyebrow="Action center"
       title="Notifications"
       subtitle="Only urgent work and items requiring your decision appear here."
       actions={

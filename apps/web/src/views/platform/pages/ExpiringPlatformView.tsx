@@ -22,7 +22,6 @@ export function ExpiringPlatformView({
 
   return (
     <PlatformPageLayout
-      eyebrow="Action queue"
       title="Expiring stock"
       subtitle="Decide what happens to batches before they reach their expiry date."
       actions={
@@ -30,7 +29,7 @@ export function ExpiringPlatformView({
           <select
             value={selectedLocationId}
             onChange={(event) => onLocationChange(event.target.value)}
-            className="h-9 rounded-full bg-white border border-stocky-border-subtle px-3 text-xs focus:outline-none focus:border-stocky-primary"
+            className="h-8 rounded-full bg-white border border-stocky-border-subtle px-3 text-xs focus:outline-none focus:border-stocky-primary"
             aria-label="Filter expiring stock by location"
           >
             <option value="all">All locations</option>

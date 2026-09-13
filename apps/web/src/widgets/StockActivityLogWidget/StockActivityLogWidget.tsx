@@ -35,15 +35,15 @@ export function StockActivityLogWidget({ logs, locations, members }: StockActivi
   const visibleLogs = logs.filter((log) => filterMatches(log, filter));
 
   return (
-    <div className="stocky-logs-workspace flex flex-col gap-4">
+    <div className="stocky-logs-workspace flex flex-col gap-6">
       <div className="flex gap-2 overflow-x-auto pb-1">
         {filters.map((item) => (
           <button
             key={item.id}
             type="button"
             onClick={() => setFilter(item.id)}
-            className={`inline-flex h-9 shrink-0 items-center gap-1.5 rounded-full border px-3 text-[11px] font-medium ${
-              filter === item.id ? 'border-stocky-primary bg-stocky-primary text-white' : 'border-stocky-border-subtle bg-white text-stocky-text-sub'
+            className={`inline-flex h-8 shrink-0 items-center gap-1.5 rounded-full border px-3 text-xs font-medium cursor-pointer transition-colors ${
+              filter === item.id ? 'border-stocky-primary bg-stocky-primary text-white' : 'border-stocky-border-subtle bg-white text-stocky-text-sub hover:text-stocky-text-main hover:border-stocky-border-strong'
             }`}
           >
             {item.icon}
@@ -51,11 +51,11 @@ export function StockActivityLogWidget({ logs, locations, members }: StockActivi
           </button>
         ))}
       </div>
-      <div className="rounded-2xl border border-stocky-border-subtle bg-white overflow-hidden">
+      <div className="rounded-2xl border border-stocky-border-subtle bg-white overflow-hidden shadow-xs">
         {visibleLogs.length === 0 ? (
           <div className="px-6 py-16 text-center">
             <ActivityIcon size="md" className="mx-auto text-stocky-text-sub/50" />
-            <h2 className="mt-3 text-base font-medium text-stocky-text-main">No activity in this view</h2>
+            <h2 className="mt-3 text-base font-semibold text-stocky-text-main">No activity in this view</h2>
             <p className="mt-1 text-sm text-stocky-text-sub">New task assignments, stock changes, transfers, and supplier actions will appear here.</p>
           </div>
         ) : (
@@ -63,7 +63,7 @@ export function StockActivityLogWidget({ logs, locations, members }: StockActivi
             {visibleLogs.map((log) => {
               const actor = log.actorCompanyUserId ? memberMap.get(log.actorCompanyUserId) : null;
               return (
-                <div key={log.id} className="flex items-start gap-3 p-4">
+                <div key={log.id} className="flex items-start gap-4 p-4 sm:p-5">
                   <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full stocky-status-muted border">
                     <ActivityIcon size="xs" />
                   </span>
@@ -73,7 +73,7 @@ export function StockActivityLogWidget({ logs, locations, members }: StockActivi
                       {actor?.full_name || actor?.email || 'Stocky'} · {log.locationId ? locationMap.get(log.locationId) || 'Location' : 'Company-wide'} · {new Date(log.createdAt).toLocaleString()}
                     </p>
                   </div>
-                  <span className="rounded-full stocky-status-muted border px-2 py-1 text-[10px] capitalize text-stocky-text-sub">{log.action.replace('_', ' ')}</span>
+                  <span className="rounded-full stocky-status-muted border px-2.5 py-1 text-[10px] capitalize text-stocky-text-sub shrink-0">{log.action.replace('_', ' ')}</span>
                 </div>
               );
             })}

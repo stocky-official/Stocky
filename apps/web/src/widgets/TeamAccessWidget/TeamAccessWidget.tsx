@@ -63,7 +63,7 @@ export function TeamAccessWidget({ members, locations, assignments, canManage, i
   };
 
   return (
-    <div className="stocky-team-workspace flex flex-col gap-4">
+    <div className="stocky-team-workspace flex flex-col gap-6">
       {canManage && (
         <div className="flex items-center justify-end gap-2">
           <div className="relative">
@@ -76,7 +76,7 @@ export function TeamAccessWidget({ members, locations, assignments, canManage, i
               aria-label="Explain team roles"
               aria-expanded={roleHelpVisible}
               title="Role definitions"
-              className="flex h-9 w-9 items-center justify-center rounded-full border border-stocky-border-subtle bg-white text-stocky-text-sub hover:border-stocky-primary hover:text-stocky-primary cursor-pointer"
+              className="flex h-8 w-8 items-center justify-center rounded-full border border-stocky-border-subtle bg-white text-stocky-text-sub hover:border-stocky-primary hover:text-stocky-primary cursor-pointer transition-colors"
             >
               <InfoIcon size="xs" />
             </button>
@@ -146,10 +146,10 @@ export function TeamAccessWidget({ members, locations, assignments, canManage, i
             <table className="stocky-team-table w-full min-w-[760px] text-left">
               <thead className="bg-stocky-bg-global">
                 <tr className="border-b border-stocky-border-subtle text-[10px] font-medium uppercase tracking-wide text-stocky-text-sub">
-                  <th className="px-4 py-2.5">Member</th>
-                  <th className="px-4 py-2.5">Role</th>
-                  <th className="px-4 py-2.5">Locations</th>
-                  <th className="px-4 py-2.5">Status</th>
+                  <th className="px-4 py-3">Member</th>
+                  <th className="px-4 py-3">Role</th>
+                  <th className="px-4 py-3">Locations</th>
+                  <th className="px-4 py-3">Status</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-stocky-border-subtle">
@@ -158,7 +158,7 @@ export function TeamAccessWidget({ members, locations, assignments, canManage, i
                   const assignedIds = new Set(memberAssignments.map((assignment) => assignment.location_id));
                   return (
                     <tr key={member.id} className="align-middle hover:bg-stocky-bg-global/60">
-                      <td className="px-4 py-2.5">
+                      <td className="px-4 py-3">
                         <div className="flex items-center gap-2.5">
                           {memberAvatar(member)}
                           <div className="min-w-0">
@@ -167,36 +167,36 @@ export function TeamAccessWidget({ members, locations, assignments, canManage, i
                           </div>
                         </div>
                       </td>
-                      <td className="px-4 py-2.5">
+                      <td className="px-4 py-3">
                         {member.role === 'owner' || !canManage ? (
-                          <span className="inline-flex rounded-full border stocky-status-muted px-2 py-1 text-[10px] font-medium capitalize">{member.role}</span>
+                          <span className="inline-flex rounded-full border stocky-status-muted px-2.5 py-1 text-[10px] font-medium capitalize">{member.role}</span>
                         ) : (
-                          <select value={member.role} onChange={(event) => onRoleChange(member.id, event.target.value as CompanyUserRole)} className="h-7 rounded-full border border-stocky-border-subtle px-2 text-[10px] capitalize">
+                          <select value={member.role} onChange={(event) => onRoleChange(member.id, event.target.value as CompanyUserRole)} className="h-8 rounded-full border border-stocky-border-subtle px-2.5 text-xs capitalize cursor-pointer">
                             <option value="admin">Admin</option>
                             <option value="manager">Branch manager</option>
                             <option value="staff">Staff</option>
                           </select>
                         )}
                       </td>
-                      <td className="px-4 py-2.5">
-                        <div className="flex max-w-[360px] flex-wrap items-center gap-1">
+                      <td className="px-4 py-3">
+                        <div className="flex max-w-[360px] flex-wrap items-center gap-1.5">
                           {memberAssignments.map((assignment) => (
-                            <span key={assignment.id} className="inline-flex items-center gap-1 rounded-full border stocky-status-info px-2 py-1 text-[10px]">
+                            <span key={assignment.id} className="inline-flex items-center gap-1 rounded-full border stocky-status-info px-2.5 py-1 text-[10px]">
                               {locations.find((location) => location.id === assignment.location_id)?.name || 'Location'}
                               {canManage && <button type="button" onClick={() => onUnassign(assignment.id)} className="stocky-text-info hover:text-stocky-text-main cursor-pointer" aria-label="Remove location"><XIcon size="xs" /></button>}
                             </span>
                           ))}
                           {memberAssignments.length === 0 && <span className="text-[10px] stocky-text-warning">No location assigned</span>}
                           {canManage && (
-                            <select value="" onChange={(event) => { if (event.target.value) onAssign(member.id, event.target.value); }} className="h-7 rounded-full border border-stocky-border-subtle px-2 text-[10px]">
+                            <select value="" onChange={(event) => { if (event.target.value) onAssign(member.id, event.target.value); }} className="h-8 rounded-full border border-stocky-border-subtle px-2.5 text-xs cursor-pointer">
                               <option value="">+ Assign</option>
                               {locations.filter((location) => !assignedIds.has(location.id)).map((location) => <option key={location.id} value={location.id}>{location.name}</option>)}
                             </select>
                           )}
                         </div>
                       </td>
-                      <td className="px-4 py-2.5">
-                        <span className={`inline-flex rounded-full border px-2 py-1 text-[10px] capitalize ${member.status === 'active' ? 'stocky-status-success' : 'stocky-status-warning'}`}>{member.status || 'active'}</span>
+                      <td className="px-4 py-3">
+                        <span className={`inline-flex rounded-full border px-2.5 py-1 text-[10px] capitalize ${member.status === 'active' ? 'stocky-status-success' : 'stocky-status-warning'}`}>{member.status || 'active'}</span>
                       </td>
                     </tr>
                   );

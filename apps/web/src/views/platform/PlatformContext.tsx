@@ -31,6 +31,11 @@ import type {
   SupplierContact,
   SupplierProduct,
   SupplierRequest,
+  AttendanceShift,
+  LeaveRequest,
+  LeaveBalance,
+  LeaveType,
+  PunchMethod,
 } from '@stocky/types';
 import type {
   NotificationQueueItem,
@@ -47,8 +52,8 @@ const roleTitles: Record<CompanyUserRole, string> = {
 };
 
 const adminRoles: CompanyUserRole[] = ['owner', 'admin'];
-const staffTabs = ['home', 'stock', 'expiry', 'tasks', 'notifications', 'settings', 'receive', 'logs', 'locations', 'supplier-requests', 'tasks-completed'];
-const managerTabs = ['home', 'stock', 'expiry', 'tasks', 'notifications', 'settings', 'receive', 'logs', 'suppliers', 'transfers', 'locations', 'supplier-requests', 'tasks-completed'];
+const staffTabs = ['home', 'stock', 'inventory', 'tasks', 'attendance', 'notifications', 'settings', 'receive', 'logs', 'locations', 'supplier-requests', 'tasks-completed'];
+const managerTabs = ['home', 'stock', 'inventory', 'tasks', 'attendance', 'notifications', 'settings', 'receive', 'logs', 'suppliers', 'transfers', 'locations', 'supplier-requests', 'tasks-completed'];
 
 export function canOpenTab(role: CompanyUserRole, tab: string) {
   if (adminRoles.includes(role)) return true;
@@ -56,9 +61,9 @@ export function canOpenTab(role: CompanyUserRole, tab: string) {
 }
 
 function mapLocation(row: any): Location { return { id: row.id, companyId: row.company_id, name: row.name, code: row.code, type: row.type, address: row.address, phone: row.phone, managerUserId: row.manager_user_id, imageUrl: row.image_url || null, isActive: row.is_active, createdAt: row.created_at, updatedAt: row.updated_at }; }
-function mapProduct(row: any): Product { return { id: row.id, companyId: row.company_id, name: row.name, barcode: row.barcode, categoryId: row.category_id, categoryName: row.category_name || 'General', unitName: row.unit_name || 'unit', reorderPoint: Number(row.reorder_point || 0), defaultExpiryNotificationDays: row.default_expiry_notification_days == null ? null : Number(row.default_expiry_notification_days), defaultSupplierId: row.default_supplier_id, unitCost: Number(row.unit_cost || 0), isActive: Boolean(row.is_active), createdAt: row.created_at, updatedAt: row.updated_at }; }
+function mapProduct(row: any): Product { return { id: row.id, companyId: row.company_id, name: row.name, barcode: row.barcode, categoryId: row.category_id, categoryName: row.category_name || 'General', unitName: row.unit_name || 'unit', reorderPoint: Number(row.reorder_point || 0), defaultExpiryNotificationDays: row.default_expiry_notification_days == null ? null : Number(row.default_expiry_notification_days), defaultSupplierId: row.default_supplier_id, unitCost: Number(row.unit_cost || 0), imageUrl: row.image_url || null, isActive: Boolean(row.is_active), createdAt: row.created_at, updatedAt: row.updated_at }; }
 function mapLot(row: any): StockLot { return { id: row.id, companyId: row.company_id, productId: row.product_id, locationId: row.location_id, supplierId: row.supplier_id, lotNumber: row.lot_number, receivedAt: row.received_at, manufacturedAt: row.manufactured_at, expiryDate: row.expiry_date, expiryNotificationDays: row.expiry_notification_days == null ? null : Number(row.expiry_notification_days), quantityOnHand: Number(row.quantity_on_hand || 0), unitCost: Number(row.unit_cost || 0), status: row.status, notes: row.notes, createdAt: row.created_at, updatedAt: row.updated_at }; }
-function mapSupplier(row: any): Supplier { return { id: row.id, companyId: row.company_id, name: row.name, address: row.address, contactName: row.contact_name || '', contactPhone: row.contact_phone || '', contactEmail: row.contact_email, itemsSupplied: row.items_supplied || [], itemCount: Number(row.item_count || 0), createdAt: row.created_at, updatedAt: row.updated_at }; }
+function mapSupplier(row: any): Supplier { return { id: row.id, companyId: row.company_id, name: row.name, address: row.address, contactName: row.contact_name || '', contactPhone: row.contact_phone || '', contactEmail: row.contact_email, itemsSupplied: row.items_supplied || [], itemCount: Number(row.item_count || 0), imageUrl: row.image_url || null, createdAt: row.created_at, updatedAt: row.updated_at }; }
 function mapSupplierContact(row: any): SupplierContact { return { id: row.id, companyId: row.company_id, supplierId: row.supplier_id, name: row.name, role: row.role, phone: row.phone, email: row.email, isPrimary: Boolean(row.is_primary), createdAt: row.created_at, updatedAt: row.updated_at }; }
 function mapRequest(row: any): SupplierRequest { return { id: row.id, companyId: row.company_id, locationId: row.location_id, supplierId: row.supplier_id, productId: row.product_id, requestType: row.request_type, status: row.status, quantityRequested: row.quantity_requested, reason: row.reason, notes: row.notes, createdByCompanyUserId: row.created_by_company_user_id, lastContactedAt: row.last_contacted_at, createdAt: row.created_at, updatedAt: row.updated_at }; }
 function mapSupplierProduct(row: any): SupplierProduct { return { id: row.id, companyId: row.company_id, supplierId: row.supplier_id, productId: row.product_id, supplierSku: row.supplier_sku, unitCost: row.unit_cost == null ? null : Number(row.unit_cost), notes: row.notes, createdAt: row.created_at, updatedAt: row.updated_at }; }
@@ -69,6 +74,9 @@ function mapTask(row: any): StockTask { return { id: row.id, companyId: row.comp
 function mapTaskItem(row: any): StockTaskItem { return { id: row.id, taskId: row.task_id, productId: row.product_id, stockLotId: row.stock_lot_id, countedQuantity: row.counted_quantity == null ? null : Number(row.counted_quantity), observedExpiryDate: row.observed_expiry_date, note: row.note, status: row.status, completedAt: row.completed_at, createdAt: row.created_at, updatedAt: row.updated_at }; }
 function mapTaskExpected(row: any): StockTaskExpected { return { taskItemId: row.task_item_id, expectedQuantity: row.expected_quantity == null ? null : Number(row.expected_quantity), expectedExpiryDate: row.expected_expiry_date }; }
 function mapActivityLog(row: any): StockActivityLog { return { id: row.id, companyId: row.company_id, locationId: row.location_id, actorCompanyUserId: row.actor_company_user_id, entityType: row.entity_type, entityId: row.entity_id, action: row.action, summary: row.summary, metadata: row.metadata, createdAt: row.created_at }; }
+function mapAttendanceShift(row: any): AttendanceShift { return { id: row.id, companyId: row.company_id, locationId: row.location_id, companyUserId: row.company_user_id, shiftDate: row.shift_date, clockInAt: row.clock_in_at, clockOutAt: row.clock_out_at, totalMinutes: row.total_minutes == null ? null : Number(row.total_minutes), status: row.status, punchInMethod: row.punch_in_method, punchOutMethod: row.punch_out_method, notes: row.notes, createdAt: row.created_at, updatedAt: row.updated_at }; }
+function mapLeaveRequest(row: any): LeaveRequest { return { id: row.id, companyId: row.company_id, companyUserId: row.company_user_id, approverCompanyUserId: row.approver_company_user_id, taskId: row.task_id, leaveType: row.leave_type, startDate: row.start_date, endDate: row.end_date, daysCount: Number(row.days_count || 0), reason: row.reason, status: row.status, managerNote: row.manager_note, reviewedAt: row.reviewed_at, createdAt: row.created_at, updatedAt: row.updated_at }; }
+function mapLeaveBalance(row: any): LeaveBalance { return { id: row.id, companyId: row.company_id, companyUserId: row.company_user_id, year: Number(row.year || new Date().getFullYear()), ptoAllowance: Number(row.pto_allowance || 0), ptoUsed: Number(row.pto_used || 0), sickAllowance: Number(row.sick_allowance || 0), sickUsed: Number(row.sick_used || 0), createdAt: row.created_at, updatedAt: row.updated_at }; }
 
 export interface PlatformContextValue {
   loading: boolean;
@@ -146,15 +154,14 @@ export interface PlatformContextValue {
   editingProduct: Product | null;
   openProductEdit: (product: Product) => void;
   closeProductEdit: () => void;
-  // Mutations
-  updateProduct: (product: Product, input: { name: string; barcode: string; categoryName: string; unitName: string; reorderPoint: number; defaultExpiryNotificationDays: number | null; defaultSupplierId: string | null; unitCost: number }) => Promise<void>;
+  updateProduct: (product: Product, input: { name: string; barcode: string; categoryName: string; unitName: string; reorderPoint: number; defaultExpiryNotificationDays: number | null; defaultSupplierId: string | null; unitCost: number; imageUrl?: string | null }) => Promise<void>;
   deleteProduct: (product: Product) => Promise<void>;
   resolveExpiry: (lot: StockLot, action: 'hold' | 'dispose' | 'return' | 'replace', reason?: string) => Promise<void>;
   updateLotDetails: (lot: StockLot, input: { lotNumber?: string; expiryDate: string; notificationDays: number }) => Promise<void>;
   updateLotRecord: (lot: StockLot, input: StockLotUpdateInput) => Promise<void>;
   deleteLot: (lot: StockLot) => Promise<void>;
   createSupplierRequest: (input: { productId: string; locationId: string; supplierId?: string; requestType: 'replenish' | 'return' | 'replace'; quantity?: number }) => Promise<void>;
-  createSupplier: (input: { name: string; address?: string; contactName: string; contactPhone: string; contactEmail?: string }) => Promise<Supplier>;
+  createSupplier: (input: { name: string; address?: string; contactName: string; contactPhone: string; contactEmail?: string; imageUrl?: string }) => Promise<Supplier>;
   createSupplierContact: (input: SupplierContactInput) => Promise<void>;
   updateSupplierContact: (contact: SupplierContact, input: SupplierContactInput) => Promise<void>;
   setPrimarySupplierContact: (contact: SupplierContact) => Promise<void>;
@@ -176,6 +183,13 @@ export interface PlatformContextValue {
   startStockTask: (taskId: string) => Promise<void>;
   submitStockTask: (taskId: string, items: SubmitStockTaskCommand['items']) => Promise<void>;
   reviewStockTask: (taskId: string, approve: boolean, note?: string) => Promise<void>;
+  // Attendance & Leaves
+  attendanceShifts: AttendanceShift[];
+  leaveRequests: LeaveRequest[];
+  leaveBalances: LeaveBalance[];
+  punchAttendance: (input: { locationId: string; method?: PunchMethod; qrToken?: string; notes?: string }) => Promise<AttendanceShift>;
+  submitLeaveRequest: (input: { leaveType: LeaveType; startDate: string; endDate: string; daysCount: number; managerUserId: string; reason?: string }) => Promise<void>;
+  reviewLeaveRequest: (requestId: string, approve: boolean, note?: string) => Promise<void>;
 }
 
 const PlatformContext = createContext<PlatformContextValue | null>(null);
@@ -290,6 +304,9 @@ export function PlatformProvider({
   const [taskItems, setTaskItems] = useState<StockTaskItem[]>([]);
   const [taskExpected, setTaskExpected] = useState<StockTaskExpected[]>([]);
   const [activityLogs, setActivityLogs] = useState<StockActivityLog[]>([]);
+  const [attendanceShifts, setAttendanceShifts] = useState<AttendanceShift[]>([]);
+  const [leaveRequests, setLeaveRequests] = useState<LeaveRequest[]>([]);
+  const [leaveBalances, setLeaveBalances] = useState<LeaveBalance[]>([]);
 
   const refresh = () => setReloadKey((value) => value + 1);
 
@@ -479,6 +496,9 @@ export function PlatformProvider({
         { data: dbTaskItems },
         { data: dbTaskExpected },
         { data: dbActivityLogs },
+        { data: dbAttendanceShifts },
+        { data: dbLeaveRequests },
+        { data: dbLeaveBalances },
       ] = await Promise.all([
         supabase.from('locations').select('*').eq('company_id', profile.company_id).eq('is_active', true).order('name'),
         supabase.from('user_locations').select('location_id').eq('user_id', profile.id),
@@ -497,6 +517,9 @@ export function PlatformProvider({
         supabase.from('stock_task_items').select('id,task_id,product_id,stock_lot_id,counted_quantity,observed_expiry_date,note,status,completed_at,created_at,updated_at').eq('company_id', profile.company_id).order('created_at', { ascending: true }),
         supabase.from('stock_task_expected').select('*'),
         supabase.from('stock_activity_logs').select('*').eq('company_id', profile.company_id).order('created_at', { ascending: false }).limit(500),
+        supabase.from('attendance_shifts').select('*').eq('company_id', profile.company_id).order('clock_in_at', { ascending: false }).limit(500),
+        supabase.from('leave_requests').select('*').eq('company_id', profile.company_id).order('created_at', { ascending: false }),
+        supabase.from('leave_balances').select('*').eq('company_id', profile.company_id),
       ]);
 
       if (cancelled) return;
@@ -529,7 +552,25 @@ export function PlatformProvider({
 
       setAssignedLocationIds(nextAssigned);
       setLocations(nextLocations);
-      setProducts((dbProducts || []).map(mapProduct));
+      const nextProducts = await Promise.all(
+        (dbProducts || []).map(async (row: any) => {
+          let imageUrl = row.image_url || null;
+          if (imageUrl && !imageUrl.startsWith('http')) {
+            try {
+              const { data: signed } = await supabase.storage
+                .from('stocky-private')
+                .createSignedUrl(imageUrl, 60 * 60 * 24 * 365);
+              if (signed?.signedUrl) {
+                imageUrl = signed.signedUrl;
+              }
+            } catch {
+              // fallback
+            }
+          }
+          return { ...mapProduct(row), imageUrl };
+        })
+      );
+      setProducts(nextProducts);
       setLots((dbLots || []).map(mapLot));
       setSuppliers((dbSuppliers || []).map(mapSupplier));
       setSupplierContacts((dbSupplierContacts || []).map(mapSupplierContact));
@@ -545,6 +586,9 @@ export function PlatformProvider({
       setTaskExpected((dbTaskExpected || []).map(mapTaskExpected));
       setActivityLogs((dbActivityLogs || []).map(mapActivityLog));
       setPersistedNotifications((syncedNotifications || []).map(mapNotification));
+      setAttendanceShifts((dbAttendanceShifts || []).map(mapAttendanceShift));
+      setLeaveRequests((dbLeaveRequests || []).map(mapLeaveRequest));
+      setLeaveBalances((dbLeaveBalances || []).map(mapLeaveBalance));
 
       const visible = adminRoles.includes(role) ? nextLocations : nextLocations.filter((location) => nextAssigned.includes(location.id));
       if (!adminRoles.includes(role) && visible.length > 0) {
@@ -663,8 +707,8 @@ export function PlatformProvider({
     setEditingProduct(null);
   };
 
-  const updateProduct = async (product: Product, input: { name: string; barcode: string; categoryName: string; unitName: string; reorderPoint: number; defaultExpiryNotificationDays: number | null; defaultSupplierId: string | null; unitCost: number }) => {
-    const { data, error } = await supabase.from('products').update({
+  const updateProduct = async (product: Product, input: { name: string; barcode: string; categoryName: string; unitName: string; reorderPoint: number; defaultExpiryNotificationDays: number | null; defaultSupplierId: string | null; unitCost: number; imageUrl?: string | null }) => {
+    const patch: any = {
       name: input.name,
       barcode: input.barcode || null,
       category_name: input.categoryName,
@@ -674,7 +718,11 @@ export function PlatformProvider({
       default_supplier_id: input.defaultSupplierId,
       unit_cost: input.unitCost,
       updated_at: new Date().toISOString(),
-    }).eq('id', product.id).eq('company_id', companyId).select('*').single();
+    };
+    if (input.imageUrl !== undefined) {
+      patch.image_url = input.imageUrl || null;
+    }
+    const { data, error } = await supabase.from('products').update(patch).eq('id', product.id).eq('company_id', companyId).select('*').single();
     if (error || !data) throw error || new Error('The product could not be saved.');
     setProducts((current) => current.map((item) => item.id === product.id ? mapProduct(data) : item));
     refresh();
@@ -731,8 +779,16 @@ export function PlatformProvider({
     else refresh();
   };
 
-  const createSupplier = async (input: { name: string; address?: string; contactName: string; contactPhone: string; contactEmail?: string }) => {
-    const { data, error } = await supabase.from('suppliers').insert({ company_id: companyId, name: input.name, address: input.address || null, contact_name: input.contactName, contact_phone: input.contactPhone, contact_email: input.contactEmail || null }).select('*').single();
+  const createSupplier = async (input: { name: string; address?: string; contactName: string; contactPhone: string; contactEmail?: string; imageUrl?: string }) => {
+    const insertPayload: any = { company_id: companyId, name: input.name, address: input.address || null, contact_name: input.contactName, contact_phone: input.contactPhone, contact_email: input.contactEmail || null };
+    if (input.imageUrl) insertPayload.image_url = input.imageUrl;
+    let { data, error } = await supabase.from('suppliers').insert(insertPayload).select('*').single();
+    if (error && input.imageUrl) {
+      delete insertPayload.image_url;
+      const retry = await supabase.from('suppliers').insert(insertPayload).select('*').single();
+      data = retry.data;
+      error = retry.error;
+    }
     if (error || !data) throw error || new Error('The supplier could not be saved.');
     const { error: contactError } = await supabase.from('supplier_contacts').insert({ company_id: companyId, supplier_id: data.id, name: input.contactName, phone: input.contactPhone, email: input.contactEmail || null, is_primary: true });
     if (contactError) console.warn('Supplier saved without a contact record', contactError.message);
@@ -1000,6 +1056,41 @@ export function PlatformProvider({
     refresh();
   };
 
+  const punchAttendance = async (input: { locationId: string; method?: PunchMethod; qrToken?: string; notes?: string }): Promise<AttendanceShift> => {
+    const { data, error } = await supabase.rpc('punch_attendance', {
+      p_location_id: input.locationId,
+      p_method: input.method || 'qr_scan',
+      p_qr_token: input.qrToken || null,
+      p_notes: input.notes || null,
+    });
+    if (error) throw error;
+    refresh();
+    return mapAttendanceShift(data);
+  };
+
+  const submitLeaveRequest = async (input: { leaveType: LeaveType; startDate: string; endDate: string; daysCount: number; managerUserId: string; reason?: string }) => {
+    const { error } = await supabase.rpc('submit_leave_request', {
+      p_leave_type: input.leaveType,
+      p_start_date: input.startDate,
+      p_end_date: input.endDate,
+      p_days_count: input.daysCount,
+      p_manager_user_id: input.managerUserId,
+      p_reason: input.reason || null,
+    });
+    if (error) throw error;
+    refresh();
+  };
+
+  const reviewLeaveRequest = async (requestId: string, approve: boolean, note?: string) => {
+    const { error } = await supabase.rpc('review_leave_request', {
+      p_request_id: requestId,
+      p_approve: approve,
+      p_manager_note: note || null,
+    });
+    if (error) throw error;
+    refresh();
+  };
+
   const contextValue: PlatformContextValue = {
     loading,
     unauthorizedTenant,
@@ -1092,6 +1183,12 @@ export function PlatformProvider({
     startStockTask,
     submitStockTask,
     reviewStockTask,
+    attendanceShifts,
+    leaveRequests,
+    leaveBalances,
+    punchAttendance,
+    submitLeaveRequest,
+    reviewLeaveRequest,
   };
 
   return (

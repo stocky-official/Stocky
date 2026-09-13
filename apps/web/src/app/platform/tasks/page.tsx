@@ -19,12 +19,14 @@ export default function TasksRoutePage() {
       products={platform.products}
       locations={platform.visibleLocations}
       members={platform.teamMembers}
+      assignments={platform.teamAssignments}
       userRole={platform.userRole}
       currentUserId={platform.companyUserId}
       scanQuery={platform.taskScanQuery}
       onStartTask={platform.startStockTask}
       onSubmitTask={platform.submitStockTask}
       onReviewTask={platform.reviewStockTask}
+      onCreateTask={platform.createStockTask}
     />
   );
 }

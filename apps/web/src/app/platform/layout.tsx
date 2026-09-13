@@ -126,6 +126,9 @@ function PlatformShell({ children }: { children?: React.ReactNode }) {
           if (query.trim()) platform.navigateToTab('stock');
         }}
         onSettingsClick={() => platform.navigateToTab('settings')}
+        onNotificationsClick={() => platform.navigateToTab('notifications')}
+        notificationCount={platform.notificationItems.length}
+        activeTab={platform.activeTab}
       />
       <MobileSubNavWidget
         activeTab={platform.activeTab}

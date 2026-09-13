@@ -1,12 +1,12 @@
 'use client';
 
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 
 export const STOCKY_DRAWER_TRANSITION = {
   type: 'spring' as const,
-  stiffness: 360,
+  stiffness: 350,
   damping: 34,
   mass: 0.8,
 };
@@ -23,9 +23,8 @@ export interface SideDrawerProps {
 /**
  * Shared responsive drawer primitive for the web platform.
  *
- * Drawers are full-screen on phones and exactly half the viewport on desktop.
- * Keeping the motion here prevents each workflow from drifting into a
- * different open/close interaction.
+ * Smooth framer-motion spring sliding drawer with fade overlay.
+ * Drawers are full-screen on phones and half viewport on desktop.
  */
 export function SideDrawer({
   isOpen,
@@ -35,8 +34,13 @@ export function SideDrawer({
   zIndex = 50,
   panelClassName = '',
 }: SideDrawerProps) {
+  const [mounted, setMounted] = useState(false);
   const onCloseRef = useRef(onClose);
   onCloseRef.current = onClose;
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -54,32 +58,46 @@ export function SideDrawer({
     };
   }, [isOpen]);
 
-  if (typeof document === 'undefined') return null;
+  if (!mounted || typeof document === 'undefined') return null;
 
   return createPortal(
-    <AnimatePresence initial={false} mode="sync">
+    <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0" style={{ zIndex }} role="dialog" aria-modal="true" aria-label={ariaLabel}>
+        <motion.div
+          key="side-drawer-container"
+          className="fixed inset-0"
+          style={{ zIndex }}
+          role="dialog"
+          aria-modal="true"
+          aria-label={ariaLabel}
+          initial="closed"
+          animate="open"
+          exit="closed"
+        >
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.2, ease: 'easeOut' }}
+            key="side-drawer-backdrop"
+            variants={{
+              closed: { opacity: 0 },
+              open: { opacity: 1 },
+            }}
+            transition={{ duration: 0.22, ease: 'easeOut' }}
             onClick={onClose}
-            className="absolute inset-0 stocky-overlay"
+            className="absolute inset-0 stocky-overlay cursor-pointer"
             aria-hidden="true"
           />
           <motion.aside
-            initial={{ x: '100%' }}
-            animate={{ x: 0 }}
-            exit={{ x: '100%' }}
+            key="side-drawer-panel"
+            variants={{
+              closed: { x: '100%' },
+              open: { x: '0%' },
+            }}
             transition={STOCKY_DRAWER_TRANSITION}
             onClick={(event) => event.stopPropagation()}
             className={`absolute inset-y-0 right-0 flex h-dvh w-full flex-col overflow-hidden border-l border-stocky-border-subtle bg-white shadow-2xl md:w-[50vw] ${panelClassName}`}
           >
             {children as any}
           </motion.aside>
-        </div>
+        </motion.div>
       )}
     </AnimatePresence>,
     document.body,

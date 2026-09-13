@@ -103,33 +103,33 @@ export function RoleHomeWidget({
   ];
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-6">
 
       {isStaff ? (
-        <section className="grid grid-cols-2 gap-3">
-          <button type="button" onClick={onOpenSearch} className="min-h-28 rounded-2xl bg-stocky-primary text-white p-4 text-left shadow-sm hover:bg-stocky-primary-hover transition-colors cursor-pointer">
+        <section className="grid grid-cols-2 gap-4">
+          <button type="button" onClick={onOpenSearch} className="min-h-[112px] rounded-2xl bg-stocky-primary text-white p-4 text-left shadow-sm hover:bg-stocky-primary-hover transition-colors cursor-pointer">
             <SearchIcon size="sm" />
             <span className="block mt-5 text-sm font-medium">Scan or search</span>
             <span className="block mt-1 text-[11px] text-white/75">Find a product quickly</span>
           </button>
-          <button type="button" onClick={onOpenReceive} className="min-h-28 rounded-2xl bg-white border border-stocky-border-subtle p-4 text-left hover:border-stocky-primary/40 transition-colors cursor-pointer">
+          <button type="button" onClick={onOpenReceive} className="min-h-[112px] rounded-2xl bg-white border border-stocky-border-subtle p-4 text-left hover:border-stocky-primary/40 transition-colors cursor-pointer">
             <PlusIcon size="sm" className="text-stocky-primary" />
             <span className="block mt-5 text-sm font-medium text-stocky-text-main">Receive stock</span>
             <span className="block mt-1 text-[11px] text-stocky-text-sub">Log a delivery</span>
           </button>
-          <button type="button" onClick={onOpenCount} className="min-h-28 rounded-2xl bg-white border border-stocky-border-subtle p-4 text-left hover:border-stocky-primary/40 transition-colors cursor-pointer">
+          <button type="button" onClick={onOpenCount} className="min-h-[112px] rounded-2xl bg-white border border-stocky-border-subtle p-4 text-left hover:border-stocky-primary/40 transition-colors cursor-pointer">
             <CheckCircleIcon size="sm" className="text-emerald-600" />
             <span className="block mt-5 text-sm font-medium text-stocky-text-main">Count stock</span>
             <span className="block mt-1 text-[11px] text-stocky-text-sub">Check what is on the shelf</span>
           </button>
-          <button type="button" onClick={onOpenExpiry} className="min-h-28 rounded-2xl bg-white border border-stocky-border-subtle p-4 text-left hover:border-stocky-primary/40 transition-colors cursor-pointer">
+          <button type="button" onClick={onOpenExpiry} className="min-h-[112px] rounded-2xl bg-white border border-stocky-border-subtle p-4 text-left hover:border-stocky-primary/40 transition-colors cursor-pointer">
             <ClockIcon size="sm" className="text-amber-600" />
             <span className="block mt-5 text-sm font-medium text-stocky-text-main">Expiring soon</span>
             <span className="block mt-1 text-[11px] text-stocky-text-sub">{metrics.expiringLots} items need review</span>
           </button>
         </section>
       ) : (
-        <section className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <section className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           {attentionCards.map((card) => (
             <button key={card.label} type="button" onClick={card.onClick} className="rounded-2xl bg-white border border-stocky-border-subtle p-4 text-left hover:border-stocky-primary/40 transition-colors cursor-pointer">
               <div className={`w-8 h-8 rounded-xl border flex items-center justify-center ${card.tone === 'red' ? 'stocky-status-critical' : card.tone === 'amber' ? 'stocky-status-warning' : 'stocky-status-info'}`}>
@@ -144,12 +144,12 @@ export function RoleHomeWidget({
       )}
 
       {isManager && (
-        <section className="rounded-2xl bg-white border border-stocky-border-subtle p-4 sm:p-5">
+        <section className="rounded-2xl bg-white border border-stocky-border-subtle p-4 sm:p-6">
           <div>
             <h2 className="text-base font-medium text-stocky-text-main">Run your branch</h2>
             <p className="text-xs text-stocky-text-sub mt-1">Start the two routines your team uses most.</p>
           </div>
-          <div className="grid grid-cols-2 gap-3 mt-4">
+          <div className="grid grid-cols-2 gap-4 mt-4">
             <button type="button" onClick={onOpenReceive} className="min-h-20 rounded-xl bg-stocky-bg-global border border-stocky-border-subtle p-3 text-left hover:border-stocky-primary/40 transition-colors cursor-pointer">
               <PlusIcon size="sm" className="text-stocky-primary" />
               <span className="block mt-2 text-xs font-medium text-stocky-text-main">Receive stock</span>
@@ -163,7 +163,7 @@ export function RoleHomeWidget({
       )}
 
       <section className="grid grid-cols-1 gap-4">
-        <div className="rounded-2xl bg-white border border-stocky-border-subtle p-5">
+        <div className="rounded-2xl bg-white border border-stocky-border-subtle p-4 sm:p-6">
           <div className="flex items-center justify-between gap-3">
             <div>
               <h2 className="text-base font-medium text-stocky-text-main">{isStaff ? 'Things to check' : 'Next actions'}</h2>

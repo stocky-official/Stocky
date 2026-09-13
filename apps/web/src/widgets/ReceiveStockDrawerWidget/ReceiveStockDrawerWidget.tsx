@@ -5,6 +5,7 @@ import {
   AlertTriangleIcon,
   BarcodeIcon,
   CalendarIcon,
+  CameraIcon,
   CheckCircleIcon,
   ChevronDownIcon,
   SearchIcon,
@@ -14,6 +15,7 @@ import {
 import { supabase } from '@/lib/supabase/client';
 import type { CompanyUserRole, Location, Product, StockLot, Supplier } from '@stocky/types';
 import { SideDrawer } from '@/components/ui/SideDrawer';
+import { BarcodeScannerWidget } from '../BarcodeScannerWidget/BarcodeScannerWidget';
 
 export interface ReceiveStockDrawerWidgetProps {
   isOpen: boolean;
@@ -48,6 +50,7 @@ interface ReceiveSearchSelectProps {
   required?: boolean;
   icon: React.ReactNode;
   emptyMessage: string;
+  onCameraClick?: () => void;
 }
 
 function ReceiveSearchSelect({
@@ -63,6 +66,7 @@ function ReceiveSearchSelect({
   required = false,
   icon,
   emptyMessage,
+  onCameraClick,
 }: ReceiveSearchSelectProps) {
   const [isOpen, setIsOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
@@ -113,6 +117,24 @@ function ReceiveSearchSelect({
           ) : (
             <ChevronDownIcon size="xs" className="stocky-receive-field__chevron" aria-hidden="true" />
           )}
+          {onCameraClick ? (
+            <>
+              <span className="stocky-receive-action-divider" aria-hidden="true" />
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onCameraClick();
+                }}
+                disabled={disabled}
+                className="stocky-receive-camera-button"
+                title="Scan barcode with camera"
+                aria-label="Scan barcode with camera"
+              >
+                <CameraIcon size="xs" />
+              </button>
+            </>
+          ) : null}
         </div>
         {isOpen && !disabled ? (
           <div className="stocky-receive-picker-menu" role="listbox" aria-label={`${label} options`}>
@@ -182,6 +204,7 @@ export function ReceiveStockDrawerWidget({
   const [newProductBarcode, setNewProductBarcode] = useState('');
   const [newProductCategory, setNewProductCategory] = useState('General');
   const [creatingProduct, setCreatingProduct] = useState(false);
+  const [isScannerOpen, setIsScannerOpen] = useState(false);
 
   useEffect(() => {
     if (!isOpen) {
@@ -267,6 +290,20 @@ export function ReceiveStockDrawerWidget({
     setIsCreatingProduct(false);
     const exactProduct = products.find((product) => product.barcode?.trim().toLowerCase() === value.trim().toLowerCase());
     if (exactProduct) chooseProduct({ id: exactProduct.id, label: exactProduct.name });
+  };
+
+  const handleBarcodeScanned = (rawBarcode: string) => {
+    const code = rawBarcode.trim();
+    if (!code) return;
+    setIsScannerOpen(false);
+    const exactProduct = products.find(
+      (p) => p.barcode?.trim().toLowerCase() === code.toLowerCase()
+    );
+    if (exactProduct) {
+      chooseProduct({ id: exactProduct.id, label: exactProduct.name, meta: exactProduct.barcode || undefined });
+    } else {
+      handleProductSearchChange(code);
+    }
   };
 
   const startCreatingProduct = () => {
@@ -359,11 +396,11 @@ export function ReceiveStockDrawerWidget({
   const unknownBarcode = Boolean(productSearch.trim() && filteredProducts.length === 0 && !selectedProduct);
 
   return (
-    <SideDrawer isOpen={isOpen} onClose={onClose} ariaLabel="Add stock">
+    <>
+      <SideDrawer isOpen={isOpen} onClose={onClose} ariaLabel="Add inventory">
       <div className="stocky-receive-header">
         <div>
-          <p className="stocky-receive-eyebrow">Stock in</p>
-          <h2 className="stocky-receive-title">Add stock</h2>
+          <h2 className="stocky-receive-title">Add inventory</h2>
           <p className="stocky-receive-subtitle">Find the product, then record where this delivery belongs.</p>
         </div>
         <button type="button" onClick={onClose} className="stocky-receive-close" aria-label="Close">
@@ -391,6 +428,7 @@ export function ReceiveStockDrawerWidget({
                 required
                 icon={<BarcodeIcon size="xs" />}
                 emptyMessage="No matching product in your catalog."
+                onCameraClick={() => setIsScannerOpen(true)}
               />
               {selectedProduct ? <p className="stocky-receive-confirmation"><CheckCircleIcon size="xs" /> Product selected · {selectedProduct.categoryName}</p> : null}
               {unknownBarcode ? (
@@ -484,8 +522,16 @@ export function ReceiveStockDrawerWidget({
 
       <div className="stocky-receive-footer">
         <button type="button" onClick={onClose} className="stocky-receive-secondary-action">Cancel</button>
-        <button type="submit" onClick={handleSave} disabled={saving || !selectedProduct} className="stocky-receive-primary-action">{saving ? 'Adding...' : 'Add to stock'}</button>
+        <button type="submit" onClick={handleSave} disabled={saving || !selectedProduct} className="stocky-receive-primary-action">{saving ? 'Adding...' : 'Add to inventory'}</button>
       </div>
     </SideDrawer>
+
+    <BarcodeScannerWidget
+      isOpen={isScannerOpen}
+      onClose={() => setIsScannerOpen(false)}
+      hideFloatingButton
+      onBarcodeFound={handleBarcodeScanned}
+    />
+  </>
   );
 }

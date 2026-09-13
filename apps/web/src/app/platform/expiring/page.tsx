@@ -1,40 +1,16 @@
 'use client';
 
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { usePlatform } from '@/views/platform/PlatformContext';
-import { ExpiringPlatformView } from '@/views/platform/pages/ExpiringPlatformView';
-import { PlatformWorkspaceSkeleton } from '@/widgets';
 
 export default function ExpiringRoutePage() {
+  const router = useRouter();
   const platform = usePlatform();
 
-  if (platform.loading) {
-    return <PlatformWorkspaceSkeleton variant="expiring" />;
-  }
+  useEffect(() => {
+    platform.navigateToTab('stock');
+  }, [platform]);
 
-  return (
-    <ExpiringPlatformView
-      products={platform.products}
-      lots={platform.lots}
-      locations={platform.visibleLocations}
-      selectedLocationId={platform.locationScope}
-      userRole={platform.userRole}
-      onLocationChange={platform.setSelectedLocationId}
-      onAction={platform.resolveExpiry}
-      onSupplierRequest={(input) =>
-        platform.createSupplierRequest({
-          productId: input.productId,
-          locationId: input.locationId,
-          quantity: input.quantity,
-          supplierId: input.supplierId,
-          requestType: input.type,
-        })
-      }
-      onTransferRequest={(productId, locationId) => {
-        platform.setSelectedLocationId(locationId);
-        platform.setTransferProductId(productId);
-        platform.navigateToTab('transfers');
-      }}
-      onUpdateLot={platform.updateLotDetails}
-    />
-  );
+  return null;
 }

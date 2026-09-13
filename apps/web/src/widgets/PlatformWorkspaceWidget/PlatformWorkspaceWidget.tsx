@@ -239,6 +239,7 @@ export function PlatformWorkspaceWidget({
                 products={products}
                 locations={locations}
                 members={teamMembers}
+                assignments={teamAssignments}
                 userRole={userRole}
                 currentUserId={currentUserId}
                 scanQuery={taskScanQuery}
@@ -247,6 +248,7 @@ export function PlatformWorkspaceWidget({
                 onStartTask={onStartTask}
                 onSubmitTask={onSubmitTask}
                 onReviewTask={onReviewTask}
+                onCreateTask={onCreateTask}
               />
             )}
             {activeTab === 'stock' && (

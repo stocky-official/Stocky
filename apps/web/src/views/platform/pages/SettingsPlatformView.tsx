@@ -21,16 +21,12 @@ export function SettingsPlatformView({
   userRole = 'owner',
 }: SettingsPlatformViewProps) {
   const isStaff = userRole === 'staff';
-  const isManager = userRole === 'manager';
-
-  const eyebrow = isStaff ? 'Your account' : isManager ? 'Branch settings' : 'Company settings';
   const subtitle = isStaff
     ? `${userName || 'Your profile'} · ${userTitle || 'Staff member'}.`
     : `${companyName || 'Your company'} · Workspace preferences and organization setup.`;
 
   return (
     <PlatformPageLayout
-      eyebrow={eyebrow}
       title="Settings"
       subtitle={subtitle}
     >

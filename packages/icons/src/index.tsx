@@ -57,6 +57,10 @@ import {
   LogOut,
   Mail,
   MessageCircle,
+  Kanban,
+  Table,
+  QrCode,
+  FileSpreadsheet,
   type LucideIcon,
 } from 'lucide-react';
 import { StockyIcon } from './StockyIcon';
@@ -131,3 +135,7 @@ export const CalendarIcon = createIcon(Calendar, 'CalendarIcon');
 export const LogOutIcon = createIcon(LogOut, 'LogOutIcon');
 export const MailIcon = createIcon(Mail, 'MailIcon');
 export const MessageCircleIcon = createIcon(MessageCircle, 'MessageCircleIcon');
+export const KanbanIcon = createIcon(Kanban, 'KanbanIcon');
+export const TableIcon = createIcon(Table, 'TableIcon');
+export const QrCodeIcon = createIcon(QrCode, 'QrCodeIcon');
+export const FileSpreadsheetIcon = createIcon(FileSpreadsheet, 'FileSpreadsheetIcon');

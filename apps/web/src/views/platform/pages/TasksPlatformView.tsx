@@ -1,8 +1,16 @@
 import React from 'react';
-import type { CompanyUserRole, Location, Product, StockTask, StockTaskExpected, StockTaskItem } from '@stocky/types';
+import type {
+  CompanyUserRole,
+  CreateStockTaskCommand,
+  Location,
+  Product,
+  StockTask,
+  StockTaskExpected,
+  StockTaskItem,
+} from '@stocky/types';
 import { ActivityIcon } from '@stocky/icons';
 import { PlatformPageLayout } from './PlatformPageLayout';
-import { StockTaskCenterWidget } from '@/widgets';
+import { TasksWorkspaceWidget } from '@/widgets';
 
 import { useOptionalPlatform } from '@/views/platform/PlatformContext';
 
@@ -13,14 +21,28 @@ export interface TasksPlatformViewProps {
   products: Product[];
   locations: Location[];
   members: any[];
+  assignments?: Array<{ user_id: string; location_id: string }>;
   userRole: CompanyUserRole;
   currentUserId?: string | null;
   scanQuery?: string;
   activeTaskTab?: 'ongoing' | 'completed';
   onTaskTabChange?: (tab: 'ongoing' | 'completed') => void;
   onStartTask: (taskId: string) => Promise<void>;
-  onSubmitTask: (taskId: string, items: Array<{ taskItemId: string; countedQuantity?: number | null; observedExpiryDate?: string | null; note?: string | null }>) => Promise<void>;
-  onReviewTask: (taskId: string, approve: boolean, note?: string) => Promise<void>;
+  onSubmitTask: (
+    taskId: string,
+    items: Array<{
+      taskItemId: string;
+      countedQuantity?: number | null;
+      observedExpiryDate?: string | null;
+      note?: string | null;
+    }>
+  ) => Promise<void>;
+  onReviewTask: (
+    taskId: string,
+    approve: boolean,
+    note?: string
+  ) => Promise<void>;
+  onCreateTask?: (input: CreateStockTaskCommand) => Promise<void>;
 }
 
 /**
@@ -31,11 +53,14 @@ export function TasksPlatformView(props: TasksPlatformViewProps) {
   const platform = useOptionalPlatform();
   const activeTaskTab = props.activeTaskTab ?? platform?.taskTab;
   const onTaskTabChange = props.onTaskTabChange ?? platform?.setTaskTab;
-  const ongoingCount = props.tasks.filter((task) => ['assigned', 'in_progress', 'rejected', 'submitted'].includes(task.status)).length;
+  const onCreateTask = props.onCreateTask ?? platform?.createStockTask;
+  const assignments = props.assignments ?? platform?.teamAssignments ?? [];
+  const ongoingCount = props.tasks.filter((task) =>
+    ['assigned', 'in_progress', 'rejected', 'submitted'].includes(task.status)
+  ).length;
 
   return (
     <PlatformPageLayout
-      eyebrow="Work queue"
       title="Stock tasks"
       subtitle="Assigned counts and expiry checks stay here. Permanent actions are recorded in Logs."
       actions={
@@ -45,10 +70,12 @@ export function TasksPlatformView(props: TasksPlatformViewProps) {
         </span>
       }
     >
-      <StockTaskCenterWidget
+      <TasksWorkspaceWidget
         {...props}
         activeTaskTab={activeTaskTab}
         onTaskTabChange={onTaskTabChange}
+        onCreateTask={onCreateTask}
+        assignments={assignments}
       />
     </PlatformPageLayout>
   );

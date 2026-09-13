@@ -1,7 +1,7 @@
 import React from 'react';
 import type { InventoryTransfer, Location, Product, StockLot, CompanyUserRole } from '@stocky/types';
 import { PlatformPageLayout } from './PlatformPageLayout';
-import { RedesignedTransfersWidget } from '@/widgets';
+import { TransfersWorkspaceWidget } from '@/widgets';
 
 export interface TransfersPlatformViewProps {
   transfers: InventoryTransfer[];
@@ -23,11 +23,10 @@ export interface TransfersPlatformViewProps {
 export function TransfersPlatformView(props: TransfersPlatformViewProps) {
   return (
     <PlatformPageLayout
-      eyebrow="Internal logistics"
       title="Stock transfers"
       subtitle="Request, approve, and receive stock movements between your branches and warehouses."
     >
-      <RedesignedTransfersWidget {...props} />
+      <TransfersWorkspaceWidget {...props} />
     </PlatformPageLayout>
   );
 }

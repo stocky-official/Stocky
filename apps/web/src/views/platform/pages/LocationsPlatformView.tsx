@@ -29,7 +29,6 @@ export function LocationsPlatformView(props: LocationsPlatformViewProps) {
 
   return (
     <PlatformPageLayout
-      eyebrow="Company structure"
       title="Locations directory"
       subtitle="View operational health across branches and warehouses."
     >

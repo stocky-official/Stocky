@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import {
+  BellIcon,
   BoxesIcon,
   SearchIcon,
   XIcon,
@@ -19,6 +20,9 @@ export interface PlatformTopBarWidgetProps {
   onSearch?: (query: string) => void;
   onSettingsClick?: () => void;
   hidden?: boolean;
+  onNotificationsClick?: () => void;
+  notificationCount?: number;
+  activeTab?: string;
 }
 
 /**
@@ -36,6 +40,9 @@ export function PlatformTopBarWidget({
   onSearch,
   onSettingsClick,
   hidden = false,
+  onNotificationsClick,
+  notificationCount = 0,
+  activeTab,
 }: PlatformTopBarWidgetProps) {
   const [logoFailed, setLogoFailed] = useState(false);
 
@@ -97,7 +104,31 @@ export function PlatformTopBarWidget({
         </div>
       </div>
 
-      <div className="stocky-topbar-account h-full flex items-center gap-0.5 px-1 sm:px-2 md:hidden">
+      <div className="stocky-topbar-account h-full flex items-center gap-1.5 px-1 sm:px-2 md:hidden">
+        {onNotificationsClick && (
+          <button
+            type="button"
+            onClick={onNotificationsClick}
+            aria-label={`Notifications${notificationCount > 0 ? `, ${notificationCount} unread` : ''}`}
+            title="Notifications"
+            className={`relative w-8 h-8 rounded-full flex items-center justify-center transition-colors cursor-pointer shrink-0 ${
+              activeTab === 'notifications'
+                ? 'bg-stocky-primary text-white'
+                : 'text-stocky-text-sub hover:text-stocky-text-main hover:bg-stocky-bg-global active:scale-95'
+            }`}
+          >
+            <BellIcon size="xs" />
+            {notificationCount > 0 && (
+              <span
+                className={`absolute top-1 right-1 w-2 h-2 rounded-full ${
+                  activeTab === 'notifications'
+                    ? 'bg-white ring-1 ring-stocky-primary'
+                    : 'bg-stocky-primary ring-2 ring-white'
+                }`}
+              />
+            )}
+          </button>
+        )}
         <PlatformAccountMenuWidget
           userEmail={userEmail}
           userName={userName}

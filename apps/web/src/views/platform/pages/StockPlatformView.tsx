@@ -1,29 +1,12 @@
 import React from 'react';
-import { PlatformPageLayout } from './PlatformPageLayout';
-import {
-  RedesignedStockWorkspaceWidget,
-  type RedesignedStockWorkspaceWidgetProps,
-} from '@/widgets';
+import { InventoryPlatformView, type InventoryPlatformViewProps } from './InventoryPlatformView';
 
-export interface StockPlatformViewProps extends RedesignedStockWorkspaceWidgetProps {
-  locationName?: string;
-}
+export type StockPlatformViewProps = InventoryPlatformViewProps;
 
 /**
- * StockPlatformView (PageView)
- * Orchestrates stock workspace header and data table view.
+ * StockPlatformView (PageView alias)
+ * Forwarding alias to InventoryPlatformView.
  */
-export function StockPlatformView({
-  locationName,
-  ...props
-}: StockPlatformViewProps) {
-  return (
-    <PlatformPageLayout
-      eyebrow={locationName || 'Inventory'}
-      title="Stock inventory"
-      subtitle="Track active batches, expiry status, and stock levels across your locations."
-    >
-      <RedesignedStockWorkspaceWidget {...props} />
-    </PlatformPageLayout>
-  );
+export function StockPlatformView(props: StockPlatformViewProps) {
+  return <InventoryPlatformView {...props} />;
 }

@@ -101,11 +101,11 @@ export function ExpiringStockWidget({
   ];
 
   return (
-    <div className="stocky-expiring-workspace flex flex-col gap-4">
+    <div className="stocky-expiring-workspace flex flex-col gap-6">
 
       <div className="flex gap-2 overflow-x-auto pb-1">
         {filters.map((option) => (
-          <button key={option.id} type="button" onClick={() => setFilter(option.id)} className={`shrink-0 h-9 px-3 rounded-full border text-xs cursor-pointer ${filter === option.id ? 'bg-stocky-text-main text-white border-stocky-text-main' : 'bg-white text-stocky-text-sub border-stocky-border-subtle hover:border-stocky-primary/40'}`}>
+          <button key={option.id} type="button" onClick={() => setFilter(option.id)} className={`shrink-0 h-8 px-3 rounded-full border text-xs cursor-pointer ${filter === option.id ? 'bg-stocky-text-main text-white border-stocky-text-main' : 'bg-white text-stocky-text-sub border-stocky-border-subtle hover:border-stocky-primary/40'}`}>
             {option.label} <span className="ml-1 opacity-70">{option.count}</span>
           </button>
         ))}
@@ -131,7 +131,7 @@ export function ExpiringStockWidget({
               const location = locationMap.get(lot.locationId);
               const state = getQueue(lot);
               return (
-                <div key={lot.id} className="p-4 sm:p-5 flex flex-col xl:flex-row xl:items-center gap-4">
+                <div key={lot.id} className="p-4 sm:p-6 flex flex-col xl:flex-row xl:items-center gap-4">
                   <div className="w-10 h-10 rounded-xl stocky-status-warning border flex items-center justify-center shrink-0"><AlertCircleIcon size="sm" /></div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-stocky-text-main truncate">{product?.name || 'Unknown product'}</p>
@@ -140,13 +140,13 @@ export function ExpiringStockWidget({
                   </div>
                   {canAct ? (
                     <div className="flex flex-wrap gap-2">
-                      {state === 'expired' || state === 'soon' ? <button type="button" onClick={() => runAction(lot, 'hold')} className="h-8 px-2.5 rounded-lg border border-stocky-border-subtle text-[11px] cursor-pointer">Put on hold</button> : null}
-                      {state === 'expired' ? <button type="button" onClick={() => runAction(lot, 'dispose')} className="h-8 px-2.5 rounded-lg border stocky-status-critical text-[11px] cursor-pointer">Mark removed</button> : null}
-                      {state === 'expired' ? <button type="button" onClick={() => onSupplierRequest({ productId: lot.productId, locationId: lot.locationId, quantity: lot.quantityOnHand, supplierId: lot.supplierId || undefined, type: 'return' })} className="h-8 px-2.5 rounded-lg border stocky-status-critical text-[11px] cursor-pointer">Return to supplier</button> : null}
-                      {state === 'soon' ? <button type="button" onClick={() => onSupplierRequest({ productId: lot.productId, locationId: lot.locationId, quantity: lot.quantityOnHand, supplierId: lot.supplierId || undefined, type: 'replace' })} className="h-8 px-2.5 rounded-lg bg-stocky-primary text-white text-[11px] font-medium cursor-pointer">Request replacement</button> : null}
-                      {canAct && (state === 'soon' || state === 'expired') ? <button type="button" onClick={() => onTransferRequest(lot.productId, lot.locationId)} className="h-8 px-2.5 rounded-lg border border-stocky-border-subtle text-[11px] cursor-pointer">Move to another location</button> : null}
-                      {state === 'on_hold' ? <button type="button" onClick={() => runAction(lot, 'dispose')} className="h-8 px-2.5 rounded-lg border stocky-status-critical text-[11px] cursor-pointer">Mark removed</button> : null}
-                      {state === 'missing' ? <button type="button" onClick={() => openLotEditor(lot)} className="h-8 px-2.5 rounded-lg bg-stocky-primary text-white text-[11px] font-medium cursor-pointer">Add expiry</button> : null}
+                      {state === 'expired' || state === 'soon' ? <button type="button" onClick={() => runAction(lot, 'hold')} className="h-8 px-3 rounded-lg border border-stocky-border-subtle text-[11px] cursor-pointer">Put on hold</button> : null}
+                      {state === 'expired' ? <button type="button" onClick={() => runAction(lot, 'dispose')} className="h-8 px-3 rounded-lg border stocky-status-critical text-[11px] cursor-pointer">Mark removed</button> : null}
+                      {state === 'expired' ? <button type="button" onClick={() => onSupplierRequest({ productId: lot.productId, locationId: lot.locationId, quantity: lot.quantityOnHand, supplierId: lot.supplierId || undefined, type: 'return' })} className="h-8 px-3 rounded-lg border stocky-status-critical text-[11px] cursor-pointer">Return to supplier</button> : null}
+                      {state === 'soon' ? <button type="button" onClick={() => onSupplierRequest({ productId: lot.productId, locationId: lot.locationId, quantity: lot.quantityOnHand, supplierId: lot.supplierId || undefined, type: 'replace' })} className="h-8 px-3 rounded-lg bg-stocky-primary text-white text-[11px] font-medium cursor-pointer">Request replacement</button> : null}
+                      {canAct && (state === 'soon' || state === 'expired') ? <button type="button" onClick={() => onTransferRequest(lot.productId, lot.locationId)} className="h-8 px-3 rounded-lg border border-stocky-border-subtle text-[11px] cursor-pointer">Move to another location</button> : null}
+                      {state === 'on_hold' ? <button type="button" onClick={() => runAction(lot, 'dispose')} className="h-8 px-3 rounded-lg border stocky-status-critical text-[11px] cursor-pointer">Mark removed</button> : null}
+                      {state === 'missing' ? <button type="button" onClick={() => openLotEditor(lot)} className="h-8 px-3 rounded-lg bg-stocky-primary text-white text-[11px] font-medium cursor-pointer">Add expiry</button> : null}
                     </div>
                   ) : (
                     <span className="text-xs text-stocky-text-sub">Tell your manager</span>

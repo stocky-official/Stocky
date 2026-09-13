@@ -98,6 +98,7 @@ export interface Supplier {
   contactEmail?: string | null; // person to contact email
   itemsSupplied?: string[]; // categories or goods supplied
   itemCount?: number;       // total number of SKUs supplied
+  imageUrl?: string | null; // supplier logo or profile image
   createdAt: string;
   updatedAt: string;
 }
@@ -144,6 +145,7 @@ export interface Product {
   defaultExpiryNotificationDays?: number | null;
   defaultSupplierId?: string | null;
   unitCost: number;
+  imageUrl?: string | null;
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
@@ -483,6 +485,59 @@ export interface StockTransferRequest {
   reviewedAt?: string | null;
   receivedByAuthUserId?: string | null;
   receivedAt?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type ShiftStatus = 'present' | 'late' | 'early_departure' | 'overtime' | 'incomplete';
+export type PunchMethod = 'qr_scan' | 'kiosk' | 'manual';
+export type LeaveType = 'pto' | 'sick' | 'emergency' | 'unpaid';
+export type LeaveStatus = 'pending' | 'approved' | 'rejected' | 'cancelled';
+
+export interface AttendanceShift {
+  id: string;
+  companyId: string;
+  locationId: string;
+  companyUserId: string;
+  shiftDate: string;
+  clockInAt: string;
+  clockOutAt?: string | null;
+  totalMinutes?: number | null;
+  status: ShiftStatus;
+  punchInMethod: PunchMethod;
+  punchOutMethod?: PunchMethod | null;
+  notes?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface LeaveRequest {
+  id: string;
+  companyId: string;
+  companyUserId: string;
+  approverCompanyUserId: string;
+  taskId?: string | null;
+  leaveType: LeaveType;
+  startDate: string;
+  endDate: string;
+  daysCount: number;
+  reason?: string | null;
+  status: LeaveStatus;
+  managerNote?: string | null;
+  reviewedAt?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface LeaveBalance {
+  id: string;
+  companyId: string;
+  companyUserId: string;
+  year: number;
+  ptoAllowance: number;
+  ptoUsed: number;
+  sickAllowance: number;
+  sickUsed: number;
   createdAt: string;
   updatedAt: string;
 }

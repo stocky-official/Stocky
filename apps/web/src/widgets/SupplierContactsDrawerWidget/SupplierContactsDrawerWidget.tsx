@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { EditIcon, MailIcon, MessageCircleIcon, PlusIcon, SearchIcon, TrashIcon, XIcon } from '@stocky/icons';
 import type { Product, Supplier, SupplierContact, SupplierProduct } from '@stocky/types';
 import { SideDrawer } from '@/components/ui/SideDrawer';
@@ -250,17 +250,59 @@ export function SupplierContactsDrawerWidget({ supplier, contacts, products, sup
     window.location.href = `mailto:${encodeURIComponent(emailContact.email)}?${params.toString()}`;
   };
 
+  const lastSupplierRef = useRef(supplier);
+  if (supplier) lastSupplierRef.current = supplier;
+  const activeSupplier = supplier || lastSupplierRef.current;
+
   return (
-    <SideDrawer isOpen={Boolean(supplier)} onClose={onClose} ariaLabel={supplier ? `${supplier.name} details` : 'Supplier details'} panelClassName="stocky-supplier-contacts-drawer">
-      {supplier && <>
-        <header className="border-b border-stocky-border-subtle px-5 py-5 sm:px-7">
-          <div className="flex items-start justify-between gap-4">
-            <div className="min-w-0">
-              <p className="text-[10px] font-medium uppercase tracking-[0.14em] text-stocky-primary">Supplier directory</p>
-              <h2 className="mt-1 truncate text-lg font-medium text-stocky-text-main">{supplier.name}</h2>
-              <p className="mt-1 text-xs text-stocky-text-sub">{activeTab === 'contacts' ? `${contactCountLabel}${primaryContact ? ` · Primary: ${primaryContact.name}` : ''}` : `${linkedSupplierProducts.length + pendingProductIds.length} supplied product${linkedSupplierProducts.length + pendingProductIds.length === 1 ? '' : 's'}`}</p>
+    <SideDrawer isOpen={Boolean(supplier)} onClose={onClose} ariaLabel={activeSupplier ? `${activeSupplier.name} details` : 'Supplier details'} panelClassName="stocky-supplier-contacts-drawer">
+      {activeSupplier && <>
+        <header className="border-b border-stocky-border-subtle bg-white px-5 py-4 sm:px-6 shrink-0">
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex min-w-0 items-center gap-3">
+              {/* Rounded square supplier profile image / monogram avatar */}
+              <div className="relative flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-stocky-border-subtle bg-stocky-bg-global text-stocky-text-sub select-none font-medium">
+                {activeSupplier.imageUrl ? (
+                  <img
+                    src={activeSupplier.imageUrl}
+                    alt={activeSupplier.name}
+                    className="h-full w-full object-cover"
+                    onError={(e) => {
+                      (e.currentTarget as HTMLElement).style.display = 'none';
+                    }}
+                  />
+                ) : (
+                  <span className="text-sm font-semibold tracking-tight text-stocky-text-main">
+                    {activeSupplier.name.slice(0, 2).toUpperCase()}
+                  </span>
+                )}
+              </div>
+
+              {/* Supplier Name & Info */}
+              <div className="min-w-0">
+                <h2
+                  className="truncate text-base font-semibold text-stocky-text-main tracking-tight leading-snug"
+                  title={activeSupplier.name}
+                >
+                  {activeSupplier.name}
+                </h2>
+                <p className="mt-0.5 text-xs text-stocky-text-sub truncate">
+                  {activeTab === 'contacts'
+                    ? `${contactCountLabel}${primaryContact ? ` · Primary: ${primaryContact.name}` : ''}`
+                    : `${linkedSupplierProducts.length + pendingProductIds.length} supplied product${
+                        linkedSupplierProducts.length + pendingProductIds.length === 1 ? '' : 's'
+                      }`}
+                </p>
+              </div>
             </div>
-            <button type="button" onClick={onClose} aria-label="Close supplier details" className="stocky-icon-button shrink-0"><XIcon size="xs" /></button>
+            <button
+              type="button"
+              onClick={onClose}
+              aria-label="Close supplier details"
+              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-stocky-text-sub hover:bg-stocky-bg-global hover:text-stocky-text-main transition-colors cursor-pointer"
+            >
+              <XIcon size="xs" />
+            </button>
           </div>
         </header>
 

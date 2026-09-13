@@ -17,9 +17,12 @@ import type { Item } from '@stocky/types';
 import { Html5Qrcode, Html5QrcodeSupportedFormats } from 'html5-qrcode';
 
 export interface BarcodeScannerWidgetProps {
-  onProductFound: (item: Item) => void;
+  onProductFound?: (item: Item) => void;
   onCodeNotFound?: (barcode: string) => void;
   onBarcodeFound?: (barcode: string) => void;
+  isOpen?: boolean;
+  onClose?: () => void;
+  hideFloatingButton?: boolean;
 }
 
 // All major retail 1D & 2D barcode formats
@@ -62,7 +65,7 @@ function playBeepSound() {
 }
 
 /**
- * Play a subtle click sound when tapping to focus
+ * Play a low subtle click tone for tap-to-focus
  */
 function playFocusTapSound() {
   try {
@@ -72,10 +75,10 @@ function playFocusTapSound() {
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
 
-    osc.type = 'triangle';
+    osc.type = 'sine';
     osc.frequency.setValueAtTime(440, ctx.currentTime);
-    gain.gain.setValueAtTime(0.08, ctx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.05);
+    gain.gain.setValueAtTime(0.1, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.05);
 
     osc.connect(gain);
     gain.connect(ctx.destination);
@@ -89,8 +92,18 @@ export function BarcodeScannerWidget({
   onProductFound,
   onCodeNotFound,
   onBarcodeFound,
+  isOpen: controlledIsOpen,
+  onClose: controlledOnClose,
+  hideFloatingButton = false,
 }: BarcodeScannerWidgetProps) {
-  const [isOpen, setIsOpen] = useState(false);
+  const [internalIsOpen, setInternalIsOpen] = useState(false);
+  const isControlled = controlledIsOpen !== undefined;
+  const isOpen = isControlled ? controlledIsOpen : internalIsOpen;
+
+  const setIsOpen = (next: boolean) => {
+    if (!next && controlledOnClose) controlledOnClose();
+    if (!isControlled) setInternalIsOpen(next);
+  };
   const [isSearching, setIsSearching] = useState(false);
   const [scannedResult, setScannedResult] = useState<{
     code: string;
@@ -171,7 +184,7 @@ export function BarcodeScannerWidget({
           setTimeout(() => {
             stopScanner();
             setIsOpen(false);
-            onProductFound(item);
+            onProductFound?.(item);
           }, 600);
         } else {
           setScannedResult({
@@ -522,19 +535,21 @@ export function BarcodeScannerWidget({
   return (
     <>
       {/* 1. Mobile Floating Camera Button (Shown on phone viewports) */}
-      <motion.button
-        type="button"
-        onClick={() => setIsOpen(true)}
-        initial={{ scale: 0, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        whileHover={{ scale: 1.08 }}
-        whileTap={{ scale: 0.92 }}
-        aria-label="Scan Barcode with Camera"
-        className="fixed bottom-20 right-4 z-40 md:hidden bg-stocky-primary text-white rounded-full flex items-center justify-center shadow-xl hover:bg-stocky-primary-hover active:bg-stocky-primary-active transition-all focus:outline-none"
-        style={{ width: '54px', height: '54px' }}
-      >
-        <CameraIcon size="md" className="text-white" />
-      </motion.button>
+      {!hideFloatingButton && (
+        <motion.button
+          type="button"
+          onClick={() => setIsOpen(true)}
+          initial={{ scale: 0, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          whileHover={{ scale: 1.08 }}
+          whileTap={{ scale: 0.92 }}
+          aria-label="Scan Barcode with Camera"
+          className="fixed bottom-20 right-4 z-40 md:hidden bg-stocky-primary text-white rounded-full flex items-center justify-center shadow-xl hover:bg-stocky-primary-hover active:bg-stocky-primary-active transition-all focus:outline-none"
+          style={{ width: '54px', height: '54px' }}
+        >
+          <CameraIcon size="md" className="text-white" />
+        </motion.button>
+      )}
 
       {/* 2. Full-Screen Camera Viewfinder Modal */}
       <AnimatePresence>
@@ -543,7 +558,7 @@ export function BarcodeScannerWidget({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 bg-black flex flex-col"
+            className="fixed inset-0 z-[70] bg-black flex flex-col"
           >
             {/* Top Navigation & Controls */}
             <div className="relative z-10 flex items-center justify-between px-4 py-3 pt-5 bg-gradient-to-b from-black/90 to-transparent">

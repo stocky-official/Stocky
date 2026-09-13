@@ -21,6 +21,7 @@ const RESERVED_ROOT_PATHS = new Set([
 
 const PLATFORM_VIEWS = new Set([
   'stock',
+  'inventory',
   'suppliers',
   'transfers',
   'locations',
@@ -154,7 +155,11 @@ export async function proxy(req: NextRequest) {
     const trimmedPath = pathname.replace(/^\//, '').toLowerCase().split('?')[0];
     if (PLATFORM_VIEWS.has(trimmedPath)) {
       const canonicalView =
-        trimmedPath === 'expiry' ? 'expiring' : trimmedPath === 'logs' ? 'activity' : trimmedPath;
+        trimmedPath === 'stock' || trimmedPath === 'inventory' || trimmedPath === 'expiring' || trimmedPath === 'expiry'
+          ? 'inventory'
+          : trimmedPath === 'logs'
+          ? 'activity'
+          : trimmedPath;
       url.pathname = `/platform/${canonicalView}`;
       const rewriteResponse = NextResponse.rewrite(url, { headers: requestHeaders });
       return copyResponseCookies(supabaseResponse, rewriteResponse);
@@ -185,9 +190,13 @@ export async function proxy(req: NextRequest) {
       }
 
       const canonicalView =
-        rawSubView === 'expiry' ? 'expiring' : rawSubView === 'logs' ? 'activity' : rawSubView;
+        rawSubView === 'stock' || rawSubView === 'inventory' || rawSubView === 'expiry' || rawSubView === 'expiring'
+          ? 'inventory'
+          : rawSubView === 'logs'
+          ? 'activity'
+          : rawSubView;
 
-      if (PLATFORM_VIEWS.has(canonicalView)) {
+      if (PLATFORM_VIEWS.has(canonicalView) || canonicalView === 'inventory') {
         url.pathname = `/platform/${canonicalView}`;
         const rewriteResponse = NextResponse.rewrite(url, { headers: requestHeaders });
         return copyResponseCookies(supabaseResponse, rewriteResponse);

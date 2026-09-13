@@ -14,6 +14,7 @@ export interface ProductUpdateInput {
   defaultExpiryNotificationDays: number | null;
   defaultSupplierId: string | null;
   unitCost: number;
+  imageUrl?: string | null;
 }
 
 export interface ProductEditDrawerWidgetProps {
@@ -34,6 +35,7 @@ export function ProductEditDrawerWidget({ isOpen, product, categories = [], supp
   const [alertDays, setAlertDays] = useState('30');
   const [supplierId, setSupplierId] = useState('');
   const [unitCost, setUnitCost] = useState('0');
+  const [imageUrl, setImageUrl] = useState('');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -52,6 +54,7 @@ export function ProductEditDrawerWidget({ isOpen, product, categories = [], supp
     setAlertDays(product.defaultExpiryNotificationDays == null ? '' : String(product.defaultExpiryNotificationDays));
     setSupplierId(product.defaultSupplierId || '');
     setUnitCost(String(product.unitCost ?? 0));
+    setImageUrl(product.imageUrl || '');
     setError(null);
   }, [isOpen, product?.id]);
 
@@ -80,6 +83,7 @@ export function ProductEditDrawerWidget({ isOpen, product, categories = [], supp
         defaultExpiryNotificationDays: parsedAlertDays,
         defaultSupplierId: supplierId || null,
         unitCost: parsedUnitCost,
+        imageUrl: imageUrl.trim() || null,
       });
       onClose();
     } catch (saveError: any) {
@@ -95,15 +99,44 @@ export function ProductEditDrawerWidget({ isOpen, product, categories = [], supp
         <div className="flex min-w-0 items-start gap-3">
           <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border stocky-status-info"><BoxesIcon size="xs" /></span>
           <div className="min-w-0">
-            <p className="stocky-page-eyebrow">Product details</p>
-            <h2 className="mt-1 truncate text-lg font-medium text-stocky-text-main">Edit product</h2>
-            <p className="mt-1 text-xs text-stocky-text-sub">Update the catalog details without changing stock quantities.</p>
+            <h2 className="truncate text-lg font-medium text-stocky-text-main">Edit product</h2>
+            <p className="mt-1 text-xs text-stocky-text-sub">Update catalog details without changing stock quantities.</p>
           </div>
         </div>
         <button type="button" onClick={onClose} className="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-lg text-stocky-text-sub hover:bg-stocky-bg-global" aria-label="Close"><XIcon size="xs" /></button>
       </div>
 
-      <form onSubmit={handleSubmit} className="flex-1 space-y-4 overflow-y-auto p-5">
+      <form id="product-edit-form" onSubmit={handleSubmit} className="flex-1 space-y-4 overflow-y-auto p-5">
+        {/* Product Image Avatar */}
+        <div className="space-y-1.5">
+          <label className="block text-xs font-medium text-stocky-text-main">Product image</label>
+          <div className="flex items-center gap-3">
+            <div className="relative flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-stocky-border-subtle bg-stocky-bg-global text-stocky-text-sub select-none">
+              {imageUrl.trim() ? (
+                <img
+                  src={imageUrl.trim()}
+                  alt="Product preview"
+                  className="h-full w-full object-cover"
+                  onError={(e) => {
+                    (e.target as HTMLElement).style.display = 'none';
+                  }}
+                />
+              ) : (
+                <BoxesIcon size="xs" className="text-stocky-text-sub/60" />
+              )}
+            </div>
+            <div className="min-w-0 flex-1">
+              <input
+                value={imageUrl}
+                onChange={(event) => setImageUrl(event.target.value)}
+                placeholder="https://example.com/product.jpg"
+                className="stocky-form-input text-xs"
+              />
+              <p className="mt-1 text-[10px] text-stocky-text-sub">URL of the product image</p>
+            </div>
+          </div>
+        </div>
+
         <label className="block text-xs font-medium text-stocky-text-main">Product name<input required value={name} onChange={(event) => setName(event.target.value)} placeholder="e.g. Bottled water" className="stocky-form-input mt-1.5" /></label>
         <div className="grid grid-cols-2 gap-3">
           <label className="block text-xs font-medium text-stocky-text-main">Barcode<input value={barcode} onChange={(event) => setBarcode(event.target.value)} placeholder="Optional" className="stocky-form-input mt-1.5" /></label>
@@ -121,7 +154,7 @@ export function ProductEditDrawerWidget({ isOpen, product, categories = [], supp
 
       <div className="flex gap-2 border-t border-stocky-border-subtle p-5">
         <button type="button" onClick={onClose} className="h-10 flex-1 cursor-pointer rounded-lg border border-stocky-border-subtle text-sm">Cancel</button>
-        <button type="submit" disabled={saving || !product} className="h-10 flex-1 cursor-pointer rounded-lg bg-stocky-primary text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-60">{saving ? 'Saving...' : 'Save changes'}</button>
+        <button type="submit" form="product-edit-form" disabled={saving || !product} className="h-10 flex-1 cursor-pointer rounded-lg bg-stocky-primary text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-60">{saving ? 'Saving...' : 'Save changes'}</button>
       </div>
     </SideDrawer>
   );

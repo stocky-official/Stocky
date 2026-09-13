@@ -1,4 +1,4 @@
-import { boolean, integer, numeric, pgTable, timestamp, uuid, varchar } from 'drizzle-orm/pg-core';
+import { boolean, integer, numeric, pgTable, text, timestamp, uuid, varchar } from 'drizzle-orm/pg-core';
 import { companies } from './companies';
 import { categories } from './categories';
 import { suppliers } from './suppliers';
@@ -15,6 +15,7 @@ export const products = pgTable('products', {
   defaultExpiryNotificationDays: integer('default_expiry_notification_days'),
   defaultSupplierId: uuid('default_supplier_id').references(() => suppliers.id, { onDelete: 'set null' }),
   unitCost: numeric('unit_cost', { precision: 14, scale: 2 }).notNull().default('0.00'),
+  imageUrl: text('image_url'),
   isActive: boolean('is_active').default(true).notNull(),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),

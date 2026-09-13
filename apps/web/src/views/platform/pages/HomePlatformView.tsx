@@ -52,14 +52,13 @@ export function HomePlatformView({
 
   return (
     <PlatformPageLayout
-      eyebrow={locationName}
       title={title}
       subtitle={copy.subtitle}
       actions={
         <button
           type="button"
           onClick={onOpenReceive}
-          className="stocky-primary-action h-9 px-4 rounded-full bg-stocky-accent text-stocky-text-main text-xs font-medium inline-flex items-center gap-1.5 hover:bg-[#E3FF47] transition-colors cursor-pointer"
+          className="stocky-primary-action h-8 px-3.5 rounded-full bg-stocky-accent text-stocky-text-main text-xs font-medium inline-flex items-center gap-1.5 hover:bg-[#E3FF47] transition-colors cursor-pointer"
         >
           <PlusIcon size="xs" />
           <span>Receive stock</span>

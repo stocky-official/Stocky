@@ -488,7 +488,7 @@ export function LocationsDirectoryWidget({
   };
 
   return (
-    <div className="stocky-locations-workspace flex flex-col gap-4">
+    <div className="stocky-locations-workspace flex flex-col gap-6">
       {/* Search & Buttons Toolbar (matching Stock and Suppliers workspaces) */}
       <section className="stocky-stock-filterbar stocky-locations-filterbar">
         <div className="stocky-stock-table-toolbar stocky-locations-toolbar">
@@ -736,7 +736,7 @@ export function LocationsDirectoryWidget({
       </section>
 
       {/* Locations Cards Grid */}
-      <section className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+      <section className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
         {filteredStats.map(
           ({
             location,
@@ -853,9 +853,9 @@ export function LocationsDirectoryWidget({
               )}
 
               {/* Card Body */}
-              <div className="p-4 flex flex-col gap-3.5 flex-1 justify-between">
+              <div className="p-4 sm:p-5 flex flex-col gap-4 flex-1 justify-between">
                 {/* Staff & Manager Cardlet (Highlight requested by user) */}
-                <div className="rounded-xl bg-[#F8F9F5] border border-stocky-border-subtle p-3 flex flex-col gap-2.5">
+                <div className="rounded-xl bg-[#F8F9F5] border border-stocky-border-subtle p-3 flex flex-col gap-3">
                   {/* Manager Row */}
                   <div className="flex items-center justify-between gap-2">
                     <div className="flex items-center gap-2.5 min-w-0">

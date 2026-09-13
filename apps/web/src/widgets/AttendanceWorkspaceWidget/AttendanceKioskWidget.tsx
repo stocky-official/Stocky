@@ -1,0 +1,323 @@
+'use client';
+
+import React, { useState, useEffect, useRef } from 'react';
+import type { Location, AttendanceShift, PunchMethod } from '@stocky/types';
+import {
+  QrCodeIcon,
+  CameraIcon,
+  CheckCircleIcon,
+  WarehouseIcon,
+  ClockIcon,
+  RefreshIcon,
+  AlertTriangleIcon,
+} from '@stocky/icons';
+import { Html5Qrcode, Html5QrcodeSupportedFormats } from 'html5-qrcode';
+
+export interface AttendanceKioskWidgetProps {
+  locations: Location[];
+  onPunchAttendance: (input: {
+    locationId: string;
+    method?: PunchMethod;
+    qrToken?: string;
+    notes?: string;
+  }) => Promise<AttendanceShift>;
+}
+
+export function AttendanceKioskWidget({
+  locations,
+  onPunchAttendance,
+}: AttendanceKioskWidgetProps) {
+  const [activeSection, setActiveSection] = useState<'poster' | 'scanner'>('poster');
+  const [selectedLocationId, setSelectedLocationId] = useState<string>(locations[0]?.id || '');
+  const [punchStatus, setPunchStatus] = useState<{
+    success: boolean;
+    message: string;
+    shift?: AttendanceShift;
+  } | null>(null);
+  const [isScanning, setIsScanning] = useState(false);
+  const [scannerError, setScannerError] = useState<string | null>(null);
+  const scannerRef = useRef<Html5Qrcode | null>(null);
+
+  const selectedLocation = locations.find((l) => l.id === selectedLocationId) || locations[0];
+  const qrUrl = selectedLocation
+    ? `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=stocky:branch:${selectedLocation.id}`
+    : '';
+
+  // Camera Punch-in Scanner Lifecycle
+  useEffect(() => {
+    if (activeSection !== 'scanner') {
+      if (scannerRef.current) {
+        scannerRef.current.stop().catch(() => {}).finally(() => {
+          scannerRef.current = null;
+          setIsScanning(false);
+        });
+      }
+      return;
+    }
+
+    const elementId = 'stocky-kiosk-scanner-container';
+    let html5QrCode: Html5Qrcode;
+
+    const startScanner = async () => {
+      try {
+        setScannerError(null);
+        html5QrCode = new Html5Qrcode(elementId, {
+          formatsToSupport: [Html5QrcodeSupportedFormats.QR_CODE],
+          verbose: false,
+        });
+        scannerRef.current = html5QrCode;
+
+        await html5QrCode.start(
+          { facingMode: 'environment' },
+          {
+            fps: 10,
+            qrbox: { width: 250, height: 250 },
+          },
+          async (decodedText) => {
+            // Beep audio confirmation
+            try {
+              const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+              const osc = audioCtx.createOscillator();
+              osc.frequency.setValueAtTime(880, audioCtx.currentTime);
+              osc.connect(audioCtx.destination);
+              osc.start();
+              osc.stop(audioCtx.currentTime + 0.15);
+            } catch {}
+
+            // Handle punch
+            try {
+              let targetLocId = selectedLocationId;
+              if (decodedText.startsWith('stocky:branch:')) {
+                targetLocId = decodedText.split('stocky:branch:')[1];
+              }
+              const res = await onPunchAttendance({
+                locationId: targetLocId || selectedLocationId,
+                method: 'qr_scan',
+                qrToken: decodedText,
+              });
+              setPunchStatus({
+                success: true,
+                message: `Clocked ${res.clockOutAt ? 'out' : 'in'} successfully! Status: ${res.status}`,
+                shift: res,
+              });
+            } catch (err: any) {
+              setPunchStatus({
+                success: false,
+                message: err.message || 'Failed to punch shift',
+              });
+            }
+          },
+          () => {}
+        );
+        setIsScanning(true);
+      } catch (err: any) {
+        console.warn('Scanner camera error:', err);
+        setScannerError('Camera access required or unavailable on this device.');
+        setIsScanning(false);
+      }
+    };
+
+    const timer = setTimeout(startScanner, 200);
+
+    return () => {
+      clearTimeout(timer);
+      if (scannerRef.current) {
+        scannerRef.current.stop().catch(() => {}).finally(() => {
+          scannerRef.current = null;
+          setIsScanning(false);
+        });
+      }
+    };
+  }, [activeSection, selectedLocationId]);
+
+  const handleManualPunch = async () => {
+    try {
+      const res = await onPunchAttendance({
+        locationId: selectedLocationId,
+        method: 'kiosk',
+        notes: 'Clocked in via Kiosk station',
+      });
+      setPunchStatus({
+        success: true,
+        message: `Clocked ${res.clockOutAt ? 'out' : 'in'} successfully! Status: ${res.status}`,
+        shift: res,
+      });
+    } catch (err: any) {
+      setPunchStatus({
+        success: false,
+        message: err.message || 'Failed to punch shift',
+      });
+    }
+  };
+
+  return (
+    <div className="flex flex-col w-full p-4 sm:p-6">
+      {/* Kiosk Mode Switcher */}
+      <div className="flex items-center justify-between pb-4 mb-6 border-b border-stocky-border-subtle flex-wrap gap-3">
+        <div>
+          <h2 className="text-base font-bold text-stocky-text-main">
+            Branch QR & Kiosk Attendance Station
+          </h2>
+          <p className="text-xs text-stocky-text-sub mt-0.5">
+            Print branch entrance QR posters for staff or use this tablet as a digital punch kiosk.
+          </p>
+        </div>
+
+        <div className="inline-flex items-center p-1 rounded-full bg-stocky-bg-global border border-stocky-border-subtle">
+          <button
+            type="button"
+            onClick={() => setActiveSection('poster')}
+            className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-colors cursor-pointer ${
+              activeSection === 'poster'
+                ? 'bg-white text-stocky-primary shadow-2xs'
+                : 'text-stocky-text-sub hover:text-stocky-text-main'
+            }`}
+          >
+            Branch QR Poster
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveSection('scanner')}
+            className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-colors cursor-pointer ${
+              activeSection === 'scanner'
+                ? 'bg-white text-stocky-primary shadow-2xs'
+                : 'text-stocky-text-sub hover:text-stocky-text-main'
+            }`}
+          >
+            Digital Punch Kiosk
+          </button>
+        </div>
+      </div>
+
+      {/* BRANCH SELECTOR */}
+      <div className="max-w-md mb-6">
+        <label className="block text-xs font-semibold text-stocky-text-main mb-1.5">
+          Select Branch Location
+        </label>
+        <div className="relative">
+          <WarehouseIcon
+            size="xs"
+            className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-stocky-text-sub"
+          />
+          <select
+            value={selectedLocationId}
+            onChange={(e) => setSelectedLocationId(e.target.value)}
+            className="w-full h-10 rounded-full border border-stocky-border-subtle bg-white pl-9 pr-4 text-xs font-medium text-stocky-text-main focus:border-stocky-primary focus:outline-none cursor-pointer"
+          >
+            {locations.map((loc) => (
+              <option key={loc.id} value={loc.id}>
+                {loc.name} ({loc.type})
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
+
+      {/* SECTION 1: QR POSTER */}
+      {activeSection === 'poster' && (
+        <div className="max-w-xl mx-auto bg-white border border-stocky-border-subtle rounded-3xl p-8 shadow-sm text-center flex flex-col items-center">
+          <div className="w-12 h-12 rounded-2xl bg-stocky-primary/10 text-stocky-primary flex items-center justify-center mb-4">
+            <QrCodeIcon size="md" />
+          </div>
+
+          <h3 className="text-lg font-bold text-stocky-text-main">
+            {selectedLocation?.name || 'Stocky Branch'} Check-In Station
+          </h3>
+          <p className="text-xs text-stocky-text-sub mt-1 max-w-sm">
+            Scan this official QR code with your mobile camera or the Stocky app upon arrival and departure.
+          </p>
+
+          {/* Generated QR Code */}
+          <div className="my-6 p-4 rounded-2xl border-2 border-dashed border-stocky-border-subtle bg-stocky-bg-global/30">
+            {qrUrl ? (
+              <img
+                src={qrUrl}
+                alt="Branch Attendance QR Code"
+                className="w-56 h-56 rounded-xl object-contain mx-auto"
+              />
+            ) : (
+              <div className="w-56 h-56 flex items-center justify-center text-stocky-text-sub text-xs">
+                No location selected
+              </div>
+            )}
+          </div>
+
+          <div className="text-xs font-semibold text-stocky-text-sub mb-6">
+            Branch Token: <code className="bg-stocky-bg-global px-2 py-0.5 rounded text-stocky-text-main">{selectedLocation?.id?.slice(0, 8)}</code>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() => window.print()}
+              className="h-10 px-5 rounded-full bg-stocky-text-main text-white text-xs font-medium hover:bg-black transition-colors cursor-pointer"
+            >
+              Print QR Poster
+            </button>
+            <a
+              href={qrUrl}
+              download={`${selectedLocation?.name || 'branch'}-qr-code.png`}
+              target="_blank"
+              rel="noreferrer"
+              className="h-10 px-5 rounded-full border border-stocky-border-subtle text-stocky-text-main text-xs font-medium hover:border-stocky-primary hover:text-stocky-primary transition-colors cursor-pointer inline-flex items-center"
+            >
+              Download PNG
+            </a>
+          </div>
+        </div>
+      )}
+
+      {/* SECTION 2: DIGITAL KIOSK / SCANNER */}
+      {activeSection === 'scanner' && (
+        <div className="max-w-xl mx-auto flex flex-col items-center">
+          {punchStatus && (
+            <div
+              className={`w-full p-4 rounded-2xl mb-4 border flex items-center gap-3 ${
+                punchStatus.success
+                  ? 'bg-emerald-50 border-emerald-200 text-emerald-800'
+                  : 'bg-rose-50 border-rose-200 text-rose-800'
+              }`}
+            >
+              {punchStatus.success ? <CheckCircleIcon size="sm" /> : <AlertTriangleIcon size="sm" />}
+              <div className="text-xs font-semibold flex-1">{punchStatus.message}</div>
+              <button
+                type="button"
+                onClick={() => setPunchStatus(null)}
+                className="text-xs font-bold hover:opacity-75 cursor-pointer"
+              >
+                ×
+              </button>
+            </div>
+          )}
+
+          <div className="w-full bg-black/5 border border-stocky-border-subtle rounded-3xl p-6 text-center flex flex-col items-center">
+            <div
+              id="stocky-kiosk-scanner-container"
+              className="w-full max-w-sm h-64 bg-black rounded-2xl overflow-hidden mb-4"
+            />
+
+            {scannerError && (
+              <div className="text-xs text-amber-600 mb-3 flex items-center gap-1.5">
+                <AlertTriangleIcon size="xs" />
+                <span>{scannerError}</span>
+              </div>
+            )}
+
+            <p className="text-xs text-stocky-text-sub max-w-sm mb-4">
+              Hold the Branch QR code up to the camera or use the 1-click punch button below.
+            </p>
+
+            <button
+              type="button"
+              onClick={handleManualPunch}
+              className="stocky-table-toolbar-button stocky-table-toolbar-button--primary h-11 px-6 rounded-full text-xs font-bold inline-flex items-center justify-center gap-2 cursor-pointer shadow-sm"
+            >
+              <ClockIcon size="xs" />
+              <span>Punch In / Out Now</span>
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

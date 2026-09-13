@@ -285,8 +285,16 @@ export function RedesignedPlatformView() {
     refresh();
   };
   const createSupplierRequest = async (input: { productId: string; locationId: string; supplierId?: string; requestType: 'replenish' | 'return' | 'replace'; quantity?: number }) => { const { error } = await supabase.rpc('create_supplier_request', { p_location_id: input.locationId, p_product_id: input.productId, p_request_type: input.requestType, p_quantity: input.quantity || null, p_supplier_id: input.supplierId || null, p_reason: 'Created from Stocky' }); if (error) alert(error.message); else refresh(); };
-  const createSupplier = async (input: { name: string; address?: string; contactName: string; contactPhone: string; contactEmail?: string }) => {
-    const { data, error } = await supabase.from('suppliers').insert({ company_id: companyId, name: input.name, address: input.address || null, contact_name: input.contactName, contact_phone: input.contactPhone, contact_email: input.contactEmail || null }).select('*').single();
+  const createSupplier = async (input: { name: string; address?: string; contactName: string; contactPhone: string; contactEmail?: string; imageUrl?: string }) => {
+    const insertPayload: any = { company_id: companyId, name: input.name, address: input.address || null, contact_name: input.contactName, contact_phone: input.contactPhone, contact_email: input.contactEmail || null };
+    if (input.imageUrl) insertPayload.image_url = input.imageUrl;
+    let { data, error } = await supabase.from('suppliers').insert(insertPayload).select('*').single();
+    if (error && input.imageUrl) {
+      delete insertPayload.image_url;
+      const retry = await supabase.from('suppliers').insert(insertPayload).select('*').single();
+      data = retry.data;
+      error = retry.error;
+    }
     if (error || !data) throw error || new Error('The supplier could not be saved.');
     const { error: contactError } = await supabase.from('supplier_contacts').insert({ company_id: companyId, supplier_id: data.id, name: input.contactName, phone: input.contactPhone, email: input.contactEmail || null, is_primary: true });
     if (contactError) console.warn('Supplier saved without a contact record; apply the supplier contacts migration to enable contact history.', contactError.message);
@@ -518,6 +526,9 @@ export function RedesignedPlatformView() {
         hidden={!isChromeVisible}
         onSearch={(query) => { setGlobalSearchQuery(query); if (query.trim()) setActiveTab('stock'); }}
         onSettingsClick={() => handleNavigationChange('settings')}
+        onNotificationsClick={() => handleNavigationChange('notifications')}
+        notificationCount={notificationItems.length}
+        activeTab={activeTab}
       />
       <MobileSubNavWidget
         activeTab={activeTab}

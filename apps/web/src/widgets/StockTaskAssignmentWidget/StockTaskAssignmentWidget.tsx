@@ -124,8 +124,7 @@ export function StockTaskAssignmentWidget({
     <SideDrawer isOpen={isOpen} onClose={onClose} ariaLabel="Assign a stock check" zIndex={70}>
       <div className="flex items-start justify-between gap-4 border-b border-stocky-border-subtle px-5 py-4">
         <div>
-          <p className="stocky-page-eyebrow">Create work task</p>
-          <h2 className="mt-1 text-lg font-medium text-stocky-text-main">Assign a stock check</h2>
+          <h2 className="text-lg font-medium text-stocky-text-main">Assign a stock check</h2>
           <p className="mt-1 text-xs text-stocky-text-sub">The assigned person sees only the products to check. Expected quantities stay hidden until you review the result.</p>
         </div>
         <button type="button" onClick={onClose} className="flex h-8 w-8 items-center justify-center rounded-full text-stocky-text-sub hover:bg-stocky-bg-global" aria-label="Close"><XIcon size="xs" /></button>

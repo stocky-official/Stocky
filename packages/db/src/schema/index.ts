@@ -40,6 +40,7 @@ export * from './stockTransfersV2';
 export * from './supplierRequests';
 export * from './notifications';
 export * from './stockTasks';
+export * from './attendance';
 
 // Relational Definitions
 export const companiesRelations = relations(companies, ({ many }) => ({

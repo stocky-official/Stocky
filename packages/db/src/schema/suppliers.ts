@@ -12,6 +12,7 @@ export const suppliers = pgTable('suppliers', {
   contactName: varchar('contact_name', { length: 255 }).notNull(),   // person to contact name
   contactPhone: varchar('contact_phone', { length: 50 }).notNull(),  // person to contact phone number
   contactEmail: varchar('contact_email', { length: 255 }),           // person to contact email
+  imageUrl: text('image_url'),                                       // supplier profile / logo image
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
 });

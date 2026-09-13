@@ -34,6 +34,7 @@ Thumbs.db
 
 # Large raw datasets & dumps
 data/
+_data/
 *.csv
 *.csv.gz
 *.gz

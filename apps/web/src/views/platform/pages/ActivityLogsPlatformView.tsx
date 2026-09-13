@@ -18,7 +18,6 @@ export interface ActivityLogsPlatformViewProps {
 export function ActivityLogsPlatformView(props: ActivityLogsPlatformViewProps) {
   return (
     <PlatformPageLayout
-      eyebrow="Audit trail"
       title="Activity logs"
       subtitle="A permanent record of stock work, tasks, movements, and operational decisions."
     >

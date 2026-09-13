@@ -16,7 +16,7 @@ export interface MobileBottomNavWidgetProps {
   onPostClick?: () => void;
 }
 
-type NavItemId = 'dashboard' | 'stock' | 'suppliers' | 'notifications' | 'settings';
+type NavItemId = 'dashboard' | 'stock' | 'suppliers' | 'settings';
 
 interface NavItemConfig {
   id: NavItemId;
@@ -28,14 +28,13 @@ const NAV_ITEMS: NavItemConfig[] = [
   { id: 'dashboard', label: 'Dashboard', routeTab: 'home' },
   { id: 'stock', label: 'Stock', routeTab: 'stock' },
   { id: 'suppliers', label: 'Suppliers', routeTab: 'suppliers' },
-  { id: 'notifications', label: 'Notifications', routeTab: 'notifications' },
   { id: 'settings', label: 'Settings', routeTab: 'settings' },
 ];
 
 /**
  * MobileBottomNavWidget
  * 1-to-1 reproduction of the phone navigation bar in navbarphone.gif adapted for Stocky:
- * - 5 core operational pages: Dashboard, Stock, Suppliers, Notifications, Settings
+ * - 4 core operational pages: Dashboard, Stock, Suppliers, Settings
  * - Edge-to-edge solid white bar with flat top line (#EAEAEA) and safe-area inset padding
  * - Elevated circular dark bubble (#191B1F, 50px) with 3.5px solid white ring that pops above the top edge
  * - Instant optimistic tab switching + route prefetching (zero perceived lag)
@@ -44,7 +43,6 @@ const NAV_ITEMS: NavItemConfig[] = [
  *   - Dashboard: layout quad-grid with subtle fill
  *   - Stock: 3D inventory package with sparkling star
  *   - Suppliers: delivery truck with spring drive micro-bounce
- *   - Notifications: ringing bell keyframe animation with active badge
  *   - Settings: sleek gear icon with spring rotation micro-animation
  */
 export function MobileBottomNavWidget({
@@ -57,7 +55,7 @@ export function MobileBottomNavWidget({
   const [optimisticNavId, setOptimisticNavId] = useState<NavItemId | null>(null);
 
   // Map platform activeTab to the corresponding navigation destination
-  const routeNavId = useMemo<NavItemId>(() => {
+  const routeNavId = useMemo<NavItemId | null>(() => {
     if (
       activeTab === 'home' ||
       activeTab === 'dashboard' ||
@@ -79,11 +77,11 @@ export function MobileBottomNavWidget({
     if (activeTab === 'suppliers') {
       return 'suppliers';
     }
-    if (activeTab === 'notifications') {
-      return 'notifications';
-    }
     if (activeTab === 'settings' || activeTab === 'team' || activeTab === 'locations') {
       return 'settings';
+    }
+    if (activeTab === 'notifications') {
+      return null;
     }
     return 'dashboard';
   }, [activeTab]);
@@ -163,27 +161,6 @@ export function MobileBottomNavWidget({
             <circle cx="7" cy="18" r="2" />
             <circle cx="17" cy="18" r="2" />
           </svg>
-        );
-      case 'notifications':
-        return (
-          <div className="relative flex items-center justify-center">
-            <svg
-              width="22"
-              height="22"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="#191B1F"
-              strokeWidth="1.85"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
-              <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" />
-            </svg>
-            {notificationCount > 0 && (
-              <span className="absolute -top-1 -right-1 w-2 h-2 bg-[#191B1F] rounded-full ring-2 ring-white" />
-            )}
-          </div>
         );
       case 'settings':
         return (
@@ -285,32 +262,6 @@ export function MobileBottomNavWidget({
               <circle cx="7" cy="18" r="2" fill="white" />
               <circle cx="17" cy="18" r="2" fill="white" />
             </svg>
-          </motion.div>
-        );
-      case 'notifications':
-        return (
-          <motion.div
-            initial={{ rotate: 0 }}
-            animate={{ rotate: [0, -14, 12, -8, 5, 0] }}
-            transition={{ duration: 0.6, ease: 'easeInOut' }}
-            className="relative flex items-center justify-center"
-          >
-            <svg
-              width="22"
-              height="22"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="white"
-              strokeWidth="1.85"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
-              <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" />
-            </svg>
-            {notificationCount > 0 && (
-              <span className="absolute -top-1 -right-1 w-2 h-2 bg-stocky-accent rounded-full ring-2 ring-[#191B1F]" />
-            )}
           </motion.div>
         );
       case 'settings':

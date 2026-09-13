@@ -109,3 +109,72 @@ export function exportBranchesToExcel(branches: Branch[], customPrefix?: string)
   XLSX.utils.book_append_sheet(workbook, worksheet, 'Stores & Branches');
   XLSX.writeFile(workbook, filename);
 }
+
+export interface TimesheetExportRow {
+  employeeName?: string | null;
+  employeeEmail?: string | null;
+  locationName?: string | null;
+  shiftDate: string;
+  clockInAt: string;
+  clockOutAt?: string | null;
+  totalMinutes?: number | null;
+  status: string;
+  punchInMethod?: string | null;
+  notes?: string | null;
+}
+
+/**
+ * Export Timesheets to .xlsx
+ */
+export function exportTimesheetsToExcel(
+  shifts: TimesheetExportRow[],
+  dateRangeLabel?: string,
+  branchName: string = 'All Branches'
+) {
+  const sanitizedBranch = branchName.replace(/[^a-zA-Z0-9_-]/g, '_');
+  const dateSuffix = dateRangeLabel
+    ? dateRangeLabel.replace(/[^a-zA-Z0-9_-]/g, '_')
+    : new Date().toISOString().split('T')[0];
+  const filename = `Stocky_Timesheets_${sanitizedBranch}_${dateSuffix}.xlsx`;
+
+  const rows = shifts.map((s, idx) => {
+    const hoursWorked = s.totalMinutes
+      ? `${Math.floor(s.totalMinutes / 60)}h ${s.totalMinutes % 60}m`
+      : s.clockOutAt
+      ? '0h 0m'
+      : 'In Progress';
+
+    const formatTime = (ts?: string | null) => {
+      if (!ts) return '--:--';
+      try {
+        return new Intl.DateTimeFormat('en', {
+          hour: '2-digit',
+          minute: '2-digit',
+        }).format(new Date(ts));
+      } catch {
+        return ts;
+      }
+    };
+
+    return {
+      '#': idx + 1,
+      'Employee Name': s.employeeName || 'Unknown',
+      'Email': s.employeeEmail || 'N/A',
+      'Branch / Location': s.locationName || 'N/A',
+      'Shift Date': s.shiftDate,
+      'Clock In': formatTime(s.clockInAt),
+      'Clock Out': formatTime(s.clockOutAt),
+      'Total Hours Worked': hoursWorked,
+      'Status': s.status.toUpperCase(),
+      'Punch Method': s.punchInMethod || 'QR Scan',
+      'Notes': s.notes || '',
+    };
+  });
+
+  const worksheet = XLSX.utils.json_to_sheet(rows);
+  autoFitColumns(rows, worksheet);
+
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, 'Shift Timesheets');
+  XLSX.writeFile(workbook, filename);
+}

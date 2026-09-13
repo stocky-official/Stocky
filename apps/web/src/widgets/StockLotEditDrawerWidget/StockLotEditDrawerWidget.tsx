@@ -87,7 +87,6 @@ export function StockLotEditDrawerWidget({ isOpen, lot, product, location, suppl
         <div className="stocky-lot-edit-heading">
           <span className="stocky-lot-edit-icon"><BoxesIcon size="xs" /></span>
           <div>
-            <p className="stocky-receive-eyebrow">Stock record</p>
             <h2 className="stocky-receive-title">Edit lot</h2>
             <p className="stocky-receive-subtitle">Update this delivery record without changing its quantity history.</p>
           </div>

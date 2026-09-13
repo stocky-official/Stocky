@@ -49,7 +49,7 @@ export function PlatformPageLayout({
   }
 
   return (
-    <div className={`stocky-subview-layout flex flex-col gap-5 w-full max-w-[1600px] mx-auto ${className}`}>
+    <div className={`stocky-subview-layout flex flex-col gap-4 sm:gap-5 w-full max-w-[var(--stocky-page-max-width)] mx-auto ${className}`}>
       {(title || eyebrow || subtitle || actions) && (
         <header className="stocky-subview-header flex flex-col sm:flex-row sm:items-end justify-between gap-4">
           <div className="stocky-subview-title-group min-w-0">
@@ -58,7 +58,7 @@ export function PlatformPageLayout({
                 {eyebrow}
               </p>
             )}
-            <h1 className="text-2xl font-normal tracking-tight text-stocky-text-main mt-0.5">
+            <h1 className={`text-2xl font-normal tracking-tight text-stocky-text-main ${eyebrow ? 'mt-1' : ''}`}>
               {title}
             </h1>
             {subtitle && (
@@ -68,13 +68,13 @@ export function PlatformPageLayout({
             )}
           </div>
           {actions && (
-            <div className="stocky-subview-actions flex items-center flex-wrap gap-2.5 shrink-0">
+            <div className="stocky-subview-actions flex items-center flex-wrap gap-2 shrink-0">
               {actions}
             </div>
           )}
         </header>
       )}
-      <main className="stocky-subview-content flex flex-col gap-4">
+      <main className="stocky-subview-content flex flex-col gap-3.5 sm:gap-4">
         {resolvedNavigation ? (
           <div className="hidden md:block">
             {resolvedNavigation}

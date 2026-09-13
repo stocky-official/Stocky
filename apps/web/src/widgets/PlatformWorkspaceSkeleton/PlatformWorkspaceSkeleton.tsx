@@ -10,6 +10,7 @@ export type PlatformSkeletonVariant =
   | 'expiring'
   | 'expiry'
   | 'tasks'
+  | 'attendance'
   | 'locations'
   | 'team'
   | 'activity'
@@ -94,6 +95,14 @@ const PAGE_METAS: Record<string, PageMeta> = {
     subtabs: ['Ongoing Tasks', 'Completed'],
     activeSubtabIndex: 0,
   },
+  attendance: {
+    eyebrowText: 'STAFF & ATTENDANCE',
+    titleWidth: 'w-56 sm:w-72',
+    subtitleWidth: 'w-72 sm:w-96',
+    actionWidth: 'w-36',
+    subtabs: ['Timesheets', 'Calendar', 'Time Off', 'Kiosk & QR'],
+    activeSubtabIndex: 0,
+  },
   locations: {
     eyebrowText: 'COMPANY FACILITIES',
     titleWidth: 'w-48 sm:w-64',
@@ -147,7 +156,7 @@ const PAGE_METAS: Record<string, PageMeta> = {
 export function PlatformWorkspaceSkeleton({
   variant,
   activeTab,
-  eyebrow = true,
+  eyebrow = false,
   hasTabs = true,
   rowsCount = 7,
   className = '',
@@ -163,7 +172,7 @@ export function PlatformWorkspaceSkeleton({
 
   return (
     <div
-      className={`stocky-subview-layout flex flex-col gap-5 w-full max-w-[1600px] mx-auto select-none p-4 sm:p-6 ${className}`}
+      className={`stocky-subview-layout flex flex-col gap-6 w-full max-w-[var(--stocky-page-max-width)] mx-auto select-none ${className}`}
       aria-busy="true"
       aria-label="Loading workspace..."
     >
