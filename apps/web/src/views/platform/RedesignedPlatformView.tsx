@@ -20,8 +20,8 @@ import {
 
 const roleTitles: Record<CompanyUserRole, string> = { owner: 'Owner', admin: 'Administrator', manager: 'Branch Manager', staff: 'Staff Member' };
 const adminRoles: CompanyUserRole[] = ['owner', 'admin'];
-const staffTabs = ['home', 'stock', 'expiry', 'tasks', 'notifications', 'settings', 'receive', 'logs', 'locations', 'supplier-requests', 'tasks-completed'];
-const managerTabs = ['home', 'stock', 'expiry', 'tasks', 'notifications', 'settings', 'receive', 'logs', 'suppliers', 'transfers', 'locations', 'supplier-requests', 'tasks-completed'];
+const staffTabs = ['home', 'stock', 'expiry', 'tasks', 'attendance', 'timesheets', 'notifications', 'settings', 'receive', 'logs', 'locations', 'supplier-requests', 'tasks-completed'];
+const managerTabs = ['home', 'stock', 'expiry', 'tasks', 'attendance', 'timesheets', 'notifications', 'settings', 'receive', 'logs', 'suppliers', 'transfers', 'locations', 'supplier-requests', 'tasks-completed'];
 
 function canOpenTab(role: CompanyUserRole, tab: string) {
   if (adminRoles.includes(role)) return true;

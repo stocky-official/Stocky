@@ -16,7 +16,7 @@ export interface MobileBottomNavWidgetProps {
   onPostClick?: () => void;
 }
 
-type NavItemId = 'dashboard' | 'stock' | 'suppliers' | 'settings';
+type NavItemId = 'dashboard' | 'stock' | 'suppliers' | 'attendance' | 'settings';
 
 interface NavItemConfig {
   id: NavItemId;
@@ -28,13 +28,14 @@ const NAV_ITEMS: NavItemConfig[] = [
   { id: 'dashboard', label: 'Dashboard', routeTab: 'home' },
   { id: 'stock', label: 'Stock', routeTab: 'stock' },
   { id: 'suppliers', label: 'Suppliers', routeTab: 'suppliers' },
+  { id: 'attendance', label: 'Attendance', routeTab: 'attendance' },
   { id: 'settings', label: 'Settings', routeTab: 'settings' },
 ];
 
 /**
  * MobileBottomNavWidget
  * 1-to-1 reproduction of the phone navigation bar in navbarphone.gif adapted for Stocky:
- * - 4 core operational pages: Dashboard, Stock, Suppliers, Settings
+ * - 5 core operational pages: Dashboard, Stock, Suppliers, Attendance & Timesheets, Settings
  * - Edge-to-edge solid white bar with flat top line (#EAEAEA) and safe-area inset padding
  * - Elevated circular dark bubble (#191B1F, 50px) with 3.5px solid white ring that pops above the top edge
  * - Instant optimistic tab switching + route prefetching (zero perceived lag)
@@ -43,6 +44,7 @@ const NAV_ITEMS: NavItemConfig[] = [
  *   - Dashboard: layout quad-grid with subtle fill
  *   - Stock: 3D inventory package with sparkling star
  *   - Suppliers: delivery truck with spring drive micro-bounce
+ *   - Attendance: calendar and timesheet schedule with glowing presence markers
  *   - Settings: sleek gear icon with spring rotation micro-animation
  */
 export function MobileBottomNavWidget({
@@ -66,6 +68,7 @@ export function MobileBottomNavWidget({
     }
     if (
       activeTab === 'stock' ||
+      activeTab === 'inventory' ||
       activeTab === 'transfers' ||
       activeTab === 'expiry' ||
       activeTab === 'expiring' ||
@@ -74,8 +77,11 @@ export function MobileBottomNavWidget({
     ) {
       return 'stock';
     }
-    if (activeTab === 'suppliers') {
+    if (activeTab === 'suppliers' || activeTab === 'supplier-requests') {
       return 'suppliers';
+    }
+    if (activeTab === 'attendance' || activeTab === 'timesheets') {
+      return 'attendance';
     }
     if (activeTab === 'settings' || activeTab === 'team' || activeTab === 'locations') {
       return 'settings';
@@ -160,6 +166,30 @@ export function MobileBottomNavWidget({
             <path d="M19 18h2a1 1 0 0 0 1-1v-3.65a1 1 0 0 0-.22-.62l-3.48-4.35A1 1 0 0 0 17.52 8H14v10Z" />
             <circle cx="7" cy="18" r="2" />
             <circle cx="17" cy="18" r="2" />
+          </svg>
+        );
+      case 'attendance':
+        return (
+          <svg
+            width="22"
+            height="22"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="#191B1F"
+            strokeWidth="1.85"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <rect width="18" height="18" x="3" y="4" rx="2" />
+            <line x1="16" x2="16" y1="2" y2="6" />
+            <line x1="8" x2="8" y1="2" y2="6" />
+            <line x1="3" x2="21" y1="10" y2="10" />
+            <circle cx="8" cy="14" r="1" fill="#191B1F" stroke="none" />
+            <circle cx="12" cy="14" r="1" fill="#191B1F" stroke="none" />
+            <circle cx="16" cy="14" r="1" fill="#191B1F" stroke="none" />
+            <circle cx="8" cy="18" r="1" fill="#191B1F" stroke="none" />
+            <circle cx="12" cy="18" r="1" fill="#191B1F" stroke="none" />
+            <circle cx="16" cy="18" r="1" fill="#191B1F" stroke="none" />
           </svg>
         );
       case 'settings':
@@ -264,6 +294,37 @@ export function MobileBottomNavWidget({
             </svg>
           </motion.div>
         );
+      case 'attendance':
+        return (
+          <motion.div
+            initial={{ scale: 0.85 }}
+            animate={{ scale: 1 }}
+            transition={{ duration: 0.25 }}
+            className="relative flex items-center justify-center"
+          >
+            <svg
+              width="22"
+              height="22"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="white"
+              strokeWidth="1.85"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <rect width="18" height="18" x="3" y="4" rx="2" fill="white" fillOpacity="0.2" />
+              <line x1="16" x2="16" y1="2" y2="6" />
+              <line x1="8" x2="8" y1="2" y2="6" />
+              <line x1="3" x2="21" y1="10" y2="10" />
+              <circle cx="8" cy="14" r="1.2" fill="white" stroke="none" />
+              <circle cx="12" cy="14" r="1.2" fill="white" stroke="none" />
+              <circle cx="16" cy="14" r="1.2" fill="white" stroke="none" />
+              <circle cx="8" cy="18" r="1.2" fill="white" stroke="none" />
+              <circle cx="12" cy="18" r="1.2" fill="white" stroke="none" />
+              <circle cx="16" cy="18" r="1.2" fill="white" stroke="none" />
+            </svg>
+          </motion.div>
+        );
       case 'settings':
         return (
           <motion.div
@@ -336,7 +397,7 @@ export function MobileBottomNavWidget({
 
                 {/* Typography Label */}
                 <span
-                  className={`text-[10px] sm:text-[11px] tracking-tight leading-none transition-all truncate max-w-[64px] ${
+                  className={`text-[10px] sm:text-[11px] tracking-tight leading-none transition-all truncate max-w-[70px] ${
                     isActive ? 'font-bold text-[#191B1F]' : 'font-medium text-[#191B1F]/75'
                   }`}
                 >
