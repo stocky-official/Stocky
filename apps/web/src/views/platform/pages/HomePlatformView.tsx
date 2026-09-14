@@ -227,8 +227,8 @@ export function HomePlatformView({
   const topProductName = topProduct ? topProduct.name : 'Al-Marai Fresh Milk 1L';
 
   return (
-    <div className="flex flex-col gap-5 w-full max-w-[var(--stocky-page-max-width)] mx-auto">
-      {/* 1. Hero Card (Normal bleed, rounded corners, aligned with page container) */}
+    <div className="flex flex-col w-full min-h-full">
+      {/* 1. Solid Hero with Talabat-style smooth wavy bottom edge extending to top and sides */}
       <HomeHeroWidget
         userName={userName}
         locationName={activeLocationName}
@@ -243,8 +243,10 @@ export function HomePlatformView({
         unreadNotificationsCount={unreadNotificationsCount}
       />
 
-      {/* 2. Responsive Cockpit Grid (Stacked on Mobile, 12 Columns on Desktop) */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+      {/* 2. Centered Page Content Container */}
+      <div className="w-full max-w-[var(--stocky-page-max-width)] mx-auto px-4 sm:px-6 lg:px-8 py-5 flex flex-col gap-5">
+        {/* Responsive Cockpit Grid (Stacked on Mobile, 12 Columns on Desktop) */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
           {/* Left Column (7 cols): Outside Call Cards + Stock Flow & Capital */}
           <div className="lg:col-span-7 flex flex-col gap-5">
             <HomeAssetCardsWidget
@@ -291,6 +293,7 @@ export function HomePlatformView({
             )}
           </div>
         </div>
+      </div>
     </div>
   );
 }
