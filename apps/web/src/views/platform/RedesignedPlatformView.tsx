@@ -9,6 +9,7 @@ import {
   type NotificationQueueItem,
   MobileBottomNavWidget,
   MobileSubNavWidget,
+  NotificationsDrawerWidget,
   PlatformTopBarWidget,
   PlatformWorkspaceWidget,
   ProductEditDrawerWidget,
@@ -76,6 +77,7 @@ export function RedesignedPlatformView() {
   const [teamMembers, setTeamMembers] = useState<any[]>([]);
   const [teamAssignments, setTeamAssignments] = useState<any[]>([]);
   const [selectedLocationId, setSelectedLocationId] = useState('all');
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [receiveOpen, setReceiveOpen] = useState(false);
   const [receiveProductId, setReceiveProductId] = useState<string | undefined>();
   const [receiveProductSearch, setReceiveProductSearch] = useState<string | undefined>();
@@ -526,7 +528,8 @@ export function RedesignedPlatformView() {
         hidden={!isChromeVisible}
         onSearch={(query) => { setGlobalSearchQuery(query); if (query.trim()) setActiveTab('stock'); }}
         onSettingsClick={() => handleNavigationChange('settings')}
-        onNotificationsClick={() => handleNavigationChange('notifications')}
+        onNotificationsClick={() => setNotificationsOpen(true)}
+        isNotificationsOpen={notificationsOpen}
         notificationCount={notificationItems.length}
         activeTab={activeTab}
       />
@@ -541,7 +544,7 @@ export function RedesignedPlatformView() {
         onTaskTabChange={setTaskTab}
       />
       <div className="stocky-platform-body flex flex-1 min-h-0 min-w-0">
-        <SidebarNavWidget activeTab={activeTab} onTabChange={handleNavigationChange} userRole={userRole} companyName={company?.name} companyLogoUrl={company?.logo_url} notificationCount={notificationItems.length} onNotificationsClick={() => handleNavigationChange('notifications')} searchQuery={globalSearchQuery} onSearch={(query) => { setGlobalSearchQuery(query); if (query.trim()) setActiveTab('stock'); }} userEmail={userEmail} userName={userName} userTitle={userTitle} userAvatarUrl={userAvatarUrl} onSettingsClick={() => handleNavigationChange('settings')} />
+        <SidebarNavWidget activeTab={activeTab} onTabChange={handleNavigationChange} userRole={userRole} companyName={company?.name} companyLogoUrl={company?.logo_url} notificationCount={notificationItems.length} onNotificationsClick={() => setNotificationsOpen(true)} searchQuery={globalSearchQuery} onSearch={(query) => { setGlobalSearchQuery(query); if (query.trim()) setActiveTab('stock'); }} userEmail={userEmail} userName={userName} userTitle={userTitle} userAvatarUrl={userAvatarUrl} onSettingsClick={() => handleNavigationChange('settings')} />
         <PlatformWorkspaceWidget
           activeTab={activeTab}
           loading={loading}
@@ -620,6 +623,12 @@ export function RedesignedPlatformView() {
           onImportSuccess={refresh}
         />
       </div>
+      <NotificationsDrawerWidget
+        isOpen={notificationsOpen}
+        onClose={() => setNotificationsOpen(false)}
+        items={notificationItems}
+        onNavigateToLogs={() => handleNavigationChange('logs')}
+      />
       <ReceiveStockDrawerWidget isOpen={receiveOpen} onClose={() => setReceiveOpen(false)} products={products} locations={visibleLocations} suppliers={suppliers} companyId={companyId} userRole={userRole} defaultProductId={receiveProductId} defaultProductSearch={receiveProductSearch} defaultLocationId={locationScope === 'all' ? visibleLocations[0]?.id : locationScope} onSaved={refresh} />
       <ProductEditDrawerWidget isOpen={productEditOpen} product={editingProduct} categories={Array.from(new Set(products.map((product) => product.categoryName).filter(Boolean)))} suppliers={suppliers} onClose={() => { setProductEditOpen(false); setEditingProduct(null); }} onSave={updateProduct} />
       <BarcodeScannerWidget onProductFound={() => undefined} onBarcodeFound={(barcode) => { setGlobalSearchQuery(barcode); setTaskScanQuery(barcode); setActiveTab('stock'); }} onCodeNotFound={(barcode) => { openReceive(undefined, barcode); }} />

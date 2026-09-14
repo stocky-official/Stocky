@@ -201,6 +201,10 @@ export interface PlatformContextValue {
   navigateToTab: (tab: string) => void;
   refresh: () => void;
   // Drawers
+  notificationsOpen: boolean;
+  setNotificationsOpen: (open: boolean) => void;
+  openNotifications: () => void;
+  closeNotifications: () => void;
   receiveOpen: boolean;
   setReceiveOpen: (open: boolean) => void;
   receiveProductId?: string;
@@ -346,6 +350,9 @@ export function PlatformProvider({
   const [teamMembers, setTeamMembers] = useState<any[]>([]);
   const [teamAssignments, setTeamAssignments] = useState<any[]>([]);
   const [selectedLocationId, setSelectedLocationId] = useState('all');
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const openNotifications = useCallback(() => setNotificationsOpen(true), []);
+  const closeNotifications = useCallback(() => setNotificationsOpen(false), []);
   const [receiveOpen, setReceiveOpen] = useState(false);
   const [receiveProductId, setReceiveProductId] = useState<string | undefined>();
   const [receiveProductSearch, setReceiveProductSearch] = useState<string | undefined>();
@@ -1311,6 +1318,10 @@ export function PlatformProvider({
     canManageTeam: adminRoles.includes(userRole) || Boolean(userPermissions?.capabilities?.can_manage_team),
     navigateToTab,
     refresh,
+    notificationsOpen,
+    setNotificationsOpen,
+    openNotifications,
+    closeNotifications,
     receiveOpen,
     setReceiveOpen,
     receiveProductId,

@@ -8,6 +8,7 @@ import {
   BarcodeScannerWidget,
   MobileBottomNavWidget,
   MobileSubNavWidget,
+  NotificationsDrawerWidget,
   PlatformTopBarWidget,
   PlatformWorkspaceSkeleton,
   ProductEditDrawerWidget,
@@ -126,7 +127,8 @@ function PlatformShell({ children }: { children?: React.ReactNode }) {
           if (query.trim()) platform.navigateToTab('stock');
         }}
         onSettingsClick={() => platform.navigateToTab('settings')}
-        onNotificationsClick={() => platform.navigateToTab('notifications')}
+        onNotificationsClick={() => platform.openNotifications()}
+        isNotificationsOpen={platform.notificationsOpen}
         notificationCount={platform.notificationItems.length}
         activeTab={platform.activeTab}
       />
@@ -152,7 +154,7 @@ function PlatformShell({ children }: { children?: React.ReactNode }) {
           companyName={platform.company?.name}
           companyLogoUrl={platform.company?.logo_url}
           notificationCount={platform.notificationItems.length}
-          onNotificationsClick={() => platform.navigateToTab('notifications')}
+          onNotificationsClick={() => platform.openNotifications()}
           searchQuery={platform.globalSearchQuery}
           onSearch={(query) => {
             platform.setGlobalSearchQuery(query);
@@ -175,6 +177,12 @@ function PlatformShell({ children }: { children?: React.ReactNode }) {
           )}
         </main>
       </div>
+      <NotificationsDrawerWidget
+        isOpen={platform.notificationsOpen}
+        onClose={platform.closeNotifications}
+        items={platform.notificationItems}
+        onNavigateToLogs={() => platform.navigateToTab('logs')}
+      />
       <ReceiveStockDrawerWidget
         isOpen={platform.receiveOpen}
         onClose={() => platform.setReceiveOpen(false)}

@@ -23,6 +23,7 @@ export interface PlatformTopBarWidgetProps {
   onNotificationsClick?: () => void;
   notificationCount?: number;
   activeTab?: string;
+  isNotificationsOpen?: boolean;
 }
 
 /**
@@ -43,6 +44,7 @@ export function PlatformTopBarWidget({
   onNotificationsClick,
   notificationCount = 0,
   activeTab,
+  isNotificationsOpen = false,
 }: PlatformTopBarWidgetProps) {
   const [logoFailed, setLogoFailed] = useState(false);
 
@@ -112,7 +114,7 @@ export function PlatformTopBarWidget({
             aria-label={`Notifications${notificationCount > 0 ? `, ${notificationCount} unread` : ''}`}
             title="Notifications"
             className={`relative w-8 h-8 rounded-full flex items-center justify-center transition-colors cursor-pointer shrink-0 ${
-              activeTab === 'notifications'
+              isNotificationsOpen || activeTab === 'notifications'
                 ? 'bg-stocky-primary text-white'
                 : 'text-stocky-text-sub hover:text-stocky-text-main hover:bg-stocky-bg-global active:scale-95'
             }`}
@@ -121,7 +123,7 @@ export function PlatformTopBarWidget({
             {notificationCount > 0 && (
               <span
                 className={`absolute top-1 right-1 w-2 h-2 rounded-full ${
-                  activeTab === 'notifications'
+                  isNotificationsOpen || activeTab === 'notifications'
                     ? 'bg-white ring-1 ring-stocky-primary'
                     : 'bg-stocky-primary ring-2 ring-white'
                 }`}

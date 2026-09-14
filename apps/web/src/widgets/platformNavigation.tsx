@@ -102,7 +102,6 @@ export function getPlatformNavigation(
   const dashboardItems: PlatformNavItem[] = [
     { id: 'home', label: 'Dashboard', icon: <DashboardIcon size="xs" />, href: makeHref('home') },
     { id: 'logs', label: 'Activity Logs', icon: <ActivityIcon size="xs" />, href: makeHref('logs') },
-    { id: 'notifications', label: 'Notifications', icon: <BellIcon size="xs" />, href: makeHref('notifications') },
   ];
 
   const supplyChainItems: PlatformNavItem[] = [

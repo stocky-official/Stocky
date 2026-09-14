@@ -68,3 +68,6 @@ export function NotificationCenterWidget({ items }: NotificationCenterWidgetProp
     </div>
   );
 }
+
+export * from './NotificationsDrawerWidget';
+
