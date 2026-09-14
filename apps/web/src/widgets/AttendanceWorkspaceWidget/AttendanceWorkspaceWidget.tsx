@@ -43,6 +43,7 @@ export interface AttendanceWorkspaceWidgetProps {
     reason?: string;
   }) => Promise<void>;
   onReviewLeave: (requestId: string, approve: boolean, note?: string) => Promise<void>;
+  canManageAttendance?: boolean;
 }
 
 export function AttendanceWorkspaceWidget({
@@ -53,6 +54,7 @@ export function AttendanceWorkspaceWidget({
   members,
   userRole,
   currentUserId,
+  canManageAttendance,
   activeTab: controlledTab,
   onTabChange: onControlledTabChange,
   onPunchAttendance,
@@ -136,6 +138,7 @@ export function AttendanceWorkspaceWidget({
               members={members}
               currentUserId={currentUserId}
               userRole={userRole}
+              canManageAttendance={canManageAttendance}
               onRequestLeave={() => setIsLeaveDrawerOpen(true)}
               onReviewLeave={onReviewLeave}
             />

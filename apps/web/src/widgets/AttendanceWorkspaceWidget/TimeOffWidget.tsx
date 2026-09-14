@@ -18,6 +18,7 @@ export interface TimeOffWidgetProps {
   members: any[];
   currentUserId?: string | null;
   userRole?: string;
+  canManageAttendance?: boolean;
   onRequestLeave: () => void;
   onReviewLeave: (requestId: string, approve: boolean, note?: string) => Promise<void>;
 }
@@ -28,13 +29,14 @@ export function TimeOffWidget({
   members,
   currentUserId,
   userRole,
+  canManageAttendance,
   onRequestLeave,
   onReviewLeave,
 }: TimeOffWidgetProps) {
   const [reviewingId, setReviewingId] = useState<string | null>(null);
 
   const memberMap = new Map(members.map((m) => [m.id, m]));
-  const canReview = userRole === 'owner' || userRole === 'admin' || userRole === 'manager';
+  const canReview = userRole === 'owner' || userRole === 'admin' || userRole === 'manager' || Boolean(canManageAttendance);
 
   // Compute balance for current user or company average
   const userBalance = balances.find((b) => b.companyUserId === currentUserId) || balances[0] || {
@@ -152,7 +154,7 @@ export function TimeOffWidget({
         </div>
       ) : (
         <div className="w-full overflow-x-auto">
-          <table className="stocky-board-table w-full text-left border-collapse">
+          <table className="stocky-board-table min-w-[800px] w-full text-left border-collapse">
             <thead>
               <tr className="border-b border-stocky-border-subtle bg-stocky-bg-global/30 h-11">
                 <th className="stocky-board-table__header-cell px-4 text-left text-[11px] font-semibold text-stocky-text-sub tracking-wider uppercase whitespace-nowrap">

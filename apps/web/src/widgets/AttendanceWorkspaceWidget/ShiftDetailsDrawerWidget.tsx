@@ -71,7 +71,7 @@ export function ShiftDetailsDrawerWidget({
         </div>
 
         {/* Timestamps Card */}
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div className="p-3.5 rounded-widget border border-stocky-border-subtle bg-stocky-bg-widget shadow-sm">
             <div className="text-[11px] text-stocky-text-sub font-medium mb-1">Clock In</div>
             <div className="text-sm font-semibold text-stocky-text-main">

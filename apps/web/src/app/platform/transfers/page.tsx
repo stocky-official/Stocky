@@ -20,6 +20,7 @@ export default function TransfersRoutePage() {
       selectedLocationId={platform.locationScope}
       defaultProductId={platform.transferProductId}
       userRole={platform.userRole}
+      canApprove={platform.canApproveTransfers}
       onCreate={platform.createTransfer}
       onApprove={platform.approveTransfer}
       onReceive={platform.receiveTransfer}

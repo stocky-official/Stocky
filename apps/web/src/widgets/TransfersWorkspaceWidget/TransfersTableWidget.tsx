@@ -25,6 +25,7 @@ export interface TransfersTableWidgetProps {
   pageSize: number;
   onPageChange: (page: number) => void;
   onPageSizeChange: (pageSize: number) => void;
+  canApprove?: boolean;
   onApprove: (transfer: InventoryTransfer) => void;
   onOpenReceipt: (transfer: InventoryTransfer) => void;
   onRequestStock: () => void;
@@ -70,6 +71,7 @@ export function TransfersTableWidget({
   pageSize,
   onPageChange,
   onPageSizeChange,
+  canApprove,
   onApprove,
   onOpenReceipt,
   onRequestStock,
@@ -114,9 +116,11 @@ export function TransfersTableWidget({
     </th>
   );
 
+  const isApprovedAllowed = canApprove !== undefined ? canApprove : userRole !== 'staff';
+
   const renderTransferActions = (transfer: InventoryTransfer) => (
     <div className="stocky-board-actions justify-end">
-      {userRole !== 'staff' && transfer.status === 'requested' && (
+      {isApprovedAllowed && transfer.status === 'requested' && (
         <button
           type="button"
           onClick={() => onApprove(transfer)}
@@ -125,7 +129,7 @@ export function TransfersTableWidget({
           Approve
         </button>
       )}
-      {userRole !== 'staff' &&
+      {isApprovedAllowed &&
         (transfer.status === 'approved' ||
           transfer.status === 'in_transit' ||
           transfer.status === 'partially_received') && (

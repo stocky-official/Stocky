@@ -63,7 +63,41 @@ const managerTabs = [
   'attendance-calendar', 'attendance-leaves', 'attendance-kiosk', 'timesheets', 'calendar', 'leaves', 'kiosk',
 ];
 
-export function canOpenTab(role: CompanyUserRole, tab: string) {
+const TAB_TO_PAGE_KEY: Record<string, string> = {
+  stock: 'inventory',
+  inventory: 'inventory',
+  transfers: 'transfers',
+  suppliers: 'suppliers',
+  'supplier-requests': 'suppliers',
+  tasks: 'tasks',
+  'tasks-completed': 'tasks',
+  attendance: 'attendance',
+  'attendance-timesheets': 'attendance',
+  'attendance-calendar': 'attendance',
+  'attendance-leaves': 'attendance',
+  'attendance-kiosk': 'attendance',
+  timesheets: 'attendance',
+  calendar: 'attendance',
+  leaves: 'attendance',
+  kiosk: 'attendance',
+  locations: 'locations',
+  team: 'team',
+};
+
+export function canOpenTab(
+  role: CompanyUserRole,
+  tab: string,
+  permissions?: { pages?: string[] } | null
+) {
+  if (role === 'owner') return true;
+
+  if (permissions && Array.isArray(permissions.pages)) {
+    const pageKey = TAB_TO_PAGE_KEY[tab];
+    // Common platform utility views (home, activity logs, notifications, settings, receive modal)
+    if (!pageKey) return true;
+    return permissions.pages.includes(pageKey);
+  }
+
   if (adminRoles.includes(role)) return true;
   return (role === 'manager' ? managerTabs : staffTabs).includes(tab);
 }
@@ -149,8 +183,21 @@ export interface PlatformContextValue {
   setTaskTab: (tab: 'ongoing' | 'completed') => void;
   attendanceTab: 'timesheets' | 'calendar' | 'leaves' | 'kiosk';
   setAttendanceTab: (tab: 'timesheets' | 'calendar' | 'leaves' | 'kiosk') => void;
+  userPermissions: {
+    pages?: string[];
+    capabilities?: {
+      can_edit_stock?: boolean;
+      can_approve_transfers?: boolean;
+      can_manage_team?: boolean;
+      can_manage_attendance?: boolean;
+    };
+  } | null;
   canManage: boolean;
   canManageTasks: boolean;
+  canEditStock: boolean;
+  canApproveTransfers: boolean;
+  canManageAttendance: boolean;
+  canManageTeam: boolean;
   navigateToTab: (tab: string) => void;
   refresh: () => void;
   // Drawers
@@ -262,6 +309,7 @@ export function PlatformProvider({
   const [userTitle, setUserTitle] = useState<string | null>(null);
   const [userAvatarUrl, setUserAvatarUrl] = useState<string | null>(null);
   const [userRole, setUserRole] = useState<CompanyUserRole>('staff');
+  const [userPermissions, setUserPermissions] = useState<PlatformContextValue['userPermissions']>(null);
   const [unauthorizedTenant, setUnauthorizedTenant] = useState<PlatformContextValue['unauthorizedTenant']>(null);
   const [companyUserId, setCompanyUserId] = useState<string | null>(null);
   const [companyId, setCompanyId] = useState('');
@@ -356,6 +404,7 @@ export function PlatformProvider({
       setTaskTab('ongoing');
     }
     if (tab === 'attendance-calendar' || tab === 'calendar') {
+      if (!canOpenTab(userRole, 'attendance', userPermissions)) return;
       setAttendanceTab('calendar');
       if (activeTab !== 'attendance') {
         const path = TAB_TO_PATH.attendance;
@@ -369,6 +418,7 @@ export function PlatformProvider({
       return;
     }
     if (tab === 'attendance-leaves' || tab === 'leaves') {
+      if (!canOpenTab(userRole, 'attendance', userPermissions)) return;
       setAttendanceTab('leaves');
       if (activeTab !== 'attendance') {
         const path = TAB_TO_PATH.attendance;
@@ -382,6 +432,7 @@ export function PlatformProvider({
       return;
     }
     if (tab === 'attendance-kiosk' || tab === 'kiosk') {
+      if (!canOpenTab(userRole, 'attendance', userPermissions)) return;
       setAttendanceTab('kiosk');
       if (activeTab !== 'attendance') {
         const path = TAB_TO_PATH.attendance;
@@ -395,6 +446,7 @@ export function PlatformProvider({
       return;
     }
     if (tab === 'attendance-timesheets' || tab === 'timesheets') {
+      if (!canOpenTab(userRole, 'attendance', userPermissions)) return;
       setAttendanceTab('timesheets');
       if (activeTab !== 'attendance') {
         const path = TAB_TO_PATH.attendance;
@@ -408,6 +460,7 @@ export function PlatformProvider({
       return;
     }
     if (tab === 'attendance') {
+      if (!canOpenTab(userRole, 'attendance', userPermissions)) return;
       if (activeTab !== 'attendance') {
         const path = TAB_TO_PATH.attendance;
         const targetHref = (!effectiveTenantPrefix || effectiveTenantPrefix === '/platform')
@@ -419,7 +472,7 @@ export function PlatformProvider({
       }
       return;
     }
-    if (!canOpenTab(userRole, tab)) return;
+    if (!canOpenTab(userRole, tab, userPermissions)) return;
     const path = TAB_TO_PATH[tab] || `/platform/${tab}`;
     const targetHref = (!effectiveTenantPrefix || effectiveTenantPrefix === '/platform')
       ? path
@@ -427,7 +480,7 @@ export function PlatformProvider({
     React.startTransition(() => {
       router.push(targetHref || '/');
     });
-  }, [userRole, effectiveTenantPrefix, router, activeTab]);
+  }, [userRole, userPermissions, effectiveTenantPrefix, router, activeTab]);
 
   // Warm client router cache so all platform transitions feel instantaneous
   useEffect(() => {
@@ -520,8 +573,9 @@ export function PlatformProvider({
       setUserRole(role);
       setCompanyId(profile.company_id);
       setUserName(profile.full_name || user.user_metadata?.full_name || user.user_metadata?.name || null);
-      setUserTitle(roleTitles[role] || 'Team member');
+      setUserTitle(profile.job_title || roleTitles[role] || 'Team member');
       setUserAvatarUrl(profile.avatar_url || user.user_metadata?.avatar_url || null);
+      setUserPermissions(profile.permissions || null);
 
       const { data: comp } = await supabase.from('companies').select('*').eq('id', profile.company_id).maybeSingle();
       if (comp) {
@@ -1248,8 +1302,13 @@ export function PlatformProvider({
     setTaskTab,
     attendanceTab,
     setAttendanceTab,
-    canManage: adminRoles.includes(userRole),
-    canManageTasks: adminRoles.includes(userRole) || userRole === 'manager',
+    userPermissions,
+    canManage: adminRoles.includes(userRole) || Boolean(userPermissions?.capabilities?.can_manage_team),
+    canManageTasks: adminRoles.includes(userRole) || userRole === 'manager' || Boolean(userPermissions?.capabilities?.can_manage_attendance),
+    canEditStock: adminRoles.includes(userRole) || Boolean(userPermissions?.capabilities?.can_edit_stock),
+    canApproveTransfers: adminRoles.includes(userRole) || userRole === 'manager' || Boolean(userPermissions?.capabilities?.can_approve_transfers),
+    canManageAttendance: adminRoles.includes(userRole) || userRole === 'manager' || Boolean(userPermissions?.capabilities?.can_manage_attendance),
+    canManageTeam: adminRoles.includes(userRole) || Boolean(userPermissions?.capabilities?.can_manage_team),
     navigateToTab,
     refresh,
     receiveOpen,

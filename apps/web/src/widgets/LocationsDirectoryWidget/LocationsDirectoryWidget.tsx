@@ -798,7 +798,7 @@ export function LocationsDirectoryWidget({
                           }}
                         />
                       ) : (
-                        <div className="h-full w-full flex flex-col items-center justify-center p-4 bg-gradient-to-br from-[#F5F7F0] via-[#EBF1E5] to-slate-100 text-stocky-text-sub">
+                        <div className="h-full w-full flex flex-col items-center justify-center p-4 bg-gradient-to-br from-stocky-bg-global via-stocky-bg-widget to-stocky-border-subtle/30 text-stocky-text-sub">
                           <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white border border-stocky-border-subtle shadow-2xs text-stocky-primary mb-1.5">
                             {location.type === 'warehouse' ? <WarehouseIcon size="md" /> : <BoxIcon size="md" />}
                           </div>
@@ -1094,7 +1094,7 @@ export function LocationsDirectoryWidget({
                 </label>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <label className="block text-xs font-medium text-stocky-text-main">
                   Type
                   <select

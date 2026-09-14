@@ -1,8 +1,9 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
 import {
   CloudDownloadIcon,
+  FilterIcon,
   NetworkIcon,
   PlusIcon,
   SearchIcon,
@@ -57,26 +58,85 @@ export function TeamWorkspaceWidget({
 }: TeamWorkspaceWidgetProps) {
   const [viewMode, setViewMode] = useState<'table' | 'org'>('table');
   const [searchQuery, setSearchQuery] = useState('');
+  const [isFilterPanelOpen, setIsFilterPanelOpen] = useState(false);
   const [roleFilter, setRoleFilter] = useState<'all' | 'admin' | 'manager' | 'staff'>('all');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'invited'>('all');
+  const [locationFilter, setLocationFilter] = useState<string>('all');
+  const [searchFields, setSearchFields] = useState({ name: true, email: true, title: true });
+
+  const filterPanelRef = useRef<HTMLDivElement | null>(null);
+  const searchWrapRef = useRef<HTMLDivElement | null>(null);
 
   // Drawers
   const [selectedMember, setSelectedMember] = useState<TeamMemberData | null>(null);
   const [isInviteOpen, setIsInviteOpen] = useState(false);
 
+  // Close filter panel on outside click or Escape
+  useEffect(() => {
+    if (!isFilterPanelOpen) return;
+    const handleClickOutside = (e: MouseEvent) => {
+      if (
+        filterPanelRef.current &&
+        !filterPanelRef.current.contains(e.target as Node) &&
+        searchWrapRef.current &&
+        !searchWrapRef.current.contains(e.target as Node)
+      ) {
+        setIsFilterPanelOpen(false);
+      }
+    };
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setIsFilterPanelOpen(false);
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isFilterPanelOpen]);
+
+  const activeFilterCount = useMemo(() => {
+    let count = 0;
+    if (roleFilter !== 'all') count++;
+    if (statusFilter !== 'all') count++;
+    if (locationFilter !== 'all') count++;
+    if (!searchFields.name || !searchFields.email || !searchFields.title) count++;
+    return count;
+  }, [roleFilter, statusFilter, locationFilter, searchFields]);
+
+  const resetFilters = () => {
+    setRoleFilter('all');
+    setStatusFilter('all');
+    setLocationFilter('all');
+    setSearchFields({ name: true, email: true, title: true });
+  };
+
   // Filtered members list
   const filteredMembers = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
     return members.filter((m) => {
-      if (roleFilter !== 'all' && m.role !== roleFilter) return false;
+      if (roleFilter !== 'all') {
+        if (roleFilter === 'admin' && m.role !== 'admin' && m.role !== 'owner') return false;
+        if (roleFilter !== 'admin' && m.role !== roleFilter) return false;
+      }
+      if (statusFilter !== 'all') {
+        const memberStatus = m.status || 'active';
+        if (statusFilter === 'active' && memberStatus !== 'active') return false;
+        if (statusFilter === 'invited' && memberStatus !== 'invited' && memberStatus !== 'pending') return false;
+      }
+      if (locationFilter !== 'all') {
+        const isAssigned = assignments.some((a) => a.user_id === m.id && a.location_id === locationFilter);
+        if (!isAssigned) return false;
+      }
       if (q) {
-        const matchesName = Boolean(m.full_name?.toLowerCase().includes(q));
-        const matchesEmail = Boolean(m.email?.toLowerCase().includes(q));
-        const matchesTitle = Boolean(m.job_title?.toLowerCase().includes(q));
+        const matchesName = searchFields.name && Boolean(m.full_name?.toLowerCase().includes(q));
+        const matchesEmail = searchFields.email && Boolean(m.email?.toLowerCase().includes(q));
+        const matchesTitle = searchFields.title && Boolean(m.job_title?.toLowerCase().includes(q));
         if (!matchesName && !matchesEmail && !matchesTitle) return false;
       }
       return true;
     });
-  }, [members, roleFilter, searchQuery]);
+  }, [members, roleFilter, statusFilter, locationFilter, searchFields, searchQuery, assignments]);
 
   const handleSaveMember = async (
     memberId: string,
@@ -134,27 +194,185 @@ export function TeamWorkspaceWidget({
         {/* Integrated Toolbar Header */}
         <div className="p-3 sm:p-3.5 border-b border-stocky-border-subtle relative z-30">
           <div className="stocky-stock-table-toolbar relative flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            {/* Search Input Group */}
-            <div className="stocky-stock-table-toolbar__search-group flex items-center gap-2 min-w-0 flex-1">
-              <div className="relative min-w-0 flex-1">
-                <SearchIcon size="xs" className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-stocky-text-sub" />
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search team members by name, email, or job title..."
-                  className="w-full h-10 rounded-full border border-stocky-border-subtle bg-stocky-bg-widget pl-9 pr-9 text-xs text-stocky-text-main placeholder:text-stocky-text-sub focus:border-stocky-primary focus:outline-none transition-colors"
-                />
-                {searchQuery && (
-                  <button
-                    type="button"
-                    onClick={() => setSearchQuery('')}
-                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-stocky-text-sub hover:text-stocky-text-main cursor-pointer"
-                  >
-                    <XIcon size="xs" />
-                  </button>
-                )}
+            {/* Split Search Field & Filter Button */}
+            <div ref={searchWrapRef} className="stocky-stock-table-toolbar__search-group relative flex items-center min-w-0 flex-1">
+              <div className="stocky-split-search-field">
+                <div className="stocky-split-search-field__input-wrap">
+                  <SearchIcon size="xs" className="text-stocky-text-sub shrink-0" />
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="Search team members by name, email, or job title..."
+                    className="stocky-split-search-field__input"
+                  />
+                  {searchQuery && (
+                    <button
+                      type="button"
+                      onClick={() => setSearchQuery('')}
+                      className="text-stocky-text-sub hover:text-stocky-text-main cursor-pointer shrink-0"
+                      aria-label="Clear search"
+                    >
+                      <XIcon size="xs" />
+                    </button>
+                  )}
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setIsFilterPanelOpen((open) => !open)}
+                  aria-label="Filter team members"
+                  aria-expanded={isFilterPanelOpen}
+                  className={`stocky-split-search-field__filter-btn ${isFilterPanelOpen || activeFilterCount > 0 ? 'stocky-split-search-field__filter-btn--active' : ''}`}
+                  title="Filter team members"
+                >
+                  <FilterIcon size="xs" />
+                  {activeFilterCount > 0 && (
+                    <span className="stocky-split-search-field__badge">{activeFilterCount}</span>
+                  )}
+                </button>
               </div>
+
+              {/* Floating Column Filter Panel */}
+              {isFilterPanelOpen && (
+                <div ref={filterPanelRef} className="stocky-column-filter-panel" role="dialog" aria-label="Team member filters">
+                  {/* Sticky Header */}
+                  <div className="sticky top-0 z-10 flex shrink-0 items-center justify-between border-b border-stocky-border-subtle bg-white px-4 py-2.5">
+                    <div className="flex items-center gap-2">
+                      <FilterIcon size="xs" className="text-stocky-primary" />
+                      <h3 className="text-xs font-semibold text-stocky-text-main">Team Filters</h3>
+                      {activeFilterCount > 0 && (
+                        <span className="rounded-full bg-stocky-primary/10 px-2 py-0.5 text-[10px] font-semibold text-stocky-primary">
+                          {activeFilterCount} active
+                        </span>
+                      )}
+                    </div>
+                    {activeFilterCount > 0 && (
+                      <button
+                        type="button"
+                        onClick={resetFilters}
+                        className="text-[11px] font-medium text-stocky-primary hover:underline cursor-pointer"
+                      >
+                        Reset all
+                      </button>
+                    )}
+                  </div>
+
+                  <div className="stocky-column-filter-panel__body space-y-3">
+                    {/* Search in Fields */}
+                    <div className="space-y-1.5">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-stocky-text-sub">Search In Fields</span>
+                      </div>
+                      <div className="flex flex-wrap gap-1.5">
+                        <button
+                          type="button"
+                          onClick={() => setSearchFields((f) => ({ ...f, name: !f.name }))}
+                          className={`px-2.5 py-1 rounded-full text-xs font-medium border transition-colors cursor-pointer ${searchFields.name ? 'border-stocky-primary bg-stocky-primary/10 text-stocky-primary font-semibold' : 'border-stocky-border-subtle bg-white text-stocky-text-sub hover:text-stocky-text-main'}`}
+                        >
+                          Name
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setSearchFields((f) => ({ ...f, email: !f.email }))}
+                          className={`px-2.5 py-1 rounded-full text-xs font-medium border transition-colors cursor-pointer ${searchFields.email ? 'border-stocky-primary bg-stocky-primary/10 text-stocky-primary font-semibold' : 'border-stocky-border-subtle bg-white text-stocky-text-sub hover:text-stocky-text-main'}`}
+                        >
+                          Email
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setSearchFields((f) => ({ ...f, title: !f.title }))}
+                          className={`px-2.5 py-1 rounded-full text-xs font-medium border transition-colors cursor-pointer ${searchFields.title ? 'border-stocky-primary bg-stocky-primary/10 text-stocky-primary font-semibold' : 'border-stocky-border-subtle bg-white text-stocky-text-sub hover:text-stocky-text-main'}`}
+                        >
+                          Job Title
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Role Filter */}
+                    <div className="space-y-1.5 pt-2 border-t border-stocky-border-subtle">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-stocky-text-sub">Role</span>
+                      <div className="flex flex-wrap gap-1.5">
+                        {(['all', 'admin', 'manager', 'staff'] as const).map((r) => {
+                          const count = r === 'all'
+                            ? members.length
+                            : r === 'admin'
+                            ? members.filter((m) => m.role === 'admin' || m.role === 'owner').length
+                            : members.filter((m) => m.role === r).length;
+                          const isSelected = roleFilter === r;
+                          const label = r === 'all' ? 'All Roles' : r === 'admin' ? 'Admins' : r === 'manager' ? 'Managers' : 'Staff';
+                          return (
+                            <button
+                              key={r}
+                              type="button"
+                              onClick={() => setRoleFilter(r)}
+                              className={`px-2.5 py-1 rounded-full text-xs font-medium border transition-colors cursor-pointer ${isSelected ? 'border-stocky-primary bg-stocky-primary/10 text-stocky-primary font-semibold' : 'border-stocky-border-subtle bg-white text-stocky-text-sub hover:text-stocky-text-main'}`}
+                            >
+                              {label} ({count})
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {/* Location Filter */}
+                    {locations.length > 0 && (
+                      <div className="space-y-1.5 pt-2 border-t border-stocky-border-subtle">
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-stocky-text-sub">Assigned Location</span>
+                        <div className="flex flex-wrap gap-1.5">
+                          <button
+                            type="button"
+                            onClick={() => setLocationFilter('all')}
+                            className={`px-2.5 py-1 rounded-full text-xs font-medium border transition-colors cursor-pointer ${locationFilter === 'all' ? 'border-stocky-primary bg-stocky-primary/10 text-stocky-primary font-semibold' : 'border-stocky-border-subtle bg-white text-stocky-text-sub hover:text-stocky-text-main'}`}
+                          >
+                            All Locations
+                          </button>
+                          {locations.map((loc) => (
+                            <button
+                              key={loc.id}
+                              type="button"
+                              onClick={() => setLocationFilter(loc.id)}
+                              className={`px-2.5 py-1 rounded-full text-xs font-medium border transition-colors cursor-pointer ${locationFilter === loc.id ? 'border-stocky-primary bg-stocky-primary/10 text-stocky-primary font-semibold' : 'border-stocky-border-subtle bg-white text-stocky-text-sub hover:text-stocky-text-main'}`}
+                            >
+                              {loc.name}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Status Filter */}
+                    <div className="space-y-1.5 pt-2 border-t border-stocky-border-subtle">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-stocky-text-sub">Account Status</span>
+                      <div className="flex flex-wrap gap-1.5">
+                        {(['all', 'active', 'invited'] as const).map((s) => (
+                          <button
+                            key={s}
+                            type="button"
+                            onClick={() => setStatusFilter(s)}
+                            className={`px-2.5 py-1 rounded-full text-xs font-medium border transition-colors cursor-pointer ${statusFilter === s ? 'border-stocky-primary bg-stocky-primary/10 text-stocky-primary font-semibold' : 'border-stocky-border-subtle bg-white text-stocky-text-sub hover:text-stocky-text-main'}`}
+                          >
+                            {s === 'all' ? 'All Statuses' : s === 'active' ? 'Active' : 'Invited / Pending'}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Panel Footer */}
+                  <div className="border-t border-stocky-border-subtle bg-stocky-bg-global/40 px-4 py-2 flex items-center justify-between">
+                    <span className="text-[11px] text-stocky-text-sub">
+                      Showing <span className="font-semibold text-stocky-text-main">{filteredMembers.length}</span> of {members.length} members
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setIsFilterPanelOpen(false)}
+                      className="h-7 px-3 rounded-full bg-stocky-text-main text-white text-xs font-medium hover:bg-black transition-colors cursor-pointer"
+                    >
+                      Done
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Actions & View Switcher Group */}
@@ -191,56 +409,6 @@ export function TeamWorkspaceWidget({
                 </button>
               </div>
 
-              {/* Role Queue Tabs (shown in table mode) */}
-              {viewMode === 'table' && (
-                <div className="hidden lg:inline-flex items-center gap-1.5">
-                  <button
-                    type="button"
-                    onClick={() => setRoleFilter('all')}
-                    className={`h-10 px-3 rounded-full text-xs font-medium transition-colors cursor-pointer ${
-                      roleFilter === 'all'
-                        ? 'border-stocky-primary bg-stocky-primary/10 text-stocky-primary font-semibold border'
-                        : 'border border-stocky-border-subtle bg-white text-stocky-text-sub hover:text-stocky-text-main'
-                    }`}
-                  >
-                    All ({members.length})
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setRoleFilter('admin')}
-                    className={`h-10 px-3 rounded-full text-xs font-medium transition-colors cursor-pointer ${
-                      roleFilter === 'admin'
-                        ? 'border-stocky-primary bg-stocky-primary/10 text-stocky-primary font-semibold border'
-                        : 'border border-stocky-border-subtle bg-white text-stocky-text-sub hover:text-stocky-text-main'
-                    }`}
-                  >
-                    Admins ({members.filter((m) => m.role === 'admin' || m.role === 'owner').length})
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setRoleFilter('manager')}
-                    className={`h-10 px-3 rounded-full text-xs font-medium transition-colors cursor-pointer ${
-                      roleFilter === 'manager'
-                        ? 'border-stocky-primary bg-stocky-primary/10 text-stocky-primary font-semibold border'
-                        : 'border border-stocky-border-subtle bg-white text-stocky-text-sub hover:text-stocky-text-main'
-                    }`}
-                  >
-                    Managers ({members.filter((m) => m.role === 'manager').length})
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setRoleFilter('staff')}
-                    className={`h-10 px-3 rounded-full text-xs font-medium transition-colors cursor-pointer ${
-                      roleFilter === 'staff'
-                        ? 'border-stocky-primary bg-stocky-primary/10 text-stocky-primary font-semibold border'
-                        : 'border border-stocky-border-subtle bg-white text-stocky-text-sub hover:text-stocky-text-main'
-                    }`}
-                  >
-                    Staff ({members.filter((m) => m.role === 'staff').length})
-                  </button>
-                </div>
-              )}
-
               {/* Export Button */}
               <button
                 type="button"
@@ -248,17 +416,19 @@ export function TeamWorkspaceWidget({
                 className="stocky-table-toolbar-button h-10 px-4 rounded-full border border-stocky-border-subtle bg-white text-xs font-medium text-stocky-text-main hover:border-stocky-primary hover:text-stocky-primary inline-flex items-center gap-1.5 cursor-pointer transition-colors"
                 title="Export team directory CSV"
               >
-                <CloudDownloadIcon size="xs" /> <span>Export</span>
+                <CloudDownloadIcon size="xs" />
+                <span>Export</span>
               </button>
 
-              {/* Primary Action Button */}
+              {/* Primary CTA: Invite Member (Signature Lime Accent) */}
               {canManage && (
                 <button
                   type="button"
                   onClick={() => setIsInviteOpen(true)}
                   className="stocky-table-toolbar-button stocky-table-toolbar-button--primary h-10 px-4 rounded-full text-xs font-medium inline-flex items-center justify-center gap-1.5 whitespace-nowrap cursor-pointer"
                 >
-                  <PlusIcon size="xs" /> <span>Invite member</span>
+                  <PlusIcon size="xs" />
+                  <span>Invite member</span>
                 </button>
               )}
             </div>

@@ -133,6 +133,7 @@ function PlatformShell({ children }: { children?: React.ReactNode }) {
       <MobileSubNavWidget
         activeTab={platform.activeTab}
         userRole={platform.userRole}
+        permissions={platform.userPermissions}
         hidden={!isChromeVisible}
         onTabChange={platform.navigateToTab}
         supplierTab={platform.supplierTab}
@@ -147,6 +148,7 @@ function PlatformShell({ children }: { children?: React.ReactNode }) {
           activeTab={platform.activeTab}
           onTabChange={platform.navigateToTab}
           userRole={platform.userRole}
+          permissions={platform.userPermissions}
           companyName={platform.company?.name}
           companyLogoUrl={platform.company?.logo_url}
           notificationCount={platform.notificationItems.length}
@@ -163,7 +165,7 @@ function PlatformShell({ children }: { children?: React.ReactNode }) {
           onSettingsClick={() => platform.navigateToTab('settings')}
         />
         <main
-          className="stocky-platform-content flex-1 overflow-y-auto min-w-0"
+          className="stocky-platform-content flex-1 overflow-y-auto min-w-0 max-w-full pb-28 sm:pb-8"
           onScroll={handleMainScroll}
         >
           {platform.loading || !platform.companyId || !platform.userEmail ? (

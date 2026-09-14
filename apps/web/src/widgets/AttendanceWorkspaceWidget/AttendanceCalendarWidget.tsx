@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import type { AttendanceShift, LeaveRequest, Location } from '@stocky/types';
 import {
   ChevronLeftIcon,
@@ -33,6 +33,12 @@ export function AttendanceCalendarWidget({
 }: AttendanceCalendarWidgetProps) {
   const [viewMode, setViewMode] = useState<CalendarViewMode>('month');
   const [currentDate, setCurrentDate] = useState<Date>(new Date());
+
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.innerWidth < 640) {
+      setViewMode('day');
+    }
+  }, []);
 
   const locationMap = new Map(locations.map((loc) => [loc.id, loc.name]));
   const memberMap = new Map(members.map((m) => [m.id, m]));
@@ -156,11 +162,11 @@ export function AttendanceCalendarWidget({
     <div className="flex flex-col w-full bg-stocky-bg-widget">
       {/* Google Calendar Controls Bar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 sm:p-4 border-b border-stocky-border-subtle bg-stocky-bg-global/20">
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center justify-between sm:justify-start gap-2.5 flex-wrap">
           <button
             type="button"
             onClick={handleToday}
-            className="h-9 px-3 rounded-full border border-stocky-border-subtle bg-stocky-bg-widget text-xs font-semibold text-stocky-text-main hover:border-stocky-primary hover:text-stocky-primary transition-colors cursor-pointer"
+            className="h-8 sm:h-9 px-3 rounded-full border border-stocky-border-subtle bg-stocky-bg-widget text-xs font-semibold text-stocky-text-main hover:border-stocky-primary hover:text-stocky-primary transition-colors cursor-pointer"
           >
             Today
           </button>
@@ -180,14 +186,14 @@ export function AttendanceCalendarWidget({
               <ChevronRightIcon size="xs" />
             </button>
           </div>
-          <h2 className="text-sm sm:text-base font-semibold text-stocky-text-main ml-1">
+          <h2 className="text-xs sm:text-base font-semibold text-stocky-text-main ml-1 truncate">
             {getHeaderTitle()}
           </h2>
         </div>
 
         {/* View Switcher: Day | Week | Month */}
-        <div className="inline-flex items-center p-1 rounded-full bg-stocky-bg-global border border-stocky-border-subtle">
-          {(['month', 'week', 'day'] as CalendarViewMode[]).map((mode) => (
+        <div className="inline-flex items-center self-start sm:self-auto p-1 rounded-full bg-stocky-bg-global border border-stocky-border-subtle">
+          {(['day', 'week', 'month'] as CalendarViewMode[]).map((mode) => (
             <button
               key={mode}
               type="button"

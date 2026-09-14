@@ -544,7 +544,7 @@ export function BarcodeScannerWidget({
           whileHover={{ scale: 1.08 }}
           whileTap={{ scale: 0.92 }}
           aria-label="Scan Barcode with Camera"
-          className="fixed bottom-20 right-4 z-40 md:hidden bg-stocky-primary text-white rounded-full flex items-center justify-center shadow-xl hover:bg-stocky-primary-hover active:bg-stocky-primary-active transition-all focus:outline-none"
+          className="fixed bottom-[5.25rem] right-4 z-40 md:hidden bg-stocky-primary text-white rounded-full flex items-center justify-center shadow-xl hover:bg-stocky-primary-hover active:bg-stocky-primary-active transition-all focus:outline-none"
           style={{ width: '54px', height: '54px' }}
         >
           <CameraIcon size="md" className="text-white" />

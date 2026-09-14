@@ -23,6 +23,7 @@ export interface TransfersWorkspaceWidgetProps {
     lines: Array<{ productId: string; quantity: number }>;
     note?: string;
   }) => void;
+  canApprove?: boolean;
   onApprove: (transfer: InventoryTransfer) => void;
   onReceive: (
     transfer: InventoryTransfer,
@@ -58,6 +59,7 @@ export function TransfersWorkspaceWidget({
   selectedLocationId,
   defaultProductId,
   userRole,
+  canApprove,
   onCreate,
   onApprove,
   onReceive,
@@ -239,6 +241,7 @@ export function TransfersWorkspaceWidget({
             pageSize={pageSize}
             onPageChange={setPage}
             onPageSizeChange={setPageSize}
+            canApprove={canApprove}
             onApprove={onApprove}
             onOpenReceipt={handleOpenReceipt}
             onRequestStock={() => setIsRequestDrawerOpen(true)}

@@ -23,10 +23,10 @@ export default function InventoryRoutePage() {
       userRole={platform.userRole}
       searchQuery={platform.globalSearchQuery}
       onReceive={platform.openReceive}
-      onEditProduct={platform.canManage ? platform.openProductEdit : undefined}
-      onDeleteProduct={platform.canManage ? platform.deleteProduct : undefined}
-      onSaveLot={platform.userRole !== 'staff' ? platform.updateLotRecord : undefined}
-      onDeleteLot={platform.userRole !== 'staff' ? platform.deleteLot : undefined}
+      onEditProduct={platform.canEditStock ? platform.openProductEdit : undefined}
+      onDeleteProduct={platform.canEditStock ? platform.deleteProduct : undefined}
+      onSaveLot={platform.canEditStock ? platform.updateLotRecord : undefined}
+      onDeleteLot={platform.canEditStock ? platform.deleteLot : undefined}
       onExpiry={() => platform.navigateToTab('expiry')}
       onTransfer={(productId) => {
         platform.setTransferProductId(productId);

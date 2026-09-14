@@ -138,12 +138,12 @@ export function ProductEditDrawerWidget({ isOpen, product, categories = [], supp
         </div>
 
         <label className="block text-xs font-medium text-stocky-text-main">Product name<input required value={name} onChange={(event) => setName(event.target.value)} placeholder="e.g. Bottled water" className="stocky-form-input mt-1.5" /></label>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <label className="block text-xs font-medium text-stocky-text-main">Barcode<input value={barcode} onChange={(event) => setBarcode(event.target.value)} placeholder="Optional" className="stocky-form-input mt-1.5" /></label>
           <label className="block text-xs font-medium text-stocky-text-main">Unit<input value={unitName} onChange={(event) => setUnitName(event.target.value)} placeholder="e.g. piece" className="stocky-form-input mt-1.5" /></label>
         </div>
         <label className="block text-xs font-medium text-stocky-text-main">Category<input list="stocky-product-category-options" value={categoryName} onChange={(event) => setCategoryName(event.target.value)} placeholder="Search or add category" className="stocky-form-input mt-1.5" /><datalist id="stocky-product-category-options">{categoryOptions.map((category) => <option key={category} value={category} />)}</datalist></label>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <label className="block text-xs font-medium text-stocky-text-main">Reorder point<input type="number" min="0" step="1" value={reorderPoint} onChange={(event) => setReorderPoint(event.target.value)} placeholder="0" className="stocky-form-input mt-1.5" /></label>
           <label className="block text-xs font-medium text-stocky-text-main">Unit cost<input type="number" min="0" step="0.01" value={unitCost} onChange={(event) => setUnitCost(event.target.value)} placeholder="0" className="stocky-form-input mt-1.5" /></label>
         </div>

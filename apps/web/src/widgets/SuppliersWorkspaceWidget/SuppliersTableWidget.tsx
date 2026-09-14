@@ -76,7 +76,7 @@ export function SuppliersTableWidget({
       ) : (
         <>
           <div className="overflow-x-auto">
-            <table className="w-full table-fixed text-left text-[11px] stocky-board-table">
+            <table className="w-full min-w-[780px] table-fixed text-left text-[11px] stocky-board-table">
               <colgroup>
                 <col className="w-[22%]" />
                 <col className="w-[24%]" />

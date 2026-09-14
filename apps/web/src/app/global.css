@@ -2,6 +2,13 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer base {
+  html, body {
+    max-width: 100%;
+    overflow-x: clip;
+  }
+}
+
 /* Cinematic product landing page. The platform shell stays light; the public
    entry point uses a separate visual system so the product can make a strong
    first impression without changing the operational UI. */
@@ -543,7 +550,8 @@
   border-top: 1px solid var(--stocky-border-subtle);
 }
 .stocky-platform-shell {
-  width: 100vw;
+  width: 100%;
+  max-width: 100%;
   height: 100vh;
   overflow: hidden;
   display: flex;
@@ -559,7 +567,8 @@
   min-width: 0;
   overflow-y: auto;
   width: 100%;
-  padding: var(--stocky-page-gap) var(--stocky-page-gutter) var(--stocky-space-8);
+  max-width: 100%;
+  padding: var(--stocky-page-gap) var(--stocky-page-gutter) calc(var(--stocky-space-16) + 3rem);
 }
 .stocky-subview-layout {
   width: 100%;
@@ -1094,15 +1103,18 @@
   background: var(--stocky-bg-widget);
   border: 1px solid var(--stocky-border-subtle);
   border-radius: var(--stocky-radius-workspace);
+  overflow-x: auto;
+  max-width: 100%;
+  -webkit-overflow-scrolling: touch;
 }
 
 .stocky-board-table {
   border-collapse: separate;
   border-spacing: 0;
-  table-layout: fixed;
+  width: 100%;
 }
 .stocky-table-col-selection { width: 3.5%; }
-.stocky-board-table--inventory { min-width: 0; width: 100%; }
+.stocky-board-table--inventory { min-width: 860px; width: 100%; table-layout: fixed; }
 .stocky-table-col-product { width: 20%; }
 .stocky-table-col-barcode { width: 10%; }
 .stocky-table-col-category { width: 10%; }
@@ -2372,7 +2384,7 @@ a:hover {
 .stocky-platform-shell .stocky-selection-actionbar { border: 1px solid rgba(255,255,255,.18); background: #151713; box-shadow: 0 14px 34px rgba(17,18,15,.2); }
 
 @media (max-width: 767px) {
-  .stocky-platform-shell .stocky-platform-content { padding: var(--stocky-space-4) var(--stocky-space-4) calc(var(--stocky-space-16) + 2rem); }
+  .stocky-platform-shell .stocky-platform-content { padding: var(--stocky-space-4) var(--stocky-space-4) calc(var(--stocky-space-16) + 4.5rem); }
   .stocky-platform-shell .stocky-stock-filterbar { border-radius: 14px; padding: .65rem; }
   .stocky-platform-shell .stocky-stock-table-shell { border-radius: 14px; box-shadow: var(--stocky-shadow-card); }
   .stocky-platform-shell .stocky-stock-table-toolbar__actions .stocky-table-toolbar-button { min-height: 2.25rem; }

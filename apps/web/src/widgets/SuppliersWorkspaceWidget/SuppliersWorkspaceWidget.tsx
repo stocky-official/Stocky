@@ -248,31 +248,6 @@ export function SuppliersWorkspaceWidget({
 
   return (
     <div className="stocky-suppliers-workspace flex flex-col gap-4">
-      {/* Mobile-only tab switcher */}
-      <div className="flex md:hidden items-center gap-1.5 p-1 rounded-full bg-stocky-bg-subtle border border-stocky-border-subtle w-fit">
-        <button
-          type="button"
-          onClick={() => setActiveTab('suppliers')}
-          className={`h-8 px-4 rounded-full text-xs font-medium transition-colors ${
-            activeTab === 'suppliers'
-              ? 'bg-white text-stocky-text-main shadow-xs font-semibold'
-              : 'text-stocky-text-sub hover:text-stocky-text-main'
-          }`}
-        >
-          Suppliers
-        </button>
-        <button
-          type="button"
-          onClick={() => setActiveTab('requests')}
-          className={`h-8 px-4 rounded-full text-xs font-medium transition-colors ${
-            activeTab === 'requests'
-              ? 'bg-white text-stocky-text-main shadow-xs font-semibold'
-              : 'text-stocky-text-sub hover:text-stocky-text-main'
-          }`}
-        >
-          Requests
-        </button>
-      </div>
 
       {/* Unified Table Workspace Card */}
       <div className="stocky-stock-unified-card rounded-2xl bg-white border border-stocky-border-subtle shadow-sm flex flex-col relative z-20 overflow-visible">

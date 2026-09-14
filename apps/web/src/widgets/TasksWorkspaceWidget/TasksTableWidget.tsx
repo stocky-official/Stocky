@@ -129,10 +129,10 @@ export function TasksTableWidget({
   return (
     <div className="w-full">
       <div className="overflow-x-auto">
-        <table className="w-full table-fixed text-left text-xs border-collapse">
+        <table className="w-full min-w-[720px] table-fixed text-left text-xs border-collapse">
           <thead>
             <tr className="h-11 border-b border-stocky-border-subtle bg-stocky-bg-global/40 text-[10px] uppercase tracking-wider text-stocky-text-sub whitespace-nowrap select-none">
-              <th className="w-[30%] px-4 py-3 font-semibold">Task</th>
+              <th className="w-[28%] px-4 py-3 font-semibold">Task</th>
               <th className="hidden md:table-cell w-[14%] px-3 py-3 font-semibold">
                 Type
               </th>
@@ -143,8 +143,8 @@ export function TasksTableWidget({
                 Assigned to
               </th>
               <th className="w-[10%] px-3 py-3 font-semibold">Items</th>
-              <th className="w-[12%] px-3 py-3 font-semibold">Status</th>
-              <th className="w-[14%] px-4 py-3 text-right font-semibold">Action</th>
+              <th className="w-[14%] min-w-[100px] px-3 py-3 font-semibold">Status</th>
+              <th className="w-[14%] min-w-[110px] px-4 py-3 text-right font-semibold">Action</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-stocky-border-subtle">
@@ -241,7 +241,7 @@ export function TasksTableWidget({
                   </td>
 
                   {/* Status Pill */}
-                  <td className="px-3 py-3.5">
+                  <td className="px-3 py-3.5 whitespace-nowrap">
                     <span
                       className={`inline-flex rounded-full border px-2.5 py-0.5 text-[10px] font-medium capitalize ${
                         task.status === 'submitted'
@@ -260,7 +260,7 @@ export function TasksTableWidget({
                   </td>
 
                   {/* Action Button */}
-                  <td className="px-4 py-3.5 text-right">
+                  <td className="px-4 py-3.5 text-right whitespace-nowrap">
                     <div className="flex justify-end">
                       {canRun && (
                         <button

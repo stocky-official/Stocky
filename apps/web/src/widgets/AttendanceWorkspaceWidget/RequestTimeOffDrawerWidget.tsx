@@ -126,7 +126,7 @@ export function RequestTimeOffDrawerWidget({
           </div>
 
           {/* Date Range */}
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="block text-xs font-semibold text-stocky-text-main mb-1.5">
                 Start Date

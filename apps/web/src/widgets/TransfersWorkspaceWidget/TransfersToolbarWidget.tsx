@@ -56,9 +56,9 @@ export function TransfersToolbarWidget({
       </div>
 
       {/* Queue Tabs & Primary Action */}
-      <div className="stocky-stock-table-toolbar__actions flex items-center gap-2 shrink-0">
+      <div className="stocky-stock-table-toolbar__actions flex items-center justify-between sm:justify-end gap-2 flex-1 sm:flex-initial min-w-0 max-w-full">
         <div
-          className="stocky-transfer-toolbar__queues inline-flex items-center gap-1.5"
+          className="stocky-transfer-toolbar__queues flex items-center gap-1.5 overflow-x-auto max-w-full py-0.5"
           role="tablist"
           aria-label="Transfer queues"
         >
@@ -71,7 +71,7 @@ export function TransfersToolbarWidget({
                 role="tab"
                 aria-selected={isActive}
                 onClick={() => onQueueChange(tab.id)}
-                className={`stocky-table-toolbar-button h-10 px-4 rounded-full text-xs font-medium inline-flex items-center justify-center whitespace-nowrap cursor-pointer transition-colors ${
+                className={`stocky-table-toolbar-button shrink-0 h-10 px-3.5 sm:px-4 rounded-full text-xs font-medium inline-flex items-center justify-center whitespace-nowrap cursor-pointer transition-colors ${
                   isActive
                     ? 'stocky-table-toolbar-button--active border-stocky-primary bg-stocky-primary/10 text-stocky-primary font-semibold'
                     : 'border border-stocky-border-subtle bg-white text-stocky-text-main hover:border-stocky-primary hover:text-stocky-primary'
@@ -86,7 +86,7 @@ export function TransfersToolbarWidget({
         <button
           type="button"
           onClick={onRequestStock}
-          className="stocky-table-toolbar-button stocky-table-toolbar-button--primary h-10 px-4 rounded-full text-xs font-medium inline-flex items-center justify-center gap-1.5 whitespace-nowrap cursor-pointer"
+          className="stocky-table-toolbar-button stocky-table-toolbar-button--primary shrink-0 h-10 px-4 rounded-full text-xs font-medium inline-flex items-center justify-center gap-1.5 whitespace-nowrap cursor-pointer"
         >
           <PlusIcon size="xs" /> Request stock
         </button>

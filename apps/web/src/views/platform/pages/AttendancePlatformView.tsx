@@ -41,6 +41,7 @@ export interface AttendancePlatformViewProps {
     reason?: string;
   }) => Promise<void>;
   onReviewLeave: (requestId: string, approve: boolean, note?: string) => Promise<void>;
+  canManageAttendance?: boolean;
 }
 
 export function AttendancePlatformView(props: AttendancePlatformViewProps) {
@@ -62,6 +63,7 @@ export function AttendancePlatformView(props: AttendancePlatformViewProps) {
           activeTab={platform?.activeTab || 'attendance'}
           onTabChange={platform?.navigateToTab || (() => {})}
           userRole={(props.userRole as any) || platform?.userRole || 'staff'}
+          permissions={platform?.userPermissions}
           attendanceTab={activeTab}
           onAttendanceTabChange={onTabChange}
         />

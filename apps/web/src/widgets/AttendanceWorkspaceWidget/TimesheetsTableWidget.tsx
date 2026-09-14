@@ -206,7 +206,7 @@ export function TimesheetsTableWidget({
         </div>
       ) : (
         <div className="w-full overflow-x-auto">
-          <table className="stocky-board-table w-full text-left border-collapse">
+          <table className="stocky-board-table min-w-[850px] w-full text-left border-collapse">
             <thead>
               <tr className="border-b border-stocky-border-subtle bg-stocky-bg-global/30 h-11">
                 <th className="stocky-board-table__header-cell px-4 text-left text-[11px] font-semibold text-stocky-text-sub tracking-wider uppercase whitespace-nowrap">

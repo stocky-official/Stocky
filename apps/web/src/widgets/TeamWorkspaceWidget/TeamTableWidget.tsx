@@ -168,7 +168,7 @@ export function TeamTableWidget({
                     })}
 
                     {memberAssignments.length === 0 && (
-                      <span className="text-[11px] text-amber-700">No location</span>
+                      <span className="text-[11px] text-stocky-text-sub italic">No location</span>
                     )}
 
                     {canManage && (

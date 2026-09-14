@@ -7,6 +7,7 @@ export interface PlatformContextTabsWidgetProps {
   activeTab: string;
   onTabChange: (tabId: string) => void;
   userRole: CompanyUserRole;
+  permissions?: { pages?: string[] } | null;
   className?: string;
   supplierTab?: 'suppliers' | 'requests';
   onSupplierTabChange?: (tab: 'suppliers' | 'requests') => void;
@@ -24,6 +25,7 @@ export function PlatformContextTabsWidget({
   activeTab,
   onTabChange,
   userRole,
+  permissions,
   className = '',
   supplierTab = 'suppliers',
   onSupplierTabChange,
@@ -32,7 +34,7 @@ export function PlatformContextTabsWidget({
   attendanceTab = 'timesheets',
   onAttendanceTabChange,
 }: PlatformContextTabsWidgetProps) {
-  const group = getActivePlatformGroup(getPlatformNavigation(userRole), activeTab);
+  const group = getActivePlatformGroup(getPlatformNavigation(userRole, '/platform', permissions), activeTab);
 
   if (!group || group.items.length < 2) return null;
 

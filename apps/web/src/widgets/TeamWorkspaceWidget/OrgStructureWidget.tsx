@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
   ChevronDownIcon,
   ChevronRightIcon,
@@ -35,6 +35,12 @@ export function OrgStructureWidget({
 }: OrgStructureWidgetProps) {
   const [zoom, setZoom] = useState(1);
   const [collapsedIds, setCollapsedIds] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.innerWidth < 640) {
+      setZoom(0.75);
+    }
+  }, []);
 
   // Build hierarchical tree representation
   const treeRoots = useMemo(() => {
@@ -224,8 +230,8 @@ export function OrgStructureWidget({
   return (
     <div className="flex flex-col w-full">
       {/* Org Chart Top Toolbar (Zoom & Tree Controls) */}
-      <div className="flex items-center justify-between border-b border-stocky-border-subtle bg-stocky-bg-global/50 px-4 py-2 text-xs">
-        <div className="flex items-center gap-2">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 border-b border-stocky-border-subtle bg-stocky-bg-global/50 px-3 sm:px-4 py-2.5 text-xs">
+        <div className="flex items-center justify-between sm:justify-start gap-2">
           <span className="text-[11px] font-semibold uppercase tracking-wider text-stocky-text-sub">
             Hierarchy Tree:
           </span>
@@ -235,36 +241,38 @@ export function OrgStructureWidget({
         </div>
 
         {/* Tree controls */}
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={expandAll}
-            className="h-8 px-3 rounded-full border border-stocky-border-subtle bg-white text-[11px] font-medium text-stocky-text-main hover:bg-stocky-bg-global cursor-pointer"
-          >
-            Expand all
-          </button>
-          <button
-            type="button"
-            onClick={collapseAll}
-            className="h-8 px-3 rounded-full border border-stocky-border-subtle bg-white text-[11px] font-medium text-stocky-text-main hover:bg-stocky-bg-global cursor-pointer"
-          >
-            Collapse all
-          </button>
+        <div className="flex items-center gap-2 flex-wrap justify-between sm:justify-end">
+          <div className="inline-flex items-center gap-1.5">
+            <button
+              type="button"
+              onClick={expandAll}
+              className="h-8 px-3 rounded-full border border-stocky-border-subtle bg-white text-[11px] font-medium text-stocky-text-main hover:bg-stocky-bg-global cursor-pointer"
+            >
+              Expand all
+            </button>
+            <button
+              type="button"
+              onClick={collapseAll}
+              className="h-8 px-3 rounded-full border border-stocky-border-subtle bg-white text-[11px] font-medium text-stocky-text-main hover:bg-stocky-bg-global cursor-pointer"
+            >
+              Collapse all
+            </button>
+          </div>
 
-          <div className="h-4 w-px bg-stocky-border-subtle mx-1" />
+          <div className="hidden sm:block h-4 w-px bg-stocky-border-subtle mx-0.5" />
 
           {/* Zoom buttons */}
-          <div className="inline-flex items-center rounded-full border border-stocky-border-subtle bg-white p-0.5">
+          <div className="inline-flex items-center rounded-full border border-stocky-border-subtle bg-white p-0.5 shadow-2xs">
             <button
               type="button"
               onClick={handleZoomOut}
-              disabled={zoom <= 0.6}
+              disabled={zoom <= 0.5}
               className="flex h-7 w-7 items-center justify-center rounded-full hover:bg-stocky-bg-global text-stocky-text-main disabled:opacity-40 cursor-pointer"
               title="Zoom out"
             >
               -
             </button>
-            <span className="px-2 text-[11px] font-medium text-stocky-text-sub">
+            <span className="px-2 text-[11px] font-medium text-stocky-text-sub min-w-[2.5rem] text-center">
               {Math.round(zoom * 100)}%
             </span>
             <button
@@ -289,10 +297,10 @@ export function OrgStructureWidget({
       </div>
 
       {/* Interactive Tree View Canvas */}
-      <div className="overflow-auto min-h-[480px] max-h-[70vh] p-8 flex justify-center bg-stocky-bg-global/20">
+      <div className="overflow-auto min-h-[440px] max-h-[70vh] p-4 sm:p-8 bg-stocky-bg-global/20 text-center overscroll-contain">
         <div
-          className="transition-transform duration-200 origin-top flex items-start gap-12 justify-center"
-          style={{ transform: `scale(${zoom})` }}
+          className="inline-flex transition-transform duration-200 origin-top items-start gap-8 sm:gap-12 justify-center text-left"
+          style={{ transform: `scale(${zoom})`, transformOrigin: 'top center' }}
         >
           {treeRoots.map((root) => renderTreeNode(root, true))}
         </div>

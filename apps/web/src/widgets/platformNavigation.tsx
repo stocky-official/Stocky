@@ -71,8 +71,26 @@ export function getTabFromPathname(pathname: string): string {
   return 'home';
 }
 
-export function getPlatformNavigation(userRole: CompanyUserRole, tenantPrefix = '/platform'): PlatformNavGroup[] {
-  const canManageOrganization = userRole === 'owner' || userRole === 'admin';
+export function getPlatformNavigation(
+  userRole: CompanyUserRole,
+  tenantPrefix = '/platform',
+  permissions?: { pages?: string[]; capabilities?: Record<string, boolean> } | null
+): PlatformNavGroup[] {
+  const isOwner = userRole === 'owner';
+  const allowedPages = isOwner ? null : (permissions?.pages || null);
+
+  const canAccess = (pageKey: string) => {
+    if (isOwner) return true;
+    if (!allowedPages) {
+      // Default role-based fallback when custom permissions are not yet configured
+      if (userRole === 'staff') {
+        return ['inventory', 'tasks', 'attendance', 'locations'].includes(pageKey);
+      }
+      return true;
+    }
+    return allowedPages.includes(pageKey);
+  };
+
   const isStaff = userRole === 'staff';
 
   const makeHref = (id: string) => {
@@ -88,38 +106,38 @@ export function getPlatformNavigation(userRole: CompanyUserRole, tenantPrefix = 
   ];
 
   const supplyChainItems: PlatformNavItem[] = [
-    { id: 'stock', label: 'Inventory', icon: <BoxesIcon size="xs" />, href: makeHref('stock') },
-    ...(!isStaff ? [{ id: 'transfers', label: 'Transfers', icon: <ArrowUpDownIcon size="xs" />, href: makeHref('transfers') }] : []),
+    ...(canAccess('inventory') ? [{ id: 'stock', label: 'Inventory', icon: <BoxesIcon size="xs" />, href: makeHref('stock') }] : []),
+    ...(canAccess('transfers') ? [{ id: 'transfers', label: 'Transfers', icon: <ArrowUpDownIcon size="xs" />, href: makeHref('transfers') }] : []),
   ];
 
-  const supplierItems: PlatformNavItem[] = [
+  const supplierItems: PlatformNavItem[] = canAccess('suppliers') ? [
     { id: 'suppliers', label: 'Suppliers', icon: <TruckIcon size="xs" />, href: makeHref('suppliers') },
     { id: 'supplier-requests', label: 'Requests', icon: <ClockIcon size="xs" />, href: makeHref('suppliers') },
-  ];
+  ] : [];
 
-  const taskItems: PlatformNavItem[] = [
+  const taskItems: PlatformNavItem[] = canAccess('tasks') ? [
     { id: 'tasks', label: 'Tasks', icon: <CheckCircleIcon size="xs" />, href: makeHref('tasks') },
-  ];
+  ] : [];
 
-  const attendanceItems: PlatformNavItem[] = [
+  const attendanceItems: PlatformNavItem[] = canAccess('attendance') ? [
     { id: 'attendance', label: 'Timesheets', icon: <ClockIcon size="xs" />, href: makeHref('attendance') },
     { id: 'attendance-calendar', label: 'Calendar', icon: <CalendarIcon size="xs" />, href: makeHref('attendance') },
     { id: 'attendance-leaves', label: 'Time Off', icon: <UsersIcon size="xs" />, href: makeHref('attendance') },
     { id: 'attendance-kiosk', label: 'Kiosk / QR', icon: <QrCodeIcon size="xs" />, href: makeHref('attendance') },
-  ];
+  ] : [];
 
   const organizationItems: PlatformNavItem[] = [
-    { id: 'locations', label: 'Locations', icon: <WarehouseIcon size="xs" />, href: makeHref('locations') },
-    ...(canManageOrganization ? [{ id: 'team', label: 'Team', icon: <UsersIcon size="xs" />, href: makeHref('team') }] : []),
+    ...(canAccess('locations') ? [{ id: 'locations', label: 'Locations', icon: <WarehouseIcon size="xs" />, href: makeHref('locations') }] : []),
+    ...(canAccess('team') ? [{ id: 'team', label: 'Team', icon: <UsersIcon size="xs" />, href: makeHref('team') }] : []),
   ];
 
   return [
     { id: 'dashboard', label: 'Dashboard', icon: <DashboardIcon size="xs" />, items: dashboardItems },
     { id: 'supply-chain', label: 'Supply Chain', icon: <BoxesIcon size="xs" />, items: supplyChainItems },
-    ...(!isStaff ? [{ id: 'suppliers', label: 'Suppliers', icon: <TruckIcon size="xs" />, items: supplierItems }] : []),
-    { id: 'tasks', label: 'Tasks', icon: <CheckCircleIcon size="xs" />, items: taskItems },
-    { id: 'attendance', label: 'Attendance', icon: <CalendarIcon size="xs" />, items: attendanceItems },
-    { id: 'organization', label: 'Organization', icon: <WarehouseIcon size="xs" />, items: organizationItems },
+    ...(!isStaff && supplierItems.length > 0 ? [{ id: 'suppliers', label: 'Suppliers', icon: <TruckIcon size="xs" />, items: supplierItems }] : []),
+    ...(taskItems.length > 0 ? [{ id: 'tasks', label: 'Tasks', icon: <CheckCircleIcon size="xs" />, items: taskItems }] : []),
+    ...(attendanceItems.length > 0 ? [{ id: 'attendance', label: 'Attendance', icon: <CalendarIcon size="xs" />, items: attendanceItems }] : []),
+    ...(organizationItems.length > 0 ? [{ id: 'organization', label: 'Organization', icon: <WarehouseIcon size="xs" />, items: organizationItems }] : []),
   ].filter((group) => group.items.length > 0);
 }
 

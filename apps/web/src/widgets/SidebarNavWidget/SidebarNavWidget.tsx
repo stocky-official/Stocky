@@ -10,6 +10,7 @@ export interface SidebarNavWidgetProps {
   activeTab: string;
   onTabChange: (tabId: string) => void;
   userRole?: CompanyUserRole;
+  permissions?: { pages?: string[] } | null;
   notificationCount?: number;
   onNotificationsClick?: () => void;
   companyName?: string | null;
@@ -31,6 +32,7 @@ export function SidebarNavWidget({
   activeTab,
   onTabChange,
   userRole = 'owner',
+  permissions,
   notificationCount = 0,
   onNotificationsClick,
   companyName,
@@ -49,7 +51,7 @@ export function SidebarNavWidget({
     setLogoFailed(false);
   }, [companyLogoUrl]);
 
-  const groups = getPlatformNavigation(userRole);
+  const groups = getPlatformNavigation(userRole, '/platform', permissions);
   const activeGroupId = getActivePlatformGroup(groups, activeTab)?.id;
   const workspaceGroups = groups.filter((group) => group.id !== 'organization');
   const organizationGroups = groups.filter((group) => group.id === 'organization');

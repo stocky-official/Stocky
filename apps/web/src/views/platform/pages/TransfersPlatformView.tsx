@@ -11,6 +11,7 @@ export interface TransfersPlatformViewProps {
   selectedLocationId: string;
   defaultProductId?: string;
   userRole: CompanyUserRole;
+  canApprove?: boolean;
   onCreate: (input: { sourceLocationId: string; destinationLocationId: string; lines: Array<{ productId: string; quantity: number }>; note?: string }) => void;
   onApprove: (transfer: InventoryTransfer) => void;
   onReceive: (transfer: InventoryTransfer, lines?: Array<{ lineId: string; quantityReceived: number }>, note?: string) => void;

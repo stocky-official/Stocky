@@ -9,7 +9,7 @@ interface PageRegionProps extends React.HTMLAttributes<HTMLElement> {
 }
 
 export function PageLayout({ children, className = '', ...props }: PageLayoutProps) {
-  return <div className={`stocky-page-shell ${className}`} {...props}>{children}</div>;
+  return <div className={`stocky-page-shell max-w-full overflow-x-clip ${className}`} {...props}>{children}</div>;
 }
 
 export function PageHeader({ children, className = '', ...props }: PageRegionProps) {

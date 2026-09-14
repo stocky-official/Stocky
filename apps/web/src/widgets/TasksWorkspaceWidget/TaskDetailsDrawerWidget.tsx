@@ -122,7 +122,7 @@ export function TaskDetailsDrawerWidget({
           {/* Body */}
           <div className="flex-1 overflow-y-auto p-5 space-y-4">
             {/* Top Metric Cards */}
-            <div className="grid grid-cols-2 gap-2.5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
               <div className="rounded-xl bg-stocky-bg-global p-3.5 border border-stocky-border-subtle/50">
                 <p className="text-[10px] uppercase font-semibold tracking-wider text-stocky-text-sub">
                   Time since assigned
@@ -164,7 +164,7 @@ export function TaskDetailsDrawerWidget({
             )}
 
             {/* Status & Assignee Cards */}
-            <div className="grid grid-cols-2 gap-2.5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
               <div className="rounded-xl border border-stocky-border-subtle p-3 bg-white">
                 <p className="text-[10px] uppercase font-semibold tracking-wider text-stocky-text-sub">
                   Status
