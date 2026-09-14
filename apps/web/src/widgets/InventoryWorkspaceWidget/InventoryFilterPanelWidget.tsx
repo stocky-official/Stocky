@@ -24,6 +24,7 @@ export interface FilterColumnScope {
 }
 
 export interface InventoryFilterPanelWidgetProps {
+  className?: string;
   // Search in columns
   selectedColumns: FilterColumnScope;
   onToggleColumn: (column: keyof FilterColumnScope) => void;
@@ -279,6 +280,7 @@ export function InventoryFilterPanelWidget({
   totalCount,
   onResetAll,
   onClose,
+  className,
 }: InventoryFilterPanelWidgetProps) {
   const allColumnsSelected =
     selectedColumns.product &&
@@ -310,7 +312,7 @@ export function InventoryFilterPanelWidget({
       transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
       role="dialog"
       aria-label="Inventory filters"
-      className="w-full rounded-2xl bg-white border border-stocky-border-subtle shadow-bevel-float overflow-hidden flex flex-col z-50 text-left select-none"
+      className={className || "w-full rounded-2xl bg-white border border-stocky-border-subtle shadow-bevel-float overflow-hidden flex flex-col z-50 text-left select-none"}
     >
       {/* 1. Header */}
       <div className="flex items-center justify-between px-5 py-3 border-b border-stocky-border-subtle bg-white shrink-0">

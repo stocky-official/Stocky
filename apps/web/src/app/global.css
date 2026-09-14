@@ -2114,14 +2114,48 @@ textarea::placeholder {
   .stocky-product-lots__footer { padding-inline: 0.75rem; }
   .stocky-product-lots__footer .stocky-table-page-button { height: 1.65rem; width: 1.65rem; }
 
-  .stocky-stock-table-toolbar { display: flex; flex-wrap: wrap; gap: 0.5rem; }
-  .stocky-transfer-toolbar { display: flex; flex-wrap: wrap; gap: 0.5rem; }
-  .stocky-stock-table-toolbar__search-group { flex: 1 1 100%; width: 100%; display: flex; gap: 0.375rem; }
-  .stocky-stock-table-toolbar__search-group > .relative { flex: 1 1 auto; min-width: 0; }
-  .stocky-stock-table-toolbar__search-group .stocky-table-toolbar-button { flex: 0 0 auto; padding-inline: 0.65rem; }
-  .stocky-stock-table-toolbar > .relative { flex-basis: 100%; }
-  .stocky-stock-table-toolbar__actions { flex: 1 1 100%; gap: 0.375rem; margin-left: 0; max-width: 100%; overflow: visible; padding-bottom: 0.1rem; width: 100%; }
-  .stocky-stock-filterbar .stocky-stock-table-toolbar__actions .stocky-table-toolbar-button { flex: 1 1 0% !important; flex-basis: 0 !important; flex-grow: 1 !important; justify-content: center; min-width: 0; padding-inline: 0.4rem; white-space: nowrap; }
+  .stocky-stock-table-toolbar { display: flex; flex-direction: column; gap: 0.625rem; width: 100%; }
+  .stocky-transfer-toolbar { display: flex; flex-direction: column; gap: 0.625rem; width: 100%; }
+  .stocky-stock-table-toolbar__search-group { flex: 1 1 100%; width: 100%; display: flex; gap: 0.5rem; align-items: center; }
+  .stocky-stock-table-toolbar__search-group > .relative { flex: 1 1 auto; min-width: 0; width: 100%; }
+  .stocky-stock-table-toolbar__search-group .stocky-table-toolbar-button { flex: 0 0 auto; height: 2.5rem; padding-inline: 0.875rem; }
+  .stocky-stock-table-toolbar > .relative { width: 100%; }
+  .stocky-stock-table-toolbar__actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+    width: 100%;
+    flex-wrap: nowrap;
+    padding-bottom: 0.25rem;
+  }
+  .stocky-stock-table-toolbar__actions::-webkit-scrollbar { display: none; }
+  .stocky-stock-table-toolbar__actions .stocky-table-toolbar-button {
+    flex-shrink: 0;
+    white-space: nowrap;
+    height: 2.5rem;
+    padding-inline: 0.875rem;
+  }
+  .stocky-mobile-pill-rail {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+    flex-wrap: nowrap;
+    padding-bottom: 0.25rem;
+    width: 100%;
+  }
+  .stocky-mobile-pill-rail::-webkit-scrollbar { display: none; }
+  .stocky-mobile-pill-rail > button,
+  .stocky-mobile-pill-rail > a,
+  .stocky-mobile-pill-rail > div {
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
   .stocky-toolbar-divider { display: none; }
   .stocky-stock-desktop-view { display: none; }
   .stocky-stock-mobile-view { display: block; }

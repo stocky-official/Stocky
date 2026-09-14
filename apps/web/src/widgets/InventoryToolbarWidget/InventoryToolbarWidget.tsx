@@ -73,13 +73,15 @@ export function InventoryToolbarWidget({
                   : 'text-stocky-text-sub hover:bg-stocky-bg-hover hover:text-stocky-text-main'
               }`}
               title="Open advanced filter panel"
-              aria-label="Filter products"
+              aria-label="Filter inventory"
             >
               <FilterIcon size="xs" />
             </button>
           )}
         </div>
+      </div>
 
+      <div className="stocky-stock-table-toolbar__actions flex items-center gap-2 overflow-x-auto py-0.5">
         {canImport && onImport && (
           <button
             type="button"
@@ -102,34 +104,31 @@ export function InventoryToolbarWidget({
             <span>Export</span>
           </button>
         )}
-      </div>
-
-      <div className="stocky-stock-table-toolbar__actions">
         {canManageTasks && onAudit && (
           <button
             type="button"
             onClick={onAudit}
-            className="stocky-table-toolbar-button"
+            className="stocky-table-toolbar-button shrink-0"
           >
-            <CheckCircleIcon size="xs" /> Audit
+            <CheckCircleIcon size="xs" /> <span>Audit</span>
           </button>
         )}
         {onResupply && (
           <button
             type="button"
             onClick={onResupply}
-            className="stocky-table-toolbar-button"
+            className="stocky-table-toolbar-button shrink-0"
             title="Compose supplier resupply email"
           >
-            <MailIcon size="xs" /> Resupply
+            <MailIcon size="xs" /> <span>Resupply</span>
           </button>
         )}
         <button
           type="button"
           onClick={onReceive}
-          className="stocky-table-toolbar-button stocky-table-toolbar-button--primary"
+          className="stocky-table-toolbar-button stocky-table-toolbar-button--primary shrink-0"
         >
-          <PlusIcon size="xs" /> Add inventory
+          <PlusIcon size="xs" /> <span>Add inventory</span>
         </button>
       </div>
     </div>

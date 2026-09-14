@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { ArrowDownIcon, FilterIcon, PlusIcon, SearchIcon, XIcon } from '@stocky/icons';
+import { ArrowDownIcon, CloudUploadIcon, FilterIcon, PlusIcon, SearchIcon, XIcon } from '@stocky/icons';
 
 export interface SuppliersToolbarWidgetProps {
   searchQuery: string;
@@ -10,6 +10,8 @@ export interface SuppliersToolbarWidgetProps {
   onToggleFilterPanel: () => void;
   activeFilterCount: number;
   canManageSuppliers: boolean;
+  canImport?: boolean;
+  onImport?: () => void;
   onExport: () => void;
   onAddSupplier: () => void;
 }
@@ -21,6 +23,8 @@ export function SuppliersToolbarWidget({
   onToggleFilterPanel,
   activeFilterCount,
   canManageSuppliers,
+  canImport = false,
+  onImport,
   onExport,
   onAddSupplier,
 }: SuppliersToolbarWidgetProps) {
@@ -37,7 +41,7 @@ export function SuppliersToolbarWidget({
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
             placeholder="Search suppliers, addresses, products, or contacts..."
-            className="w-full h-10 rounded-full border border-stocky-border-subtle bg-stocky-bg-widget pl-9 pr-10 text-xs text-stocky-text-main placeholder:text-stocky-text-sub focus:border-stocky-primary focus:outline-none transition-colors"
+            className="w-full h-10 rounded-full border border-stocky-border-subtle bg-stocky-bg-widget pl-9 pr-16 text-xs text-stocky-text-main placeholder:text-stocky-text-sub focus:border-stocky-primary focus:outline-none transition-colors"
           />
           {searchQuery ? (
             <button
@@ -54,7 +58,7 @@ export function SuppliersToolbarWidget({
           <button
             type="button"
             onClick={onToggleFilterPanel}
-            aria-label="Filter columns"
+            aria-label="Filter suppliers"
             aria-expanded={filterPanelOpen}
             className={`absolute right-1.5 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full flex items-center justify-center transition-colors cursor-pointer ${
               filterPanelOpen || activeFilterCount > 0
@@ -74,11 +78,23 @@ export function SuppliersToolbarWidget({
       </div>
 
       {/* Actions */}
-      <div className="stocky-stock-table-toolbar__actions flex items-center gap-2 shrink-0">
+      <div className="stocky-stock-table-toolbar__actions flex items-center gap-2 overflow-x-auto py-0.5">
+        {canImport && onImport && (
+          <button
+            type="button"
+            onClick={onImport}
+            className="stocky-table-toolbar-button shrink-0 h-10 px-4 rounded-full text-xs font-medium inline-flex items-center justify-center gap-1.5 whitespace-nowrap cursor-pointer transition-colors border border-stocky-border-subtle bg-white text-stocky-text-main hover:border-stocky-primary hover:text-stocky-primary"
+            title="Import suppliers from CSV"
+          >
+            <CloudUploadIcon size="xs" />
+            <span>Import</span>
+          </button>
+        )}
+
         <button
           type="button"
           onClick={onExport}
-          className="stocky-table-toolbar-button h-10 px-4 rounded-full text-xs font-medium inline-flex items-center justify-center gap-1.5 whitespace-nowrap cursor-pointer transition-colors border border-stocky-border-subtle bg-white text-stocky-text-main hover:border-stocky-primary hover:text-stocky-primary"
+          className="stocky-table-toolbar-button shrink-0 h-10 px-4 rounded-full text-xs font-medium inline-flex items-center justify-center gap-1.5 whitespace-nowrap cursor-pointer transition-colors border border-stocky-border-subtle bg-white text-stocky-text-main hover:border-stocky-primary hover:text-stocky-primary"
           title="Export suppliers to Excel"
         >
           <ArrowDownIcon size="xs" />
@@ -89,7 +105,7 @@ export function SuppliersToolbarWidget({
           <button
             type="button"
             onClick={onAddSupplier}
-            className="stocky-table-toolbar-button stocky-table-toolbar-button--primary h-10 px-4 rounded-full text-xs font-medium inline-flex items-center justify-center gap-1.5 whitespace-nowrap cursor-pointer"
+            className="stocky-table-toolbar-button stocky-table-toolbar-button--primary shrink-0 h-10 px-4 rounded-full text-xs font-medium inline-flex items-center justify-center gap-1.5 whitespace-nowrap cursor-pointer"
           >
             <PlusIcon size="xs" />
             <span>Add supplier</span>

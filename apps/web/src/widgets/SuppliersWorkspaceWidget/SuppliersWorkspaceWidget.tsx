@@ -10,6 +10,8 @@ import type {
   SupplierProduct,
   SupplierRequest,
 } from '@stocky/types';
+import { CheckIcon, FilterIcon, TruckIcon, WarehouseIcon, XIcon } from '@stocky/icons';
+import { SideDrawer } from '@/components/ui/SideDrawer';
 import { exportSuppliersToExcel } from '@/lib/excel/export';
 import { SupplierContactsDrawerWidget, type SupplierContactInput } from '../SupplierContactsDrawerWidget/SupplierContactsDrawerWidget';
 import { SuppliersToolbarWidget } from './SuppliersToolbarWidget';
@@ -31,6 +33,8 @@ export interface SuppliersWorkspaceWidgetProps {
   userRole: CompanyUserRole;
   selectedLocationId: string;
   defaultProductId?: string;
+  canImport?: boolean;
+  onImport?: () => void;
   onCreate: (input: {
     productId: string;
     locationId: string;
@@ -83,12 +87,58 @@ export function SuppliersWorkspaceWidget({
   onUnlinkProduct,
   activeSupplierTab: controlledActiveTab,
   onSupplierTabChange,
+  canImport = true,
+  onImport,
 }: SuppliersWorkspaceWidgetProps) {
   const [internalActiveTab, setInternalActiveTab] = useState<'suppliers' | 'requests'>('suppliers');
   const activeTab = controlledActiveTab ?? internalActiveTab;
   const setActiveTab = (tab: 'suppliers' | 'requests') => {
     setInternalActiveTab(tab);
     onSupplierTabChange?.(tab);
+  };
+
+  // CSV Import handling for suppliers
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
+  const handleImportClick = () => {
+    fileInputRef.current?.click();
+  };
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      const text = await file.text();
+      const lines = text.split(/\r?\n/).filter((l) => l.trim().length > 0);
+      if (lines.length <= 1) return;
+      const headers = lines[0].split(',').map((h) => h.trim().toLowerCase());
+      const nameIdx = headers.findIndex((h) => h.includes('name'));
+      const addrIdx = headers.findIndex((h) => h.includes('address'));
+      const contactIdx = headers.findIndex((h) => h.includes('contact') || h.includes('person'));
+      const phoneIdx = headers.findIndex((h) => h.includes('phone') || h.includes('mobile'));
+      const emailIdx = headers.findIndex((h) => h.includes('email'));
+
+      for (let i = 1; i < lines.length; i++) {
+        const cols = lines[i].split(',').map((c) => c.trim());
+        const name = nameIdx !== -1 ? cols[nameIdx] : cols[0];
+        if (!name) continue;
+        const address = addrIdx !== -1 ? cols[addrIdx] : '';
+        const contactName = contactIdx !== -1 ? cols[contactIdx] : name;
+        const contactPhone = phoneIdx !== -1 ? cols[phoneIdx] : '';
+        const contactEmail = emailIdx !== -1 ? cols[emailIdx] : '';
+        if (onCreateSupplier) {
+          await onCreateSupplier({
+            name,
+            address,
+            contactName: contactName || name,
+            contactPhone: contactPhone || 'N/A',
+            contactEmail: contactEmail || undefined,
+          });
+        }
+      }
+    } catch (err) {
+      console.error('Failed to parse supplier CSV', err);
+    } finally {
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
   };
 
   // Suppliers state
@@ -109,6 +159,9 @@ export function SuppliersWorkspaceWidget({
   // Requests state
   const [requestSearchQuery, setRequestSearchQuery] = useState('');
   const [requestStatusFilter, setRequestStatusFilter] = useState<SupplierRequestStatusFilter>('all');
+  const [requestSupplierFilter, setRequestSupplierFilter] = useState<string>('all');
+  const [requestLocationFilter, setRequestLocationFilter] = useState<string>('all');
+  const [isRequestFilterDrawerOpen, setIsRequestFilterDrawerOpen] = useState(false);
   const [requestsPage, setRequestsPage] = useState(0);
   const [requestsPageSize, setRequestsPageSize] = useState(25);
 
@@ -208,6 +261,20 @@ export function SuppliersWorkspaceWidget({
     setFilterContactType('all');
   };
 
+  const activeRequestFilterCount = useMemo(() => {
+    let count = 0;
+    if (requestStatusFilter !== 'all') count++;
+    if (requestSupplierFilter !== 'all') count++;
+    if (requestLocationFilter !== 'all') count++;
+    return count;
+  }, [requestLocationFilter, requestStatusFilter, requestSupplierFilter]);
+
+  const handleResetRequestFilters = () => {
+    setRequestStatusFilter('all');
+    setRequestSupplierFilter('all');
+    setRequestLocationFilter('all');
+  };
+
   // Filtered Requests
   const filteredRequests = useMemo(() => {
     const query = requestSearchQuery.trim().toLowerCase();
@@ -217,6 +284,12 @@ export function SuppliersWorkspaceWidget({
 
     return locationFiltered.filter((r) => {
       if (requestStatusFilter !== 'all' && r.status !== requestStatusFilter) {
+        return false;
+      }
+      if (requestSupplierFilter !== 'all' && r.supplierId !== requestSupplierFilter) {
+        return false;
+      }
+      if (requestLocationFilter !== 'all' && r.locationId !== requestLocationFilter) {
         return false;
       }
       if (!query) return true;
@@ -231,7 +304,7 @@ export function SuppliersWorkspaceWidget({
         r.requestType.toLowerCase().includes(query)
       );
     });
-  }, [locations, productMap, requestSearchQuery, requestStatusFilter, requests, selectedLocationId, suppliers]);
+  }, [locations, productMap, requestLocationFilter, requestSearchQuery, requestStatusFilter, requestSupplierFilter, requests, selectedLocationId, suppliers]);
 
   const activeContactSupplier = useMemo(
     () => suppliers.find((s) => s.id === contactSupplierId) || null,
@@ -246,8 +319,39 @@ export function SuppliersWorkspaceWidget({
     [contactSupplierId, supplierContacts]
   );
 
+  const supplierFilterPanelElement = (isMobile = false) => (
+    <SuppliersFilterPanelWidget
+      className={isMobile ? 'flex-1 flex flex-col min-h-0 bg-white border-0 shadow-none rounded-none max-h-none' : undefined}
+      isOpen={isFilterPanelOpen}
+      onClose={() => setIsFilterPanelOpen(false)}
+      products={products}
+      selectedColumns={selectedColumns}
+      onToggleColumn={(col) => setSelectedColumns((prev) => ({ ...prev, [col]: !prev[col] }))}
+      onSelectAllColumns={() => setSelectedColumns({ name: true, address: true, products: true, contacts: true })}
+      filterProductId={filterProductId}
+      onFilterProductIdChange={(id) => {
+        setFilterProductId(id);
+        setSuppliersPage(0);
+      }}
+      filterOpenRequests={filterOpenRequests}
+      onFilterOpenRequestsChange={(val) => {
+        setFilterOpenRequests(val);
+        setSuppliersPage(0);
+      }}
+      filterContactType={filterContactType}
+      onFilterContactTypeChange={(val) => {
+        setFilterContactType(val);
+        setSuppliersPage(0);
+      }}
+      activeFilterCount={activeFilterCount}
+      onResetAll={handleResetFilters}
+      matchingCount={filteredSuppliers.length}
+    />
+  );
+
   return (
     <div className="stocky-suppliers-workspace flex flex-col gap-4">
+      <input ref={fileInputRef} type="file" accept=".csv" onChange={handleFileChange} className="hidden" aria-hidden="true" />
 
       {/* Unified Table Workspace Card */}
       <div className="stocky-stock-unified-card rounded-2xl bg-white border border-stocky-border-subtle shadow-sm flex flex-col relative z-20 overflow-visible">
@@ -265,37 +369,16 @@ export function SuppliersWorkspaceWidget({
                 onToggleFilterPanel={() => setIsFilterPanelOpen((prev) => !prev)}
                 activeFilterCount={activeFilterCount}
                 canManageSuppliers={canManageSuppliers}
+                canImport={canImport}
+                onImport={onImport || handleImportClick}
                 onExport={() => exportSuppliersToExcel(filteredSuppliers)}
                 onAddSupplier={() => setIsCreateSupplierOpen(true)}
               />
 
-              {/* Floating Filter Panel */}
-              <SuppliersFilterPanelWidget
-                isOpen={isFilterPanelOpen}
-                onClose={() => setIsFilterPanelOpen(false)}
-                products={products}
-                selectedColumns={selectedColumns}
-                onToggleColumn={(col) => setSelectedColumns((prev) => ({ ...prev, [col]: !prev[col] }))}
-                onSelectAllColumns={() => setSelectedColumns({ name: true, address: true, products: true, contacts: true })}
-                filterProductId={filterProductId}
-                onFilterProductIdChange={(id) => {
-                  setFilterProductId(id);
-                  setSuppliersPage(0);
-                }}
-                filterOpenRequests={filterOpenRequests}
-                onFilterOpenRequestsChange={(val) => {
-                  setFilterOpenRequests(val);
-                  setSuppliersPage(0);
-                }}
-                filterContactType={filterContactType}
-                onFilterContactTypeChange={(val) => {
-                  setFilterContactType(val);
-                  setSuppliersPage(0);
-                }}
-                activeFilterCount={activeFilterCount}
-                onResetAll={handleResetFilters}
-                matchingCount={filteredSuppliers.length}
-              />
+              {/* Floating Filter Panel (Desktop) */}
+              <div className="hidden sm:block">
+                {supplierFilterPanelElement(false)}
+              </div>
             </>
           ) : (
             <SupplierRequestsToolbarWidget
@@ -313,6 +396,10 @@ export function SuppliersWorkspaceWidget({
                 setRequestInitialSupplierId(undefined);
                 setIsCreateRequestOpen(true);
               }}
+              filterPanelOpen={isRequestFilterDrawerOpen}
+              onToggleFilterPanel={() => setIsRequestFilterDrawerOpen((prev) => !prev)}
+              isFilterActive={activeRequestFilterCount > 0}
+              activeFilterCount={activeRequestFilterCount}
             />
           )}
         </div>
@@ -359,6 +446,185 @@ export function SuppliersWorkspaceWidget({
           )}
         </div>
       </div>
+
+      {/* Mobile Suppliers Filter Drawer */}
+      <SideDrawer
+        isOpen={isFilterPanelOpen}
+        onClose={() => setIsFilterPanelOpen(false)}
+        ariaLabel="Filter suppliers"
+        panelClassName="sm:hidden flex flex-col"
+      >
+        <div className="flex h-full flex-col min-h-0 bg-white">
+          {supplierFilterPanelElement(true)}
+        </div>
+      </SideDrawer>
+
+      {/* Requests Filter Drawer */}
+      <SideDrawer
+        isOpen={isRequestFilterDrawerOpen}
+        onClose={() => setIsRequestFilterDrawerOpen(false)}
+        ariaLabel="Filter requests"
+        panelClassName="flex flex-col"
+      >
+        <div className="flex h-full flex-col min-h-0 bg-white">
+          <div className="flex items-center justify-between px-5 py-4 border-b border-stocky-border-subtle bg-white shrink-0">
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-lg bg-stocky-primary/10 text-stocky-primary flex items-center justify-center shrink-0">
+                <FilterIcon size="xs" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <h2 className="text-sm font-semibold text-stocky-text-main">Filter Requests</h2>
+                  {activeRequestFilterCount > 0 && (
+                    <span className="rounded-full bg-stocky-primary px-2 py-0.5 text-[10px] font-semibold text-white">
+                      {activeRequestFilterCount} active
+                    </span>
+                  )}
+                </div>
+                <p className="text-xs text-stocky-text-sub mt-0.5">Filter by request status, supplier, and destination</p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => setIsRequestFilterDrawerOpen(false)}
+              aria-label="Close request filters"
+              className="w-8 h-8 rounded-full flex items-center justify-center text-stocky-text-sub hover:text-stocky-text-main hover:bg-stocky-bg-global transition-colors cursor-pointer"
+            >
+              <XIcon size="xs" />
+            </button>
+          </div>
+
+          <div className="flex-1 min-h-0 overflow-y-auto p-5 space-y-6">
+            <div>
+              <div className="flex items-center justify-between mb-2.5">
+                <label className="text-xs font-semibold text-stocky-text-main">Request Status</label>
+                {requestStatusFilter !== 'all' && (
+                  <button
+                    type="button"
+                    onClick={() => setRequestStatusFilter('all')}
+                    className="text-[11px] text-stocky-text-sub hover:text-red-500 cursor-pointer"
+                  >
+                    Clear
+                  </button>
+                )}
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {(
+                  [
+                    { id: 'all', label: 'All requests' },
+                    { id: 'open', label: 'Open' },
+                    { id: 'contacted', label: 'Contacted' },
+                    { id: 'ordered', label: 'Ordered' },
+                    { id: 'received', label: 'Received' },
+                    { id: 'closed', label: 'Closed' },
+                  ] as const
+                ).map((st) => {
+                  const isChecked = requestStatusFilter === st.id;
+                  return (
+                    <button
+                      key={st.id}
+                      type="button"
+                      onClick={() => setRequestStatusFilter(st.id)}
+                      className={`h-8 px-3 rounded-xl text-xs font-medium border transition-colors cursor-pointer flex items-center gap-1.5 ${
+                        isChecked
+                          ? 'bg-stocky-primary/10 border-stocky-primary/40 text-stocky-primary font-semibold'
+                          : 'bg-white border-stocky-border-subtle text-stocky-text-sub hover:text-stocky-text-main'
+                      }`}
+                    >
+                      {isChecked && <CheckIcon size="xs" />}
+                      {st.label}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <label className="text-xs font-semibold text-stocky-text-main flex items-center gap-1.5">
+                  <TruckIcon size="xs" className="text-stocky-primary" />
+                  Supplier
+                </label>
+                {requestSupplierFilter !== 'all' && (
+                  <button
+                    type="button"
+                    onClick={() => setRequestSupplierFilter('all')}
+                    className="text-[11px] text-stocky-text-sub hover:text-red-500 cursor-pointer"
+                  >
+                    Clear
+                  </button>
+                )}
+              </div>
+              <select
+                value={requestSupplierFilter}
+                onChange={(e) => setRequestSupplierFilter(e.target.value)}
+                className="w-full h-10 px-3 rounded-xl bg-white border border-stocky-border-subtle text-xs text-stocky-text-main focus:border-stocky-primary focus:outline-none"
+              >
+                <option value="all">All suppliers</option>
+                {suppliers.map((s) => (
+                  <option key={s.id} value={s.id}>
+                    {s.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <label className="text-xs font-semibold text-stocky-text-main flex items-center gap-1.5">
+                  <WarehouseIcon size="xs" className="text-stocky-primary" />
+                  Destination Location
+                </label>
+                {requestLocationFilter !== 'all' && (
+                  <button
+                    type="button"
+                    onClick={() => setRequestLocationFilter('all')}
+                    className="text-[11px] text-stocky-text-sub hover:text-red-500 cursor-pointer"
+                  >
+                    Clear
+                  </button>
+                )}
+              </div>
+              <select
+                value={requestLocationFilter}
+                onChange={(e) => setRequestLocationFilter(e.target.value)}
+                className="w-full h-10 px-3 rounded-xl bg-white border border-stocky-border-subtle text-xs text-stocky-text-main focus:border-stocky-primary focus:outline-none"
+              >
+                <option value="all">All locations</option>
+                {locations.map((loc) => (
+                  <option key={loc.id} value={loc.id}>
+                    {loc.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          <div className="px-5 py-3.5 border-t border-stocky-border-subtle bg-white flex items-center justify-between shrink-0">
+            <span className="text-xs text-stocky-text-sub">
+              Showing <strong className="font-semibold text-stocky-text-main">{filteredRequests.length}</strong> requests
+            </span>
+            <div className="flex items-center gap-2">
+              {activeRequestFilterCount > 0 && (
+                <button
+                  type="button"
+                  onClick={handleResetRequestFilters}
+                  className="h-8 px-3 rounded-full text-xs font-medium text-stocky-text-sub hover:text-red-600 hover:bg-red-50 transition-colors cursor-pointer"
+                >
+                  Reset
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={() => setIsRequestFilterDrawerOpen(false)}
+                className="h-8 px-5 rounded-full bg-stocky-text-main text-white text-xs font-semibold hover:opacity-90 transition-opacity cursor-pointer shadow-sm"
+              >
+                Done
+              </button>
+            </div>
+          </div>
+        </div>
+      </SideDrawer>
 
       {/* Side Drawers */}
       <SupplierCreateDrawerWidget

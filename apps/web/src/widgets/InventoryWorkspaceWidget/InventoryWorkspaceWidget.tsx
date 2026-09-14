@@ -600,6 +600,72 @@ export function InventoryWorkspaceWidget({
     />
   );
 
+  const filterPanelElement = (isMobile = false) => (
+    <InventoryFilterPanelWidget
+      className={isMobile ? "flex-1 flex flex-col min-h-0 bg-white border-0 shadow-none rounded-none" : undefined}
+      selectedColumns={selectedColumns}
+      onToggleColumn={(column) =>
+        setSelectedColumns((prev) => ({ ...prev, [column]: !prev[column] }))
+      }
+      onSelectAllColumns={() =>
+        setSelectedColumns({
+          product: true,
+          barcode: true,
+          category: true,
+          location: true,
+          supplier: true,
+        })
+      }
+      availableCategories={availableCategories}
+      filterCategories={filterCategories}
+      onToggleCategory={(categoryName) =>
+        setFilterCategories((prev) =>
+          prev.includes(categoryName)
+            ? prev.filter((c) => c !== categoryName)
+            : [...prev, categoryName]
+        )
+      }
+      onClearCategories={() => setFilterCategories([])}
+      availableLocations={availableLocations}
+      filterLocationIds={filterLocationIds}
+      onToggleLocation={(locationId) =>
+        setFilterLocationIds((prev) =>
+          prev.includes(locationId)
+            ? prev.filter((id) => id !== locationId)
+            : [...prev, locationId]
+        )
+      }
+      onClearLocations={() => setFilterLocationIds([])}
+      availableSuppliers={availableSuppliers}
+      filterSupplierIds={filterSupplierIds}
+      onToggleSupplier={(supplierId) =>
+        setFilterSupplierIds((prev) =>
+          prev.includes(supplierId)
+            ? prev.filter((id) => id !== supplierId)
+            : [...prev, supplierId]
+        )
+      }
+      onClearSuppliers={() => setFilterSupplierIds([])}
+      filterQuantityMin={filterQuantityMin}
+      onQuantityMinChange={setFilterQuantityMin}
+      filterQuantityMax={filterQuantityMax}
+      onQuantityMaxChange={setFilterQuantityMax}
+      filterPriceMin={filterPriceMin}
+      onPriceMinChange={setFilterPriceMin}
+      filterPriceMax={filterPriceMax}
+      onPriceMaxChange={setFilterPriceMax}
+      filterExpiryFrom={filterExpiryFrom}
+      onExpiryFromChange={setFilterExpiryFrom}
+      filterExpiryTo={filterExpiryTo}
+      onExpiryToChange={setFilterExpiryTo}
+      activeFilterCount={activeFilterCount}
+      matchingCount={rows.length}
+      totalCount={products.length}
+      onResetAll={handleResetAllFilters}
+      onClose={() => setIsFilterPanelOpen(false)}
+    />
+  );
+
   return (
     <div className="stocky-stock-workspace flex flex-col gap-4">
       {canManageTasks && selectedProductIds.length > 0 && <section className="stocky-selection-actionbar" aria-label="Selected stock actions">
@@ -621,69 +687,8 @@ export function InventoryWorkspaceWidget({
 
           <AnimatePresence>
             {isFilterPanelOpen && (
-              <div className="absolute top-[calc(100%+8px)] inset-x-3 sm:inset-x-3.5 z-50">
-                <InventoryFilterPanelWidget
-                  selectedColumns={selectedColumns}
-                  onToggleColumn={(column) =>
-                    setSelectedColumns((prev) => ({ ...prev, [column]: !prev[column] }))
-                  }
-                  onSelectAllColumns={() =>
-                    setSelectedColumns({
-                      product: true,
-                      barcode: true,
-                      category: true,
-                      location: true,
-                      supplier: true,
-                    })
-                  }
-                  availableCategories={availableCategories}
-                  filterCategories={filterCategories}
-                  onToggleCategory={(categoryName) =>
-                    setFilterCategories((prev) =>
-                      prev.includes(categoryName)
-                        ? prev.filter((c) => c !== categoryName)
-                        : [...prev, categoryName]
-                    )
-                  }
-                  onClearCategories={() => setFilterCategories([])}
-                  availableLocations={availableLocations}
-                  filterLocationIds={filterLocationIds}
-                  onToggleLocation={(locationId) =>
-                    setFilterLocationIds((prev) =>
-                      prev.includes(locationId)
-                        ? prev.filter((id) => id !== locationId)
-                        : [...prev, locationId]
-                    )
-                  }
-                  onClearLocations={() => setFilterLocationIds([])}
-                  availableSuppliers={availableSuppliers}
-                  filterSupplierIds={filterSupplierIds}
-                  onToggleSupplier={(supplierId) =>
-                    setFilterSupplierIds((prev) =>
-                      prev.includes(supplierId)
-                        ? prev.filter((id) => id !== supplierId)
-                        : [...prev, supplierId]
-                    )
-                  }
-                  onClearSuppliers={() => setFilterSupplierIds([])}
-                  filterQuantityMin={filterQuantityMin}
-                  onQuantityMinChange={setFilterQuantityMin}
-                  filterQuantityMax={filterQuantityMax}
-                  onQuantityMaxChange={setFilterQuantityMax}
-                  filterPriceMin={filterPriceMin}
-                  onPriceMinChange={setFilterPriceMin}
-                  filterPriceMax={filterPriceMax}
-                  onPriceMaxChange={setFilterPriceMax}
-                  filterExpiryFrom={filterExpiryFrom}
-                  onExpiryFromChange={setFilterExpiryFrom}
-                  filterExpiryTo={filterExpiryTo}
-                  onExpiryToChange={setFilterExpiryTo}
-                  activeFilterCount={activeFilterCount}
-                  matchingCount={rows.length}
-                  totalCount={products.length}
-                  onResetAll={handleResetAllFilters}
-                  onClose={() => setIsFilterPanelOpen(false)}
-                />
+              <div className="hidden sm:block absolute top-[calc(100%+8px)] inset-x-3 sm:inset-x-3.5 z-50">
+                {filterPanelElement(false)}
               </div>
             )}
           </AnimatePresence>
@@ -712,6 +717,18 @@ export function InventoryWorkspaceWidget({
           )}
         </div>
       </div>
+      {/* Mobile Filter Drawer */}
+      <SideDrawer
+        isOpen={isFilterPanelOpen}
+        onClose={() => setIsFilterPanelOpen(false)}
+        ariaLabel="Filter inventory"
+        panelClassName="sm:hidden"
+      >
+        <div className="flex h-full flex-col min-h-0 bg-white">
+          {filterPanelElement(true)}
+        </div>
+      </SideDrawer>
+
       {renderLotsDrawer()}
       {onCreateTask && <StockTaskAssignmentWidget isOpen={taskAssignmentOpen} taskType={taskType} selectedProductIds={selectedProductIds} products={products} locations={locations} members={members} assignments={assignments} selectedLocationId={selectedLocationId} userRole={userRole} onClose={() => setTaskAssignmentOpen(false)} onCreate={onCreateTask} />}
       {canImport && <InventoryImportModalWidget isOpen={importOpen} onClose={() => setImportOpen(false)} companyId={companyId} products={products} locations={locations} selectedLocationId={selectedLocationId} onImportSuccess={() => { setImportOpen(false); onImportSuccess?.(); }} />}

@@ -3,6 +3,8 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import type { CompanyUserRole, InventoryTransfer, InventoryTransferLine, Location, Product, StockLot } from '@stocky/types';
 import { supabase } from '@/lib/supabase/client';
+import { CheckIcon, FilterIcon, WarehouseIcon, XIcon } from '@stocky/icons';
+import { SideDrawer } from '@/components/ui/SideDrawer';
 import { TransfersToolbarWidget, type TransferQueue } from './TransfersToolbarWidget';
 import { TransfersTableWidget, type TransferSortKey, type TransferSortDirection } from './TransfersTableWidget';
 import { TransferRequestDrawerWidget } from './TransferRequestDrawerWidget';
@@ -74,6 +76,25 @@ export function TransfersWorkspaceWidget({
     key: 'requested',
     direction: 'desc',
   });
+
+  const [isFilterDrawerOpen, setIsFilterDrawerOpen] = useState(false);
+  const [filterStatuses, setFilterStatuses] = useState<InventoryTransfer['status'][]>([]);
+  const [filterOriginId, setFilterOriginId] = useState<string>('');
+  const [filterDestinationId, setFilterDestinationId] = useState<string>('');
+
+  const activeFilterCount = useMemo(() => {
+    let count = 0;
+    if (filterStatuses.length > 0) count += filterStatuses.length;
+    if (filterOriginId) count += 1;
+    if (filterDestinationId) count += 1;
+    return count;
+  }, [filterStatuses, filterOriginId, filterDestinationId]);
+
+  const handleResetFilters = () => {
+    setFilterStatuses([]);
+    setFilterOriginId('');
+    setFilterDestinationId('');
+  };
 
   const [loadedTransferLines, setLoadedTransferLines] = useState<InventoryTransferLine[]>([]);
   const allTransferLines = transferLines.length > 0 ? transferLines : loadedTransferLines;
@@ -160,12 +181,24 @@ export function TransfersWorkspaceWidget({
           (queue === 'outgoing' &&
             (selectedLocationId === 'all' || transfer.sourceLocationId === selectedLocationId));
 
+        if (!queueMatch) return false;
+
+        if (filterStatuses.length > 0 && !filterStatuses.includes(transfer.status)) {
+          return false;
+        }
+        if (filterOriginId && transfer.sourceLocationId !== filterOriginId) {
+          return false;
+        }
+        if (filterDestinationId && transfer.destinationLocationId !== filterDestinationId) {
+          return false;
+        }
+
         const lineText = productsForTransfer(transfer.id).join(' ');
         const searchable = `${transfer.id} ${routeForTransfer(transfer)} ${lineText} ${
           transfer.note || ''
         } ${statusLabels[transfer.status]}`.toLowerCase();
 
-        return queueMatch && (!searchText || searchable.includes(searchText));
+        return !searchText || searchable.includes(searchText);
       })
       .sort((left, right) => {
         const leftItems = productsForTransfer(left.id).join(', ');
@@ -224,6 +257,10 @@ export function TransfersWorkspaceWidget({
               setPage(0);
             }}
             onRequestStock={() => setIsRequestDrawerOpen(true)}
+            filterPanelOpen={isFilterDrawerOpen}
+            onToggleFilterPanel={() => setIsFilterDrawerOpen((open) => !open)}
+            isFilterActive={activeFilterCount > 0}
+            activeFilterCount={activeFilterCount}
           />
         </div>
 
@@ -249,6 +286,184 @@ export function TransfersWorkspaceWidget({
           />
         </div>
       </div>
+
+      {/* Transfers Filter Drawer */}
+      <SideDrawer
+        isOpen={isFilterDrawerOpen}
+        onClose={() => setIsFilterDrawerOpen(false)}
+        ariaLabel="Filter transfers"
+        panelClassName="flex flex-col"
+      >
+        <div className="flex h-full flex-col min-h-0 bg-white">
+          {/* Header */}
+          <div className="flex items-center justify-between px-5 py-4 border-b border-stocky-border-subtle bg-white shrink-0">
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-lg bg-stocky-primary/10 text-stocky-primary flex items-center justify-center shrink-0">
+                <FilterIcon size="xs" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <h2 className="text-sm font-semibold text-stocky-text-main">Filter Transfers</h2>
+                  {activeFilterCount > 0 && (
+                    <span className="rounded-full bg-stocky-primary px-2 py-0.5 text-[10px] font-semibold text-white">
+                      {activeFilterCount} active
+                    </span>
+                  )}
+                </div>
+                <p className="text-xs text-stocky-text-sub mt-0.5">Filter by transfer status and routing locations</p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => setIsFilterDrawerOpen(false)}
+              aria-label="Close transfer filters"
+              className="w-8 h-8 rounded-full flex items-center justify-center text-stocky-text-sub hover:text-stocky-text-main hover:bg-stocky-bg-global transition-colors cursor-pointer"
+            >
+              <XIcon size="xs" />
+            </button>
+          </div>
+
+          {/* Body */}
+          <div className="flex-1 min-h-0 overflow-y-auto p-5 space-y-6">
+            {/* Status Section */}
+            <div>
+              <div className="flex items-center justify-between mb-2.5">
+                <label className="text-xs font-semibold text-stocky-text-main">Transfer Status</label>
+                {filterStatuses.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => setFilterStatuses([])}
+                    className="text-[11px] text-stocky-text-sub hover:text-red-500 cursor-pointer"
+                  >
+                    Clear
+                  </button>
+                )}
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {(
+                  [
+                    'requested',
+                    'approved',
+                    'in_transit',
+                    'partially_received',
+                    'received',
+                    'rejected',
+                    'cancelled',
+                  ] as const
+                ).map((st) => {
+                  const isChecked = filterStatuses.includes(st);
+                  return (
+                    <button
+                      key={st}
+                      type="button"
+                      onClick={() =>
+                        setFilterStatuses((prev) =>
+                          isChecked ? prev.filter((s) => s !== st) : [...prev, st]
+                        )
+                      }
+                      className={`h-8 px-3 rounded-xl text-xs font-medium border transition-colors cursor-pointer flex items-center gap-1.5 ${
+                        isChecked
+                          ? 'bg-stocky-primary/10 border-stocky-primary/40 text-stocky-primary font-semibold'
+                          : 'bg-white border-stocky-border-subtle text-stocky-text-sub hover:text-stocky-text-main'
+                      }`}
+                    >
+                      {isChecked && <CheckIcon size="xs" />}
+                      {statusLabels[st]}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Origin Location */}
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <label className="text-xs font-semibold text-stocky-text-main flex items-center gap-1.5">
+                  <WarehouseIcon size="xs" className="text-stocky-primary" />
+                  Origin Location (From)
+                </label>
+                {filterOriginId && (
+                  <button
+                    type="button"
+                    onClick={() => setFilterOriginId('')}
+                    className="text-[11px] text-stocky-text-sub hover:text-red-500 cursor-pointer"
+                  >
+                    Clear
+                  </button>
+                )}
+              </div>
+              <select
+                value={filterOriginId}
+                onChange={(e) => setFilterOriginId(e.target.value)}
+                className="w-full h-10 px-3 rounded-xl bg-white border border-stocky-border-subtle text-xs text-stocky-text-main focus:border-stocky-primary focus:outline-none"
+              >
+                <option value="">All origin locations</option>
+                {locations.map((loc) => (
+                  <option key={loc.id} value={loc.id}>
+                    {loc.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Destination Location */}
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <label className="text-xs font-semibold text-stocky-text-main flex items-center gap-1.5">
+                  <WarehouseIcon size="xs" className="text-stocky-primary" />
+                  Destination Location (To)
+                </label>
+                {filterDestinationId && (
+                  <button
+                    type="button"
+                    onClick={() => setFilterDestinationId('')}
+                    className="text-[11px] text-stocky-text-sub hover:text-red-500 cursor-pointer"
+                  >
+                    Clear
+                  </button>
+                )}
+              </div>
+              <select
+                value={filterDestinationId}
+                onChange={(e) => setFilterDestinationId(e.target.value)}
+                className="w-full h-10 px-3 rounded-xl bg-white border border-stocky-border-subtle text-xs text-stocky-text-main focus:border-stocky-primary focus:outline-none"
+              >
+                <option value="">All destination locations</option>
+                {locations.map((loc) => (
+                  <option key={loc.id} value={loc.id}>
+                    {loc.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          {/* Footer */}
+          <div className="px-5 py-3.5 border-t border-stocky-border-subtle bg-white flex items-center justify-between shrink-0">
+            <span className="text-xs text-stocky-text-sub">
+              Showing <strong className="font-semibold text-stocky-text-main">{filteredTransfers.length}</strong> transfers
+            </span>
+            <div className="flex items-center gap-2">
+              {activeFilterCount > 0 && (
+                <button
+                  type="button"
+                  onClick={handleResetFilters}
+                  className="h-8 px-3 rounded-full text-xs font-medium text-stocky-text-sub hover:text-red-600 hover:bg-red-50 transition-colors cursor-pointer"
+                >
+                  Reset
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={() => setIsFilterDrawerOpen(false)}
+                className="h-8 px-5 rounded-full bg-stocky-text-main text-white text-xs font-semibold hover:opacity-90 transition-opacity cursor-pointer shadow-sm"
+              >
+                Done
+              </button>
+            </div>
+          </div>
+        </div>
+      </SideDrawer>
 
       {/* Side Drawers */}
       <TransferRequestDrawerWidget

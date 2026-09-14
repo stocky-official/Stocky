@@ -20,6 +20,7 @@ export interface SuppliersFilterPanelWidgetProps {
   activeFilterCount: number;
   onResetAll: () => void;
   matchingCount: number;
+  className?: string;
 }
 
 export function SuppliersFilterPanelWidget({
@@ -38,6 +39,7 @@ export function SuppliersFilterPanelWidget({
   activeFilterCount,
   onResetAll,
   matchingCount,
+  className,
 }: SuppliersFilterPanelWidgetProps) {
   const panelRef = useRef<HTMLDivElement>(null);
 
@@ -67,7 +69,7 @@ export function SuppliersFilterPanelWidget({
       ref={panelRef}
       role="dialog"
       aria-label="Supplier column filters"
-      className="absolute top-[calc(100%+8px)] inset-x-3 sm:inset-x-3.5 z-50 rounded-2xl border border-stocky-border-subtle bg-white shadow-bevel-float overflow-hidden flex flex-col max-h-[80vh]"
+      className={className || "absolute top-[calc(100%+8px)] inset-x-3 sm:inset-x-3.5 z-50 rounded-2xl border border-stocky-border-subtle bg-white shadow-bevel-float overflow-hidden flex flex-col max-h-[80vh]"}
     >
       {/* Header */}
       <div className="sticky top-0 z-10 flex shrink-0 items-center justify-between border-b border-stocky-border-subtle bg-white px-5 py-3.5">

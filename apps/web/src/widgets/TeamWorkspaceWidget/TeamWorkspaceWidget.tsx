@@ -12,6 +12,7 @@ import {
   XIcon,
 } from '@stocky/icons';
 import type { CompanyUserRole, Location } from '@stocky/types';
+import { SideDrawer } from '@/components/ui/SideDrawer';
 import { TeamTableWidget } from './TeamTableWidget';
 import { OrgStructureWidget } from './OrgStructureWidget';
 import { MemberDetailDrawer, type TeamMemberData } from './MemberDetailDrawer';
@@ -232,9 +233,9 @@ export function TeamWorkspaceWidget({
                 </button>
               </div>
 
-              {/* Floating Column Filter Panel */}
+              {/* Floating Column Filter Panel (Desktop) */}
               {isFilterPanelOpen && (
-                <div ref={filterPanelRef} className="stocky-column-filter-panel" role="dialog" aria-label="Team member filters">
+                <div ref={filterPanelRef} className="hidden sm:flex stocky-column-filter-panel" role="dialog" aria-label="Team member filters">
                   {/* Sticky Header */}
                   <div className="sticky top-0 z-10 flex shrink-0 items-center justify-between border-b border-stocky-border-subtle bg-white px-4 py-2.5">
                     <div className="flex items-center gap-2">
@@ -376,15 +377,15 @@ export function TeamWorkspaceWidget({
             </div>
 
             {/* Actions & View Switcher Group */}
-            <div className="stocky-stock-table-toolbar__actions flex flex-wrap items-center gap-2 justify-between sm:justify-end">
+            <div className="stocky-stock-table-toolbar__actions stocky-mobile-pill-rail flex items-center gap-2 overflow-x-auto py-0.5 justify-between sm:justify-end">
               {/* 2-View Switcher Pill */}
-              <div className="inline-flex items-center gap-1.5" role="tablist" aria-label="View switcher">
+              <div className="inline-flex items-center gap-1.5 shrink-0" role="tablist" aria-label="View switcher">
                 <button
                   type="button"
                   role="tab"
                   aria-selected={viewMode === 'table'}
                   onClick={() => setViewMode('table')}
-                  className={`stocky-table-toolbar-button h-10 px-4 rounded-full text-xs font-medium inline-flex items-center justify-center gap-1.5 whitespace-nowrap cursor-pointer transition-colors ${
+                  className={`stocky-table-toolbar-button shrink-0 h-10 px-4 rounded-full text-xs font-medium inline-flex items-center justify-center gap-1.5 whitespace-nowrap cursor-pointer transition-colors ${
                     viewMode === 'table'
                       ? 'stocky-table-toolbar-button--active border-stocky-primary bg-stocky-primary/10 text-stocky-primary font-semibold'
                       : 'border border-stocky-border-subtle bg-white text-stocky-text-main hover:border-stocky-primary hover:text-stocky-primary'
@@ -398,7 +399,7 @@ export function TeamWorkspaceWidget({
                   role="tab"
                   aria-selected={viewMode === 'org'}
                   onClick={() => setViewMode('org')}
-                  className={`stocky-table-toolbar-button h-10 px-4 rounded-full text-xs font-medium inline-flex items-center justify-center gap-1.5 whitespace-nowrap cursor-pointer transition-colors ${
+                  className={`stocky-table-toolbar-button shrink-0 h-10 px-4 rounded-full text-xs font-medium inline-flex items-center justify-center gap-1.5 whitespace-nowrap cursor-pointer transition-colors ${
                     viewMode === 'org'
                       ? 'stocky-table-toolbar-button--active border-stocky-primary bg-stocky-primary/10 text-stocky-primary font-semibold'
                       : 'border border-stocky-border-subtle bg-white text-stocky-text-main hover:border-stocky-primary hover:text-stocky-primary'
@@ -413,7 +414,7 @@ export function TeamWorkspaceWidget({
               <button
                 type="button"
                 onClick={exportTeamCsv}
-                className="stocky-table-toolbar-button h-10 px-4 rounded-full border border-stocky-border-subtle bg-white text-xs font-medium text-stocky-text-main hover:border-stocky-primary hover:text-stocky-primary inline-flex items-center gap-1.5 cursor-pointer transition-colors"
+                className="stocky-table-toolbar-button shrink-0 h-10 px-4 rounded-full border border-stocky-border-subtle bg-white text-xs font-medium text-stocky-text-main hover:border-stocky-primary hover:text-stocky-primary inline-flex items-center gap-1.5 cursor-pointer transition-colors"
                 title="Export team directory CSV"
               >
                 <CloudDownloadIcon size="xs" />
@@ -425,7 +426,7 @@ export function TeamWorkspaceWidget({
                 <button
                   type="button"
                   onClick={() => setIsInviteOpen(true)}
-                  className="stocky-table-toolbar-button stocky-table-toolbar-button--primary h-10 px-4 rounded-full text-xs font-medium inline-flex items-center justify-center gap-1.5 whitespace-nowrap cursor-pointer"
+                  className="stocky-table-toolbar-button stocky-table-toolbar-button--primary shrink-0 h-10 px-4 rounded-full text-xs font-medium inline-flex items-center justify-center gap-1.5 whitespace-nowrap cursor-pointer"
                 >
                   <PlusIcon size="xs" />
                   <span>Invite member</span>
@@ -481,6 +482,151 @@ export function TeamWorkspaceWidget({
         allMembers={members}
         onInvite={onInvite}
       />
+
+      {/* Mobile Team Filter Drawer */}
+      <SideDrawer
+        isOpen={isFilterPanelOpen}
+        onClose={() => setIsFilterPanelOpen(false)}
+        ariaLabel="Filter team members"
+        panelClassName="sm:hidden flex flex-col"
+      >
+        <div className="flex h-full flex-col min-h-0 bg-white">
+          <div className="sticky top-0 z-10 flex shrink-0 items-center justify-between border-b border-stocky-border-subtle bg-white px-5 py-4">
+            <div className="flex items-center gap-2">
+              <FilterIcon size="xs" className="text-stocky-primary" />
+              <h3 className="text-sm font-semibold text-stocky-text-main">Team Filters</h3>
+              {activeFilterCount > 0 && (
+                <span className="rounded-full bg-stocky-primary/10 px-2 py-0.5 text-[10px] font-semibold text-stocky-primary">
+                  {activeFilterCount} active
+                </span>
+              )}
+            </div>
+            <div className="flex items-center gap-2">
+              {activeFilterCount > 0 && (
+                <button
+                  type="button"
+                  onClick={resetFilters}
+                  className="text-xs font-medium text-stocky-primary hover:underline cursor-pointer"
+                >
+                  Reset all
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={() => setIsFilterPanelOpen(false)}
+                aria-label="Close team filters"
+                className="w-8 h-8 rounded-full flex items-center justify-center text-stocky-text-sub hover:text-stocky-text-main hover:bg-stocky-bg-global transition-colors cursor-pointer"
+              >
+                <XIcon size="xs" />
+              </button>
+            </div>
+          </div>
+
+          <div className="flex-1 min-h-0 overflow-y-auto p-5 space-y-5">
+            {/* Search in Fields */}
+            <div className="space-y-2">
+              <span className="text-xs font-semibold text-stocky-text-main">Search In Fields</span>
+              <div className="flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={() => setSearchFields((f) => ({ ...f, name: !f.name }))}
+                  className={`h-8 px-3 rounded-full text-xs font-medium border transition-colors cursor-pointer ${searchFields.name ? 'border-stocky-primary bg-stocky-primary/10 text-stocky-primary font-semibold' : 'border-stocky-border-subtle bg-white text-stocky-text-sub hover:text-stocky-text-main'}`}
+                >
+                  Name
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSearchFields((f) => ({ ...f, email: !f.email }))}
+                  className={`h-8 px-3 rounded-full text-xs font-medium border transition-colors cursor-pointer ${searchFields.email ? 'border-stocky-primary bg-stocky-primary/10 text-stocky-primary font-semibold' : 'border-stocky-border-subtle bg-white text-stocky-text-sub hover:text-stocky-text-main'}`}
+                >
+                  Email
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSearchFields((f) => ({ ...f, title: !f.title }))}
+                  className={`h-8 px-3 rounded-full text-xs font-medium border transition-colors cursor-pointer ${searchFields.title ? 'border-stocky-primary bg-stocky-primary/10 text-stocky-primary font-semibold' : 'border-stocky-border-subtle bg-white text-stocky-text-sub hover:text-stocky-text-main'}`}
+                >
+                  Job Title
+                </button>
+              </div>
+            </div>
+
+            {/* Role Filter */}
+            <div className="space-y-2 pt-3 border-t border-stocky-border-subtle">
+              <span className="text-xs font-semibold text-stocky-text-main">Role</span>
+              <div className="flex flex-wrap gap-2">
+                {(['all', 'admin', 'manager', 'staff'] as const).map((r) => (
+                  <button
+                    key={r}
+                    type="button"
+                    onClick={() => setRoleFilter(r)}
+                    className={`h-8 px-3 rounded-full text-xs font-medium border transition-colors cursor-pointer ${roleFilter === r ? 'border-stocky-primary bg-stocky-primary/10 text-stocky-primary font-semibold' : 'border-stocky-border-subtle bg-white text-stocky-text-sub hover:text-stocky-text-main'}`}
+                  >
+                    {r === 'all' ? 'All Roles' : r.charAt(0).toUpperCase() + r.slice(1) + 's'}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Location Filter */}
+            {locations.length > 0 && (
+              <div className="space-y-2 pt-3 border-t border-stocky-border-subtle">
+                <span className="text-xs font-semibold text-stocky-text-main">Assigned Location</span>
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setLocationFilter('all')}
+                    className={`h-8 px-3 rounded-full text-xs font-medium border transition-colors cursor-pointer ${locationFilter === 'all' ? 'border-stocky-primary bg-stocky-primary/10 text-stocky-primary font-semibold' : 'border-stocky-border-subtle bg-white text-stocky-text-sub hover:text-stocky-text-main'}`}
+                  >
+                    All Locations
+                  </button>
+                  {locations.map((loc) => (
+                    <button
+                      key={loc.id}
+                      type="button"
+                      onClick={() => setLocationFilter(loc.id)}
+                      className={`h-8 px-3 rounded-full text-xs font-medium border transition-colors cursor-pointer ${locationFilter === loc.id ? 'border-stocky-primary bg-stocky-primary/10 text-stocky-primary font-semibold' : 'border-stocky-border-subtle bg-white text-stocky-text-sub hover:text-stocky-text-main'}`}
+                    >
+                      {loc.name}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Status Filter */}
+            <div className="space-y-2 pt-3 border-t border-stocky-border-subtle">
+              <span className="text-xs font-semibold text-stocky-text-main">Account Status</span>
+              <div className="flex flex-wrap gap-2">
+                {(['all', 'active', 'invited'] as const).map((s) => (
+                  <button
+                    key={s}
+                    type="button"
+                    onClick={() => setStatusFilter(s)}
+                    className={`h-8 px-3 rounded-full text-xs font-medium border transition-colors cursor-pointer ${statusFilter === s ? 'border-stocky-primary bg-stocky-primary/10 text-stocky-primary font-semibold' : 'border-stocky-border-subtle bg-white text-stocky-text-sub hover:text-stocky-text-main'}`}
+                  >
+                    {s === 'all' ? 'All Statuses' : s === 'active' ? 'Active' : 'Invited / Pending'}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Panel Footer */}
+          <div className="border-t border-stocky-border-subtle bg-white px-5 py-3.5 flex items-center justify-between shrink-0">
+            <span className="text-xs text-stocky-text-sub">
+              Showing <span className="font-semibold text-stocky-text-main">{filteredMembers.length}</span> of {members.length} members
+            </span>
+            <button
+              type="button"
+              onClick={() => setIsFilterPanelOpen(false)}
+              className="h-8 px-5 rounded-full bg-stocky-text-main text-white text-xs font-semibold hover:opacity-90 transition-opacity cursor-pointer shadow-sm"
+            >
+              Done
+            </button>
+          </div>
+        </div>
+      </SideDrawer>
     </div>
   );
 }

@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { PlusIcon, SearchIcon, XIcon } from '@stocky/icons';
+import { FilterIcon, PlusIcon, SearchIcon, XIcon } from '@stocky/icons';
 
 export type TransferQueue = 'all' | 'action' | 'incoming' | 'outgoing';
 
@@ -11,6 +11,10 @@ export interface TransfersToolbarWidgetProps {
   queue: TransferQueue;
   onQueueChange: (queue: TransferQueue) => void;
   onRequestStock: () => void;
+  filterPanelOpen?: boolean;
+  onToggleFilterPanel?: () => void;
+  isFilterActive?: boolean;
+  activeFilterCount?: number;
 }
 
 export function TransfersToolbarWidget({
@@ -19,6 +23,10 @@ export function TransfersToolbarWidget({
   queue,
   onQueueChange,
   onRequestStock,
+  filterPanelOpen = false,
+  onToggleFilterPanel,
+  isFilterActive = false,
+  activeFilterCount = 0,
 }: TransfersToolbarWidgetProps) {
   const queueTabs: Array<{ id: TransferQueue; label: string }> = [
     { id: 'action', label: 'Needs action' },
@@ -34,22 +42,40 @@ export function TransfersToolbarWidget({
         <div className="relative min-w-0 flex-1">
           <SearchIcon
             size="xs"
-            className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-stocky-text-sub"
+            className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-stocky-text-sub"
           />
           <input
             value={search}
             onChange={(event) => onSearchChange(event.target.value)}
             placeholder="Search transfers, locations, or products..."
-            className="w-full h-10 rounded-full border border-stocky-border-subtle bg-stocky-bg-widget pl-9 pr-9 text-xs text-stocky-text-main placeholder:text-stocky-text-sub focus:border-stocky-primary focus:outline-none transition-colors"
+            className="w-full h-10 rounded-full border border-stocky-border-subtle bg-stocky-bg-widget pl-9 pr-16 text-xs text-stocky-text-main placeholder:text-stocky-text-sub focus:border-stocky-primary focus:outline-none transition-colors"
           />
           {search && (
             <button
               type="button"
               onClick={() => onSearchChange('')}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-stocky-text-sub hover:text-stocky-text-main transition-colors cursor-pointer"
+              className="absolute right-9 top-1/2 -translate-y-1/2 text-stocky-text-sub hover:text-stocky-text-main transition-colors cursor-pointer"
               aria-label="Clear search"
             >
               <XIcon size="xs" />
+            </button>
+          )}
+          {onToggleFilterPanel && (
+            <button
+              type="button"
+              onClick={onToggleFilterPanel}
+              className={`absolute right-1.5 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full flex items-center justify-center transition-colors cursor-pointer ${
+                filterPanelOpen || isFilterActive || activeFilterCount > 0
+                  ? 'bg-stocky-primary text-white hover:bg-stocky-primary-hover'
+                  : 'text-stocky-text-sub hover:bg-stocky-bg-hover hover:text-stocky-text-main'
+              }`}
+              title="Open transfers filter panel"
+              aria-label="Filter transfers"
+            >
+              <FilterIcon size="xs" />
+              {activeFilterCount > 0 && (
+                <span className="sr-only">({activeFilterCount} active)</span>
+              )}
             </button>
           )}
         </div>
@@ -58,7 +84,7 @@ export function TransfersToolbarWidget({
       {/* Queue Tabs & Primary Action */}
       <div className="stocky-stock-table-toolbar__actions flex items-center justify-between sm:justify-end gap-2 flex-1 sm:flex-initial min-w-0 max-w-full">
         <div
-          className="stocky-transfer-toolbar__queues flex items-center gap-1.5 overflow-x-auto max-w-full py-0.5"
+          className="stocky-transfer-toolbar__queues stocky-mobile-pill-rail flex items-center gap-1.5 overflow-x-auto max-w-full py-0.5"
           role="tablist"
           aria-label="Transfer queues"
         >
@@ -88,7 +114,7 @@ export function TransfersToolbarWidget({
           onClick={onRequestStock}
           className="stocky-table-toolbar-button stocky-table-toolbar-button--primary shrink-0 h-10 px-4 rounded-full text-xs font-medium inline-flex items-center justify-center gap-1.5 whitespace-nowrap cursor-pointer"
         >
-          <PlusIcon size="xs" /> Request stock
+          <PlusIcon size="xs" /> <span>Request stock</span>
         </button>
       </div>
     </div>
