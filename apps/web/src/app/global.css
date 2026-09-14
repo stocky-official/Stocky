@@ -2728,18 +2728,31 @@ a:hover {
    STOCKY HOME PLATFORM WIDGETS
    Zero-hardcoded design tokens, luxury forest & lime atmospheric surfaces
    ========================================================================== */
+.stocky-platform-shell .stocky-platform-content.stocky-platform-content--home {
+  padding-top: 0 !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+
 .stocky-home-hero {
   position: relative;
   width: 100%;
-  border-radius: var(--stocky-radius-xl);
+  border-radius: 0 0 var(--stocky-radius-2xl, 1.5rem) var(--stocky-radius-2xl, 1.5rem);
   overflow: hidden;
   color: var(--stocky-text-inverse);
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  box-shadow: var(--stocky-shadow-bevel-float);
+  border: 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 12px 32px rgba(10, 15, 12, 0.18);
   user-select: none;
-  background: radial-gradient(circle at 85% 15%, rgba(216, 255, 0, 0.22) 0%, transparent 45%),
-              radial-gradient(circle at 15% 90%, rgba(14, 135, 85, 0.26) 0%, transparent 50%),
+  background: radial-gradient(circle at 85% 15%, rgba(216, 255, 0, 0.18) 0%, transparent 45%),
+              radial-gradient(circle at 15% 90%, rgba(14, 135, 85, 0.22) 0%, transparent 50%),
               linear-gradient(145deg, #131714 0%, #1a251e 48%, #0f1511 100%);
+}
+
+@media (min-width: 640px) {
+  .stocky-home-hero {
+    border-radius: 0 0 2.5rem 2.5rem;
+  }
 }
 
 .stocky-home-hero__stat-pill {

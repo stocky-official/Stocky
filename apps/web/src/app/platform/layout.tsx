@@ -127,27 +127,29 @@ function PlatformShell({ children }: { children?: React.ReactNode }) {
 
   return (
     <PageLayout className="stocky-platform-shell">
-      <PlatformTopBarWidget
-        userEmail={platform.userEmail}
-        userName={platform.userName}
-        userTitle={platform.userTitle}
-        userRole={platform.userRole}
-        userAvatarUrl={platform.userAvatarUrl}
-        companyName={platform.company?.name}
-        companyLogoUrl={platform.company?.logo_url}
-        searchValue={platform.globalSearchQuery}
-        hidden={!isChromeVisible}
-        onSearch={(query) => {
-          platform.setGlobalSearchQuery(query);
-          if (query.trim()) platform.navigateToTab('stock');
-        }}
-        onSettingsClick={() => platform.navigateToTab('settings')}
-        onNavigateToTab={platform.navigateToTab}
-        onNotificationsClick={() => platform.openNotifications()}
-        isNotificationsOpen={platform.notificationsOpen}
-        notificationCount={platform.notificationItems.length}
-        activeTab={platform.activeTab}
-      />
+      {platform.activeTab !== 'home' && (
+        <PlatformTopBarWidget
+          userEmail={platform.userEmail}
+          userName={platform.userName}
+          userTitle={platform.userTitle}
+          userRole={platform.userRole}
+          userAvatarUrl={platform.userAvatarUrl}
+          companyName={platform.company?.name}
+          companyLogoUrl={platform.company?.logo_url}
+          searchValue={platform.globalSearchQuery}
+          hidden={!isChromeVisible}
+          onSearch={(query) => {
+            platform.setGlobalSearchQuery(query);
+            if (query.trim()) platform.navigateToTab('stock');
+          }}
+          onSettingsClick={() => platform.navigateToTab('settings')}
+          onNavigateToTab={platform.navigateToTab}
+          onNotificationsClick={() => platform.openNotifications()}
+          isNotificationsOpen={platform.notificationsOpen}
+          notificationCount={platform.notificationItems.length}
+          activeTab={platform.activeTab}
+        />
+      )}
       <MobileSubNavWidget
         activeTab={platform.activeTab}
         userRole={platform.userRole}
@@ -185,7 +187,9 @@ function PlatformShell({ children }: { children?: React.ReactNode }) {
           onSettingsClick={() => platform.navigateToTab('settings')}
         />
         <main
-          className="stocky-platform-content flex-1 overflow-y-auto min-w-0 max-w-full pb-28 sm:pb-8"
+          className={`stocky-platform-content flex-1 overflow-y-auto min-w-0 max-w-full ${
+            platform.activeTab === 'home' ? 'stocky-platform-content--home' : ''
+          } pb-28 sm:pb-8`}
           onScroll={handleMainScroll}
         >
           <HydrationFadeWrapper

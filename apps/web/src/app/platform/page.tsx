@@ -30,6 +30,8 @@ export default function PlatformHomePage() {
       onOpenScanner={platform.openScanner}
       onOpenNotifications={platform.openNotifications}
       unreadNotificationsCount={platform.notificationItems.length}
+      companyName={platform.company?.name}
+      companyLogoUrl={platform.company?.logo_url}
       products={platform.products}
       lots={platform.lots}
       locations={platform.visibleLocations}

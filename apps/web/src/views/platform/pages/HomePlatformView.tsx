@@ -14,9 +14,8 @@ import type {
   Supplier,
   SupplierRequest,
 } from '@stocky/types';
-import { PlatformPageLayout } from './PlatformPageLayout';
 import {
-  HomeHeaderWidget,
+  HomeAssetCardsWidget,
   HomeHeroWidget,
   HomeStockFlowWidget,
   HomeSpeedometerWidget,
@@ -53,6 +52,8 @@ export interface HomePlatformViewProps {
   onOpenScanner?: () => void;
   onOpenNotifications?: () => void;
   unreadNotificationsCount?: number;
+  companyName?: string;
+  companyLogoUrl?: string | null;
 
   products?: Product[];
   lots?: StockLot[];
@@ -90,6 +91,8 @@ export function HomePlatformView({
   onOpenScanner,
   onOpenNotifications,
   unreadNotificationsCount = 0,
+  companyName,
+  companyLogoUrl,
   products = [],
   lots = [],
   locations = [],
@@ -224,33 +227,33 @@ export function HomePlatformView({
   const topProductName = topProduct ? topProduct.name : 'Al-Marai Fresh Milk 1L';
 
   return (
-    <PlatformPageLayout
-      title=""
-      hideHeaderOnMobile={true}
-    >
-      <div className="flex flex-col gap-5 w-full max-w-[var(--stocky-page-max-width)] mx-auto pb-28 sm:pb-8">
-        {/* 1. Top Header Row: Search with embedded scanner, notifications, and branch switcher */}
-        <HomeHeaderWidget
-          locationName={locationName}
-          locations={locations}
-          selectedLocationId={locationFilter}
-          onSelectLocation={setLocationFilter}
-          onSearch={() => onOpenStock()}
-          onOpenScanner={onOpenScanner || onOpenStock}
-          onOpenNotifications={onOpenNotifications}
-          unreadNotificationsCount={unreadNotificationsCount}
-        />
+    <div className="flex flex-col w-full min-h-full">
+      {/* 1. Full-Bleed Hero Card (flush to top, left, right edges; rounded at bottom) */}
+      <HomeHeroWidget
+        userName={userName}
+        locationName={activeLocationName}
+        locations={locations}
+        selectedLocationId={locationFilter}
+        companyName={companyName}
+        companyLogoUrl={companyLogoUrl}
+        onSelectLocation={setLocationFilter}
+        onSearch={() => onOpenStock()}
+        onOpenScanner={onOpenScanner || onOpenStock}
+        onOpenNotifications={onOpenNotifications}
+        unreadNotificationsCount={unreadNotificationsCount}
+      />
 
-        {/* 2. Responsive Cockpit Grid (Stacked on Mobile, 12 Columns on Desktop) */}
+      {/* 2. Centered Page Content Shell */}
+      <div className="w-full max-w-[var(--stocky-page-max-width)] mx-auto px-4 sm:px-6 lg:px-8 py-5 flex flex-col gap-5">
+        {/* Responsive Cockpit Grid (Stacked on Mobile, 12 Columns on Desktop) */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
-          {/* Left Column (7 cols): Atmospheric Hero Greeting + Stock Flow & Capital */}
+          {/* Left Column (7 cols): Outside Call Cards + Stock Flow & Capital */}
           <div className="lg:col-span-7 flex flex-col gap-5">
-            <HomeHeroWidget
-              userName={userName}
-              locationName={activeLocationName}
+            <HomeAssetCardsWidget
               totalUnits={totalUnits}
               totalValuation={totalValuation}
               growthPct={7.4}
+              onOpenStock={onOpenStock}
             />
 
             <HomeStockFlowWidget
@@ -291,6 +294,6 @@ export function HomePlatformView({
           </div>
         </div>
       </div>
-    </PlatformPageLayout>
+    </div>
   );
 }

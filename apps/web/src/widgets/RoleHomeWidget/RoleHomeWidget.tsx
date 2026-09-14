@@ -17,6 +17,7 @@ import type {
 
 import { HomeHeaderWidget } from '../HomeHeaderWidget/HomeHeaderWidget';
 import { HomeHeroWidget } from '../HomeHeroWidget/HomeHeroWidget';
+import { HomeAssetCardsWidget } from '../HomeHeroWidget/HomeAssetCardsWidget';
 import { HomeStockFlowWidget } from '../HomeStockFlowWidget/HomeStockFlowWidget';
 import { HomeSpeedometerWidget } from '../HomeSpeedometerWidget/HomeSpeedometerWidget';
 import { HomeTriageWidget, type UrgentTriageItem } from '../HomeTriageWidget/HomeTriageWidget';
@@ -229,9 +230,20 @@ export function RoleHomeWidget({
           <HomeHeroWidget
             userName={userName}
             locationName={activeLocationName}
+            locations={locations}
+            selectedLocationId={locationFilter}
+            onSelectLocation={setLocationFilter}
+            onSearch={() => onOpenStock()}
+            onOpenScanner={onOpenScanner || onOpenStock}
+            onOpenNotifications={onOpenNotifications}
+            unreadNotificationsCount={unreadNotificationsCount}
+          />
+
+          <HomeAssetCardsWidget
             totalUnits={totalUnits}
             totalValuation={totalValuation}
             growthPct={7.4}
+            onOpenStock={onOpenStock}
           />
 
           <HomeStockFlowWidget
