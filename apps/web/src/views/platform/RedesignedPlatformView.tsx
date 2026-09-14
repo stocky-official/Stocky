@@ -3,7 +3,7 @@
 import React, { type UIEvent, useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase/client';
-import type { CompanyUserRole, CreateStockTaskCommand, InventoryTransfer, Location, NotificationTask, Product, ReviewStockTaskCommand, StockActivityLog, StockLot, StockMovement, StockTask, StockTaskExpected, StockTaskItem, SubmitStockTaskCommand, Supplier, SupplierContact, SupplierProduct, SupplierRequest } from '@stocky/types';
+import type { AttendanceShift, CompanyUserRole, CreateStockTaskCommand, InventoryTransfer, Location, NotificationTask, Product, ReviewStockTaskCommand, StockActivityLog, StockLot, StockMovement, StockTask, StockTaskExpected, StockTaskItem, SubmitStockTaskCommand, Supplier, SupplierContact, SupplierProduct, SupplierRequest } from '@stocky/types';
 import {
   BarcodeScannerWidget,
   type NotificationQueueItem,
@@ -43,6 +43,7 @@ function mapTask(row: any): StockTask { return { id: row.id, companyId: row.comp
 function mapTaskItem(row: any): StockTaskItem { return { id: row.id, taskId: row.task_id, productId: row.product_id, stockLotId: row.stock_lot_id, countedQuantity: row.counted_quantity == null ? null : Number(row.counted_quantity), observedExpiryDate: row.observed_expiry_date, note: row.note, status: row.status, completedAt: row.completed_at, createdAt: row.created_at, updatedAt: row.updated_at }; }
 function mapTaskExpected(row: any): StockTaskExpected { return { taskItemId: row.task_item_id, expectedQuantity: row.expected_quantity == null ? null : Number(row.expected_quantity), expectedExpiryDate: row.expected_expiry_date }; }
 function mapActivityLog(row: any): StockActivityLog { return { id: row.id, companyId: row.company_id, locationId: row.location_id, actorCompanyUserId: row.actor_company_user_id, entityType: row.entity_type, entityId: row.entity_id, action: row.action, summary: row.summary, metadata: row.metadata, createdAt: row.created_at }; }
+function mapAttendanceShift(row: any): AttendanceShift { return { id: row.id, companyId: row.company_id, locationId: row.location_id, companyUserId: row.company_user_id, shiftDate: row.shift_date, clockInAt: row.clock_in_at, clockOutAt: row.clock_out_at, totalMinutes: row.total_minutes == null ? null : Number(row.total_minutes), status: row.status, punchInMethod: row.punch_in_method, punchOutMethod: row.punch_out_method, notes: row.notes, createdAt: row.created_at, updatedAt: row.updated_at }; }
 
 export function RedesignedPlatformView() {
   const router = useRouter();
@@ -78,6 +79,7 @@ export function RedesignedPlatformView() {
   const [teamAssignments, setTeamAssignments] = useState<any[]>([]);
   const [selectedLocationId, setSelectedLocationId] = useState('all');
   const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const [isScannerOpen, setIsScannerOpen] = useState(false);
   const [receiveOpen, setReceiveOpen] = useState(false);
   const [receiveProductId, setReceiveProductId] = useState<string | undefined>();
   const [receiveProductSearch, setReceiveProductSearch] = useState<string | undefined>();
@@ -93,6 +95,7 @@ export function RedesignedPlatformView() {
   const [taskItems, setTaskItems] = useState<StockTaskItem[]>([]);
   const [taskExpected, setTaskExpected] = useState<StockTaskExpected[]>([]);
   const [activityLogs, setActivityLogs] = useState<StockActivityLog[]>([]);
+  const [attendanceShifts, setAttendanceShifts] = useState<AttendanceShift[]>([]);
 
   useEffect(() => {
     let cancelled = false;
@@ -145,7 +148,7 @@ export function RedesignedPlatformView() {
       const { data: syncedNotifications, error: notificationSyncError } = await supabase.rpc('sync_stocky_notifications');
       if (notificationSyncError) console.warn('Notification sync unavailable; using live action queue', notificationSyncError.message);
       setNotificationSyncAvailable(!notificationSyncError);
-      const [{ data: dbLocations }, { data: userLocations }, { data: dbProducts }, { data: dbLots }, { data: dbSuppliers }, { data: dbSupplierContacts }, { data: dbSupplierProducts }, { data: dbRequests }, { data: dbTransfers }, { data: dbCounts }, { data: dbCountLines }, { data: dbTeam }, { data: dbMovements }, { data: dbTasks }, { data: dbTaskItems }, { data: dbTaskExpected }, { data: dbActivityLogs }] = await Promise.all([
+      const [{ data: dbLocations }, { data: userLocations }, { data: dbProducts }, { data: dbLots }, { data: dbSuppliers }, { data: dbSupplierContacts }, { data: dbSupplierProducts }, { data: dbRequests }, { data: dbTransfers }, { data: dbCounts }, { data: dbCountLines }, { data: dbTeam }, { data: dbMovements }, { data: dbTasks }, { data: dbTaskItems }, { data: dbTaskExpected }, { data: dbActivityLogs }, { data: dbShifts }] = await Promise.all([
         supabase.from('locations').select('*').eq('company_id', profile.company_id).eq('is_active', true).order('name'),
         supabase.from('user_locations').select('location_id').eq('user_id', profile.id),
         supabase.from('products').select('*').eq('company_id', profile.company_id).eq('is_active', true).order('name'),
@@ -166,6 +169,7 @@ export function RedesignedPlatformView() {
         supabase.from('stock_task_items').select('id,task_id,product_id,stock_lot_id,counted_quantity,observed_expiry_date,note,status,completed_at,created_at,updated_at').eq('company_id', profile.company_id).order('created_at', { ascending: true }),
         supabase.from('stock_task_expected').select('*'),
         supabase.from('stock_activity_logs').select('*').eq('company_id', profile.company_id).order('created_at', { ascending: false }).limit(500),
+        supabase.from('attendance_shifts').select('*').eq('company_id', profile.company_id).order('clock_in_at', { ascending: false }).limit(300),
       ]);
       if (cancelled) return;
       const { data: dbAssignments } = await supabase.from('user_locations').select('id,user_id,location_id');
@@ -173,7 +177,7 @@ export function RedesignedPlatformView() {
       const nextAssigned = Array.from(new Set([...(userLocations || []).map((row: any) => row.location_id), ...nextLocations.filter((location) => location.managerUserId === profile.id).map((location) => location.id)]));
       const countLinesBySession = new Map<string, any[]>();
       (dbCountLines || []).forEach((line: any) => { const current = countLinesBySession.get(line.session_id) || []; current.push(line); countLinesBySession.set(line.session_id, current); });
-      setAssignedLocationIds(nextAssigned); setLocations(nextLocations); setProducts((dbProducts || []).map(mapProduct)); setLots((dbLots || []).map(mapLot)); setSuppliers((dbSuppliers || []).map(mapSupplier)); setSupplierContacts((dbSupplierContacts || []).map(mapSupplierContact)); setSupplierProducts((dbSupplierProducts || []).map(mapSupplierProduct)); setRequests((dbRequests || []).map(mapRequest)); setTransfers((dbTransfers || []).map(mapTransfer)); setCounts((dbCounts || []).map((count: any) => ({ ...count, lines: countLinesBySession.get(count.id) || [] }))); setTeamMembers(dbTeam || []); setTeamAssignments(dbAssignments || []); setMovements((dbMovements || []).map(mapMovement)); setTasks((dbTasks || []).map(mapTask)); setTaskItems((dbTaskItems || []).map(mapTaskItem)); setTaskExpected((dbTaskExpected || []).map(mapTaskExpected)); setActivityLogs((dbActivityLogs || []).map(mapActivityLog)); setPersistedNotifications((syncedNotifications || []).map(mapNotification));
+      setAssignedLocationIds(nextAssigned); setLocations(nextLocations); setProducts((dbProducts || []).map(mapProduct)); setLots((dbLots || []).map(mapLot)); setSuppliers((dbSuppliers || []).map(mapSupplier)); setSupplierContacts((dbSupplierContacts || []).map(mapSupplierContact)); setSupplierProducts((dbSupplierProducts || []).map(mapSupplierProduct)); setRequests((dbRequests || []).map(mapRequest)); setTransfers((dbTransfers || []).map(mapTransfer)); setCounts((dbCounts || []).map((count: any) => ({ ...count, lines: countLinesBySession.get(count.id) || [] }))); setTeamMembers(dbTeam || []); setTeamAssignments(dbAssignments || []); setMovements((dbMovements || []).map(mapMovement)); setTasks((dbTasks || []).map(mapTask)); setTaskItems((dbTaskItems || []).map(mapTaskItem)); setTaskExpected((dbTaskExpected || []).map(mapTaskExpected)); setActivityLogs((dbActivityLogs || []).map(mapActivityLog)); setPersistedNotifications((syncedNotifications || []).map(mapNotification)); setAttendanceShifts((dbShifts || []).map(mapAttendanceShift));
       const visible = adminRoles.includes(role) ? nextLocations : nextLocations.filter((location) => nextAssigned.includes(location.id));
       if (!adminRoles.includes(role) && visible.length > 0) setSelectedLocationId((current) => visible.some((location) => location.id === current) ? current : visible[0].id);
       if (adminRoles.includes(role)) setSelectedLocationId((current) => current || 'all');
@@ -515,6 +519,12 @@ export function RedesignedPlatformView() {
     if (chromeTransitionTimerRef.current !== null) window.clearTimeout(chromeTransitionTimerRef.current);
   }, []);
 
+  const ongoingTasksCount = useMemo(() => {
+    return tasks.filter((t) =>
+      ['assigned', 'in_progress', 'rejected', 'submitted'].includes(t.status)
+    ).length;
+  }, [tasks]);
+
   return (
     <>
       <PlatformTopBarWidget
@@ -544,6 +554,7 @@ export function RedesignedPlatformView() {
         onSupplierTabChange={setSupplierTab}
         taskTab={taskTab}
         onTaskTabChange={setTaskTab}
+        tasksCount={ongoingTasksCount}
       />
       <div className="stocky-platform-body flex flex-1 min-h-0 min-w-0">
         <SidebarNavWidget activeTab={activeTab} onTabChange={handleNavigationChange} userRole={userRole} companyName={company?.name} companyLogoUrl={company?.logo_url} notificationCount={notificationItems.length} onNotificationsClick={() => setNotificationsOpen(true)} searchQuery={globalSearchQuery} onSearch={(query) => { setGlobalSearchQuery(query); if (query.trim()) setActiveTab('stock'); }} userEmail={userEmail} userName={userName} userTitle={userTitle} userAvatarUrl={userAvatarUrl} onSettingsClick={() => handleNavigationChange('settings')} />
@@ -570,6 +581,7 @@ export function RedesignedPlatformView() {
           requests={requests}
           transfers={transfers}
           counts={counts}
+          attendanceShifts={attendanceShifts}
           teamMembers={teamMembers}
           teamAssignments={teamAssignments}
           activityLogs={activityLogs}
@@ -623,6 +635,8 @@ export function RedesignedPlatformView() {
           onUnassignLocation={unassignLocation}
           onExport={adminRoles.includes(userRole) ? exportStock : undefined}
           onImportSuccess={refresh}
+          onOpenScanner={() => setIsScannerOpen(true)}
+          onOpenNotifications={() => setNotificationsOpen(true)}
         />
       </div>
       <NotificationsDrawerWidget
@@ -633,7 +647,13 @@ export function RedesignedPlatformView() {
       />
       <ReceiveStockDrawerWidget isOpen={receiveOpen} onClose={() => setReceiveOpen(false)} products={products} locations={visibleLocations} suppliers={suppliers} companyId={companyId} userRole={userRole} defaultProductId={receiveProductId} defaultProductSearch={receiveProductSearch} defaultLocationId={locationScope === 'all' ? visibleLocations[0]?.id : locationScope} onSaved={refresh} />
       <ProductEditDrawerWidget isOpen={productEditOpen} product={editingProduct} categories={Array.from(new Set(products.map((product) => product.categoryName).filter(Boolean)))} suppliers={suppliers} onClose={() => { setProductEditOpen(false); setEditingProduct(null); }} onSave={updateProduct} />
-      <BarcodeScannerWidget onProductFound={() => undefined} onBarcodeFound={(barcode) => { setGlobalSearchQuery(barcode); setTaskScanQuery(barcode); setActiveTab('stock'); }} onCodeNotFound={(barcode) => { openReceive(undefined, barcode); }} />
+      <BarcodeScannerWidget
+        isOpen={isScannerOpen}
+        onClose={() => setIsScannerOpen(false)}
+        onProductFound={() => undefined}
+        onBarcodeFound={(barcode) => { setGlobalSearchQuery(barcode); setTaskScanQuery(barcode); setActiveTab('stock'); }}
+        onCodeNotFound={(barcode) => { openReceive(undefined, barcode); }}
+      />
       <MobileBottomNavWidget
         activeTab={activeTab}
         userRole={userRole}

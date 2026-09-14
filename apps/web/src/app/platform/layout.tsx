@@ -1,6 +1,6 @@
 'use client';
 
-import React, { type UIEvent, useRef, useState, useEffect } from 'react';
+import React, { type UIEvent, useRef, useState, useEffect, useMemo } from 'react';
 import { PlatformProvider, usePlatform } from '@/views/platform/PlatformContext';
 import { PageLayout } from '@/components/ui/PageLayout';
 import { HydrationFadeWrapper } from '@/components/ui/Skeleton';
@@ -112,6 +112,19 @@ function PlatformShell({ children }: { children?: React.ReactNode }) {
     );
   }
 
+  const ongoingTasksCount = useMemo(() => {
+    return platform.tasks?.filter((t) =>
+      ['assigned', 'in_progress', 'rejected', 'submitted'].includes(t.status)
+    ).length ?? 0;
+  }, [platform.tasks]);
+
+  const presentTodayCount = useMemo(() => {
+    const todayStr = new Date().toISOString().slice(0, 10);
+    return platform.attendanceShifts?.filter(
+      (s) => s.shiftDate === todayStr || s.clockInAt?.startsWith(todayStr)
+    ).length ?? 0;
+  }, [platform.attendanceShifts]);
+
   return (
     <PageLayout className="stocky-platform-shell">
       <PlatformTopBarWidget
@@ -147,6 +160,8 @@ function PlatformShell({ children }: { children?: React.ReactNode }) {
         onTaskTabChange={platform.setTaskTab}
         attendanceTab={platform.attendanceTab}
         onAttendanceTabChange={platform.setAttendanceTab}
+        tasksCount={ongoingTasksCount}
+        presentCount={presentTodayCount}
       />
       <div className="stocky-platform-body flex flex-1 min-h-0 min-w-0">
         <SidebarNavWidget
@@ -209,6 +224,8 @@ function PlatformShell({ children }: { children?: React.ReactNode }) {
         onSave={platform.updateProduct}
       />
       <BarcodeScannerWidget
+        isOpen={platform.scannerOpen}
+        onClose={platform.closeScanner}
         onProductFound={() => undefined}
         onBarcodeFound={(barcode) => {
           platform.setGlobalSearchQuery(barcode);

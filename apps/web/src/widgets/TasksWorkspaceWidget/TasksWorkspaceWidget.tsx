@@ -87,6 +87,7 @@ export function TasksWorkspaceWidget({
   onCreateTask,
 }: TasksWorkspaceWidgetProps) {
   const platform = useOptionalPlatform();
+  const effectiveTaskTab = controlledTab ?? platform?.taskTab ?? 'ongoing';
   const effectiveCreateTask = onCreateTask ?? platform?.createStockTask;
   const effectiveAssignments =
     assignments.length > 0
@@ -162,6 +163,17 @@ export function TasksWorkspaceWidget({
   // Filter all tasks by search query and filter attributes
   const filteredTasks = useMemo(() => {
     return sortedTasks.filter((task) => {
+      // Subtab Queue Check (Ongoing vs Completed)
+      if (effectiveTaskTab === 'completed') {
+        if (task.status !== 'approved' && task.status !== 'cancelled') {
+          return false;
+        }
+      } else {
+        if (task.status === 'approved' || task.status === 'cancelled') {
+          return false;
+        }
+      }
+
       // Filter State Checks
       if (filters.taskType !== 'all' && task.taskType !== filters.taskType) {
         return false;
@@ -197,7 +209,7 @@ export function TasksWorkspaceWidget({
         .filter(Boolean)
         .some((val) => String(val).toLowerCase().includes(query));
     });
-  }, [sortedTasks, filters, searchQuery, memberMap, locationMap]);
+  }, [sortedTasks, filters, searchQuery, memberMap, locationMap, effectiveTaskTab]);
 
   // Active filter count
   const activeFilterCount = useMemo(() => {

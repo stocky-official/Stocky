@@ -1,7 +1,7 @@
 'use client';
 
 import type { UIEvent } from 'react';
-import type { CompanyUserRole, CreateStockTaskCommand, InventoryTransfer, Location, Product, StockActivityLog, StockLot, StockTask, StockTaskExpected, StockTaskItem, Supplier, SupplierContact, SupplierProduct, SupplierRequest } from '@stocky/types';
+import type { AttendanceShift, CompanyUserRole, CreateStockTaskCommand, InventoryTransfer, Location, Product, StockActivityLog, StockLot, StockTask, StockTaskExpected, StockTaskItem, Supplier, SupplierContact, SupplierProduct, SupplierRequest } from '@stocky/types';
 import { PlatformContextTabsWidget } from '../PlatformContextTabsWidget/PlatformContextTabsWidget';
 import { PlatformWorkspaceSkeleton } from '../PlatformWorkspaceSkeleton/PlatformWorkspaceSkeleton';
 import { HydrationFadeWrapper } from '@/components/ui/Skeleton';
@@ -48,6 +48,7 @@ export interface PlatformWorkspaceWidgetProps {
   requests: SupplierRequest[];
   transfers: InventoryTransfer[];
   counts: any[];
+  attendanceShifts?: AttendanceShift[];
   teamMembers: any[];
   teamAssignments: any[];
   activityLogs: StockActivityLog[];
@@ -105,6 +106,8 @@ export interface PlatformWorkspaceWidgetProps {
   onSupplierTabChange?: (tab: 'suppliers' | 'requests') => void;
   taskTab?: 'ongoing' | 'completed';
   onTaskTabChange?: (tab: 'ongoing' | 'completed') => void;
+  onOpenScanner?: () => void;
+  onOpenNotifications?: () => void;
 }
 
 export function PlatformWorkspaceWidget({
@@ -130,6 +133,7 @@ export function PlatformWorkspaceWidget({
   requests,
   transfers,
   counts,
+  attendanceShifts = [],
   teamMembers,
   teamAssignments,
   activityLogs,
@@ -183,6 +187,8 @@ export function PlatformWorkspaceWidget({
   onUnassignLocation,
   onExport,
   onImportSuccess,
+  onOpenScanner,
+  onOpenNotifications,
 }: PlatformWorkspaceWidgetProps) {
   const locationScope = selectedLocationId;
 
@@ -232,6 +238,22 @@ export function PlatformWorkspaceWidget({
                 onOpenCount={() => onTabChange('stock')}
                 onOpenTasks={() => onTabChange('tasks')}
                 onOpenSearch={() => onTabChange('stock')}
+                onOpenAttendance={() => onTabChange('attendance')}
+                onOpenScanner={onOpenScanner}
+                onOpenNotifications={onOpenNotifications}
+                unreadNotificationsCount={notificationItems?.length || 0}
+                products={products}
+                lots={lots}
+                locations={locations}
+                suppliers={suppliers}
+                requests={requests}
+                transfers={transfers}
+                attendanceShifts={attendanceShifts}
+                tasks={tasks}
+                taskItems={taskItems}
+                teamMembers={teamMembers}
+                activityLogs={activityLogs}
+                selectedLocationId={selectedLocationId}
               />
             )}
             {activeTab === 'notifications' && <NotificationsPlatformView items={notificationItems} />}

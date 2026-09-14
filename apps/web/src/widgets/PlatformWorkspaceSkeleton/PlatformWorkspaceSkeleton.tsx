@@ -10,6 +10,7 @@ import {
 } from '@/components/ui/Skeleton';
 
 export type PlatformSkeletonVariant =
+  | 'home'
   | 'dashboard'
   | 'inventory'
   | 'stock'
@@ -47,6 +48,13 @@ interface PageMeta {
 }
 
 const PAGE_METAS: Record<string, PageMeta> = {
+  home: {
+    titleWidth: 'w-48 sm:w-64',
+    subtitleWidth: 'w-64 sm:w-88',
+    actionWidth: 'w-36',
+    subtabs: [],
+    activeSubtabIndex: 0,
+  },
   dashboard: {
     titleWidth: 'w-48 sm:w-64',
     subtitleWidth: 'w-64 sm:w-88',
@@ -185,7 +193,7 @@ export function PlatformWorkspaceSkeleton({
       aria-label="Loading workspace..."
     >
       {/* 1. Standard 2-Tier Header Skeleton */}
-      <header className="stocky-subview-header flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+      <header className="stocky-subview-header hidden md:flex flex-col sm:flex-row sm:items-end justify-between gap-4">
         <div className="stocky-subview-title-group min-w-0 flex flex-col gap-2">
           {eyebrow && (
             <div className="flex items-center gap-1.5">
@@ -224,8 +232,8 @@ export function PlatformWorkspaceSkeleton({
 
       {/* 3. Main Workspace Body Configured Per Page Type */}
 
-      {/* A. DASHBOARD VIEW */}
-      {pageType === 'dashboard' && (
+      {/* A. HOME / DASHBOARD VIEW */}
+      {(pageType === 'home' || pageType === 'dashboard') && (
         <div className="flex flex-col gap-6">
           {/* 4 Metric Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">

@@ -63,6 +63,7 @@ export function TasksPlatformView(props: TasksPlatformViewProps) {
     <PlatformPageLayout
       title="Stock tasks"
       subtitle="Assigned counts and expiry checks stay here. Permanent actions are recorded in Logs."
+      hideHeaderOnMobile={true}
       actions={
         <span className="inline-flex items-center gap-1.5 rounded-full stocky-status-info border px-2.5 py-1 text-[11px]">
           <ActivityIcon size="xs" />

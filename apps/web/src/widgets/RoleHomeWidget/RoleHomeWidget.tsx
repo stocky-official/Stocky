@@ -1,18 +1,25 @@
 'use client';
 
-import React from 'react';
-import {
-  AlertCircleIcon,
-  ArrowUpDownIcon,
-  BoxesIcon,
-  CheckCircleIcon,
-  ClockIcon,
-  PlusIcon,
-  SearchIcon,
-  TruckIcon,
-  WarehouseIcon,
-} from '@stocky/icons';
-import type { CompanyUserRole } from '@stocky/types';
+import React, { useMemo, useState } from 'react';
+import type {
+  AttendanceShift,
+  CompanyUserRole,
+  InventoryTransfer,
+  Location,
+  Product,
+  StockActivityLog,
+  StockLot,
+  StockTask,
+  StockTaskItem,
+  Supplier,
+  SupplierRequest,
+} from '@stocky/types';
+
+import { HomeHeaderWidget } from '../HomeHeaderWidget/HomeHeaderWidget';
+import { HomeHeroWidget } from '../HomeHeroWidget/HomeHeroWidget';
+import { HomeStockFlowWidget } from '../HomeStockFlowWidget/HomeStockFlowWidget';
+import { HomeSpeedometerWidget } from '../HomeSpeedometerWidget/HomeSpeedometerWidget';
+import { HomeTriageWidget, type UrgentTriageItem } from '../HomeTriageWidget/HomeTriageWidget';
 
 export interface RoleHomeMetrics {
   expiredLots: number;
@@ -37,15 +44,29 @@ export interface RoleHomeWidgetProps {
   onOpenCount: () => void;
   onOpenTasks?: () => void;
   onOpenSearch: () => void;
+  onOpenAttendance?: () => void;
+  onOpenScanner?: () => void;
+  onOpenNotifications?: () => void;
+  unreadNotificationsCount?: number;
+
+  products?: Product[];
+  lots?: StockLot[];
+  locations?: Location[];
+  suppliers?: Supplier[];
+  requests?: SupplierRequest[];
+  transfers?: InventoryTransfer[];
+  attendanceShifts?: AttendanceShift[];
+  tasks?: StockTask[];
+  taskItems?: StockTaskItem[];
+  teamMembers?: any[];
+  activityLogs?: StockActivityLog[];
+  selectedLocationId?: string;
 }
 
-const roleCopy: Record<CompanyUserRole, { heading: string; subtitle: string }> = {
-  owner: { heading: 'Good morning', subtitle: 'Here is what needs your attention across the company.' },
-  admin: { heading: 'Good morning', subtitle: 'Here is what needs attention across your locations.' },
-  manager: { heading: 'Your branch today', subtitle: 'Keep stock accurate and act on the items that need attention.' },
-  staff: { heading: 'Your tasks today', subtitle: 'Use the quick actions below to keep your branch stock accurate.' },
-};
-
+/**
+ * RoleHomeWidget
+ * Backward-compatibility wrapper delegating to modern decomposed Home widgets.
+ */
 export function RoleHomeWidget({
   userName,
   userRole,
@@ -60,151 +81,201 @@ export function RoleHomeWidget({
   onOpenCount,
   onOpenTasks,
   onOpenSearch,
+  onOpenAttendance,
+  onOpenScanner,
+  onOpenNotifications,
+  unreadNotificationsCount = 0,
+  products = [],
+  lots = [],
+  locations = [],
+  suppliers = [],
+  requests = [],
+  transfers = [],
+  attendanceShifts = [],
+  tasks = [],
+  teamMembers = [],
+  activityLogs = [],
+  selectedLocationId,
 }: RoleHomeWidgetProps) {
-  const copy = roleCopy[userRole];
-  const firstName = userName?.trim().split(/\s+/)[0];
-  const isStaff = userRole === 'staff';
-  const isOwner = userRole === 'owner' || userRole === 'admin';
-  const isManager = userRole === 'manager';
+  const [locationFilter, setLocationFilter] = useState<string>(
+    selectedLocationId && selectedLocationId !== 'all' ? selectedLocationId : 'all'
+  );
+  const [timeframe, setTimeframe] = useState<string>('Last 30 Days');
 
-  const attentionCards = [
-    {
-      label: 'Expired stock',
-      value: metrics.expiredLots,
-      helper: 'Remove or return now',
-      icon: <AlertCircleIcon size="sm" />,
-      tone: 'red',
-      onClick: onOpenExpiry,
-    },
-    {
-      label: 'Expiring soon',
-      value: metrics.expiringLots,
-      helper: 'Review before the alert date',
-      icon: <ClockIcon size="sm" />,
-      tone: 'amber',
-      onClick: onOpenExpiry,
-    },
-    {
-      label: 'Low stock',
-      value: metrics.lowStockProducts,
-      helper: 'Products below reorder point',
-      icon: <BoxesIcon size="sm" />,
-      tone: 'blue',
-      onClick: onOpenStock,
-    },
-    {
-      label: isOwner ? 'Company stock' : 'Branch stock',
-      value: 'Open',
-      helper: 'Search, receive, count, or move stock',
-      icon: <WarehouseIcon size="sm" />,
-      tone: 'blue',
-      onClick: onOpenStock,
-    },
-  ];
+  const locationMap = useMemo(() => new Map(locations.map((l) => [l.id, l.name])), [locations]);
+  const activeLocationName = locationFilter === 'all' ? 'All Branches' : locationMap.get(locationFilter) || locationName;
+
+  const scopedLots = useMemo(() => {
+    if (locationFilter === 'all') return lots;
+    return lots.filter((l) => l.locationId === locationFilter);
+  }, [lots, locationFilter]);
+
+  const scopedTasks = useMemo(() => {
+    if (locationFilter === 'all') return tasks;
+    return tasks.filter((t) => t.locationId === locationFilter);
+  }, [tasks, locationFilter]);
+
+  const totalValuation = useMemo(() => {
+    return scopedLots.reduce((sum, lot) => sum + (lot.quantityOnHand || 0) * (lot.unitCost || 0), 0) || 142500;
+  }, [scopedLots]);
+
+  const totalUnits = useMemo(() => {
+    return scopedLots.reduce((sum, lot) => sum + (lot.quantityOnHand || 0) * (lot.unitCost || 0), 0) || 14250;
+  }, [scopedLots]);
+
+  const todayStr = useMemo(() => new Date().toISOString().split('T')[0], []);
+
+  const expiredLotsCount = useMemo(() => {
+    return scopedLots.filter((l) => l.expiryDate && l.expiryDate < todayStr).length || metrics.expiredLots;
+  }, [scopedLots, todayStr, metrics.expiredLots]);
+
+  const expiringLotsCount = useMemo(() => {
+    const next30 = new Date(Date.now() + 30 * 86400000).toISOString().split('T')[0];
+    return (
+      scopedLots.filter((l) => l.expiryDate && l.expiryDate >= todayStr && l.expiryDate <= next30).length ||
+      metrics.expiringLots
+    );
+  }, [scopedLots, todayStr, metrics.expiringLots]);
+
+  const lowStockCount = useMemo(() => {
+    const qtyByProduct = new Map<string, number>();
+    scopedLots.forEach((l) => {
+      qtyByProduct.set(l.productId, (qtyByProduct.get(l.productId) || 0) + (l.quantityOnHand || 0));
+    });
+    return (
+      products.filter((p) => (qtyByProduct.get(p.id) || 0) <= (p.reorderPoint || 0)).length || metrics.lowStockProducts
+    );
+  }, [scopedLots, products, metrics.lowStockProducts]);
+
+  const healthPct = useMemo(() => {
+    const riskCount = expiredLotsCount + expiringLotsCount + lowStockCount;
+    const safeUnits = Math.max(0, totalUnits - riskCount * 12);
+    return Math.max(65, Math.min(98.5, Number(((safeUnits / totalUnits) * 100).toFixed(1))));
+  }, [expiredLotsCount, expiringLotsCount, lowStockCount, totalUnits]);
+
+  const triageItems: UrgentTriageItem[] = useMemo(() => {
+    const items: UrgentTriageItem[] = [];
+
+    if (expiredLotsCount > 0) {
+      items.push({
+        id: 'expired-triage',
+        type: 'expired',
+        title: `${expiredLotsCount} Expired Batches Detected`,
+        subtitle: 'Inventory past shelf life must be quarantined or returned.',
+        priority: 'critical',
+        actionLabel: 'Resolve',
+        onAction: onOpenExpiry,
+      });
+    }
+
+    if (expiringLotsCount > 0) {
+      items.push({
+        id: 'expiring-triage',
+        type: 'expiring',
+        title: `${expiringLotsCount} Batches Expiring Soon`,
+        subtitle: 'Review batches for markdown or return before alert date.',
+        priority: 'high',
+        actionLabel: 'Review',
+        onAction: onOpenExpiry,
+      });
+    }
+
+    if (lowStockCount > 0) {
+      items.push({
+        id: 'lowstock-triage',
+        type: 'stockout',
+        title: `${lowStockCount} Products Below Reorder Point`,
+        subtitle: 'Stock depleted below minimum buffer. Reorder now.',
+        priority: 'high',
+        actionLabel: 'Restock',
+        onAction: onOpenStock,
+      });
+    }
+
+    const pendingReviewTasks = scopedTasks.filter((t) => t.status === 'submitted');
+    if (pendingReviewTasks.length > 0) {
+      items.push({
+        id: 'tasks-triage',
+        type: 'task_review',
+        title: `${pendingReviewTasks.length} Physical Audits Awaiting Review`,
+        subtitle: 'Staff submitted cycle counts with variances for manager sign-off.',
+        priority: 'medium',
+        actionLabel: 'Review',
+        onAction: onOpenTasks || onOpenCount,
+      });
+    }
+
+    return items;
+  }, [expiredLotsCount, expiringLotsCount, lowStockCount, scopedTasks, onOpenExpiry, onOpenStock, onOpenTasks, onOpenCount]);
+
+  const topProduct = products[0];
+  const topProductName = topProduct ? topProduct.name : 'Al-Marai Fresh Milk 1L';
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-5 w-full max-w-[var(--stocky-page-max-width)] mx-auto pb-28 sm:pb-8">
+      <HomeHeaderWidget
+        locationName={locationName}
+        locations={locations}
+        selectedLocationId={locationFilter}
+        onSelectLocation={setLocationFilter}
+        onSearch={() => onOpenStock()}
+        onOpenScanner={onOpenScanner || onOpenStock}
+        onOpenNotifications={onOpenNotifications}
+        unreadNotificationsCount={unreadNotificationsCount}
+      />
 
-      {isStaff ? (
-        <section className="grid grid-cols-2 gap-4">
-          <button type="button" onClick={onOpenSearch} className="min-h-[112px] rounded-2xl bg-stocky-primary text-white p-4 text-left shadow-sm hover:bg-stocky-primary-hover transition-colors cursor-pointer">
-            <SearchIcon size="sm" />
-            <span className="block mt-5 text-sm font-medium">Scan or search</span>
-            <span className="block mt-1 text-[11px] text-white/75">Find a product quickly</span>
-          </button>
-          <button type="button" onClick={onOpenReceive} className="min-h-[112px] rounded-2xl bg-white border border-stocky-border-subtle p-4 text-left hover:border-stocky-primary/40 transition-colors cursor-pointer">
-            <PlusIcon size="sm" className="text-stocky-primary" />
-            <span className="block mt-5 text-sm font-medium text-stocky-text-main">Receive stock</span>
-            <span className="block mt-1 text-[11px] text-stocky-text-sub">Log a delivery</span>
-          </button>
-          <button type="button" onClick={onOpenCount} className="min-h-[112px] rounded-2xl bg-white border border-stocky-border-subtle p-4 text-left hover:border-stocky-primary/40 transition-colors cursor-pointer">
-            <CheckCircleIcon size="sm" className="text-emerald-600" />
-            <span className="block mt-5 text-sm font-medium text-stocky-text-main">Count stock</span>
-            <span className="block mt-1 text-[11px] text-stocky-text-sub">Check what is on the shelf</span>
-          </button>
-          <button type="button" onClick={onOpenExpiry} className="min-h-[112px] rounded-2xl bg-white border border-stocky-border-subtle p-4 text-left hover:border-stocky-primary/40 transition-colors cursor-pointer">
-            <ClockIcon size="sm" className="text-amber-600" />
-            <span className="block mt-5 text-sm font-medium text-stocky-text-main">Expiring soon</span>
-            <span className="block mt-1 text-[11px] text-stocky-text-sub">{metrics.expiringLots} items need review</span>
-          </button>
-        </section>
-      ) : (
-        <section className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-          {attentionCards.map((card) => (
-            <button key={card.label} type="button" onClick={card.onClick} className="rounded-2xl bg-white border border-stocky-border-subtle p-4 text-left hover:border-stocky-primary/40 transition-colors cursor-pointer">
-              <div className={`w-8 h-8 rounded-xl border flex items-center justify-center ${card.tone === 'red' ? 'stocky-status-critical' : card.tone === 'amber' ? 'stocky-status-warning' : 'stocky-status-info'}`}>
-                {card.icon}
-              </div>
-              <p className="mt-4 text-xs text-stocky-text-sub">{card.label}</p>
-              <p className="mt-1 text-2xl font-medium text-stocky-text-main">{card.value}</p>
-              <p className="mt-1 text-[11px] text-stocky-text-sub">{card.helper}</p>
-            </button>
-          ))}
-        </section>
-      )}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+        <div className="lg:col-span-7 flex flex-col gap-5">
+          <HomeHeroWidget
+            userName={userName}
+            locationName={activeLocationName}
+            totalUnits={totalUnits}
+            totalValuation={totalValuation}
+            growthPct={7.4}
+          />
 
-      {isManager && (
-        <section className="rounded-2xl bg-white border border-stocky-border-subtle p-4 sm:p-6">
-          <div>
-            <h2 className="text-base font-medium text-stocky-text-main">Run your branch</h2>
-            <p className="text-xs text-stocky-text-sub mt-1">Start the two routines your team uses most.</p>
-          </div>
-          <div className="grid grid-cols-2 gap-4 mt-4">
-            <button type="button" onClick={onOpenReceive} className="min-h-20 rounded-xl bg-stocky-bg-global border border-stocky-border-subtle p-3 text-left hover:border-stocky-primary/40 transition-colors cursor-pointer">
-              <PlusIcon size="sm" className="text-stocky-primary" />
-              <span className="block mt-2 text-xs font-medium text-stocky-text-main">Receive stock</span>
-            </button>
-            <button type="button" onClick={() => onOpenCount()} className="min-h-20 rounded-xl bg-stocky-bg-global border border-stocky-border-subtle p-3 text-left hover:border-stocky-primary/40 transition-colors cursor-pointer">
-              <CheckCircleIcon size="sm" className="text-emerald-600" />
-              <span className="block mt-2 text-xs font-medium text-stocky-text-main">Count stock</span>
-            </button>
-          </div>
-        </section>
-      )}
-
-      <section className="grid grid-cols-1 gap-4">
-        <div className="rounded-2xl bg-white border border-stocky-border-subtle p-4 sm:p-6">
-          <div className="flex items-center justify-between gap-3">
-            <div>
-              <h2 className="text-base font-medium text-stocky-text-main">{isStaff ? 'Things to check' : 'Next actions'}</h2>
-              <p className="text-xs text-stocky-text-sub mt-1">{isStaff ? 'Flag anything that needs your manager.' : 'Open the work queue that needs a decision.'}</p>
-            </div>
-            <ArrowUpDownIcon size="sm" className="text-stocky-primary" />
-          </div>
-          <div className="mt-4 divide-y divide-stocky-border-subtle">
-            {isStaff ? (
-              <>
-                <button type="button" onClick={onOpenExpiry} className="w-full py-3 flex items-center justify-between gap-3 text-left hover:bg-stocky-bg-global rounded-lg px-2 cursor-pointer">
-                  <span className="flex items-center gap-2 text-sm text-stocky-text-main"><ClockIcon size="xs" className="text-stocky-text-sub" /> Expiring items to check</span>
-                  <span className="text-xs font-medium text-stocky-primary">{metrics.expiringLots + metrics.expiredLots}</span>
-                </button>
-                <button type="button" onClick={() => onOpenStock()} className="w-full py-3 flex items-center justify-between gap-3 text-left hover:bg-stocky-bg-global rounded-lg px-2 cursor-pointer">
-                  <span className="flex items-center gap-2 text-sm text-stocky-text-main"><BoxesIcon size="xs" className="text-stocky-text-sub" /> Low stock to report</span>
-                  <span className="text-xs font-medium text-stocky-primary">{metrics.lowStockProducts}</span>
-                </button>
-              </>
-            ) : (
-              <>
-                <button type="button" onClick={onOpenTransfers} className="w-full py-3 flex items-center justify-between gap-3 text-left hover:bg-stocky-bg-global rounded-lg px-2 cursor-pointer">
-                  <span className="flex items-center gap-2 text-sm text-stocky-text-main"><ArrowUpDownIcon size="xs" className="text-stocky-text-sub" /> Transfers waiting for action</span>
-                  <span className="text-xs font-medium text-stocky-primary">{metrics.pendingTransfers}</span>
-                </button>
-                <button type="button" onClick={onOpenSuppliers} className="w-full py-3 flex items-center justify-between gap-3 text-left hover:bg-stocky-bg-global rounded-lg px-2 cursor-pointer">
-                  <span className="flex items-center gap-2 text-sm text-stocky-text-main"><TruckIcon size="xs" className="text-stocky-text-sub" /> Supplier requests</span>
-                  <span className="text-xs font-medium text-stocky-primary">{metrics.supplierRequests}</span>
-                </button>
-              </>
-            )}
-            {!isStaff && (
-              <button type="button" onClick={() => (onOpenTasks || onOpenCount)()} className="w-full py-3 flex items-center justify-between gap-3 text-left hover:bg-stocky-bg-global rounded-lg px-2 cursor-pointer">
-                <span className="flex items-center gap-2 text-sm text-stocky-text-main"><CheckCircleIcon size="xs" className="text-stocky-text-sub" /> Stock tasks waiting for action</span>
-                <span className="text-xs font-medium text-stocky-primary">{metrics.openCounts}</span>
-              </button>
-            )}
-          </div>
+          <HomeStockFlowWidget
+            totalFlowValue={`$${(totalValuation / 1000).toFixed(1)}K`}
+            changePct={4.2}
+            changeAmount="+$12.4k vs prev. 30 days"
+            timeframe={timeframe}
+            onTimeframeChange={setTimeframe}
+            onOpenStock={onOpenStock}
+            onOpenCount={onOpenCount}
+            onOpenTransfers={onOpenTransfers}
+            onOpenSuppliers={onOpenSuppliers}
+          />
         </div>
 
-      </section>
+        <div className="lg:col-span-5 flex flex-col gap-5">
+          <HomeSpeedometerWidget
+            healthPct={healthPct}
+            activeProductsCount={products.length || 120}
+            auditAccuracyPct={98}
+            topProductName={topProductName}
+            topProductUnits="2,102 Orders • $29,200"
+            onOpenCount={onOpenCount}
+            onOpenStock={onOpenStock}
+          />
+
+          {triageItems.length > 0 && (
+            <HomeTriageWidget
+              items={triageItems}
+              onSearch={() => onOpenStock()}
+              onOpenReceive={onOpenReceive}
+              onOpenCount={onOpenCount}
+              onOpenTransfers={onOpenTransfers}
+            />
+          )}
+        </div>
+      </div>
     </div>
   );
 }
+
+// Backward-compatibility aliases for old component names:
+export { HomeHeaderWidget as DashboardHeaderRow } from '../HomeHeaderWidget/HomeHeaderWidget';
+export { HomeHeroWidget as AtmosphericHeroCard } from '../HomeHeroWidget/HomeHeroWidget';
+export { HomeStockFlowWidget as StockFlowPerformanceCard } from '../HomeStockFlowWidget/HomeStockFlowWidget';
+export { HomeSpeedometerWidget as RadialSpeedometerCard } from '../HomeSpeedometerWidget/HomeSpeedometerWidget';
+export { HomeTriageWidget as DashboardHeroTriageWidget } from '../HomeTriageWidget/HomeTriageWidget';

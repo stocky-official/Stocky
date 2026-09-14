@@ -205,6 +205,10 @@ export interface PlatformContextValue {
   setNotificationsOpen: (open: boolean) => void;
   openNotifications: () => void;
   closeNotifications: () => void;
+  scannerOpen: boolean;
+  setScannerOpen: (open: boolean) => void;
+  openScanner: () => void;
+  closeScanner: () => void;
   receiveOpen: boolean;
   setReceiveOpen: (open: boolean) => void;
   receiveProductId?: string;
@@ -353,6 +357,9 @@ export function PlatformProvider({
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const openNotifications = useCallback(() => setNotificationsOpen(true), []);
   const closeNotifications = useCallback(() => setNotificationsOpen(false), []);
+  const [scannerOpen, setScannerOpen] = useState(false);
+  const openScanner = useCallback(() => setScannerOpen(true), []);
+  const closeScanner = useCallback(() => setScannerOpen(false), []);
   const [receiveOpen, setReceiveOpen] = useState(false);
   const [receiveProductId, setReceiveProductId] = useState<string | undefined>();
   const [receiveProductSearch, setReceiveProductSearch] = useState<string | undefined>();
@@ -1312,6 +1319,10 @@ export function PlatformProvider({
     setNotificationsOpen,
     openNotifications,
     closeNotifications,
+    scannerOpen,
+    setScannerOpen,
+    openScanner,
+    closeScanner,
     receiveOpen,
     setReceiveOpen,
     receiveProductId,

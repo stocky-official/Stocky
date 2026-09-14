@@ -100,22 +100,22 @@ export function getPlatformNavigation(
   };
 
   const dashboardItems: PlatformNavItem[] = [
-    { id: 'home', label: 'Dashboard', icon: <DashboardIcon size="xs" />, href: makeHref('home') },
-    { id: 'logs', label: 'Activity Logs', icon: <ActivityIcon size="xs" />, href: makeHref('logs') },
+    { id: 'home', label: 'Home', icon: <DashboardIcon size="xs" />, href: makeHref('home') },
   ];
 
   const supplyChainItems: PlatformNavItem[] = [
-    ...(canAccess('inventory') ? [{ id: 'stock', label: 'Inventory', icon: <BoxesIcon size="xs" />, href: makeHref('stock') }] : []),
+    ...(canAccess('inventory') ? [{ id: 'stock', label: 'Stock', icon: <BoxesIcon size="xs" />, href: makeHref('stock') }] : []),
     ...(canAccess('transfers') ? [{ id: 'transfers', label: 'Transfers', icon: <ArrowUpDownIcon size="xs" />, href: makeHref('transfers') }] : []),
   ];
 
   const supplierItems: PlatformNavItem[] = canAccess('suppliers') ? [
-    { id: 'suppliers', label: 'Suppliers', icon: <TruckIcon size="xs" />, href: makeHref('suppliers') },
+    { id: 'suppliers', label: 'Directory', icon: <TruckIcon size="xs" />, href: makeHref('suppliers') },
     { id: 'supplier-requests', label: 'Requests', icon: <ClockIcon size="xs" />, href: makeHref('suppliers') },
   ] : [];
 
   const taskItems: PlatformNavItem[] = canAccess('tasks') ? [
-    { id: 'tasks', label: 'Tasks', icon: <CheckCircleIcon size="xs" />, href: makeHref('tasks') },
+    { id: 'tasks', label: 'Ongoing', icon: <ActivityIcon size="xs" />, href: makeHref('tasks') },
+    { id: 'tasks-completed', label: 'Completed', icon: <CheckCircleIcon size="xs" />, href: makeHref('tasks') },
   ] : [];
 
   const attendanceItems: PlatformNavItem[] = canAccess('attendance') ? [
@@ -129,7 +129,7 @@ export function getPlatformNavigation(
   ];
 
   return [
-    { id: 'dashboard', label: 'Dashboard', icon: <DashboardIcon size="xs" />, items: dashboardItems },
+    { id: 'dashboard', label: 'Home', icon: <DashboardIcon size="xs" />, items: dashboardItems },
     { id: 'supply-chain', label: 'Supply Chain', icon: <BoxesIcon size="xs" />, items: supplyChainItems },
     ...(!isStaff && supplierItems.length > 0 ? [{ id: 'suppliers', label: 'Suppliers', icon: <TruckIcon size="xs" />, items: supplierItems }] : []),
     ...(taskItems.length > 0 ? [{ id: 'tasks', label: 'Tasks', icon: <CheckCircleIcon size="xs" />, items: taskItems }] : []),

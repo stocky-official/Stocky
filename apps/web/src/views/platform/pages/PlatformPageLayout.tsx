@@ -12,6 +12,7 @@ export interface PlatformPageLayoutProps {
   navigation?: React.ReactNode;
   children: React.ReactNode;
   className?: string;
+  hideHeaderOnMobile?: boolean;
 }
 
 /**
@@ -30,6 +31,7 @@ export function PlatformPageLayout({
   navigation,
   children,
   className = '',
+  hideHeaderOnMobile = true,
 }: PlatformPageLayoutProps) {
   const platform = useOptionalPlatform();
 
@@ -52,26 +54,37 @@ export function PlatformPageLayout({
   }
 
   return (
-    <div className={`stocky-subview-layout flex flex-col gap-4 sm:gap-5 w-full max-w-[var(--stocky-page-max-width)] mx-auto ${className}`}>
+    <div className={`stocky-subview-layout flex flex-col gap-2.5 sm:gap-5 w-full max-w-[var(--stocky-page-max-width)] mx-auto ${className}`}>
       {(title || eyebrow || subtitle || actions) && (
-        <header className="stocky-subview-header flex flex-col sm:flex-row sm:items-end justify-between gap-4">
-          <div className="stocky-subview-title-group min-w-0">
+        <header
+          className={`stocky-subview-header flex flex-col sm:flex-row sm:items-end justify-between gap-2 sm:gap-4 ${
+            hideHeaderOnMobile ? 'hidden md:flex' : ''
+          }`}
+        >
+          <div className="stocky-subview-title-group min-w-0 flex-1">
             {eyebrow && (
-              <p className="text-[11px] font-medium uppercase tracking-[0.12em] text-stocky-primary">
+              <p className="hidden sm:block text-[11px] font-medium uppercase tracking-[0.12em] text-stocky-primary mb-1">
                 {eyebrow}
               </p>
             )}
-            <h1 className={`text-2xl font-normal tracking-tight text-stocky-text-main ${eyebrow ? 'mt-1' : ''}`}>
-              {title}
-            </h1>
+            <div className="flex items-center justify-between sm:justify-start gap-2.5 min-w-0">
+              <h1 className="text-lg font-bold sm:text-2xl sm:font-normal tracking-tight text-stocky-text-main truncate">
+                {title}
+              </h1>
+              {actions && (
+                <div className="sm:hidden flex items-center gap-1.5 shrink-0">
+                  {actions}
+                </div>
+              )}
+            </div>
             {subtitle && (
-              <p className="text-sm font-normal text-stocky-text-sub mt-1 max-w-2xl">
+              <p className="hidden sm:block text-sm font-normal text-stocky-text-sub mt-1 max-w-2xl">
                 {subtitle}
               </p>
             )}
           </div>
           {actions && (
-            <div className="stocky-subview-actions flex items-center flex-wrap gap-2 shrink-0">
+            <div className="stocky-subview-actions hidden sm:flex items-center flex-wrap gap-2 shrink-0">
               {actions}
             </div>
           )}
