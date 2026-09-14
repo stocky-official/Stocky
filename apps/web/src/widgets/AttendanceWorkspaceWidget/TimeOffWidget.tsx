@@ -133,7 +133,7 @@ export function TimeOffWidget({
         </div>
       </div>
 
-      {/* Requests Table */}
+      {/* Requests Table & Mobile Cards */}
       {leaves.length === 0 ? (
         <div className="flex flex-col items-center justify-center p-12 text-center">
           <div className="w-12 h-12 rounded-widget bg-stocky-bg-global border border-stocky-border-subtle shadow-sm flex items-center justify-center text-stocky-text-sub mb-3">
@@ -153,140 +153,259 @@ export function TimeOffWidget({
           </button>
         </div>
       ) : (
-        <div className="w-full overflow-x-auto">
-          <table className="stocky-board-table min-w-[800px] w-full text-left border-collapse">
-            <thead>
-              <tr className="border-b border-stocky-border-subtle bg-stocky-bg-global/30 h-11">
-                <th className="stocky-board-table__header-cell px-4 text-left text-[11px] font-semibold text-stocky-text-sub tracking-wider uppercase whitespace-nowrap">
-                  Employee
-                </th>
-                <th className="stocky-board-table__header-cell px-4 text-left text-[11px] font-semibold text-stocky-text-sub tracking-wider uppercase whitespace-nowrap">
-                  Type
-                </th>
-                <th className="stocky-board-table__header-cell px-4 text-left text-[11px] font-semibold text-stocky-text-sub tracking-wider uppercase whitespace-nowrap">
-                  Period & Days
-                </th>
-                <th className="stocky-board-table__header-cell px-4 text-left text-[11px] font-semibold text-stocky-text-sub tracking-wider uppercase whitespace-nowrap">
-                  Manager Approver
-                </th>
-                <th className="stocky-board-table__header-cell px-4 text-left text-[11px] font-semibold text-stocky-text-sub tracking-wider uppercase whitespace-nowrap">
-                  Linked Task
-                </th>
-                <th className="stocky-board-table__header-cell px-4 text-left text-[11px] font-semibold text-stocky-text-sub tracking-wider uppercase whitespace-nowrap">
-                  Status
-                </th>
-                {canReview && (
-                  <th className="stocky-board-table__header-cell px-4 text-right text-[11px] font-semibold text-stocky-text-sub tracking-wider uppercase whitespace-nowrap">
-                    Review Actions
+        <>
+          {/* Desktop Table */}
+          <div className="hidden sm:block w-full overflow-x-auto">
+            <table className="stocky-board-table min-w-[800px] w-full text-left border-collapse">
+              <thead>
+                <tr className="border-b border-stocky-border-subtle bg-stocky-bg-global/30 h-11">
+                  <th className="stocky-board-table__header-cell px-4 text-left text-[11px] font-semibold text-stocky-text-sub tracking-wider uppercase whitespace-nowrap">
+                    Employee
                   </th>
-                )}
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-stocky-border-subtle">
-              {leaves.map((req) => {
-                const member = memberMap.get(req.companyUserId);
-                const approver = memberMap.get(req.approverCompanyUserId);
-                const memberName = member?.full_name || member?.email?.split('@')[0] || 'Staff Member';
-                const approverName = approver?.full_name || approver?.email?.split('@')[0] || 'Direct Manager';
-                const isPending = req.status === 'pending';
+                  <th className="stocky-board-table__header-cell px-4 text-left text-[11px] font-semibold text-stocky-text-sub tracking-wider uppercase whitespace-nowrap">
+                    Type
+                  </th>
+                  <th className="stocky-board-table__header-cell px-4 text-left text-[11px] font-semibold text-stocky-text-sub tracking-wider uppercase whitespace-nowrap">
+                    Period & Days
+                  </th>
+                  <th className="stocky-board-table__header-cell px-4 text-left text-[11px] font-semibold text-stocky-text-sub tracking-wider uppercase whitespace-nowrap">
+                    Manager Approver
+                  </th>
+                  <th className="stocky-board-table__header-cell px-4 text-left text-[11px] font-semibold text-stocky-text-sub tracking-wider uppercase whitespace-nowrap">
+                    Linked Task
+                  </th>
+                  <th className="stocky-board-table__header-cell px-4 text-left text-[11px] font-semibold text-stocky-text-sub tracking-wider uppercase whitespace-nowrap">
+                    Status
+                  </th>
+                  {canReview && (
+                    <th className="stocky-board-table__header-cell px-4 text-right text-[11px] font-semibold text-stocky-text-sub tracking-wider uppercase whitespace-nowrap">
+                      Review Actions
+                    </th>
+                  )}
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-stocky-border-subtle">
+                {leaves.map((req) => {
+                  const member = memberMap.get(req.companyUserId);
+                  const approver = memberMap.get(req.approverCompanyUserId);
+                  const memberName = member?.full_name || member?.email?.split('@')[0] || 'Staff Member';
+                  const approverName = approver?.full_name || approver?.email?.split('@')[0] || 'Direct Manager';
+                  const isPending = req.status === 'pending';
 
-                return (
-                  <tr key={req.id} className="hover:bg-stocky-bg-global/40 transition-colors">
-                    <td className="px-4 py-3 whitespace-nowrap">
-                      <div className="flex items-center gap-2.5">
-                        <div className="w-7 h-7 rounded-full bg-stocky-primary/10 text-stocky-primary flex items-center justify-center text-xs font-semibold">
-                          {memberName.slice(0, 2).toUpperCase()}
+                  return (
+                    <tr key={req.id} className="hover:bg-stocky-bg-global/40 transition-colors">
+                      <td className="px-4 py-3 whitespace-nowrap">
+                        <div className="flex items-center gap-2.5">
+                          <div className="w-7 h-7 rounded-full bg-stocky-primary/10 text-stocky-primary flex items-center justify-center text-xs font-semibold">
+                            {memberName.slice(0, 2).toUpperCase()}
+                          </div>
+                          <div>
+                            <div className="text-xs font-semibold text-stocky-text-main">{memberName}</div>
+                            {req.reason && <div className="text-[10px] text-stocky-text-sub truncate max-w-xs">{req.reason}</div>}
+                          </div>
                         </div>
-                        <div>
-                          <div className="text-xs font-semibold text-stocky-text-main">{memberName}</div>
-                          {req.reason && <div className="text-[10px] text-stocky-text-sub truncate max-w-xs">{req.reason}</div>}
+                      </td>
+
+                      <td className="px-4 py-3 whitespace-nowrap">
+                        <span className="inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-medium uppercase tracking-wider stocky-status-muted border">
+                          {req.leaveType}
+                        </span>
+                      </td>
+
+                      <td className="px-4 py-3 whitespace-nowrap">
+                        <div className="text-xs font-semibold text-stocky-text-main">
+                          {req.startDate} → {req.endDate}
+                        </div>
+                        <div className="text-[11px] text-stocky-text-sub font-medium">
+                          {req.daysCount} day{req.daysCount !== 1 ? 's' : ''}
+                        </div>
+                      </td>
+
+                      <td className="px-4 py-3 whitespace-nowrap text-xs text-stocky-text-sub">
+                        {approverName}
+                      </td>
+
+                      <td className="px-4 py-3 whitespace-nowrap">
+                        {req.taskId ? (
+                          <span className="inline-flex items-center gap-1 text-[11px] font-medium stocky-status-success border px-2 py-0.5 rounded-full">
+                            <CheckCircleIcon size="xs" />
+                            <span>Task Dispatched</span>
+                          </span>
+                        ) : (
+                          <span className="text-xs text-stocky-text-sub">—</span>
+                        )}
+                      </td>
+
+                      <td className="px-4 py-3 whitespace-nowrap">
+                        {isPending ? (
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium stocky-status-warning border">
+                            <span className="w-1.5 h-1.5 rounded-full bg-current animate-pulse" />
+                            Pending Review
+                          </span>
+                        ) : req.status === 'approved' ? (
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium stocky-status-success border">
+                            <span className="w-1.5 h-1.5 rounded-full bg-current" />
+                            Approved
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium stocky-status-critical border">
+                            <span className="w-1.5 h-1.5 rounded-full bg-current" />
+                            Rejected
+                          </span>
+                        )}
+                      </td>
+
+                      {canReview && (
+                        <td className="px-4 py-3 whitespace-nowrap text-right">
+                          {isPending ? (
+                            <div className="inline-flex items-center gap-2">
+                              <button
+                                type="button"
+                                disabled={reviewingId === req.id}
+                                onClick={() => handleReview(req.id, true)}
+                                className="h-8 px-3 rounded-full bg-stocky-primary text-white text-xs font-medium hover:bg-stocky-primary-hover transition-colors inline-flex items-center gap-1 cursor-pointer"
+                              >
+                                <CheckIcon size="xs" />
+                                <span>Approve</span>
+                              </button>
+                              <button
+                                type="button"
+                                disabled={reviewingId === req.id}
+                                onClick={() => handleReview(req.id, false)}
+                                className="h-8 px-3 rounded-full border border-stocky-border-subtle bg-stocky-bg-widget text-stocky-status-critical-fg hover:bg-stocky-status-critical-bg text-xs font-medium transition-colors inline-flex items-center gap-1 cursor-pointer"
+                              >
+                                <XIcon size="xs" />
+                                <span>Reject</span>
+                              </button>
+                            </div>
+                          ) : (
+                            <span className="text-[11px] text-stocky-text-sub">Reviewed</span>
+                          )}
+                        </td>
+                      )}
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Mobile Card List */}
+          <div className="divide-y divide-stocky-border-subtle sm:hidden">
+            {leaves.map((req) => {
+              const member = memberMap.get(req.companyUserId);
+              const approver = memberMap.get(req.approverCompanyUserId);
+              const memberName = member?.full_name || member?.email?.split('@')[0] || 'Staff Member';
+              const approverName = approver?.full_name || approver?.email?.split('@')[0] || 'Direct Manager';
+              const isPending = req.status === 'pending';
+              const memberInitials = memberName
+                .split(' ')
+                .map((n: string) => n[0])
+                .join('')
+                .toUpperCase()
+                .slice(0, 2);
+
+              return (
+                <article key={req.id} className="p-3.5 flex flex-col gap-2.5 bg-stocky-bg-widget hover:bg-stocky-bg-global/40 transition-colors">
+                  {/* Top row: Member + Leave type + Status badge */}
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <div className="w-8 h-8 rounded-full bg-stocky-primary/10 border border-stocky-primary/20 text-stocky-primary flex items-center justify-center text-xs font-semibold shrink-0">
+                        {memberInitials}
+                      </div>
+                      <div className="min-w-0">
+                        <div className="text-xs font-semibold text-stocky-text-main truncate">
+                          {memberName}
+                        </div>
+                        <div className="text-[11px] text-stocky-text-sub truncate">
+                          Manager: {approverName}
                         </div>
                       </div>
-                    </td>
-
-                    <td className="px-4 py-3 whitespace-nowrap">
-                      <span className="inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-medium uppercase tracking-wider stocky-status-muted border">
+                    </div>
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider stocky-status-muted border">
                         {req.leaveType}
                       </span>
-                    </td>
-
-                    <td className="px-4 py-3 whitespace-nowrap">
-                      <div className="text-xs font-semibold text-stocky-text-main">
-                        {req.startDate} → {req.endDate}
-                      </div>
-                      <div className="text-[11px] text-stocky-text-sub font-medium">
-                        {req.daysCount} day{req.daysCount !== 1 ? 's' : ''}
-                      </div>
-                    </td>
-
-                    <td className="px-4 py-3 whitespace-nowrap text-xs text-stocky-text-sub">
-                      {approverName}
-                    </td>
-
-                    <td className="px-4 py-3 whitespace-nowrap">
-                      {req.taskId ? (
-                        <span className="inline-flex items-center gap-1 text-[11px] font-medium stocky-status-success border px-2 py-0.5 rounded-full">
-                          <CheckCircleIcon size="xs" />
-                          <span>Task Dispatched</span>
-                        </span>
-                      ) : (
-                        <span className="text-xs text-stocky-text-sub">—</span>
-                      )}
-                    </td>
-
-                    <td className="px-4 py-3 whitespace-nowrap">
                       {isPending ? (
-                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium stocky-status-warning border">
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium stocky-status-warning border">
                           <span className="w-1.5 h-1.5 rounded-full bg-current animate-pulse" />
-                          Pending Review
+                          Pending
                         </span>
                       ) : req.status === 'approved' ? (
-                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium stocky-status-success border">
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium stocky-status-success border">
                           <span className="w-1.5 h-1.5 rounded-full bg-current" />
                           Approved
                         </span>
                       ) : (
-                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium stocky-status-critical border">
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium stocky-status-critical border">
                           <span className="w-1.5 h-1.5 rounded-full bg-current" />
                           Rejected
                         </span>
                       )}
-                    </td>
+                    </div>
+                  </div>
 
-                    {canReview && (
-                      <td className="px-4 py-3 whitespace-nowrap text-right">
-                        {isPending ? (
-                          <div className="inline-flex items-center gap-2">
-                            <button
-                              type="button"
-                              disabled={reviewingId === req.id}
-                              onClick={() => handleReview(req.id, true)}
-                              className="h-8 px-3 rounded-full bg-stocky-primary text-white text-xs font-medium hover:bg-stocky-primary-hover transition-colors inline-flex items-center gap-1 cursor-pointer"
-                            >
-                              <CheckIcon size="xs" />
-                              <span>Approve</span>
-                            </button>
-                            <button
-                              type="button"
-                              disabled={reviewingId === req.id}
-                              onClick={() => handleReview(req.id, false)}
-                              className="h-8 px-3 rounded-full border border-stocky-border-subtle bg-stocky-bg-widget text-stocky-status-critical-fg hover:bg-stocky-status-critical-bg text-xs font-medium transition-colors inline-flex items-center gap-1 cursor-pointer"
-                            >
-                              <XIcon size="xs" />
-                              <span>Reject</span>
-                            </button>
-                          </div>
-                        ) : (
-                          <span className="text-[11px] text-stocky-text-sub">Reviewed</span>
-                        )}
-                      </td>
+                  {/* Period & Days strip */}
+                  <div className="flex items-center justify-between px-3 py-2 rounded-lg bg-stocky-bg-global/50 border border-stocky-border-subtle/60 text-xs">
+                    <div className="flex items-center gap-1.5 text-stocky-text-main font-medium">
+                      <CalendarIcon size="xs" className="text-stocky-text-sub shrink-0" />
+                      <span>{req.startDate}</span>
+                      <span className="text-stocky-text-sub">→</span>
+                      <span>{req.endDate}</span>
+                    </div>
+                    <span className="text-[11px] font-semibold text-stocky-text-main">
+                      {req.daysCount} day{req.daysCount !== 1 ? 's' : ''}
+                    </span>
+                  </div>
+
+                  {/* Reason note snippet */}
+                  {req.reason && (
+                    <p className="text-[11px] text-stocky-text-sub bg-stocky-bg-global/30 p-2 rounded-md border border-stocky-border-subtle/40 italic">
+                      &ldquo;{req.reason}&rdquo;
+                    </p>
+                  )}
+
+                  {/* Task Dispatched status & Review Actions */}
+                  <div className="flex items-center justify-between pt-0.5">
+                    <div>
+                      {req.taskId ? (
+                        <span className="inline-flex items-center gap-1 text-[10px] font-medium stocky-status-success border px-2 py-0.5 rounded-full">
+                          <CheckCircleIcon size="xs" />
+                          <span>Task Dispatched</span>
+                        </span>
+                      ) : (
+                        <span className="text-[10px] text-stocky-text-sub">Direct Approval</span>
+                      )}
+                    </div>
+
+                    {canReview && isPending && (
+                      <div className="inline-flex items-center gap-2">
+                        <button
+                          type="button"
+                          disabled={reviewingId === req.id}
+                          onClick={() => handleReview(req.id, true)}
+                          className="h-8 px-3 rounded-full bg-stocky-primary text-white text-xs font-semibold hover:bg-stocky-primary-hover transition-colors inline-flex items-center gap-1 cursor-pointer"
+                        >
+                          <CheckIcon size="xs" />
+                          <span>Approve</span>
+                        </button>
+                        <button
+                          type="button"
+                          disabled={reviewingId === req.id}
+                          onClick={() => handleReview(req.id, false)}
+                          className="h-8 px-3 rounded-full border border-stocky-border-subtle bg-stocky-bg-widget text-stocky-status-critical-fg hover:bg-stocky-status-critical-bg text-xs font-medium transition-colors inline-flex items-center gap-1 cursor-pointer"
+                        >
+                          <XIcon size="xs" />
+                          <span>Reject</span>
+                        </button>
+                      </div>
                     )}
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+        </>
       )}
     </div>
   );

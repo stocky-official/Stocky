@@ -185,7 +185,7 @@ export function TimesheetsTableWidget({
         </div>
       </div>
 
-      {/* Shifts Table */}
+      {/* Shifts Table & Mobile Cards */}
       {paginatedShifts.length === 0 ? (
         <div className="flex flex-col items-center justify-center p-12 text-center">
           <div className="w-12 h-12 rounded-widget bg-stocky-bg-global border border-stocky-border-subtle flex items-center justify-center text-stocky-text-sub mb-3">
@@ -205,142 +205,220 @@ export function TimesheetsTableWidget({
           </button>
         </div>
       ) : (
-        <div className="w-full overflow-x-auto">
-          <table className="stocky-board-table min-w-[850px] w-full text-left border-collapse">
-            <thead>
-              <tr className="border-b border-stocky-border-subtle bg-stocky-bg-global/30 h-11">
-                <th className="stocky-board-table__header-cell px-4 text-left text-[11px] font-semibold text-stocky-text-sub tracking-wider uppercase whitespace-nowrap">
-                  Employee
-                </th>
-                <th className="stocky-board-table__header-cell px-4 text-left text-[11px] font-semibold text-stocky-text-sub tracking-wider uppercase whitespace-nowrap">
-                  Branch / Location
-                </th>
-                <th className="stocky-board-table__header-cell px-4 text-left text-[11px] font-semibold text-stocky-text-sub tracking-wider uppercase whitespace-nowrap">
-                  Shift Date
-                </th>
-                <th className="stocky-board-table__header-cell px-4 text-left text-[11px] font-semibold text-stocky-text-sub tracking-wider uppercase whitespace-nowrap">
-                  Clock In
-                </th>
-                <th className="stocky-board-table__header-cell px-4 text-left text-[11px] font-semibold text-stocky-text-sub tracking-wider uppercase whitespace-nowrap">
-                  Clock Out
-                </th>
-                <th className="stocky-board-table__header-cell px-4 text-left text-[11px] font-semibold text-stocky-text-sub tracking-wider uppercase whitespace-nowrap">
-                  Duration
-                </th>
-                <th className="stocky-board-table__header-cell px-4 text-left text-[11px] font-semibold text-stocky-text-sub tracking-wider uppercase whitespace-nowrap">
-                  Status
-                </th>
-                <th className="stocky-board-table__header-cell px-4 text-left text-[11px] font-semibold text-stocky-text-sub tracking-wider uppercase whitespace-nowrap">
-                  Method
-                </th>
-                <th className="stocky-board-table__header-cell px-4 text-right text-[11px] font-semibold text-stocky-text-sub tracking-wider uppercase whitespace-nowrap">
-                  Action
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-stocky-border-subtle">
-              {paginatedShifts.map((shift) => {
-                const member = memberMap.get(shift.companyUserId);
-                const locationName = locationMap.get(shift.locationId) || 'Main Branch';
-                const isOngoing = !shift.clockOutAt;
-                const memberName = member?.full_name || member?.email?.split('@')[0] || 'Staff Member';
-                const memberInitials = memberName
-                  .split(' ')
-                  .map((n: string) => n[0])
-                  .join('')
-                  .toUpperCase()
-                  .slice(0, 2);
+        <>
+          {/* Desktop Table */}
+          <div className="hidden sm:block w-full overflow-x-auto">
+            <table className="stocky-board-table min-w-[850px] w-full text-left border-collapse">
+              <thead>
+                <tr className="border-b border-stocky-border-subtle bg-stocky-bg-global/30 h-11">
+                  <th className="stocky-board-table__header-cell px-4 text-left text-[11px] font-semibold text-stocky-text-sub tracking-wider uppercase whitespace-nowrap">
+                    Employee
+                  </th>
+                  <th className="stocky-board-table__header-cell px-4 text-left text-[11px] font-semibold text-stocky-text-sub tracking-wider uppercase whitespace-nowrap">
+                    Branch / Location
+                  </th>
+                  <th className="stocky-board-table__header-cell px-4 text-left text-[11px] font-semibold text-stocky-text-sub tracking-wider uppercase whitespace-nowrap">
+                    Shift Date
+                  </th>
+                  <th className="stocky-board-table__header-cell px-4 text-left text-[11px] font-semibold text-stocky-text-sub tracking-wider uppercase whitespace-nowrap">
+                    Clock In
+                  </th>
+                  <th className="stocky-board-table__header-cell px-4 text-left text-[11px] font-semibold text-stocky-text-sub tracking-wider uppercase whitespace-nowrap">
+                    Clock Out
+                  </th>
+                  <th className="stocky-board-table__header-cell px-4 text-left text-[11px] font-semibold text-stocky-text-sub tracking-wider uppercase whitespace-nowrap">
+                    Duration
+                  </th>
+                  <th className="stocky-board-table__header-cell px-4 text-left text-[11px] font-semibold text-stocky-text-sub tracking-wider uppercase whitespace-nowrap">
+                    Status
+                  </th>
+                  <th className="stocky-board-table__header-cell px-4 text-left text-[11px] font-semibold text-stocky-text-sub tracking-wider uppercase whitespace-nowrap">
+                    Method
+                  </th>
+                  <th className="stocky-board-table__header-cell px-4 text-right text-[11px] font-semibold text-stocky-text-sub tracking-wider uppercase whitespace-nowrap">
+                    Action
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-stocky-border-subtle">
+                {paginatedShifts.map((shift) => {
+                  const member = memberMap.get(shift.companyUserId);
+                  const locationName = locationMap.get(shift.locationId) || 'Main Branch';
+                  const isOngoing = !shift.clockOutAt;
+                  const memberName = member?.full_name || member?.email?.split('@')[0] || 'Staff Member';
+                  const memberInitials = memberName
+                    .split(' ')
+                    .map((n: string) => n[0])
+                    .join('')
+                    .toUpperCase()
+                    .slice(0, 2);
 
-                return (
-                  <tr
-                    key={shift.id}
-                    onClick={() => onSelectShift(shift)}
-                    className="hover:bg-stocky-bg-global/40 cursor-pointer transition-colors group"
-                  >
-                    {/* Employee */}
-                    <td className="px-4 py-3 whitespace-nowrap">
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-stocky-primary/10 border border-stocky-primary/20 text-stocky-primary flex items-center justify-center text-xs font-semibold shrink-0">
-                          {memberInitials}
+                  return (
+                    <tr
+                      key={shift.id}
+                      onClick={() => onSelectShift(shift)}
+                      className="hover:bg-stocky-bg-global/40 cursor-pointer transition-colors group"
+                    >
+                      {/* Employee */}
+                      <td className="px-4 py-3 whitespace-nowrap">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-full bg-stocky-primary/10 border border-stocky-primary/20 text-stocky-primary flex items-center justify-center text-xs font-semibold shrink-0">
+                            {memberInitials}
+                          </div>
+                          <div className="min-w-0">
+                            <div className="text-xs font-semibold text-stocky-text-main truncate group-hover:text-stocky-primary transition-colors">
+                              {memberName}
+                            </div>
+                            <div className="text-[11px] text-stocky-text-sub truncate">
+                              {member?.email || 'Active teammate'}
+                            </div>
+                          </div>
                         </div>
-                        <div className="min-w-0">
-                          <div className="text-xs font-semibold text-stocky-text-main truncate group-hover:text-stocky-primary transition-colors">
-                            {memberName}
-                          </div>
-                          <div className="text-[11px] text-stocky-text-sub truncate">
-                            {member?.email || 'Active teammate'}
-                          </div>
+                      </td>
+
+                      {/* Location */}
+                      <td className="px-4 py-3 whitespace-nowrap">
+                        <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-stocky-bg-global border border-stocky-border-subtle text-xs text-stocky-text-main font-medium">
+                          <WarehouseIcon size="xs" className="text-stocky-text-sub" />
+                          <span>{locationName}</span>
+                        </div>
+                      </td>
+
+                      {/* Shift Date */}
+                      <td className="px-4 py-3 whitespace-nowrap text-xs text-stocky-text-main font-medium">
+                        {shift.shiftDate}
+                      </td>
+
+                      {/* Clock In */}
+                      <td className="px-4 py-3 whitespace-nowrap text-xs font-semibold text-stocky-text-main">
+                        {formatTime(shift.clockInAt)}
+                      </td>
+
+                      {/* Clock Out */}
+                      <td className="px-4 py-3 whitespace-nowrap text-xs text-stocky-text-sub">
+                        {isOngoing ? (
+                          <span className="text-stocky-primary font-medium">In Progress</span>
+                        ) : (
+                          formatTime(shift.clockOutAt)
+                        )}
+                      </td>
+
+                      {/* Duration */}
+                      <td className="px-4 py-3 whitespace-nowrap text-xs font-medium text-stocky-text-main">
+                        {formatDuration(shift.totalMinutes)}
+                      </td>
+
+                      {/* Status */}
+                      <td className="px-4 py-3 whitespace-nowrap">
+                        {getStatusBadge(shift.status, isOngoing)}
+                      </td>
+
+                      {/* Method */}
+                      <td className="px-4 py-3 whitespace-nowrap">
+                        {getMethodBadge(shift.punchInMethod)}
+                      </td>
+
+                      {/* Action */}
+                      <td className="px-4 py-3 whitespace-nowrap text-right">
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onSelectShift(shift);
+                          }}
+                          className="px-3 py-1 rounded-full text-xs font-medium border border-stocky-border-subtle hover:border-stocky-primary hover:text-stocky-primary bg-stocky-bg-widget transition-colors cursor-pointer"
+                        >
+                          Inspect
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Mobile Card List */}
+          <div className="divide-y divide-stocky-border-subtle sm:hidden">
+            {paginatedShifts.map((shift) => {
+              const member = memberMap.get(shift.companyUserId);
+              const locationName = locationMap.get(shift.locationId) || 'Main Branch';
+              const isOngoing = !shift.clockOutAt;
+              const memberName = member?.full_name || member?.email?.split('@')[0] || 'Staff Member';
+              const memberInitials = memberName
+                .split(' ')
+                .map((n: string) => n[0])
+                .join('')
+                .toUpperCase()
+                .slice(0, 2);
+
+              return (
+                <article
+                  key={shift.id}
+                  onClick={() => onSelectShift(shift)}
+                  className="p-3.5 flex flex-col gap-2.5 bg-stocky-bg-widget hover:bg-stocky-bg-global/40 active:bg-stocky-bg-global/60 transition-colors cursor-pointer"
+                >
+                  {/* Top row: Avatar + Name & Date + Status Badge */}
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <div className="w-8 h-8 rounded-full bg-stocky-primary/10 border border-stocky-primary/20 text-stocky-primary flex items-center justify-center text-xs font-semibold shrink-0">
+                        {memberInitials}
+                      </div>
+                      <div className="min-w-0">
+                        <div className="text-xs font-semibold text-stocky-text-main truncate">
+                          {memberName}
+                        </div>
+                        <div className="text-[11px] text-stocky-text-sub truncate">
+                          {shift.shiftDate}
                         </div>
                       </div>
-                    </td>
-
-                    {/* Location */}
-                    <td className="px-4 py-3 whitespace-nowrap">
-                      <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-stocky-bg-global border border-stocky-border-subtle text-xs text-stocky-text-main font-medium">
-                        <WarehouseIcon size="xs" className="text-stocky-text-sub" />
-                        <span>{locationName}</span>
-                      </div>
-                    </td>
-
-                    {/* Shift Date */}
-                    <td className="px-4 py-3 whitespace-nowrap text-xs text-stocky-text-main font-medium">
-                      {shift.shiftDate}
-                    </td>
-
-                    {/* Clock In */}
-                    <td className="px-4 py-3 whitespace-nowrap text-xs font-semibold text-stocky-text-main">
-                      {formatTime(shift.clockInAt)}
-                    </td>
-
-                    {/* Clock Out */}
-                    <td className="px-4 py-3 whitespace-nowrap text-xs text-stocky-text-sub">
-                      {isOngoing ? (
-                        <span className="text-stocky-primary font-medium">In Progress</span>
-                      ) : (
-                        formatTime(shift.clockOutAt)
-                      )}
-                    </td>
-
-                    {/* Duration */}
-                    <td className="px-4 py-3 whitespace-nowrap text-xs font-medium text-stocky-text-main">
-                      {formatDuration(shift.totalMinutes)}
-                    </td>
-
-                    {/* Status */}
-                    <td className="px-4 py-3 whitespace-nowrap">
+                    </div>
+                    <div className="shrink-0">
                       {getStatusBadge(shift.status, isOngoing)}
-                    </td>
+                    </div>
+                  </div>
 
-                    {/* Method */}
-                    <td className="px-4 py-3 whitespace-nowrap">
+                  {/* Times & Duration Box */}
+                  <div className="flex items-center justify-between px-3 py-2 rounded-lg bg-stocky-bg-global/50 border border-stocky-border-subtle/60 text-xs">
+                    <div className="flex items-center gap-1.5 text-stocky-text-main font-medium">
+                      <ClockIcon size="xs" className="text-stocky-text-sub shrink-0" />
+                      <span>{formatTime(shift.clockInAt)}</span>
+                      <span className="text-stocky-text-sub">→</span>
+                      <span className={isOngoing ? 'text-stocky-primary font-semibold' : 'text-stocky-text-main'}>
+                        {isOngoing ? 'Active Now' : formatTime(shift.clockOutAt)}
+                      </span>
+                    </div>
+                    <div className="text-[11px] font-semibold text-stocky-text-main">
+                      {formatDuration(shift.totalMinutes)}
+                    </div>
+                  </div>
+
+                  {/* Bottom row: Location + Method + Inspect Action */}
+                  <div className="flex items-center justify-between gap-2 pt-0.5">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-stocky-bg-global border border-stocky-border-subtle text-[11px] text-stocky-text-main font-medium truncate">
+                        <WarehouseIcon size="xs" className="text-stocky-text-sub shrink-0" />
+                        <span className="truncate">{locationName}</span>
+                      </div>
                       {getMethodBadge(shift.punchInMethod)}
-                    </td>
+                    </div>
 
-                    {/* Action */}
-                    <td className="px-4 py-3 whitespace-nowrap text-right">
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onSelectShift(shift);
-                        }}
-                        className="px-3 py-1 rounded-full text-xs font-medium border border-stocky-border-subtle hover:border-stocky-primary hover:text-stocky-primary bg-stocky-bg-widget transition-colors cursor-pointer"
-                      >
-                        Inspect
-                      </button>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
+                    <span className="inline-flex items-center gap-0.5 text-[11px] font-medium text-stocky-text-sub hover:text-stocky-primary">
+                      <span>Inspect</span>
+                      <ChevronRightIcon size="xs" />
+                    </span>
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+        </>
       )}
 
       {/* Pagination Bar */}
       {shifts.length > ITEMS_PER_PAGE && (
-        <div className="flex items-center justify-between px-4 py-3 border-t border-stocky-border-subtle bg-stocky-bg-widget rounded-b-card">
-          <div className="text-xs text-stocky-text-sub">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-2.5 px-4 py-3 border-t border-stocky-border-subtle bg-stocky-bg-widget rounded-b-card">
+          <div className="text-xs text-stocky-text-sub text-center sm:text-left">
             Showing <span className="font-semibold text-stocky-text-main">{startIndex + 1}</span> to{' '}
             <span className="font-semibold text-stocky-text-main">
               {Math.min(startIndex + ITEMS_PER_PAGE, shifts.length)}

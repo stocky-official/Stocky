@@ -33,12 +33,7 @@ export function AttendanceCalendarWidget({
 }: AttendanceCalendarWidgetProps) {
   const [viewMode, setViewMode] = useState<CalendarViewMode>('month');
   const [currentDate, setCurrentDate] = useState<Date>(new Date());
-
-  useEffect(() => {
-    if (typeof window !== 'undefined' && window.innerWidth < 640) {
-      setViewMode('day');
-    }
-  }, []);
+  const [selectedDateStr, setSelectedDateStr] = useState<string>(() => new Date().toISOString().slice(0, 10));
 
   const locationMap = new Map(locations.map((loc) => [loc.id, loc.name]));
   const memberMap = new Map(members.map((m) => [m.id, m]));
@@ -75,7 +70,45 @@ export function AttendanceCalendarWidget({
     }
   };
 
-  const handleToday = () => setCurrentDate(new Date());
+  const handleToday = () => {
+    const now = new Date();
+    setCurrentDate(now);
+    setSelectedDateStr(now.toISOString().slice(0, 10));
+  };
+
+  const handlePrevMonth = () => {
+    setCurrentDate(new Date(year, month - 1, 1));
+  };
+
+  const handleNextMonth = () => {
+    setCurrentDate(new Date(year, month + 1, 1));
+  };
+
+  const handleSelectMobileDate = (dateStr: string) => {
+    setSelectedDateStr(dateStr);
+    const target = new Date(dateStr + 'T00:00:00');
+    if (target.getMonth() !== month || target.getFullYear() !== year) {
+      setCurrentDate(new Date(target.getFullYear(), target.getMonth(), 1));
+    }
+  };
+
+  const formatTime = (isoString?: string | null) => {
+    if (!isoString) return '—';
+    try {
+      const d = new Date(isoString);
+      return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    } catch {
+      return isoString;
+    }
+  };
+
+  const formatDuration = (totalMinutes?: number | null) => {
+    if (totalMinutes == null || totalMinutes <= 0) return 'In progress';
+    const hrs = Math.floor(totalMinutes / 60);
+    const mins = totalMinutes % 60;
+    if (hrs === 0) return `${mins}m`;
+    return `${hrs}h ${mins > 0 ? `${mins}m` : ''}`;
+  };
 
   // Date formatted title
   const getHeaderTitle = () => {
@@ -158,57 +191,337 @@ export function AttendanceCalendarWidget({
     return dateStr >= startStr && dateStr <= endStr;
   };
 
+  // Selected date details for Samsung mobile view
+  const selectedDayShifts = shiftsByDate.get(selectedDateStr) || [];
+  const selectedDayLeaves = leaves.filter((l) => isDateInLeave(selectedDateStr, l.startDate, l.endDate));
+  const selectedDateObj = new Date(selectedDateStr + 'T00:00:00');
+  const isSelectedToday = selectedDateStr === new Date().toISOString().slice(0, 10);
+  const selectedDateTitle = selectedDateObj.toLocaleDateString(undefined, {
+    weekday: 'short',
+    month: 'short',
+    day: 'numeric',
+  });
+
   return (
     <div className="flex flex-col w-full bg-stocky-bg-widget">
-      {/* Google Calendar Controls Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 sm:p-4 border-b border-stocky-border-subtle bg-stocky-bg-global/20">
-        <div className="flex items-center justify-between sm:justify-start gap-2.5 flex-wrap">
-          <button
-            type="button"
-            onClick={handleToday}
-            className="h-8 sm:h-9 px-3 rounded-full border border-stocky-border-subtle bg-stocky-bg-widget text-xs font-semibold text-stocky-text-main hover:border-stocky-primary hover:text-stocky-primary transition-colors cursor-pointer"
-          >
-            Today
-          </button>
-          <div className="inline-flex items-center gap-1">
-            <button
-              type="button"
-              onClick={handlePrev}
-              className="p-1.5 rounded-full border border-stocky-border-subtle bg-stocky-bg-widget text-stocky-text-main hover:bg-stocky-bg-global transition-colors cursor-pointer"
-            >
-              <ChevronLeftIcon size="xs" />
-            </button>
-            <button
-              type="button"
-              onClick={handleNext}
-              className="p-1.5 rounded-full border border-stocky-border-subtle bg-stocky-bg-widget text-stocky-text-main hover:bg-stocky-bg-global transition-colors cursor-pointer"
-            >
-              <ChevronRightIcon size="xs" />
-            </button>
+      {/* ─────────────────────────────────────────────────────────────
+          MOBILE: SAMSUNG CALENDAR EXPERIENCE (< sm)
+      ─────────────────────────────────────────────────────────────── */}
+      <div className="sm:hidden flex flex-col w-full divide-y divide-stocky-border-subtle">
+        {/* Upper: Samsung Calendar Header */}
+        <div className="p-3.5 flex flex-col gap-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-1.5">
+              <h2 className="text-base font-bold text-stocky-text-main tracking-tight">
+                {currentDate.toLocaleDateString(undefined, { month: 'long', year: 'numeric' })}
+              </h2>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <button
+                type="button"
+                onClick={handleToday}
+                className="h-7 px-3 rounded-full border border-stocky-border-subtle bg-stocky-bg-widget text-[11px] font-semibold text-stocky-text-main hover:text-stocky-primary transition-colors cursor-pointer"
+              >
+                Today
+              </button>
+              <div className="inline-flex items-center rounded-full border border-stocky-border-subtle bg-stocky-bg-widget">
+                <button
+                  type="button"
+                  onClick={handlePrevMonth}
+                  aria-label="Previous month"
+                  className="p-1 text-stocky-text-sub hover:text-stocky-text-main cursor-pointer"
+                >
+                  <ChevronLeftIcon size="xs" />
+                </button>
+                <button
+                  type="button"
+                  onClick={handleNextMonth}
+                  aria-label="Next month"
+                  className="p-1 text-stocky-text-sub hover:text-stocky-text-main cursor-pointer"
+                >
+                  <ChevronRightIcon size="xs" />
+                </button>
+              </div>
+            </div>
           </div>
-          <h2 className="text-xs sm:text-base font-semibold text-stocky-text-main ml-1 truncate">
-            {getHeaderTitle()}
-          </h2>
+
+          {/* Weekday Row (Samsung One UI: S M T W T F S) */}
+          <div className="grid grid-cols-7 text-center text-[11px] font-semibold text-stocky-text-sub py-1">
+            <span className="text-stocky-status-critical-fg/80">S</span>
+            <span>M</span>
+            <span>T</span>
+            <span>W</span>
+            <span>T</span>
+            <span>F</span>
+            <span>S</span>
+          </div>
+
+          {/* Samsung Month Day Cells Grid */}
+          <div className="grid grid-cols-7 gap-y-1 text-center">
+            {calendarDays.map((cell, idx) => {
+              const dayShifts = shiftsByDate.get(cell.dateStr) || [];
+              const dayLeaves = leaves.filter((l) => isDateInLeave(cell.dateStr, l.startDate, l.endDate));
+              const isSelected = cell.dateStr === selectedDateStr;
+
+              // Dot indicators
+              const hasPresent = dayShifts.some((s) => s.status === 'present');
+              const hasActive = dayShifts.some((s) => !s.clockOutAt);
+              const hasLate = dayShifts.some((s) => s.status === 'late' || s.status === 'early_departure');
+              const hasLeave = dayLeaves.length > 0;
+
+              return (
+                <button
+                  key={idx}
+                  type="button"
+                  onClick={() => handleSelectMobileDate(cell.dateStr)}
+                  className="flex flex-col items-center justify-center py-1 relative cursor-pointer group"
+                >
+                  <div
+                    className={`w-8 h-8 rounded-full flex items-center justify-center text-xs transition-all ${
+                      isSelected
+                        ? 'bg-stocky-primary text-white font-bold shadow-sm'
+                        : cell.isToday
+                        ? 'ring-1.5 ring-stocky-primary text-stocky-primary font-bold'
+                        : cell.isCurrentMonth
+                        ? 'text-stocky-text-main font-medium group-hover:bg-stocky-bg-global/50'
+                        : 'text-stocky-text-sub/40'
+                    }`}
+                  >
+                    {cell.dayNum}
+                  </div>
+
+                  {/* Micro event indicator dots */}
+                  <div className="h-1.5 flex items-center gap-0.5 mt-0.5">
+                    {hasPresent && (
+                      <span className="w-1.5 h-1.5 rounded-full bg-stocky-status-success-fg" />
+                    )}
+                    {hasActive && (
+                      <span className="w-1.5 h-1.5 rounded-full bg-stocky-status-info-fg animate-pulse" />
+                    )}
+                    {hasLate && (
+                      <span className="w-1.5 h-1.5 rounded-full bg-stocky-status-warning-fg" />
+                    )}
+                    {hasLeave && (
+                      <span className="w-1.5 h-1.5 rounded-full bg-stocky-status-hold-fg" />
+                    )}
+                  </div>
+                </button>
+              );
+            })}
+          </div>
         </div>
 
-        {/* View Switcher: Day | Week | Month */}
-        <div className="inline-flex items-center self-start sm:self-auto p-1 rounded-full bg-stocky-bg-global border border-stocky-border-subtle">
-          {(['day', 'week', 'month'] as CalendarViewMode[]).map((mode) => (
-            <button
-              key={mode}
-              type="button"
-              onClick={() => setViewMode(mode)}
-              className={`px-3 py-1 rounded-full text-xs font-medium capitalize transition-colors cursor-pointer ${
-                viewMode === mode
-                  ? 'bg-stocky-bg-widget text-stocky-primary font-semibold shadow-sm'
-                  : 'text-stocky-text-sub hover:text-stocky-text-main'
-              }`}
-            >
-              {mode}
-            </button>
-          ))}
+        {/* Lower: Selected Day Schedule Agenda */}
+        <div className="p-3.5 flex flex-col gap-2.5 bg-stocky-bg-global/20">
+          {/* Selected Date Header */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-bold text-stocky-text-main">
+                {selectedDateTitle}
+              </span>
+              {isSelectedToday && (
+                <span className="px-2 py-0.5 rounded-full bg-stocky-primary text-white text-[10px] font-semibold">
+                  Today
+                </span>
+              )}
+            </div>
+            <span className="text-[11px] font-medium text-stocky-text-sub">
+              {selectedDayShifts.length} shift{selectedDayShifts.length === 1 ? '' : 's'}
+              {selectedDayLeaves.length > 0 ? ` · ${selectedDayLeaves.length} leave` : ''}
+            </span>
+          </div>
+
+          {/* Agenda items list */}
+          {selectedDayShifts.length === 0 && selectedDayLeaves.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-8 px-4 text-center rounded-widget border border-stocky-border-subtle bg-stocky-bg-widget">
+              <div className="w-9 h-9 rounded-full bg-stocky-bg-global border border-stocky-border-subtle flex items-center justify-center text-stocky-text-sub mb-2">
+                <CalendarIcon size="xs" />
+              </div>
+              <div className="text-xs font-semibold text-stocky-text-main">
+                No scheduled shifts for this day
+              </div>
+              <div className="text-[11px] text-stocky-text-sub mt-0.5">
+                Tap another date on the calendar above or switch to kiosk to punch in.
+              </div>
+            </div>
+          ) : (
+            <div className="flex flex-col gap-2">
+              {/* Shift cards */}
+              {selectedDayShifts.map((shift) => {
+                const member = memberMap.get(shift.companyUserId);
+                const locationName = locationMap.get(shift.locationId) || 'Main Branch';
+                const isOngoing = !shift.clockOutAt;
+                const memberName = member?.full_name || member?.email?.split('@')[0] || 'Staff Member';
+                const memberInitials = memberName
+                  .split(' ')
+                  .map((n: string) => n[0])
+                  .join('')
+                  .toUpperCase()
+                  .slice(0, 2);
+
+                const accentBorder = isOngoing
+                  ? 'border-l-stocky-status-info-fg'
+                  : shift.status === 'late'
+                  ? 'border-l-stocky-status-warning-fg'
+                  : 'border-l-stocky-status-success-fg';
+
+                return (
+                  <article
+                    key={shift.id}
+                    onClick={() => onSelectShift(shift)}
+                    className={`p-3 rounded-widget border border-stocky-border-subtle bg-stocky-bg-widget hover:bg-stocky-bg-global/40 active:bg-stocky-bg-global/60 transition-colors cursor-pointer flex flex-col gap-2 border-l-4 ${accentBorder}`}
+                  >
+                    <div className="flex items-center justify-between text-xs">
+                      <div className="flex items-center gap-1.5 text-stocky-text-main font-semibold">
+                        <ClockIcon size="xs" className="text-stocky-text-sub shrink-0" />
+                        <span>{formatTime(shift.clockInAt)}</span>
+                        <span className="text-stocky-text-sub">→</span>
+                        <span className={isOngoing ? 'text-stocky-primary' : 'text-stocky-text-main'}>
+                          {isOngoing ? 'Active' : formatTime(shift.clockOutAt)}
+                        </span>
+                        <span className="text-[11px] font-normal text-stocky-text-sub ml-1">
+                          ({formatDuration(shift.totalMinutes)})
+                        </span>
+                      </div>
+                      <span
+                        className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium border ${
+                          isOngoing
+                            ? 'stocky-status-info'
+                            : shift.status === 'late'
+                            ? 'stocky-status-warning'
+                            : 'stocky-status-success'
+                        }`}
+                      >
+                        {isOngoing && <span className="w-1.5 h-1.5 rounded-full bg-current animate-pulse" />}
+                        {isOngoing ? 'Active Now' : shift.status === 'late' ? 'Late' : 'On Time'}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center justify-between pt-0.5">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <div className="w-6 h-6 rounded-full bg-stocky-primary/10 border border-stocky-primary/20 text-stocky-primary flex items-center justify-center text-[10px] font-semibold shrink-0">
+                          {memberInitials}
+                        </div>
+                        <span className="text-xs font-semibold text-stocky-text-main truncate">
+                          {memberName}
+                        </span>
+                        <div className="inline-flex items-center gap-1 text-[11px] text-stocky-text-sub truncate">
+                          <WarehouseIcon size="xs" className="shrink-0" />
+                          <span className="truncate">{locationName}</span>
+                        </div>
+                      </div>
+
+                      <ChevronRightIcon size="xs" className="text-stocky-text-sub shrink-0" />
+                    </div>
+                  </article>
+                );
+              })}
+
+              {/* Leave cards */}
+              {selectedDayLeaves.map((leave) => {
+                const member = memberMap.get(leave.companyUserId);
+                const memberName = member?.full_name || member?.email?.split('@')[0] || 'Staff Member';
+                const memberInitials = memberName
+                  .split(' ')
+                  .map((n: string) => n[0])
+                  .join('')
+                  .toUpperCase()
+                  .slice(0, 2);
+
+                return (
+                  <article
+                    key={leave.id}
+                    onClick={() => onSelectLeave?.(leave)}
+                    className="p-3 rounded-widget border border-stocky-border-subtle bg-stocky-bg-widget hover:bg-stocky-bg-global/40 transition-colors cursor-pointer flex flex-col gap-2 border-l-4 border-l-stocky-status-hold-fg"
+                  >
+                    <div className="flex items-center justify-between text-xs">
+                      <div className="flex items-center gap-1.5">
+                        <CalendarIcon size="xs" className="text-stocky-text-sub shrink-0" />
+                        <span className="font-semibold text-stocky-text-main">
+                          {leave.startDate} → {leave.endDate}
+                        </span>
+                      </div>
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider stocky-status-hold border">
+                        {leave.leaveType}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center justify-between pt-0.5">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <div className="w-6 h-6 rounded-full bg-stocky-primary/10 border border-stocky-primary/20 text-stocky-primary flex items-center justify-center text-[10px] font-semibold shrink-0">
+                          {memberInitials}
+                        </div>
+                        <span className="text-xs font-semibold text-stocky-text-main truncate">
+                          {memberName}
+                        </span>
+                        <span className="text-[11px] text-stocky-text-sub">
+                          ({leave.daysCount} day{leave.daysCount !== 1 ? 's' : ''})
+                        </span>
+                      </div>
+
+                      <ChevronRightIcon size="xs" className="text-stocky-text-sub shrink-0" />
+                    </div>
+                  </article>
+                );
+              })}
+            </div>
+          )}
         </div>
       </div>
+
+      {/* ─────────────────────────────────────────────────────────────
+          DESKTOP: GOOGLE CALENDAR CONTROLS & VIEWS (sm:flex)
+      ─────────────────────────────────────────────────────────────── */}
+      <div className="hidden sm:flex flex-col w-full">
+        {/* Controls Bar */}
+        <div className="flex flex-row items-center justify-between gap-3 p-4 border-b border-stocky-border-subtle bg-stocky-bg-global/20">
+          <div className="flex items-center gap-2.5 flex-wrap">
+            <button
+              type="button"
+              onClick={handleToday}
+              className="h-9 px-3 rounded-full border border-stocky-border-subtle bg-stocky-bg-widget text-xs font-semibold text-stocky-text-main hover:border-stocky-primary hover:text-stocky-primary transition-colors cursor-pointer"
+            >
+              Today
+            </button>
+            <div className="inline-flex items-center gap-1">
+              <button
+                type="button"
+                onClick={handlePrev}
+                className="p-1.5 rounded-full border border-stocky-border-subtle bg-stocky-bg-widget text-stocky-text-main hover:bg-stocky-bg-global transition-colors cursor-pointer"
+              >
+                <ChevronLeftIcon size="xs" />
+              </button>
+              <button
+                type="button"
+                onClick={handleNext}
+                className="p-1.5 rounded-full border border-stocky-border-subtle bg-stocky-bg-widget text-stocky-text-main hover:bg-stocky-bg-global transition-colors cursor-pointer"
+              >
+                <ChevronRightIcon size="xs" />
+              </button>
+            </div>
+            <h2 className="text-base font-semibold text-stocky-text-main ml-1 truncate">
+              {getHeaderTitle()}
+            </h2>
+          </div>
+
+          {/* View Switcher: Day | Week | Month */}
+          <div className="inline-flex items-center p-1 rounded-full bg-stocky-bg-global border border-stocky-border-subtle">
+            {(['day', 'week', 'month'] as CalendarViewMode[]).map((mode) => (
+              <button
+                key={mode}
+                type="button"
+                onClick={() => setViewMode(mode)}
+                className={`px-3 py-1 rounded-full text-xs font-medium capitalize transition-colors cursor-pointer ${
+                  viewMode === mode
+                    ? 'bg-stocky-bg-widget text-stocky-primary font-semibold shadow-sm'
+                    : 'text-stocky-text-sub hover:text-stocky-text-main'
+                }`}
+              >
+                {mode}
+              </button>
+            ))}
+          </div>
+        </div>
 
       {/* MONTH VIEW */}
       {viewMode === 'month' && (
@@ -489,6 +802,7 @@ export function AttendanceCalendarWidget({
           })()}
         </div>
       )}
+      </div>
     </div>
   );
 }
