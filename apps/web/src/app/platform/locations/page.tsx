@@ -18,6 +18,7 @@ export default function LocationsRoutePage() {
       lots={platform.lots}
       transfers={platform.transfers}
       counts={platform.counts}
+      shifts={platform.attendanceShifts}
       members={platform.teamMembers}
       assignments={platform.teamAssignments}
       canManage={platform.canManage}

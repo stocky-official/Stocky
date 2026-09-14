@@ -418,6 +418,7 @@ export function AttendanceCalendarWidget({
                 const locationName = locationMap.get(shift.locationId) || 'Main Branch';
                 const isOngoing = !shift.clockOutAt;
                 const memberName = member?.full_name || member?.email?.split('@')[0] || 'Staff Member';
+                const memberTitle = member?.job_title || member?.role;
                 const memberInitials = memberName
                   .split(' ')
                   .map((n: string) => n[0])
@@ -426,31 +427,31 @@ export function AttendanceCalendarWidget({
                   .slice(0, 2);
 
                 const accentBorder = isOngoing
-                  ? 'border-l-stocky-status-info-fg'
+                  ? 'border-l-blue-500 bg-blue-50/10'
                   : shift.status === 'late'
-                  ? 'border-l-stocky-status-warning-fg'
-                  : 'border-l-stocky-status-success-fg';
+                  ? 'border-l-amber-500 bg-amber-50/10'
+                  : 'border-l-emerald-500 bg-emerald-50/10';
 
                 return (
                   <article
                     key={shift.id}
                     onClick={() => onSelectShift(shift)}
-                    className={`p-3 rounded-widget border border-stocky-border-subtle bg-stocky-bg-widget hover:bg-stocky-bg-global/40 active:bg-stocky-bg-global/60 transition-colors cursor-pointer flex flex-col gap-2 border-l-4 ${accentBorder}`}
+                    className={`p-3 rounded-2xl border border-stocky-border-subtle bg-stocky-bg-widget hover:bg-stocky-bg-global/40 active:bg-stocky-bg-global/60 transition-colors cursor-pointer flex flex-col gap-2 border-l-4 shadow-2xs ${accentBorder}`}
                   >
                     <div className="flex items-center justify-between text-xs">
                       <div className="flex items-center gap-1.5 text-stocky-text-main font-semibold">
                         <ClockIcon size="xs" className="text-stocky-text-sub shrink-0" />
                         <span>{formatTime(shift.clockInAt)}</span>
                         <span className="text-stocky-text-sub">→</span>
-                        <span className={isOngoing ? 'text-stocky-primary' : 'text-stocky-text-main'}>
+                        <span className={isOngoing ? 'text-stocky-primary font-bold' : 'text-stocky-text-main'}>
                           {isOngoing ? 'Active' : formatTime(shift.clockOutAt)}
                         </span>
-                        <span className="text-[11px] font-normal text-stocky-text-sub ml-1">
-                          ({formatDuration(shift.totalMinutes)})
+                        <span className="text-[11px] font-normal text-stocky-text-sub ml-1 bg-stocky-bg-global px-2 py-0.5 rounded-full border border-stocky-border-subtle/50">
+                          {formatDuration(shift.totalMinutes)}
                         </span>
                       </div>
                       <span
-                        className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium border ${
+                        className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-semibold border ${
                           isOngoing
                             ? 'stocky-status-info'
                             : shift.status === 'late'
@@ -463,21 +464,28 @@ export function AttendanceCalendarWidget({
                       </span>
                     </div>
 
-                    <div className="flex items-center justify-between pt-0.5">
-                      <div className="flex items-center gap-2 min-w-0">
-                        <div className="w-6 h-6 rounded-full bg-stocky-primary/10 border border-stocky-primary/20 text-stocky-primary flex items-center justify-center text-[10px] font-semibold shrink-0">
+                    <div className="flex items-center justify-between pt-0.5 border-t border-stocky-border-subtle/50">
+                      <div className="flex items-center gap-2 min-w-0 flex-1">
+                        <div className="w-6 h-6 rounded-full bg-stocky-primary/10 border border-stocky-primary/20 text-stocky-primary flex items-center justify-center text-[10px] font-bold shrink-0">
                           {memberInitials}
                         </div>
-                        <span className="text-xs font-semibold text-stocky-text-main truncate">
-                          {memberName}
-                        </span>
-                        <div className="inline-flex items-center gap-1 text-[11px] text-stocky-text-sub truncate">
-                          <WarehouseIcon size="xs" className="shrink-0" />
-                          <span className="truncate">{locationName}</span>
+                        <div className="min-w-0 flex items-center gap-1.5 flex-wrap">
+                          <span className="text-xs font-semibold text-stocky-text-main truncate max-w-[130px]">
+                            {memberName}
+                          </span>
+                          {memberTitle && (
+                            <span className="inline-flex rounded-full bg-stocky-bg-global px-2 py-0.5 text-[9px] font-medium text-stocky-text-sub border border-stocky-border-subtle truncate max-w-[120px]">
+                              {memberTitle}
+                            </span>
+                          )}
+                          <div className="inline-flex items-center gap-1 text-[11px] text-stocky-text-sub truncate">
+                            <WarehouseIcon size="xs" className="shrink-0" />
+                            <span className="truncate max-w-[90px]">{locationName}</span>
+                          </div>
                         </div>
                       </div>
 
-                      <ChevronRightIcon size="xs" className="text-stocky-text-sub shrink-0" />
+                      <ChevronRightIcon size="xs" className="text-stocky-text-sub shrink-0 ml-2" />
                     </div>
                   </article>
                 );
@@ -487,6 +495,7 @@ export function AttendanceCalendarWidget({
               {selectedDayLeaves.map((leave) => {
                 const member = memberMap.get(leave.companyUserId);
                 const memberName = member?.full_name || member?.email?.split('@')[0] || 'Staff Member';
+                const memberTitle = member?.job_title || member?.role;
                 const memberInitials = memberName
                   .split(' ')
                   .map((n: string) => n[0])
@@ -498,34 +507,41 @@ export function AttendanceCalendarWidget({
                   <article
                     key={leave.id}
                     onClick={() => onSelectLeave?.(leave)}
-                    className="p-3 rounded-widget border border-stocky-border-subtle bg-stocky-bg-widget hover:bg-stocky-bg-global/40 transition-colors cursor-pointer flex flex-col gap-2 border-l-4 border-l-stocky-status-hold-fg"
+                    className="p-3 rounded-2xl border border-stocky-border-subtle bg-stocky-bg-widget hover:bg-stocky-bg-global/40 transition-colors cursor-pointer flex flex-col gap-2 border-l-4 border-l-purple-500 bg-purple-50/10 shadow-2xs"
                   >
                     <div className="flex items-center justify-between text-xs">
                       <div className="flex items-center gap-1.5">
-                        <CalendarIcon size="xs" className="text-stocky-text-sub shrink-0" />
+                        <CalendarIcon size="xs" className="text-purple-600 shrink-0" />
                         <span className="font-semibold text-stocky-text-main">
                           {leave.startDate} → {leave.endDate}
                         </span>
                       </div>
-                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider stocky-status-hold border">
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider bg-purple-50 text-purple-700 border border-purple-200">
                         {leave.leaveType}
                       </span>
                     </div>
 
-                    <div className="flex items-center justify-between pt-0.5">
-                      <div className="flex items-center gap-2 min-w-0">
-                        <div className="w-6 h-6 rounded-full bg-stocky-primary/10 border border-stocky-primary/20 text-stocky-primary flex items-center justify-center text-[10px] font-semibold shrink-0">
+                    <div className="flex items-center justify-between pt-0.5 border-t border-stocky-border-subtle/50">
+                      <div className="flex items-center gap-2 min-w-0 flex-1">
+                        <div className="w-6 h-6 rounded-full bg-purple-100 text-purple-700 flex items-center justify-center text-[10px] font-bold shrink-0">
                           {memberInitials}
                         </div>
-                        <span className="text-xs font-semibold text-stocky-text-main truncate">
-                          {memberName}
-                        </span>
-                        <span className="text-[11px] text-stocky-text-sub">
-                          ({leave.daysCount} day{leave.daysCount !== 1 ? 's' : ''})
-                        </span>
+                        <div className="min-w-0 flex items-center gap-1.5 flex-wrap">
+                          <span className="text-xs font-semibold text-stocky-text-main truncate">
+                            {memberName}
+                          </span>
+                          {memberTitle && (
+                            <span className="inline-flex rounded-full bg-stocky-bg-global px-2 py-0.5 text-[9px] font-medium text-stocky-text-sub border border-stocky-border-subtle">
+                              {memberTitle}
+                            </span>
+                          )}
+                          <span className="text-[11px] text-stocky-text-sub">
+                            ({leave.daysCount} day{leave.daysCount !== 1 ? 's' : ''})
+                          </span>
+                        </div>
                       </div>
 
-                      <ChevronRightIcon size="xs" className="text-stocky-text-sub shrink-0" />
+                      <ChevronRightIcon size="xs" className="text-stocky-text-sub shrink-0 ml-2" />
                     </div>
                   </article>
                 );

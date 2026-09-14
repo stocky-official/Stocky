@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import type { AttendanceShift, Location } from '@stocky/types';
+import type { AttendanceShift, Location, PunchMethod } from '@stocky/types';
 import {
   CheckCircleIcon,
   AlertTriangleIcon,
@@ -11,6 +11,7 @@ import {
   ChevronLeftIcon,
   ChevronRightIcon,
   PlusIcon,
+  LogOutIcon,
 } from '@stocky/icons';
 
 export interface TimesheetsTableWidgetProps {
@@ -18,7 +19,14 @@ export interface TimesheetsTableWidgetProps {
   locations: Location[];
   members: any[];
   onSelectShift: (shift: AttendanceShift) => void;
-  onRequestLeave: () => void;
+  onRequestLeave?: () => void;
+  currentUserId?: string | null;
+  onPunchAttendance?: (input: {
+    locationId: string;
+    method?: PunchMethod;
+    qrToken?: string;
+    notes?: string;
+  }) => Promise<AttendanceShift>;
 }
 
 const ITEMS_PER_PAGE = 15;
@@ -29,8 +37,13 @@ export function TimesheetsTableWidget({
   members,
   onSelectShift,
   onRequestLeave,
+  currentUserId,
+  onPunchAttendance,
 }: TimesheetsTableWidgetProps) {
   const [currentPage, setCurrentPage] = useState(1);
+  const [punching, setPunching] = useState(false);
+  const [punchLocationId, setPunchLocationId] = useState<string>(locations[0]?.id || '');
+  const [punchFeedback, setPunchFeedback] = useState<{ success: boolean; message: string } | null>(null);
 
   const locationMap = new Map(locations.map((loc) => [loc.id, loc.name]));
   const memberMap = new Map(members.map((m) => [m.id, m]));
@@ -138,52 +151,187 @@ export function TimesheetsTableWidget({
     );
   };
 
+  const userActiveShift = shifts.find(
+    (s) => (s.companyUserId === currentUserId || !currentUserId) && !s.clockOutAt
+  );
+
+  const handlePunchToggle = async () => {
+    if (!onPunchAttendance) return;
+    setPunching(true);
+    setPunchFeedback(null);
+    try {
+      const targetLocId = userActiveShift ? userActiveShift.locationId : (punchLocationId || locations[0]?.id || '');
+      const res = await onPunchAttendance({
+        locationId: targetLocId,
+        method: 'kiosk',
+        notes: userActiveShift ? 'Clocked out via Timesheets workspace' : 'Clocked in via Timesheets workspace',
+      });
+      setPunchFeedback({
+        success: true,
+        message: `Successfully clocked ${res.clockOutAt ? 'out' : 'in'}!`,
+      });
+    } catch (err: any) {
+      setPunchFeedback({
+        success: false,
+        message: err.message || 'Failed to punch attendance.',
+      });
+    } finally {
+      setPunching(false);
+    }
+  };
+
   return (
     <div className="flex flex-col w-full">
-      {/* Roll Call Stats Banner */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 p-3 sm:p-4 bg-stocky-bg-global/40 border-b border-stocky-border-subtle">
-        <div className="flex items-center gap-3 bg-stocky-bg-widget p-2.5 sm:p-3 rounded-widget border border-stocky-border-subtle shadow-sm">
-          <div className="w-8 h-8 rounded-lg stocky-status-success border flex items-center justify-center">
+      {/* Roll Call Stats Banner (Compact 2x2 on mobile, 4-col on desktop) */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 p-3 sm:p-4 bg-stocky-bg-global/40 border-b border-stocky-border-subtle">
+        <div className="flex items-center gap-2.5 sm:gap-3 bg-stocky-bg-widget p-2.5 sm:p-3 rounded-2xl border border-stocky-border-subtle shadow-2xs">
+          <div className="w-8 h-8 rounded-xl stocky-status-success border flex items-center justify-center shrink-0">
             <CheckCircleIcon size="xs" />
           </div>
-          <div>
-            <div className="text-[11px] font-medium text-stocky-text-sub">Present Today</div>
-            <div className="text-base font-semibold text-stocky-text-main">{totalPresentToday} staff</div>
+          <div className="min-w-0">
+            <div className="text-[11px] font-medium text-stocky-text-sub truncate">Present Today</div>
+            <div className="text-sm sm:text-base font-bold text-stocky-text-main truncate">{totalPresentToday} staff</div>
           </div>
         </div>
 
-        <div className="flex items-center gap-3 bg-stocky-bg-widget p-2.5 sm:p-3 rounded-widget border border-stocky-border-subtle shadow-sm">
-          <div className="w-8 h-8 rounded-lg stocky-status-info border flex items-center justify-center">
+        <div className="flex items-center gap-2.5 sm:gap-3 bg-stocky-bg-widget p-2.5 sm:p-3 rounded-2xl border border-stocky-border-subtle shadow-2xs">
+          <div className="w-8 h-8 rounded-xl stocky-status-info border flex items-center justify-center shrink-0">
             <ClockIcon size="xs" />
           </div>
-          <div>
-            <div className="text-[11px] font-medium text-stocky-text-sub">On-Time Rate</div>
-            <div className="text-base font-semibold text-stocky-text-main">
+          <div className="min-w-0">
+            <div className="text-[11px] font-medium text-stocky-text-sub truncate">On-Time Rate</div>
+            <div className="text-sm sm:text-base font-bold text-stocky-text-main truncate">
               {totalPresentToday > 0 ? `${Math.round((onTimeCount / totalPresentToday) * 100)}%` : '100%'}
             </div>
           </div>
         </div>
 
-        <div className="flex items-center gap-3 bg-stocky-bg-widget p-2.5 sm:p-3 rounded-widget border border-stocky-border-subtle shadow-sm">
-          <div className="w-8 h-8 rounded-lg stocky-status-warning border flex items-center justify-center">
+        <div className="flex items-center gap-2.5 sm:gap-3 bg-stocky-bg-widget p-2.5 sm:p-3 rounded-2xl border border-stocky-border-subtle shadow-2xs">
+          <div className="w-8 h-8 rounded-xl stocky-status-warning border flex items-center justify-center shrink-0">
             <AlertTriangleIcon size="xs" />
           </div>
-          <div>
-            <div className="text-[11px] font-medium text-stocky-text-sub">Late Arrivals</div>
-            <div className="text-base font-semibold text-stocky-text-main">{lateCount} staff</div>
+          <div className="min-w-0">
+            <div className="text-[11px] font-medium text-stocky-text-sub truncate">Late Arrivals</div>
+            <div className="text-sm sm:text-base font-bold text-stocky-text-main truncate">{lateCount} staff</div>
           </div>
         </div>
 
-        <div className="flex items-center gap-3 bg-stocky-bg-widget p-2.5 sm:p-3 rounded-widget border border-stocky-border-subtle shadow-sm">
-          <div className="w-8 h-8 rounded-lg stocky-status-hold border flex items-center justify-center">
+        <div className="flex items-center gap-2.5 sm:gap-3 bg-stocky-bg-widget p-2.5 sm:p-3 rounded-2xl border border-stocky-border-subtle shadow-2xs">
+          <div className="w-8 h-8 rounded-xl stocky-status-hold border flex items-center justify-center shrink-0">
             <span className="w-2.5 h-2.5 rounded-full bg-current animate-pulse" />
           </div>
-          <div>
-            <div className="text-[11px] font-medium text-stocky-text-sub">Active Now</div>
-            <div className="text-base font-semibold text-stocky-text-main">{activeNowCount} working</div>
+          <div className="min-w-0">
+            <div className="text-[11px] font-medium text-stocky-text-sub truncate">Active Now</div>
+            <div className="text-sm sm:text-base font-bold text-stocky-text-main truncate">{activeNowCount} working</div>
           </div>
         </div>
       </div>
+
+      {/* Interactive Punch Clock Card */}
+      {onPunchAttendance && (
+        <div className="p-3 sm:p-4 bg-stocky-bg-widget border-b border-stocky-border-subtle">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-3 sm:p-3.5 rounded-2xl bg-gradient-to-r from-stocky-bg-global via-white to-stocky-bg-global border border-stocky-border-subtle shadow-2xs">
+            <div className="flex items-center gap-3 min-w-0">
+              <div
+                className={`w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 border ${
+                  userActiveShift
+                    ? 'bg-emerald-50 text-emerald-600 border-emerald-200 shadow-2xs'
+                    : 'bg-stocky-bg-global text-stocky-text-sub border-stocky-border-subtle'
+                }`}
+              >
+                <ClockIcon size="sm" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-bold text-stocky-text-main">Punch Clock</span>
+                  <span
+                    className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold border ${
+                      userActiveShift ? 'stocky-status-success' : 'stocky-status-muted'
+                    }`}
+                  >
+                    <span
+                      className={`w-1.5 h-1.5 rounded-full ${
+                        userActiveShift ? 'bg-emerald-500 animate-pulse' : 'bg-current'
+                      }`}
+                    />
+                    {userActiveShift ? 'Clocked In' : 'Clocked Out'}
+                  </span>
+                  <span className="hidden sm:inline-flex items-center gap-1 text-[10px] text-stocky-text-sub">
+                    <QrCodeIcon size="xs" /> Geofenced
+                  </span>
+                </div>
+                <p className="text-[11px] text-stocky-text-sub truncate mt-0.5">
+                  {userActiveShift
+                    ? `Shift started at ${new Date(userActiveShift.clockInAt).toLocaleTimeString([], {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      })} · ${locationMap.get(userActiveShift.locationId) || 'Branch'}`
+                    : 'Select location and punch in to start your work shift.'}
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 w-full sm:w-auto shrink-0">
+              {!userActiveShift && locations.length > 0 && (
+                <select
+                  value={punchLocationId}
+                  onChange={(e) => setPunchLocationId(e.target.value)}
+                  className="h-10 flex-1 sm:flex-initial rounded-full border border-stocky-border-subtle bg-white px-3 text-xs font-medium text-stocky-text-main focus:border-stocky-primary focus:outline-none cursor-pointer"
+                >
+                  {locations.map((loc) => (
+                    <option key={loc.id} value={loc.id}>
+                      {loc.name}
+                    </option>
+                  ))}
+                </select>
+              )}
+              <button
+                type="button"
+                disabled={punching}
+                onClick={handlePunchToggle}
+                className={`h-10 px-5 flex-1 sm:flex-initial rounded-full text-xs font-semibold inline-flex items-center justify-center gap-1.5 transition-all shadow-sm cursor-pointer ${
+                  userActiveShift
+                    ? 'border border-red-200 bg-red-50 text-red-700 hover:bg-red-100 hover:border-red-300'
+                    : 'stocky-table-toolbar-button stocky-table-toolbar-button--primary'
+                }`}
+              >
+                {punching ? (
+                  <span>Punching...</span>
+                ) : userActiveShift ? (
+                  <>
+                    <LogOutIcon size="xs" />
+                    <span>Clock Out</span>
+                  </>
+                ) : (
+                  <>
+                    <CheckCircleIcon size="xs" />
+                    <span>Clock In</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+
+          {punchFeedback && (
+            <div
+              className={`mt-2 p-2 rounded-xl text-xs flex items-center justify-between border ${
+                punchFeedback.success
+                  ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                  : 'bg-red-50 text-red-700 border-red-200'
+              }`}
+            >
+              <span>{punchFeedback.message}</span>
+              <button
+                type="button"
+                onClick={() => setPunchFeedback(null)}
+                className="text-stocky-text-sub hover:text-stocky-text-main text-xs cursor-pointer ml-2"
+              >
+                ×
+              </button>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Shifts Table & Mobile Cards */}
       {paginatedShifts.length === 0 ? (

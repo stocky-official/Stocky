@@ -636,7 +636,8 @@
   display: flex;
   flex: 0 0 auto;
   gap: var(--stocky-element-gap);
-  height: var(--stocky-height-control);
+  min-height: var(--stocky-height-control);
+  height: auto;
 }
 .stocky-stock-table-toolbar__actions .stocky-table-toolbar-button {
   height: var(--stocky-height-control);
@@ -2121,11 +2122,19 @@ textarea::placeholder {
   .stocky-stock-table-toolbar__search-group .stocky-table-toolbar-button { flex: 0 0 auto; height: 2.5rem; padding-inline: 0.875rem; }
   .stocky-stock-table-toolbar__actions {
     display: flex;
-    align-items: center;
     gap: 0.5rem;
     width: 100%;
-    flex-wrap: nowrap;
+    height: auto;
+    min-height: 2.5rem;
     overflow: visible;
+  }
+  .stocky-stock-table-toolbar__actions:not(.flex-col) {
+    align-items: center;
+    flex-wrap: nowrap;
+  }
+  .stocky-stock-table-toolbar__actions.flex-col {
+    flex-direction: column;
+    align-items: stretch;
   }
   .stocky-stock-table-toolbar__actions .stocky-table-toolbar-button {
     flex: 1 1 0%;

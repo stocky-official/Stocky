@@ -68,6 +68,8 @@ export function AttendanceWorkspaceWidget({
     onControlledTabChange?.(tab);
   }, [onControlledTabChange]);
   const [search, setSearch] = useState('');
+  const [locationFilter, setLocationFilter] = useState('all');
+  const [statusFilter, setStatusFilter] = useState('all');
   const [isLeaveDrawerOpen, setIsLeaveDrawerOpen] = useState(false);
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
   const [selectedShift, setSelectedShift] = useState<AttendanceShift | null>(null);
@@ -75,22 +77,36 @@ export function AttendanceWorkspaceWidget({
   const locationMap = useMemo(() => new Map(locations.map((l) => [l.id, l.name])), [locations]);
   const memberMap = useMemo(() => new Map(members.map((m) => [m.id, m])), [members]);
 
-  // Search filtering
+  // Filtering shifts
   const filteredShifts = useMemo(() => {
-    if (!search.trim()) return shifts;
-    const query = search.toLowerCase();
     return shifts.filter((shift) => {
-      const member = memberMap.get(shift.companyUserId);
-      const locName = locationMap.get(shift.locationId) || '';
-      return (
-        member?.full_name?.toLowerCase().includes(query) ||
-        member?.email?.toLowerCase().includes(query) ||
-        locName.toLowerCase().includes(query) ||
-        shift.status?.toLowerCase().includes(query) ||
-        shift.shiftDate?.includes(query)
-      );
+      // 1. Location filter
+      if (locationFilter !== 'all' && shift.locationId !== locationFilter) {
+        return false;
+      }
+      // 2. Status filter
+      if (statusFilter !== 'all') {
+        if (statusFilter === 'active' && shift.clockOutAt) return false;
+        if (statusFilter === 'on_time' && shift.status !== 'present') return false;
+        if (statusFilter === 'late' && shift.status !== 'late') return false;
+        if (statusFilter === 'overtime' && shift.status !== 'overtime') return false;
+      }
+      // 3. Search query
+      if (search.trim()) {
+        const query = search.toLowerCase();
+        const member = memberMap.get(shift.companyUserId);
+        const locName = locationMap.get(shift.locationId) || '';
+        const match =
+          member?.full_name?.toLowerCase().includes(query) ||
+          member?.email?.toLowerCase().includes(query) ||
+          locName.toLowerCase().includes(query) ||
+          shift.status?.toLowerCase().includes(query) ||
+          shift.shiftDate?.includes(query);
+        if (!match) return false;
+      }
+      return true;
     });
-  }, [shifts, search, memberMap, locationMap]);
+  }, [shifts, search, locationFilter, statusFilter, memberMap, locationMap]);
 
   return (
     <div className="w-full space-y-4">
@@ -106,6 +122,11 @@ export function AttendanceWorkspaceWidget({
               onTabChange={setActiveTab}
               onExportExcel={() => setIsExportModalOpen(true)}
               userRole={userRole}
+              locationFilter={locationFilter}
+              onLocationFilterChange={setLocationFilter}
+              statusFilter={statusFilter}
+              onStatusFilterChange={setStatusFilter}
+              locations={locations}
             />
           </div>
         )}
@@ -117,6 +138,8 @@ export function AttendanceWorkspaceWidget({
               shifts={filteredShifts}
               locations={locations}
               members={members}
+              currentUserId={currentUserId}
+              onPunchAttendance={onPunchAttendance}
               onSelectShift={(shift) => setSelectedShift(shift)}
               onRequestLeave={() => setIsLeaveDrawerOpen(true)}
             />

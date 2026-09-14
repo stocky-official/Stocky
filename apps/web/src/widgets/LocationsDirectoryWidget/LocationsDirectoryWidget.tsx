@@ -19,7 +19,7 @@ import {
   WarehouseIcon,
   XIcon,
 } from '@stocky/icons';
-import type { InventoryTransfer, Location, Product, StockLot } from '@stocky/types';
+import type { AttendanceShift, InventoryTransfer, Location, Product, StockLot } from '@stocky/types';
 import { SideDrawer } from '@/components/ui/SideDrawer';
 import { UserAvatar } from '@/components/ui/UserAvatar';
 import { supabase } from '@/lib/supabase/client';
@@ -45,6 +45,7 @@ export interface LocationsDirectoryWidgetProps {
   lots: StockLot[];
   transfers?: InventoryTransfer[];
   counts?: Array<{ location_id?: string; status?: string; reviewed_at?: string | null; updated_at?: string | null }>;
+  shifts?: AttendanceShift[];
   onOpenStock: (locationId: string) => void;
   canManage?: boolean;
   companyId?: string;
@@ -64,6 +65,7 @@ export function LocationsDirectoryWidget({
   lots,
   transfers = [],
   counts = [],
+  shifts = [],
   onOpenStock,
   canManage = false,
   companyId,
@@ -278,6 +280,11 @@ export function LocationsDirectoryWidget({
       const assignedUserIds = availableAssignments.filter((a) => a.location_id === location.id).map((a) => a.user_id);
       const assignedStaff = availableMembers.filter((m) => assignedUserIds.includes(m.id));
 
+      const todayStr = new Date().toISOString().slice(0, 10);
+      const activeShiftsNow = shifts.filter(
+        (s) => s.locationId === location.id && (s.shiftDate === todayStr || s.clockInAt?.startsWith(todayStr)) && !s.clockOutAt
+      ).length;
+
       return {
         location,
         skuCount: new Set(locationLots.map((lot) => lot.productId)).size,
@@ -290,10 +297,11 @@ export function LocationsDirectoryWidget({
         manager,
         assignedStaff,
         assignedUserIds,
+        activeShiftsNow,
         _productMap: productMap,
       };
     });
-  }, [availableAssignments, availableMembers, counts, locations, lots, products, transfers]);
+  }, [availableAssignments, availableMembers, counts, locations, lots, products, shifts, transfers]);
 
   // Filtered stats based on search query, column selections, and filter panel attributes
   const filteredStats = useMemo(() => {
@@ -776,6 +784,7 @@ export function LocationsDirectoryWidget({
                   lastCompletedCount,
                   manager,
                   assignedStaff,
+                  activeShiftsNow,
                 }) => (
                   <div
                     key={location.id}
@@ -932,6 +941,23 @@ export function LocationsDirectoryWidget({
                               <span className="text-xs text-stocky-text-sub italic">None assigned</span>
                             )}
                           </div>
+
+                          <div className="h-4 w-px bg-stocky-border-subtle hidden sm:block" />
+
+                          {/* Active Shifts Today */}
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-[10px] uppercase font-bold tracking-wider text-stocky-text-sub">
+                              Active:
+                            </span>
+                            {activeShiftsNow > 0 ? (
+                              <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200/80 px-2 py-0.5 rounded-full">
+                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                                <span>{activeShiftsNow} working</span>
+                              </span>
+                            ) : (
+                              <span className="text-[11px] text-stocky-text-sub">0 clocked in</span>
+                            )}
+                          </div>
                         </div>
                       </div>
 
@@ -981,41 +1007,43 @@ export function LocationsDirectoryWidget({
                       </div>
 
                       {/* Action Triggers */}
-                      <div className="mt-4 pt-3 border-t border-stocky-border-subtle flex items-center justify-end gap-2">
-                        {canManage && (
+                      <div className="mt-4 pt-3 border-t border-stocky-border-subtle flex flex-wrap sm:flex-nowrap items-center justify-end gap-2 w-full">
+                        <div className="flex items-center gap-2 w-full sm:w-auto">
+                          {canManage && (
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                openEditDrawer(location);
+                              }}
+                              className="h-10 px-3.5 flex-1 sm:flex-initial rounded-full border border-stocky-border-subtle bg-white text-xs font-medium text-stocky-text-main hover:bg-stocky-bg-global hover:border-stocky-border-strong transition-colors cursor-pointer inline-flex items-center justify-center gap-1.5"
+                              title="Edit location"
+                            >
+                              <EditIcon size="xs" />
+                              <span>Edit</span>
+                            </button>
+                          )}
                           <button
                             type="button"
                             onClick={(e) => {
                               e.stopPropagation();
-                              openEditDrawer(location);
+                              setQrLocation(location);
                             }}
-                            className="h-10 px-3.5 rounded-full border border-stocky-border-subtle bg-white text-xs font-medium text-stocky-text-main hover:bg-stocky-bg-global hover:border-stocky-border-strong transition-colors cursor-pointer inline-flex items-center gap-1.5"
-                            title="Edit location"
+                            className="h-10 px-3.5 flex-1 sm:flex-initial rounded-full border border-stocky-border-subtle bg-white text-xs font-medium text-stocky-text-main hover:border-stocky-primary hover:text-stocky-primary transition-colors cursor-pointer inline-flex items-center justify-center gap-1.5 shadow-2xs"
+                            title="Generate Attendance QR check-in poster"
                           >
-                            <EditIcon size="xs" />
-                            <span>Edit</span>
+                            <QrCodeIcon size="xs" />
+                            <span className="hidden sm:inline">Attendance QR</span>
+                            <span className="sm:hidden">QR Poster</span>
                           </button>
-                        )}
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setQrLocation(location);
-                          }}
-                          className="h-10 px-3.5 rounded-full border border-stocky-border-subtle bg-white text-xs font-medium text-stocky-text-main hover:border-stocky-primary hover:text-stocky-primary transition-colors cursor-pointer inline-flex items-center gap-1.5 shadow-2xs"
-                          title="Generate Attendance QR check-in poster"
-                        >
-                          <QrCodeIcon size="xs" />
-                          <span className="hidden sm:inline">Attendance QR</span>
-                          <span className="sm:hidden">QR</span>
-                        </button>
+                        </div>
                         <button
                           type="button"
                           onClick={(e) => {
                             e.stopPropagation();
                             onOpenStock(location.id);
                           }}
-                          className="h-10 px-4 rounded-full border border-stocky-border-subtle bg-white text-xs font-medium text-stocky-text-main hover:border-stocky-primary hover:text-stocky-primary transition-colors cursor-pointer inline-flex items-center justify-center gap-1.5 shadow-2xs flex-1"
+                          className="h-10 px-4 w-full sm:w-auto rounded-full border border-stocky-border-subtle bg-white text-xs font-medium text-stocky-text-main hover:border-stocky-primary hover:text-stocky-primary transition-colors cursor-pointer inline-flex items-center justify-center gap-1.5 shadow-2xs sm:flex-1"
                         >
                           <span>View inventory</span>
                           <ChevronRightIcon size="xs" />

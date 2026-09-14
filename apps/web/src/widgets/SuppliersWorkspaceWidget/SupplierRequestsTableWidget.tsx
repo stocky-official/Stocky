@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { CheckCircleIcon, PlusIcon } from '@stocky/icons';
+import { CheckCircleIcon, PlusIcon, WarehouseIcon, TruckIcon } from '@stocky/icons';
 import type { CompanyUserRole, Location, Product, Supplier, SupplierRequest } from '@stocky/types';
 
 export interface SupplierRequestsTableWidgetProps {
@@ -71,7 +71,8 @@ export function SupplierRequestsTableWidget({
         </div>
       ) : (
         <>
-          <div className="overflow-x-auto">
+          {/* Desktop Table (hidden on mobile) */}
+          <div className="hidden sm:block overflow-x-auto">
             <table className="w-full table-fixed text-left text-[11px] stocky-board-table">
               <colgroup>
                 <col className="w-[30%]" />
@@ -145,6 +146,84 @@ export function SupplierRequestsTableWidget({
                 })}
               </tbody>
             </table>
+          </div>
+
+          {/* Mobile Card List (sm:hidden) */}
+          <div className="sm:hidden divide-y divide-stocky-border-subtle w-full">
+            {pagedRequests.map((request) => {
+              const product = productMap.get(request.productId);
+              const location = locationMap.get(request.locationId);
+              const supplier = request.supplierId ? supplierMap.get(request.supplierId) : null;
+              const currentStatusIndex = statusOrder.indexOf(request.status);
+              const nextStatus =
+                currentStatusIndex >= 0 && currentStatusIndex < statusOrder.length - 1
+                  ? statusOrder[currentStatusIndex + 1]
+                  : null;
+
+              return (
+                <div key={request.id} className="p-3.5 flex flex-col gap-2.5 bg-stocky-bg-widget hover:bg-stocky-bg-global/20 transition-colors">
+                  {/* Row 1: Product Name & Status Badge */}
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0 flex-1">
+                      <h4 className="text-xs font-semibold text-stocky-text-main truncate">
+                        {product?.name || 'Product'}
+                      </h4>
+                      <div className="flex items-center gap-1.5 mt-0.5 text-[11px] text-stocky-text-sub">
+                        <span className="capitalize font-medium">{request.requestType}</span>
+                        {request.quantityRequested ? (
+                          <>
+                            <span>·</span>
+                            <span className="font-semibold text-stocky-text-main">
+                              {request.quantityRequested} units
+                            </span>
+                          </>
+                        ) : null}
+                      </div>
+                    </div>
+                    <span
+                      className={`inline-flex items-center shrink-0 rounded-full px-2.5 py-0.5 text-[10px] font-semibold capitalize ${
+                        statusBadgeClasses[request.status] || 'bg-slate-100 text-slate-700'
+                      }`}
+                    >
+                      {request.status}
+                    </span>
+                  </div>
+
+                  {/* Row 2: Location & Supplier Badges */}
+                  <div className="flex flex-wrap items-center gap-2 text-xs text-stocky-text-sub bg-stocky-bg-global/50 px-2.5 py-1.5 rounded-lg border border-stocky-border-subtle/60">
+                    <div className="inline-flex items-center gap-1 min-w-0">
+                      <WarehouseIcon size="xs" className="shrink-0 text-stocky-text-sub" />
+                      <span className="text-[11px] font-medium text-stocky-text-main truncate max-w-[130px]">
+                        {location?.name || 'Location'}
+                      </span>
+                    </div>
+                    <span className="text-stocky-border-subtle">|</span>
+                    <div className="inline-flex items-center gap-1 min-w-0">
+                      <TruckIcon size="xs" className="shrink-0 text-stocky-text-sub" />
+                      <span className="text-[11px] font-medium text-stocky-text-main truncate max-w-[130px]">
+                        {supplier?.name || 'Vendor not recorded'}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Row 3: Action Trigger (if status transition possible) */}
+                  {userRole !== 'staff' &&
+                  request.status !== 'closed' &&
+                  request.status !== 'cancelled' &&
+                  nextStatus ? (
+                    <div className="pt-1 flex items-center justify-end">
+                      <button
+                        type="button"
+                        onClick={() => onStatusChange(request, nextStatus)}
+                        className="w-full h-8 rounded-full border border-stocky-border-subtle bg-white px-3 text-xs font-semibold text-stocky-text-main hover:border-stocky-primary hover:text-stocky-primary cursor-pointer inline-flex items-center justify-center transition-colors shadow-2xs"
+                      >
+                        Mark as {nextStatus}
+                      </button>
+                    </div>
+                  ) : null}
+                </div>
+              );
+            })}
           </div>
 
           {/* Pagination Footer */}

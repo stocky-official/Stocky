@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import type { Location, Product, StockLot, InventoryTransfer } from '@stocky/types';
+import type { Location, Product, StockLot, InventoryTransfer, AttendanceShift } from '@stocky/types';
 import { PlatformPageLayout } from './PlatformPageLayout';
 import { LocationsDirectoryWidget } from '@/widgets';
 
@@ -9,6 +9,7 @@ export interface LocationsPlatformViewProps {
   lots: StockLot[];
   transfers?: InventoryTransfer[];
   counts?: any[];
+  shifts?: AttendanceShift[];
   canManage?: boolean;
   companyId?: string;
   members?: Array<{ id: string; full_name?: string | null; email?: string | null; avatar_url?: string | null; role?: string; status?: string }>;

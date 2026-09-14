@@ -2,6 +2,7 @@
 
 import React from 'react';
 import {
+  ChevronRightIcon,
   EditIcon,
   ShieldIcon,
   UsersIcon,
@@ -55,7 +56,9 @@ export function TeamTableWidget({
   }
 
   return (
-    <div className="stocky-team-table-scroll overflow-x-auto w-full">
+    <div className="w-full">
+      {/* Desktop Table (hidden on mobile) */}
+      <div className="hidden sm:block stocky-team-table-scroll overflow-x-auto w-full">
       <table className="stocky-board-table w-full min-w-[850px] text-left">
         <thead>
           <tr className="border-b border-stocky-border-subtle bg-stocky-bg-global text-[10px] font-medium uppercase tracking-wider text-stocky-text-sub h-11">
@@ -238,6 +241,118 @@ export function TeamTableWidget({
           })}
         </tbody>
       </table>
+      </div>
+
+      {/* Mobile Card List (sm:hidden) */}
+      <div className="sm:hidden divide-y divide-stocky-border-subtle w-full">
+        {members.map((member) => {
+          const memberAssignments = assignments.filter((a) => a.user_id === member.id);
+          const manager = member.reports_to ? members.find((m) => m.id === member.reports_to) : null;
+          const allowedPages = member.permissions?.pages || ['inventory', 'transfers', 'suppliers', 'tasks', 'attendance', 'locations'];
+
+          return (
+            <div
+              key={member.id}
+              role="button"
+              tabIndex={0}
+              onClick={() => onSelectMember(member)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  onSelectMember(member);
+                }
+              }}
+              className="p-3.5 flex flex-col gap-2.5 bg-stocky-bg-widget hover:bg-stocky-bg-global/30 active:bg-stocky-bg-global/50 transition-colors cursor-pointer text-left"
+            >
+              {/* Row 1: Avatar, Name, Role & Status */}
+              <div className="flex items-start justify-between gap-2.5">
+                <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                  <UserAvatar
+                    src={member.avatar_url}
+                    name={member.full_name}
+                    email={member.email}
+                    size="sm"
+                    className="ring-1 ring-stocky-border-subtle shrink-0"
+                  />
+                  <div className="min-w-0 flex-1">
+                    <p className="font-semibold text-stocky-text-main text-xs truncate">
+                      {member.full_name || member.email}
+                    </p>
+                    <p className="text-[11px] text-stocky-text-sub truncate">
+                      {member.email}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-1.5 shrink-0">
+                  {getRoleBadge(member.role)}
+                  <span
+                    className={`inline-flex rounded-full px-2 py-0.5 text-[9px] font-medium border capitalize ${
+                      member.status === 'active' ? 'stocky-status-success' : 'stocky-status-warning'
+                    }`}
+                  >
+                    {member.status || 'active'}
+                  </span>
+                </div>
+              </div>
+
+              {/* Row 2: Job Title & Hierarchy */}
+              <div className="flex flex-wrap items-center gap-2 text-xs bg-stocky-bg-global/60 p-2 rounded-xl border border-stocky-border-subtle/70">
+                <div className="flex items-center gap-1.5 min-w-0">
+                  <span className="text-[10px] uppercase font-bold tracking-wider text-stocky-text-sub shrink-0">Title:</span>
+                  <span className="text-xs font-semibold text-stocky-text-main truncate max-w-[170px]">
+                    {member.job_title || <span className="text-stocky-text-sub font-normal italic">No title</span>}
+                  </span>
+                </div>
+                <span className="text-stocky-border-subtle">·</span>
+                <div className="flex items-center gap-1 min-w-0 text-[11px] text-stocky-text-sub">
+                  <span className="text-[10px] font-medium uppercase text-stocky-text-sub">Supervisor:</span>
+                  <span className="font-medium text-stocky-text-main truncate max-w-[130px]">
+                    {manager ? (manager.full_name || manager.email?.split('@')[0]) : member.role === 'owner' ? 'Owner' : 'None'}
+                  </span>
+                </div>
+              </div>
+
+              {/* Row 3: Assigned Locations & Authorizations */}
+              <div className="flex items-center justify-between gap-2 text-xs pt-0.5">
+                <div className="flex items-center gap-1.5 min-w-0 flex-1">
+                  <WarehouseIcon size="xs" className="text-stocky-text-sub shrink-0" />
+                  <div className="flex items-center gap-1 overflow-hidden">
+                    {memberAssignments.length > 0 ? (
+                      memberAssignments.slice(0, 2).map((a) => {
+                        const loc = locations.find((l) => l.id === a.location_id);
+                        return (
+                          <span
+                            key={a.id}
+                            className="inline-flex rounded-full border stocky-status-info px-2 py-0.5 text-[10px] truncate max-w-[100px]"
+                          >
+                            {loc?.name || 'Branch'}
+                          </span>
+                        );
+                      })
+                    ) : (
+                      <span className="text-[11px] text-stocky-text-sub italic">No location</span>
+                    )}
+                    {memberAssignments.length > 2 && (
+                      <span className="text-[10px] text-stocky-text-sub font-medium">
+                        +{memberAssignments.length - 2}
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-1.5 shrink-0">
+                  <span className="inline-flex items-center gap-1 rounded-full bg-stocky-bg-global px-2 py-0.5 text-[10px] font-medium text-stocky-text-main border border-stocky-border-subtle">
+                    <ShieldIcon size="xs" className="text-stocky-primary" />
+                    <span>{allowedPages.length} pages</span>
+                  </span>
+                  <ChevronRightIcon size="xs" className="text-stocky-text-sub" />
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }
