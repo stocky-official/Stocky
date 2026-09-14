@@ -187,9 +187,7 @@ function PlatformShell({ children }: { children?: React.ReactNode }) {
           onSettingsClick={() => platform.navigateToTab('settings')}
         />
         <main
-          className={`stocky-platform-content flex-1 overflow-y-auto min-w-0 max-w-full ${
-            platform.activeTab === 'home' ? 'stocky-platform-content--home' : ''
-          } pb-28 sm:pb-8`}
+          className="stocky-platform-content flex-1 overflow-y-auto min-w-0 max-w-full pb-28 sm:pb-8"
           onScroll={handleMainScroll}
         >
           <HydrationFadeWrapper
