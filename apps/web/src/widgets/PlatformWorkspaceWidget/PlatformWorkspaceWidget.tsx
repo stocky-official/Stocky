@@ -4,6 +4,7 @@ import type { UIEvent } from 'react';
 import type { CompanyUserRole, CreateStockTaskCommand, InventoryTransfer, Location, Product, StockActivityLog, StockLot, StockTask, StockTaskExpected, StockTaskItem, Supplier, SupplierContact, SupplierProduct, SupplierRequest } from '@stocky/types';
 import { PlatformContextTabsWidget } from '../PlatformContextTabsWidget/PlatformContextTabsWidget';
 import { PlatformWorkspaceSkeleton } from '../PlatformWorkspaceSkeleton/PlatformWorkspaceSkeleton';
+import { HydrationFadeWrapper } from '@/components/ui/Skeleton';
 import type { NotificationQueueItem } from '../NotificationCenterWidget/NotificationCenterWidget';
 import type { SupplierContactInput } from '../SupplierContactsDrawerWidget/SupplierContactsDrawerWidget';
 import type { StockLotUpdateInput } from '../StockLotEditDrawerWidget/StockLotEditDrawerWidget';
@@ -201,17 +202,20 @@ export function PlatformWorkspaceWidget({
             />
           </div>
         )}
-        {loading ? (
-          <PlatformWorkspaceSkeleton
-            variant={
-              activeTab === 'home'
-                ? 'dashboard'
-                : activeTab === 'locations' || activeTab === 'team' || activeTab === 'settings'
-                ? 'cards'
-                : 'table'
-            }
-          />
-        ) : (
+        <HydrationFadeWrapper
+          isLoading={loading}
+          skeleton={
+            <PlatformWorkspaceSkeleton
+              variant={
+                activeTab === 'home'
+                  ? 'dashboard'
+                  : activeTab === 'locations' || activeTab === 'team' || activeTab === 'settings'
+                  ? 'cards'
+                  : 'table'
+              }
+            />
+          }
+        >
           <>
             {activeTab === 'home' && (
               <HomePlatformView
@@ -369,7 +373,7 @@ export function PlatformWorkspaceWidget({
               />
             )}
           </>
-        )}
+        </HydrationFadeWrapper>
       </div>
     </main>
   );

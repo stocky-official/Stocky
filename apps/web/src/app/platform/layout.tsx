@@ -3,6 +3,7 @@
 import React, { type UIEvent, useRef, useState, useEffect } from 'react';
 import { PlatformProvider, usePlatform } from '@/views/platform/PlatformContext';
 import { PageLayout } from '@/components/ui/PageLayout';
+import { HydrationFadeWrapper } from '@/components/ui/Skeleton';
 import { signOutUser } from '@/lib/auth';
 import {
   BarcodeScannerWidget,
@@ -170,11 +171,12 @@ function PlatformShell({ children }: { children?: React.ReactNode }) {
           className="stocky-platform-content flex-1 overflow-y-auto min-w-0 max-w-full pb-28 sm:pb-8"
           onScroll={handleMainScroll}
         >
-          {platform.loading || !platform.companyId || !platform.userEmail ? (
-            <PlatformWorkspaceSkeleton variant={platform.activeTab as any} />
-          ) : (
-            children
-          )}
+          <HydrationFadeWrapper
+            isLoading={Boolean(platform.loading || !platform.companyId || !platform.userEmail)}
+            skeleton={<PlatformWorkspaceSkeleton variant={platform.activeTab as any} />}
+          >
+            {children}
+          </HydrationFadeWrapper>
         </main>
       </div>
       <NotificationsDrawerWidget
