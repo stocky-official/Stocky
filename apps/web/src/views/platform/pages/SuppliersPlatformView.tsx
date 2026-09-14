@@ -38,10 +38,16 @@ export function SuppliersPlatformView(props: SuppliersPlatformViewProps) {
   const activeSupplierTab = props.activeSupplierTab ?? platform?.supplierTab;
   const onSupplierTabChange = props.onSupplierTabChange ?? platform?.setSupplierTab;
 
+  const isRequests = activeSupplierTab === 'requests';
+
   return (
     <PlatformPageLayout
-      title="Suppliers"
-      subtitle="Manage supplier contacts, catalog links, and replenishment requests."
+      title={isRequests ? 'Supplier Requests' : 'Suppliers'}
+      subtitle={
+        isRequests
+          ? 'Track purchase requests, restocking orders, and vendor fulfillment status across your locations.'
+          : 'Manage supplier contacts, catalog links, and replenishment requests.'
+      }
     >
       <SuppliersWorkspaceWidget
         {...props}

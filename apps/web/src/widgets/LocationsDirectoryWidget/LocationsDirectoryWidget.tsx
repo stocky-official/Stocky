@@ -13,6 +13,7 @@ import {
   EditIcon,
   FilterIcon,
   PlusIcon,
+  QrCodeIcon,
   SearchIcon,
   UsersIcon,
   WarehouseIcon,
@@ -119,6 +120,7 @@ export function LocationsDirectoryWidget({
   // Drawer state for Create / Edit
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [editingLocation, setEditingLocation] = useState<Location | null>(null);
+  const [qrLocation, setQrLocation] = useState<Location | null>(null);
   const [drawerName, setDrawerName] = useState('');
   const [drawerType, setDrawerType] = useState<'branch' | 'warehouse'>('branch');
   const [drawerAddress, setDrawerAddress] = useState('');
@@ -998,11 +1000,24 @@ export function LocationsDirectoryWidget({
                           type="button"
                           onClick={(e) => {
                             e.stopPropagation();
+                            setQrLocation(location);
+                          }}
+                          className="h-10 px-3.5 rounded-full border border-stocky-border-subtle bg-white text-xs font-medium text-stocky-text-main hover:border-stocky-primary hover:text-stocky-primary transition-colors cursor-pointer inline-flex items-center gap-1.5 shadow-2xs"
+                          title="Generate Attendance QR check-in poster"
+                        >
+                          <QrCodeIcon size="xs" />
+                          <span className="hidden sm:inline">Attendance QR</span>
+                          <span className="sm:hidden">QR</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
                             onOpenStock(location.id);
                           }}
                           className="h-10 px-4 rounded-full border border-stocky-border-subtle bg-white text-xs font-medium text-stocky-text-main hover:border-stocky-primary hover:text-stocky-primary transition-colors cursor-pointer inline-flex items-center justify-center gap-1.5 shadow-2xs flex-1"
                         >
-                          <span>View stock</span>
+                          <span>View inventory</span>
                           <ChevronRightIcon size="xs" />
                         </button>
                       </div>
@@ -1566,6 +1581,102 @@ export function LocationsDirectoryWidget({
             </div>
           </div>
         </div>
+      </SideDrawer>
+
+      {/* Attendance QR Poster Drawer */}
+      <SideDrawer
+        isOpen={Boolean(qrLocation)}
+        onClose={() => setQrLocation(null)}
+        ariaLabel={`${qrLocation?.name || 'Branch'} Attendance QR Poster`}
+      >
+        {qrLocation && (
+          <div className="flex h-full flex-col">
+            {/* Header */}
+            <div className="flex items-center justify-between border-b border-stocky-border-subtle px-5 py-4 shrink-0">
+              <div>
+                <h2 className="text-base font-semibold text-stocky-text-main">
+                  {qrLocation.name} Attendance QR
+                </h2>
+                <p className="text-xs text-stocky-text-sub mt-0.5">
+                  Print or download official entrance QR poster for employee shift check-in.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setQrLocation(null)}
+                className="flex h-8 w-8 items-center justify-center rounded-full text-stocky-text-sub hover:bg-stocky-bg-global hover:text-stocky-text-main cursor-pointer"
+              >
+                <XIcon size="xs" />
+              </button>
+            </div>
+
+            {/* Content */}
+            <div className="flex-1 overflow-y-auto p-5 flex flex-col items-center text-center">
+              <div className="w-12 h-12 rounded-2xl bg-stocky-primary/10 text-stocky-primary flex items-center justify-center mb-3">
+                <QrCodeIcon size="md" />
+              </div>
+              <h3 className="text-base font-bold text-stocky-text-main">
+                {qrLocation.name}
+              </h3>
+              <p className="text-xs text-stocky-text-sub mt-0.5 max-w-xs">
+                {qrLocation.address || 'Registered branch entrance'} · {qrLocation.type}
+              </p>
+
+              {/* QR Card Preview */}
+              <div className="my-6 p-6 rounded-2xl border-2 border-dashed border-stocky-border-subtle bg-stocky-bg-global/30 flex flex-col items-center">
+                <img
+                  src={`https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=stocky:branch:${qrLocation.id}`}
+                  alt={`${qrLocation.name} Attendance QR Code`}
+                  className="w-56 h-56 rounded-xl object-contain bg-white p-2 shadow-xs"
+                />
+                <div className="mt-4 text-xs font-mono font-semibold text-stocky-text-sub bg-white border border-stocky-border-subtle px-3 py-1 rounded-full">
+                  Branch Token: {qrLocation.id.slice(0, 8)}
+                </div>
+              </div>
+
+              <div className="p-4 rounded-xl bg-stocky-bg-global/60 border border-stocky-border-subtle text-left w-full text-xs text-stocky-text-sub space-y-1.5">
+                <div className="font-semibold text-stocky-text-main flex items-center gap-1.5">
+                  <CheckIcon size="xs" className="text-stocky-status-success-fg" />
+                  <span>Employee Check-In Protocol</span>
+                </div>
+                <p>
+                  Staff scan this poster using the mobile camera or the Stocky app upon arrival and departure. Shift punches are automatically verified against the branch location.
+                </p>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="border-t border-stocky-border-subtle px-5 py-3.5 bg-white flex items-center justify-between shrink-0 gap-2">
+              <button
+                type="button"
+                onClick={() => setQrLocation(null)}
+                className="h-9 px-4 rounded-full border border-stocky-border-subtle text-xs font-medium text-stocky-text-sub hover:text-stocky-text-main cursor-pointer"
+              >
+                Close
+              </button>
+              <div className="flex items-center gap-2">
+                <a
+                  href={`https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=stocky:branch:${qrLocation.id}`}
+                  download={`${qrLocation.name.toLowerCase().replace(/\s+/g, '-')}-qr-poster.png`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="h-9 px-3.5 rounded-full border border-stocky-border-subtle bg-white text-xs font-medium text-stocky-text-main hover:border-stocky-primary hover:text-stocky-primary transition-colors cursor-pointer inline-flex items-center gap-1.5 shadow-2xs"
+                >
+                  <CloudDownloadIcon size="xs" />
+                  <span>Download PNG</span>
+                </a>
+                <button
+                  type="button"
+                  onClick={() => window.print()}
+                  className="h-9 px-4 rounded-full bg-stocky-primary text-white text-xs font-semibold hover:bg-stocky-primary-hover transition-colors cursor-pointer inline-flex items-center gap-1.5 shadow-sm"
+                >
+                  <QrCodeIcon size="xs" />
+                  <span>Print Poster</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </SideDrawer>
     </div>
   );

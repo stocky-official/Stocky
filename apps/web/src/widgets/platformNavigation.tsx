@@ -121,8 +121,6 @@ export function getPlatformNavigation(
   const attendanceItems: PlatformNavItem[] = canAccess('attendance') ? [
     { id: 'attendance', label: 'Timesheets', icon: <ClockIcon size="xs" />, href: makeHref('attendance') },
     { id: 'attendance-calendar', label: 'Calendar', icon: <CalendarIcon size="xs" />, href: makeHref('attendance') },
-    { id: 'attendance-leaves', label: 'Time Off', icon: <UsersIcon size="xs" />, href: makeHref('attendance') },
-    { id: 'attendance-kiosk', label: 'Kiosk / QR', icon: <QrCodeIcon size="xs" />, href: makeHref('attendance') },
   ] : [];
 
   const organizationItems: PlatformNavItem[] = [

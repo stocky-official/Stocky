@@ -46,8 +46,6 @@ export function MobileSubNavWidget({
     }
     if (activeTab === 'attendance' || activeTab === 'timesheets') {
       if (attendanceTab === 'calendar') return 'attendance-calendar';
-      if (attendanceTab === 'leaves') return 'attendance-leaves';
-      if (attendanceTab === 'kiosk') return 'attendance-kiosk';
       return 'attendance';
     }
     return activeTab;
@@ -95,16 +93,6 @@ export function MobileSubNavWidget({
     if (itemId === 'attendance-calendar' || itemId === 'calendar') {
       onAttendanceTabChange?.('calendar');
       onTabChange('attendance-calendar');
-      return;
-    }
-    if (itemId === 'attendance-leaves' || itemId === 'leaves') {
-      onAttendanceTabChange?.('leaves');
-      onTabChange('attendance-leaves');
-      return;
-    }
-    if (itemId === 'attendance-kiosk' || itemId === 'kiosk') {
-      onAttendanceTabChange?.('kiosk');
-      onTabChange('attendance-kiosk');
       return;
     }
     onTabChange(itemId);

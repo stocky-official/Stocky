@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import type { AttendanceShift, LeaveRequest, Location } from '@stocky/types';
+import React, { useState, useEffect, useMemo } from 'react';
+import type { AttendanceShift, LeaveBalance, LeaveRequest, Location } from '@stocky/types';
 import {
   ChevronLeftIcon,
   ChevronRightIcon,
@@ -10,6 +10,7 @@ import {
   UsersIcon,
   CheckCircleIcon,
   WarehouseIcon,
+  PlusIcon,
 } from '@stocky/icons';
 
 export type CalendarViewMode = 'month' | 'week' | 'day';
@@ -17,23 +18,49 @@ export type CalendarViewMode = 'month' | 'week' | 'day';
 export interface AttendanceCalendarWidgetProps {
   shifts: AttendanceShift[];
   leaves: LeaveRequest[];
+  balances?: LeaveBalance[];
   locations: Location[];
   members: any[];
+  currentUserId?: string | null;
+  userRole?: string;
+  canManageAttendance?: boolean;
   onSelectShift: (shift: AttendanceShift) => void;
   onSelectLeave?: (leave: LeaveRequest) => void;
+  onRequestLeave?: () => void;
+  onReviewLeave?: (requestId: string, approve: boolean, note?: string) => Promise<void>;
 }
 
 export function AttendanceCalendarWidget({
   shifts,
   leaves,
+  balances,
   locations,
   members,
+  currentUserId,
+  userRole,
+  canManageAttendance,
   onSelectShift,
   onSelectLeave,
+  onRequestLeave,
+  onReviewLeave,
 }: AttendanceCalendarWidgetProps) {
   const [viewMode, setViewMode] = useState<CalendarViewMode>('month');
   const [currentDate, setCurrentDate] = useState<Date>(new Date());
   const [selectedDateStr, setSelectedDateStr] = useState<string>(() => new Date().toISOString().slice(0, 10));
+  const [selectedLocationId, setSelectedLocationId] = useState<string>('all');
+
+  const filteredShifts = useMemo(() => {
+    if (selectedLocationId === 'all') return shifts;
+    return shifts.filter((s) => s.locationId === selectedLocationId);
+  }, [shifts, selectedLocationId]);
+
+  const userBalance = balances?.find((b) => b.companyUserId === currentUserId) || balances?.[0] || {
+    ptoAllowance: 21,
+    ptoUsed: 0,
+    sickAllowance: 10,
+    sickUsed: 0,
+  };
+  const ptoRemaining = Math.max(0, userBalance.ptoAllowance - userBalance.ptoUsed);
 
   const locationMap = new Map(locations.map((loc) => [loc.id, loc.name]));
   const memberMap = new Map(members.map((m) => [m.id, m]));
@@ -178,7 +205,7 @@ export function AttendanceCalendarWidget({
 
   // Index shifts by date
   const shiftsByDate = new Map<string, AttendanceShift[]>();
-  shifts.forEach((s) => {
+  filteredShifts.forEach((s) => {
     const d = s.shiftDate || s.clockInAt?.slice(0, 10);
     if (!d) return;
     const arr = shiftsByDate.get(d) || [];
@@ -210,17 +237,18 @@ export function AttendanceCalendarWidget({
       <div className="sm:hidden flex flex-col w-full divide-y divide-stocky-border-subtle">
         {/* Upper: Samsung Calendar Header */}
         <div className="p-3.5 flex flex-col gap-3">
+          {/* Row 1: Month Title & Chevrons */}
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-1.5">
-              <h2 className="text-base font-bold text-stocky-text-main tracking-tight">
+            <div className="flex items-center gap-1.5 min-w-0">
+              <h2 className="text-base font-bold text-stocky-text-main tracking-tight truncate">
                 {currentDate.toLocaleDateString(undefined, { month: 'long', year: 'numeric' })}
               </h2>
             </div>
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-1.5 shrink-0">
               <button
                 type="button"
                 onClick={handleToday}
-                className="h-7 px-3 rounded-full border border-stocky-border-subtle bg-stocky-bg-widget text-[11px] font-semibold text-stocky-text-main hover:text-stocky-primary transition-colors cursor-pointer"
+                className="h-7 px-2.5 rounded-full border border-stocky-border-subtle bg-stocky-bg-widget text-[11px] font-semibold text-stocky-text-main hover:text-stocky-primary transition-colors cursor-pointer"
               >
                 Today
               </button>
@@ -243,6 +271,44 @@ export function AttendanceCalendarWidget({
                 </button>
               </div>
             </div>
+          </div>
+
+          {/* Row 2: Location selector + PTO balance + Request Leave button */}
+          <div className="flex items-center gap-2">
+            <div className="relative flex-1 min-w-0">
+              <WarehouseIcon
+                size="xs"
+                className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-stocky-text-sub"
+              />
+              <select
+                value={selectedLocationId}
+                onChange={(e) => setSelectedLocationId(e.target.value)}
+                className="w-full h-8 rounded-full border border-stocky-border-subtle bg-stocky-bg-widget pl-7 pr-6 text-[11px] font-medium text-stocky-text-main focus:border-stocky-primary focus:outline-none cursor-pointer truncate"
+              >
+                <option value="all">All Locations</option>
+                {locations.map((loc) => (
+                  <option key={loc.id} value={loc.id}>
+                    {loc.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="inline-flex items-center gap-1 px-2.5 h-8 rounded-full text-[11px] font-semibold bg-stocky-primary/5 text-stocky-primary border border-stocky-primary/20 shrink-0">
+              <CalendarIcon size="xs" />
+              <span>{ptoRemaining}d PTO</span>
+            </div>
+
+            {onRequestLeave && (
+              <button
+                type="button"
+                onClick={onRequestLeave}
+                className="h-8 px-3 rounded-full bg-stocky-primary text-white text-[11px] font-semibold inline-flex items-center justify-center gap-1 whitespace-nowrap cursor-pointer shadow-xs hover:bg-stocky-primary-hover transition-colors shrink-0"
+              >
+                <PlusIcon size="xs" />
+                <span>Leave</span>
+              </button>
+            )}
           </div>
 
           {/* Weekday Row (Samsung One UI: S M T W T F S) */}
@@ -474,52 +540,95 @@ export function AttendanceCalendarWidget({
       ─────────────────────────────────────────────────────────────── */}
       <div className="hidden sm:flex flex-col w-full">
         {/* Controls Bar */}
-        <div className="flex flex-row items-center justify-between gap-3 p-4 border-b border-stocky-border-subtle bg-stocky-bg-global/20">
-          <div className="flex items-center gap-2.5 flex-wrap">
+        <div className="flex flex-row items-center justify-between gap-3 p-3.5 border-b border-stocky-border-subtle bg-stocky-bg-widget">
+          {/* Left: Navigation, Today, Header Title */}
+          <div className="flex items-center gap-2.5">
             <button
               type="button"
               onClick={handleToday}
-              className="h-9 px-3 rounded-full border border-stocky-border-subtle bg-stocky-bg-widget text-xs font-semibold text-stocky-text-main hover:border-stocky-primary hover:text-stocky-primary transition-colors cursor-pointer"
+              className="h-8 px-3 rounded-full border border-stocky-border-subtle bg-stocky-bg-widget text-xs font-semibold text-stocky-text-main hover:border-stocky-primary hover:text-stocky-primary transition-colors cursor-pointer"
             >
               Today
             </button>
-            <div className="inline-flex items-center gap-1">
+            <div className="inline-flex items-center rounded-full border border-stocky-border-subtle bg-stocky-bg-widget p-0.5">
               <button
                 type="button"
                 onClick={handlePrev}
-                className="p-1.5 rounded-full border border-stocky-border-subtle bg-stocky-bg-widget text-stocky-text-main hover:bg-stocky-bg-global transition-colors cursor-pointer"
+                aria-label="Previous"
+                className="p-1 rounded-full text-stocky-text-sub hover:text-stocky-text-main hover:bg-stocky-bg-global transition-colors cursor-pointer"
               >
                 <ChevronLeftIcon size="xs" />
               </button>
               <button
                 type="button"
                 onClick={handleNext}
-                className="p-1.5 rounded-full border border-stocky-border-subtle bg-stocky-bg-widget text-stocky-text-main hover:bg-stocky-bg-global transition-colors cursor-pointer"
+                aria-label="Next"
+                className="p-1 rounded-full text-stocky-text-sub hover:text-stocky-text-main hover:bg-stocky-bg-global transition-colors cursor-pointer"
               >
                 <ChevronRightIcon size="xs" />
               </button>
             </div>
-            <h2 className="text-base font-semibold text-stocky-text-main ml-1 truncate">
+            <h2 className="text-base font-bold text-stocky-text-main ml-1 truncate">
               {getHeaderTitle()}
             </h2>
           </div>
 
-          {/* View Switcher: Day | Week | Month */}
-          <div className="inline-flex items-center p-1 rounded-full bg-stocky-bg-global border border-stocky-border-subtle">
-            {(['day', 'week', 'month'] as CalendarViewMode[]).map((mode) => (
-              <button
-                key={mode}
-                type="button"
-                onClick={() => setViewMode(mode)}
-                className={`px-3 py-1 rounded-full text-xs font-medium capitalize transition-colors cursor-pointer ${
-                  viewMode === mode
-                    ? 'bg-stocky-bg-widget text-stocky-primary font-semibold shadow-sm'
-                    : 'text-stocky-text-sub hover:text-stocky-text-main'
-                }`}
+          {/* Middle: Location Selector & PTO chip */}
+          <div className="flex items-center gap-2">
+            <div className="relative">
+              <WarehouseIcon
+                size="xs"
+                className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-stocky-text-sub"
+              />
+              <select
+                value={selectedLocationId}
+                onChange={(e) => setSelectedLocationId(e.target.value)}
+                className="h-8 rounded-full border border-stocky-border-subtle bg-stocky-bg-widget pl-8 pr-7 text-xs font-medium text-stocky-text-main focus:border-stocky-primary focus:outline-none cursor-pointer"
               >
-                {mode}
+                <option value="all">All Locations</option>
+                {locations.map((loc) => (
+                  <option key={loc.id} value={loc.id}>
+                    {loc.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="inline-flex items-center gap-1.5 px-3 h-8 rounded-full text-xs font-semibold bg-stocky-primary/5 text-stocky-primary border border-stocky-primary/20">
+              <CalendarIcon size="xs" />
+              <span>{ptoRemaining} days PTO left</span>
+            </div>
+          </div>
+
+          {/* Right: View Switcher (Day/Week/Month) + "+ Request Leave" Button */}
+          <div className="flex items-center gap-2.5">
+            <div className="inline-flex items-center p-0.5 rounded-full bg-stocky-bg-global border border-stocky-border-subtle">
+              {(['day', 'week', 'month'] as CalendarViewMode[]).map((mode) => (
+                <button
+                  key={mode}
+                  type="button"
+                  onClick={() => setViewMode(mode)}
+                  className={`px-3 py-1 rounded-full text-xs font-medium capitalize transition-colors cursor-pointer ${
+                    viewMode === mode
+                      ? 'bg-stocky-bg-widget text-stocky-primary font-semibold shadow-xs'
+                      : 'text-stocky-text-sub hover:text-stocky-text-main'
+                  }`}
+                >
+                  {mode}
+                </button>
+              ))}
+            </div>
+
+            {onRequestLeave && (
+              <button
+                type="button"
+                onClick={onRequestLeave}
+                className="stocky-table-toolbar-button stocky-table-toolbar-button--primary h-8 px-4 rounded-full text-xs font-semibold inline-flex items-center justify-center gap-1.5 whitespace-nowrap cursor-pointer shadow-sm"
+              >
+                <PlusIcon size="xs" />
+                <span>Request Leave</span>
               </button>
-            ))}
+            )}
           </div>
         </div>
 

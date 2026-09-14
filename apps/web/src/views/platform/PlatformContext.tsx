@@ -426,7 +426,7 @@ export function PlatformProvider({
     }
     if (tab === 'attendance-leaves' || tab === 'leaves') {
       if (!canOpenTab(userRole, 'attendance', userPermissions)) return;
-      setAttendanceTab('leaves');
+      setAttendanceTab('calendar');
       if (activeTab !== 'attendance') {
         const path = TAB_TO_PATH.attendance;
         const targetHref = (!effectiveTenantPrefix || effectiveTenantPrefix === '/platform')
@@ -439,17 +439,7 @@ export function PlatformProvider({
       return;
     }
     if (tab === 'attendance-kiosk' || tab === 'kiosk') {
-      if (!canOpenTab(userRole, 'attendance', userPermissions)) return;
-      setAttendanceTab('kiosk');
-      if (activeTab !== 'attendance') {
-        const path = TAB_TO_PATH.attendance;
-        const targetHref = (!effectiveTenantPrefix || effectiveTenantPrefix === '/platform')
-          ? path
-          : (path === '/platform' ? effectiveTenantPrefix : path.replace('/platform', effectiveTenantPrefix));
-        React.startTransition(() => {
-          router.push(targetHref || '/');
-        });
-      }
+      navigateToTab('locations');
       return;
     }
     if (tab === 'attendance-timesheets' || tab === 'timesheets') {
@@ -789,7 +779,7 @@ export function PlatformProvider({
       const product = productMap.get(lot.productId);
       items.push({ id: `expiry-${lot.id}`, title: days < 0 ? `${product?.name || 'Product'} is expired` : `${product?.name || 'Product'} is expiring soon`, message: `${lot.quantityOnHand} units at ${locationMap.get(lot.locationId)?.name || 'your location'} · batch ${lot.lotNumber || 'not recorded'}`, actionLabel: 'Review', severity: days < 0 ? 'critical' : 'warning', onOpen: () => navigateToTab('expiry') });
     });
-    products.filter((product) => scopedLots.filter((lot) => lot.productId === product.id).reduce((sum, lot) => sum + lot.quantityOnHand, 0) <= product.reorderPoint).slice(0, 5).forEach((product) => items.push({ id: `low-${product.id}`, title: `${product.name} is low`, message: `At or below the reorder point of ${product.reorderPoint} ${product.unitName}`, actionLabel: 'Open stock', severity: 'warning', onOpen: () => navigateToTab('stock') }));
+    products.filter((product) => scopedLots.filter((lot) => lot.productId === product.id).reduce((sum, lot) => sum + lot.quantityOnHand, 0) <= product.reorderPoint).slice(0, 5).forEach((product) => items.push({ id: `low-${product.id}`, title: `${product.name} is low`, message: `At or below the reorder point of ${product.reorderPoint} ${product.unitName}`, actionLabel: 'Open inventory', severity: 'warning', onOpen: () => navigateToTab('stock') }));
     if (canOpenTab(userRole, 'transfers')) transfers.filter((transfer) => ['requested', 'approved', 'in_transit', 'partially_received'].includes(transfer.status)).slice(0, 5).forEach((transfer) => items.push({ id: `transfer-${transfer.id}`, title: 'Transfer needs attention', message: `${transfer.status.replace('_', ' ')} · ${transfer.id.slice(0, 8)}`, actionLabel: 'Open transfers', severity: 'info', onOpen: () => navigateToTab('transfers') }));
     if (canOpenTab(userRole, 'suppliers')) requests.filter((request) => !['closed', 'cancelled'].includes(request.status)).slice(0, 5).forEach((request) => items.push({ id: `supplier-${request.id}`, title: 'Supplier follow-up needed', message: `${request.requestType} request · ${request.status}`, actionLabel: 'Open suppliers', severity: 'info', onOpen: () => navigateToTab('suppliers') }));
     if (canOpenTab(userRole, 'tasks')) tasks.filter((task) => ['assigned', 'in_progress', 'submitted', 'rejected'].includes(task.status)).slice(0, 5).forEach((task) => items.push({ id: `task-${task.id}`, title: task.taskType === 'count' ? 'Stock count task needs attention' : 'Expiry audit task needs attention', message: `${task.status.replace('_', ' ')} · ${locationMap.get(task.locationId)?.name || 'Location'}`, actionLabel: 'Open tasks', severity: 'info', onOpen: () => navigateToTab('tasks') }));

@@ -96,18 +96,19 @@ export function AttendanceWorkspaceWidget({
     <div className="w-full space-y-4">
       {/* Unified Card Container */}
       <div className="stocky-stock-unified-card rounded-card bg-stocky-bg-widget border border-stocky-border-subtle shadow-sm flex flex-col relative z-20 overflow-visible">
-        {/* Integrated Toolbar */}
-        <div className="p-3 sm:p-3.5 border-b border-stocky-border-subtle relative z-30">
-          <AttendanceToolbarWidget
-            search={search}
-            onSearchChange={setSearch}
-            activeTab={activeTab}
-            onTabChange={setActiveTab}
-            onExportExcel={() => setIsExportModalOpen(true)}
-            onRequestLeave={() => setIsLeaveDrawerOpen(true)}
-            userRole={userRole}
-          />
-        </div>
+        {/* Integrated Toolbar (Timesheets Only) */}
+        {activeTab === 'timesheets' && (
+          <div className="p-3 sm:p-3.5 border-b border-stocky-border-subtle relative z-30">
+            <AttendanceToolbarWidget
+              search={search}
+              onSearchChange={setSearch}
+              activeTab={activeTab}
+              onTabChange={setActiveTab}
+              onExportExcel={() => setIsExportModalOpen(true)}
+              userRole={userRole}
+            />
+          </div>
+        )}
 
         {/* Tab Views */}
         <div className="w-full">
@@ -121,24 +122,17 @@ export function AttendanceWorkspaceWidget({
             />
           )}
 
-          {activeTab === 'calendar' && (
+          {(activeTab === 'calendar' || activeTab === 'leaves') && (
             <AttendanceCalendarWidget
               shifts={filteredShifts}
               leaves={leaves}
-              locations={locations}
-              members={members}
-              onSelectShift={(shift) => setSelectedShift(shift)}
-            />
-          )}
-
-          {activeTab === 'leaves' && (
-            <TimeOffWidget
-              leaves={leaves}
               balances={balances}
+              locations={locations}
               members={members}
               currentUserId={currentUserId}
               userRole={userRole}
               canManageAttendance={canManageAttendance}
+              onSelectShift={(shift) => setSelectedShift(shift)}
               onRequestLeave={() => setIsLeaveDrawerOpen(true)}
               onReviewLeave={onReviewLeave}
             />

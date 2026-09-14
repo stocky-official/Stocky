@@ -22,6 +22,8 @@ export default function SuppliersRoutePage() {
       userRole={platform.userRole}
       selectedLocationId={platform.locationScope}
       defaultProductId={platform.supplierProductId}
+      activeSupplierTab={platform.supplierTab}
+      onSupplierTabChange={platform.setSupplierTab}
       onCreate={platform.createSupplierRequest}
       onCreateSupplier={platform.createSupplier}
       onCreateSupplierContact={platform.createSupplierContact}

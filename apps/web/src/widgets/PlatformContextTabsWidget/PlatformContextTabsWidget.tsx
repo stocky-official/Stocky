@@ -50,10 +50,6 @@ export function PlatformContextTabsWidget({
       : activeTab === 'attendance' || activeTab === 'timesheets'
       ? attendanceTab === 'calendar'
         ? 'attendance-calendar'
-        : attendanceTab === 'leaves'
-        ? 'attendance-leaves'
-        : attendanceTab === 'kiosk'
-        ? 'attendance-kiosk'
         : 'attendance'
       : activeTab;
 
@@ -86,16 +82,6 @@ export function PlatformContextTabsWidget({
     if (itemId === 'attendance-calendar' || itemId === 'calendar') {
       onAttendanceTabChange?.('calendar');
       onTabChange('attendance-calendar');
-      return;
-    }
-    if (itemId === 'attendance-leaves' || itemId === 'leaves') {
-      onAttendanceTabChange?.('leaves');
-      onTabChange('attendance-leaves');
-      return;
-    }
-    if (itemId === 'attendance-kiosk' || itemId === 'kiosk') {
-      onAttendanceTabChange?.('kiosk');
-      onTabChange('attendance-kiosk');
       return;
     }
     onTabChange(itemId);

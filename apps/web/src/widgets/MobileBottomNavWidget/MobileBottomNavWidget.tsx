@@ -26,7 +26,7 @@ interface NavItemConfig {
 
 const NAV_ITEMS: NavItemConfig[] = [
   { id: 'dashboard', label: 'Dashboard', routeTab: 'home' },
-  { id: 'stock', label: 'Stock', routeTab: 'stock' },
+  { id: 'stock', label: 'Inventory', routeTab: 'stock' },
   { id: 'suppliers', label: 'Suppliers', routeTab: 'suppliers' },
   { id: 'attendance', label: 'Attendance', routeTab: 'attendance' },
   { id: 'settings', label: 'Settings', routeTab: 'settings' },

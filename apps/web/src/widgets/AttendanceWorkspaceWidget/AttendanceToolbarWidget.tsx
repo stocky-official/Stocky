@@ -15,7 +15,7 @@ export interface AttendanceToolbarWidgetProps {
   activeTab?: AttendanceTab;
   onTabChange?: (tab: AttendanceTab) => void;
   onExportExcel: () => void;
-  onRequestLeave: () => void;
+  onRequestLeave?: () => void;
   userRole?: string;
 }
 
@@ -68,15 +68,17 @@ export function AttendanceToolbarWidget({
           <span className="sm:hidden">Excel</span>
         </button>
 
-        {/* Primary Action Button: Request Leave */}
-        <button
-          type="button"
-          onClick={onRequestLeave}
-          className="stocky-table-toolbar-button stocky-table-toolbar-button--primary h-10 px-4 rounded-full text-xs font-medium inline-flex items-center justify-center gap-1.5 whitespace-nowrap cursor-pointer shadow-sm"
-        >
-          <PlusIcon size="xs" />
-          <span>Request Leave</span>
-        </button>
+        {/* Optional Action Button: Request Leave */}
+        {onRequestLeave && (
+          <button
+            type="button"
+            onClick={onRequestLeave}
+            className="stocky-table-toolbar-button stocky-table-toolbar-button--primary h-10 px-4 rounded-full text-xs font-medium inline-flex items-center justify-center gap-1.5 whitespace-nowrap cursor-pointer shadow-sm"
+          >
+            <PlusIcon size="xs" />
+            <span>Request Leave</span>
+          </button>
+        )}
       </div>
     </div>
   );
