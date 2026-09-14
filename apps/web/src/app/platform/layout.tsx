@@ -5,6 +5,7 @@ import { PlatformProvider, usePlatform } from '@/views/platform/PlatformContext'
 import { PageLayout } from '@/components/ui/PageLayout';
 import { HydrationFadeWrapper } from '@/components/ui/Skeleton';
 import { signOutUser } from '@/lib/auth';
+import { syncPWATheme } from '@/components/PWAThemeColorSync';
 import {
   BarcodeScannerWidget,
   MobileBottomNavWidget,
@@ -58,6 +59,7 @@ function PlatformShell({ children }: { children?: React.ReactNode }) {
     chromeVisibilityRef.current = true;
     setIsChromeVisible(true);
     lastScrollTopRef.current = 0;
+    syncPWATheme(platform.activeTab === 'home');
   }, [platform.activeTab]);
 
   useEffect(() => () => {

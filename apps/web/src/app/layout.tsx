@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import { Geist } from 'next/font/google';
 import './global.css';
 import { PWARegistration } from '@/components/PWARegistration';
+import { PWAThemeColorSync } from '@/components/PWAThemeColorSync';
 import { AuthOriginGuard } from '@/components/AuthOriginGuard';
 
 const geistSans = Geist({
@@ -34,7 +35,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: '#0057FF',
+  themeColor: '#14261C',
   width: 'device-width',
   initialScale: 1,
   maximumScale: 1,
@@ -54,6 +55,7 @@ export default function RootLayout({
       >
         <AuthOriginGuard />
         <PWARegistration />
+        <PWAThemeColorSync />
         {children}
       </body>
     </html>

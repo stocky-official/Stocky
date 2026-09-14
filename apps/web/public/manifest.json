@@ -4,8 +4,8 @@
   "description": "Enterprise stock management platform for multi-hub logistics",
   "start_url": "/platform",
   "display": "standalone",
-  "background_color": "#0B0F19",
-  "theme_color": "#0057FF",
+  "background_color": "#14261C",
+  "theme_color": "#14261C",
   "orientation": "portrait-primary",
   "scope": "/",
   "icons": [

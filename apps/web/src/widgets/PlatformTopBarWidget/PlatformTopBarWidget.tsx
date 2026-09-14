@@ -65,8 +65,9 @@ export function PlatformTopBarWidget({
   }
 
   return (
-    <header className={`stocky-topbar relative h-12 w-full shrink-0 bg-white border-b border-stocky-border-subtle flex items-center z-40 select-none transition-transform duration-300 ease-out ${hidden ? 'stocky-topbar--hidden' : 'translate-y-0'}`}>
-      <div className="stocky-topbar-brand w-12 h-12 shrink-0 border-r border-stocky-border-subtle flex items-center justify-center">
+    <header className={`stocky-topbar relative w-full shrink-0 bg-white border-b border-stocky-border-subtle z-40 select-none transition-transform duration-300 ease-out pt-[env(safe-area-inset-top,0px)] ${hidden ? 'stocky-topbar--hidden' : 'translate-y-0'}`}>
+      <div className="w-full h-12 flex items-center">
+        <div className="stocky-topbar-brand w-12 h-12 shrink-0 border-r border-stocky-border-subtle flex items-center justify-center">
         {companyLogoUrl && !logoFailed ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
@@ -152,6 +153,7 @@ export function PlatformTopBarWidget({
           onSettingsClick={onSettingsClick}
           onNavigateToTab={onNavigateToTab}
         />
+      </div>
       </div>
     </header>
   );

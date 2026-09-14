@@ -63,7 +63,7 @@ export function HomeHeroWidget({
 
   return (
     <div className="stocky-home-hero select-none relative overflow-hidden">
-      <div className="w-full max-w-[var(--stocky-page-max-width)] mx-auto px-4 sm:px-6 lg:px-8 pt-5 pb-8 sm:pb-12 flex flex-col gap-4 sm:gap-5 relative z-10">
+      <div className="w-full max-w-[var(--stocky-page-max-width)] mx-auto px-4 sm:px-6 lg:px-8 pt-[max(1.25rem,calc(env(safe-area-inset-top,0px)+0.5rem))] pb-8 sm:pb-12 flex flex-col gap-4 sm:gap-5 relative z-10">
         {/* Row 1: Fully Circular Account Badge (Company Logo) + Greeting Typography */}
         <div className="flex items-center justify-between gap-4 w-full">
           <div className="flex items-center gap-3.5 sm:gap-4 min-w-0">
