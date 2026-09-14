@@ -21,6 +21,8 @@ export default function AttendanceRoutePage() {
       members={platform.teamMembers}
       userRole={platform.userRole}
       currentUserId={platform.companyUserId}
+      activeTab={platform.attendanceTab}
+      onTabChange={platform.setAttendanceTab}
       onPunchAttendance={platform.punchAttendance}
       onSubmitLeave={platform.submitLeaveRequest}
       onReviewLeave={platform.reviewLeaveRequest}

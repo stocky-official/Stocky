@@ -139,6 +139,8 @@ export interface PlatformContextValue {
   setSupplierTab: (tab: 'suppliers' | 'requests') => void;
   taskTab: 'ongoing' | 'completed';
   setTaskTab: (tab: 'ongoing' | 'completed') => void;
+  attendanceTab: 'timesheets' | 'calendar' | 'leaves' | 'kiosk';
+  setAttendanceTab: (tab: 'timesheets' | 'calendar' | 'leaves' | 'kiosk') => void;
   canManage: boolean;
   canManageTasks: boolean;
   navigateToTab: (tab: string) => void;
@@ -300,6 +302,7 @@ export function PlatformProvider({
   const [supplierProductId, setSupplierProductId] = useState<string | undefined>();
   const [supplierTab, setSupplierTab] = useState<'suppliers' | 'requests'>('suppliers');
   const [taskTab, setTaskTab] = useState<'ongoing' | 'completed'>('ongoing');
+  const [attendanceTab, setAttendanceTab] = useState<'timesheets' | 'calendar' | 'leaves' | 'kiosk'>('timesheets');
   const [tasks, setTasks] = useState<StockTask[]>([]);
   const [taskItems, setTaskItems] = useState<StockTaskItem[]>([]);
   const [taskExpected, setTaskExpected] = useState<StockTaskExpected[]>([]);
@@ -342,6 +345,58 @@ export function PlatformProvider({
     }
     if (tab === 'tasks') {
       setTaskTab('ongoing');
+    }
+    if (tab === 'attendance-calendar' || tab === 'calendar') {
+      setAttendanceTab('calendar');
+      if (activeTab !== 'attendance') {
+        const path = TAB_TO_PATH.attendance;
+        const targetHref = (!effectiveTenantPrefix || effectiveTenantPrefix === '/platform')
+          ? path
+          : (path === '/platform' ? effectiveTenantPrefix : path.replace('/platform', effectiveTenantPrefix));
+        React.startTransition(() => {
+          router.push(targetHref || '/');
+        });
+      }
+      return;
+    }
+    if (tab === 'attendance-leaves' || tab === 'leaves') {
+      setAttendanceTab('leaves');
+      if (activeTab !== 'attendance') {
+        const path = TAB_TO_PATH.attendance;
+        const targetHref = (!effectiveTenantPrefix || effectiveTenantPrefix === '/platform')
+          ? path
+          : (path === '/platform' ? effectiveTenantPrefix : path.replace('/platform', effectiveTenantPrefix));
+        React.startTransition(() => {
+          router.push(targetHref || '/');
+        });
+      }
+      return;
+    }
+    if (tab === 'attendance-kiosk' || tab === 'kiosk') {
+      setAttendanceTab('kiosk');
+      if (activeTab !== 'attendance') {
+        const path = TAB_TO_PATH.attendance;
+        const targetHref = (!effectiveTenantPrefix || effectiveTenantPrefix === '/platform')
+          ? path
+          : (path === '/platform' ? effectiveTenantPrefix : path.replace('/platform', effectiveTenantPrefix));
+        React.startTransition(() => {
+          router.push(targetHref || '/');
+        });
+      }
+      return;
+    }
+    if (tab === 'attendance-timesheets' || tab === 'timesheets' || tab === 'attendance') {
+      setAttendanceTab('timesheets');
+      if (activeTab !== 'attendance') {
+        const path = TAB_TO_PATH.attendance;
+        const targetHref = (!effectiveTenantPrefix || effectiveTenantPrefix === '/platform')
+          ? path
+          : (path === '/platform' ? effectiveTenantPrefix : path.replace('/platform', effectiveTenantPrefix));
+        React.startTransition(() => {
+          router.push(targetHref || '/');
+        });
+      }
+      return;
     }
     if (!canOpenTab(userRole, tab)) return;
     const path = TAB_TO_PATH[tab] || `/platform/${tab}`;
@@ -1140,6 +1195,8 @@ export function PlatformProvider({
     setSupplierTab,
     taskTab,
     setTaskTab,
+    attendanceTab,
+    setAttendanceTab,
     canManage: adminRoles.includes(userRole),
     canManageTasks: adminRoles.includes(userRole) || userRole === 'manager',
     navigateToTab,

@@ -12,6 +12,8 @@ export interface PlatformContextTabsWidgetProps {
   onSupplierTabChange?: (tab: 'suppliers' | 'requests') => void;
   taskTab?: 'ongoing' | 'completed';
   onTaskTabChange?: (tab: 'ongoing' | 'completed') => void;
+  attendanceTab?: 'timesheets' | 'calendar' | 'leaves' | 'kiosk';
+  onAttendanceTabChange?: (tab: 'timesheets' | 'calendar' | 'leaves' | 'kiosk') => void;
 }
 
 /**
@@ -27,6 +29,8 @@ export function PlatformContextTabsWidget({
   onSupplierTabChange,
   taskTab = 'ongoing',
   onTaskTabChange,
+  attendanceTab = 'timesheets',
+  onAttendanceTabChange,
 }: PlatformContextTabsWidgetProps) {
   const group = getActivePlatformGroup(getPlatformNavigation(userRole), activeTab);
 
@@ -41,6 +45,14 @@ export function PlatformContextTabsWidget({
       ? taskTab === 'completed'
         ? 'tasks-completed'
         : 'tasks'
+      : activeTab === 'attendance' || activeTab === 'timesheets'
+      ? attendanceTab === 'calendar'
+        ? 'attendance-calendar'
+        : attendanceTab === 'leaves'
+        ? 'attendance-leaves'
+        : attendanceTab === 'kiosk'
+        ? 'attendance-kiosk'
+        : 'attendance'
       : activeTab;
 
   const handleItemClick = (itemId: string) => {
@@ -62,6 +74,26 @@ export function PlatformContextTabsWidget({
     if (itemId === 'tasks') {
       onTaskTabChange?.('ongoing');
       if (activeTab !== 'tasks') onTabChange('tasks');
+      return;
+    }
+    if (itemId === 'attendance' || itemId === 'attendance-timesheets' || itemId === 'timesheets') {
+      onAttendanceTabChange?.('timesheets');
+      if (activeTab !== 'attendance') onTabChange('attendance');
+      return;
+    }
+    if (itemId === 'attendance-calendar' || itemId === 'calendar') {
+      onAttendanceTabChange?.('calendar');
+      if (activeTab !== 'attendance') onTabChange('attendance');
+      return;
+    }
+    if (itemId === 'attendance-leaves' || itemId === 'leaves') {
+      onAttendanceTabChange?.('leaves');
+      if (activeTab !== 'attendance') onTabChange('attendance');
+      return;
+    }
+    if (itemId === 'attendance-kiosk' || itemId === 'kiosk') {
+      onAttendanceTabChange?.('kiosk');
+      if (activeTab !== 'attendance') onTabChange('attendance');
       return;
     }
     onTabChange(itemId);

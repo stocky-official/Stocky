@@ -10,7 +10,7 @@ import type {
   PunchMethod,
 } from '@stocky/types';
 import { PlatformPageLayout } from './PlatformPageLayout';
-import { AttendanceWorkspaceWidget } from '@/widgets/AttendanceWorkspaceWidget';
+import { AttendanceWorkspaceWidget, type AttendanceTab } from '@/widgets/AttendanceWorkspaceWidget';
 import { CalendarIcon, CheckCircleIcon } from '@stocky/icons';
 
 export interface AttendancePlatformViewProps {
@@ -21,6 +21,8 @@ export interface AttendancePlatformViewProps {
   members: any[];
   userRole: string;
   currentUserId?: string | null;
+  activeTab?: AttendanceTab;
+  onTabChange?: (tab: AttendanceTab) => void;
   onPunchAttendance: (input: {
     locationId: string;
     method?: PunchMethod;

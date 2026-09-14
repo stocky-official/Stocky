@@ -139,6 +139,8 @@ function PlatformShell({ children }: { children?: React.ReactNode }) {
         onSupplierTabChange={platform.setSupplierTab}
         taskTab={platform.taskTab}
         onTaskTabChange={platform.setTaskTab}
+        attendanceTab={platform.attendanceTab}
+        onAttendanceTabChange={platform.setAttendanceTab}
       />
       <div className="stocky-platform-body flex flex-1 min-h-0 min-w-0">
         <SidebarNavWidget

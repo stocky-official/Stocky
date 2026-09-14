@@ -26,6 +26,8 @@ export interface AttendanceWorkspaceWidgetProps {
   members: any[];
   userRole: string;
   currentUserId?: string | null;
+  activeTab?: AttendanceTab;
+  onTabChange?: (tab: AttendanceTab) => void;
   onPunchAttendance: (input: {
     locationId: string;
     method?: PunchMethod;
@@ -51,11 +53,15 @@ export function AttendanceWorkspaceWidget({
   members,
   userRole,
   currentUserId,
+  activeTab: controlledTab,
+  onTabChange: onControlledTabChange,
   onPunchAttendance,
   onSubmitLeave,
   onReviewLeave,
 }: AttendanceWorkspaceWidgetProps) {
-  const [activeTab, setActiveTab] = useState<AttendanceTab>('timesheets');
+  const [internalTab, setInternalTab] = useState<AttendanceTab>('timesheets');
+  const activeTab = controlledTab ?? internalTab;
+  const setActiveTab = onControlledTabChange ?? setInternalTab;
   const [search, setSearch] = useState('');
   const [isLeaveDrawerOpen, setIsLeaveDrawerOpen] = useState(false);
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);

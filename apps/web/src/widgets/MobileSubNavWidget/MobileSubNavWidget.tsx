@@ -14,6 +14,8 @@ export interface MobileSubNavWidgetProps {
   onSupplierTabChange?: (tab: 'suppliers' | 'requests') => void;
   taskTab?: 'ongoing' | 'completed';
   onTaskTabChange?: (tab: 'ongoing' | 'completed') => void;
+  attendanceTab?: 'timesheets' | 'calendar' | 'leaves' | 'kiosk';
+  onAttendanceTabChange?: (tab: 'timesheets' | 'calendar' | 'leaves' | 'kiosk') => void;
 }
 
 export function MobileSubNavWidget({
@@ -26,6 +28,8 @@ export function MobileSubNavWidget({
   onSupplierTabChange,
   taskTab = 'ongoing',
   onTaskTabChange,
+  attendanceTab = 'timesheets',
+  onAttendanceTabChange,
 }: MobileSubNavWidgetProps) {
   const groups = useMemo(() => getPlatformNavigation(userRole), [userRole]);
   const activeGroup = getActivePlatformGroup(groups, activeTab);
@@ -38,8 +42,14 @@ export function MobileSubNavWidget({
     if (activeTab === 'tasks' || activeTab === 'tasks-completed') {
       return taskTab === 'completed' ? 'tasks-completed' : 'tasks';
     }
+    if (activeTab === 'attendance' || activeTab === 'timesheets') {
+      if (attendanceTab === 'calendar') return 'attendance-calendar';
+      if (attendanceTab === 'leaves') return 'attendance-leaves';
+      if (attendanceTab === 'kiosk') return 'attendance-kiosk';
+      return 'attendance';
+    }
     return activeTab;
-  }, [activeTab, supplierTab, taskTab]);
+  }, [activeTab, supplierTab, taskTab, attendanceTab]);
 
   useEffect(() => {
     if (activePillRef.current && typeof window !== 'undefined') {
@@ -73,6 +83,26 @@ export function MobileSubNavWidget({
     if (itemId === 'tasks') {
       onTaskTabChange?.('ongoing');
       if (activeTab !== 'tasks') onTabChange('tasks');
+      return;
+    }
+    if (itemId === 'attendance' || itemId === 'attendance-timesheets' || itemId === 'timesheets') {
+      onAttendanceTabChange?.('timesheets');
+      if (activeTab !== 'attendance') onTabChange('attendance');
+      return;
+    }
+    if (itemId === 'attendance-calendar' || itemId === 'calendar') {
+      onAttendanceTabChange?.('calendar');
+      if (activeTab !== 'attendance') onTabChange('attendance');
+      return;
+    }
+    if (itemId === 'attendance-leaves' || itemId === 'leaves') {
+      onAttendanceTabChange?.('leaves');
+      if (activeTab !== 'attendance') onTabChange('attendance');
+      return;
+    }
+    if (itemId === 'attendance-kiosk' || itemId === 'kiosk') {
+      onAttendanceTabChange?.('kiosk');
+      if (activeTab !== 'attendance') onTabChange('attendance');
       return;
     }
     onTabChange(itemId);

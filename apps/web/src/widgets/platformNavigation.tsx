@@ -8,6 +8,7 @@ import {
   CheckCircleIcon,
   ClockIcon,
   DashboardIcon,
+  QrCodeIcon,
   SettingsIcon,
   TruckIcon,
   UsersIcon,
@@ -40,6 +41,10 @@ export const TAB_TO_PATH: Record<string, string> = {
   tasks: '/platform/tasks',
   'tasks-completed': '/platform/tasks',
   attendance: '/platform/attendance',
+  'attendance-timesheets': '/platform/attendance',
+  'attendance-calendar': '/platform/attendance',
+  'attendance-leaves': '/platform/attendance',
+  'attendance-kiosk': '/platform/attendance',
   timesheets: '/platform/attendance',
   locations: '/platform/locations',
   team: '/platform/team',
@@ -95,7 +100,10 @@ export function getPlatformNavigation(userRole: CompanyUserRole, tenantPrefix = 
   ];
 
   const attendanceItems: PlatformNavItem[] = [
-    { id: 'attendance', label: 'Attendance', icon: <CalendarIcon size="xs" />, href: makeHref('attendance') },
+    { id: 'attendance', label: 'Timesheets', icon: <ClockIcon size="xs" />, href: makeHref('attendance') },
+    { id: 'attendance-calendar', label: 'Calendar', icon: <CalendarIcon size="xs" />, href: makeHref('attendance') },
+    { id: 'attendance-leaves', label: 'Time Off', icon: <UsersIcon size="xs" />, href: makeHref('attendance') },
+    { id: 'attendance-kiosk', label: 'Kiosk / QR', icon: <QrCodeIcon size="xs" />, href: makeHref('attendance') },
   ];
 
   const organizationItems: PlatformNavItem[] = [

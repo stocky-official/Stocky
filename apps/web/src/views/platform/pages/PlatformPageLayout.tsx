@@ -44,6 +44,8 @@ export function PlatformPageLayout({
         onSupplierTabChange={platform.setSupplierTab}
         taskTab={platform.taskTab}
         onTaskTabChange={platform.setTaskTab}
+        attendanceTab={platform.attendanceTab}
+        onAttendanceTabChange={platform.setAttendanceTab}
       />
     );
   }
