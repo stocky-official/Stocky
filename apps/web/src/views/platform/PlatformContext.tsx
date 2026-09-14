@@ -52,8 +52,16 @@ const roleTitles: Record<CompanyUserRole, string> = {
 };
 
 const adminRoles: CompanyUserRole[] = ['owner', 'admin'];
-const staffTabs = ['home', 'stock', 'inventory', 'tasks', 'attendance', 'notifications', 'settings', 'receive', 'logs', 'locations', 'supplier-requests', 'tasks-completed'];
-const managerTabs = ['home', 'stock', 'inventory', 'tasks', 'attendance', 'notifications', 'settings', 'receive', 'logs', 'suppliers', 'transfers', 'locations', 'supplier-requests', 'tasks-completed'];
+const staffTabs = [
+  'home', 'stock', 'inventory', 'tasks', 'attendance', 'notifications', 'settings', 'receive', 'logs',
+  'locations', 'supplier-requests', 'tasks-completed', 'attendance-timesheets', 'attendance-calendar',
+  'attendance-leaves', 'attendance-kiosk', 'timesheets', 'calendar', 'leaves', 'kiosk',
+];
+const managerTabs = [
+  'home', 'stock', 'inventory', 'tasks', 'attendance', 'notifications', 'settings', 'receive', 'logs',
+  'suppliers', 'transfers', 'locations', 'supplier-requests', 'tasks-completed', 'attendance-timesheets',
+  'attendance-calendar', 'attendance-leaves', 'attendance-kiosk', 'timesheets', 'calendar', 'leaves', 'kiosk',
+];
 
 export function canOpenTab(role: CompanyUserRole, tab: string) {
   if (adminRoles.includes(role)) return true;
@@ -385,8 +393,20 @@ export function PlatformProvider({
       }
       return;
     }
-    if (tab === 'attendance-timesheets' || tab === 'timesheets' || tab === 'attendance') {
+    if (tab === 'attendance-timesheets' || tab === 'timesheets') {
       setAttendanceTab('timesheets');
+      if (activeTab !== 'attendance') {
+        const path = TAB_TO_PATH.attendance;
+        const targetHref = (!effectiveTenantPrefix || effectiveTenantPrefix === '/platform')
+          ? path
+          : (path === '/platform' ? effectiveTenantPrefix : path.replace('/platform', effectiveTenantPrefix));
+        React.startTransition(() => {
+          router.push(targetHref || '/');
+        });
+      }
+      return;
+    }
+    if (tab === 'attendance') {
       if (activeTab !== 'attendance') {
         const path = TAB_TO_PATH.attendance;
         const targetHref = (!effectiveTenantPrefix || effectiveTenantPrefix === '/platform')

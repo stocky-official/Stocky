@@ -87,22 +87,22 @@ export function MobileSubNavWidget({
     }
     if (itemId === 'attendance' || itemId === 'attendance-timesheets' || itemId === 'timesheets') {
       onAttendanceTabChange?.('timesheets');
-      if (activeTab !== 'attendance') onTabChange('attendance');
+      onTabChange('attendance-timesheets');
       return;
     }
     if (itemId === 'attendance-calendar' || itemId === 'calendar') {
       onAttendanceTabChange?.('calendar');
-      if (activeTab !== 'attendance') onTabChange('attendance');
+      onTabChange('attendance-calendar');
       return;
     }
     if (itemId === 'attendance-leaves' || itemId === 'leaves') {
       onAttendanceTabChange?.('leaves');
-      if (activeTab !== 'attendance') onTabChange('attendance');
+      onTabChange('attendance-leaves');
       return;
     }
     if (itemId === 'attendance-kiosk' || itemId === 'kiosk') {
       onAttendanceTabChange?.('kiosk');
-      if (activeTab !== 'attendance') onTabChange('attendance');
+      onTabChange('attendance-kiosk');
       return;
     }
     onTabChange(itemId);

@@ -7,7 +7,7 @@ import { AuthOriginGuard } from '@/components/AuthOriginGuard';
 const geistSans = Geist({
   variable: '--font-sans',
   subsets: ['latin'],
-  weight: ['300', '400', '500'],
+  weight: ['300', '400', '500', '600'],
 });
 
 export const metadata: Metadata = {

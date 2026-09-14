@@ -68,8 +68,8 @@ export function TimesheetsTableWidget({
   const getStatusBadge = (status: AttendanceShift['status'], isOngoing: boolean) => {
     if (isOngoing) {
       return (
-        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium bg-blue-50 text-blue-700 border border-blue-200">
-          <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
+        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium stocky-status-info border">
+          <span className="w-1.5 h-1.5 rounded-full bg-current animate-pulse" />
           Active Shift
         </span>
       );
@@ -77,36 +77,36 @@ export function TimesheetsTableWidget({
     switch (status) {
       case 'present':
         return (
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium stocky-status-success border">
+            <span className="w-1.5 h-1.5 rounded-full bg-current" />
             On Time
           </span>
         );
       case 'late':
         return (
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium bg-amber-50 text-amber-700 border border-amber-200">
-            <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium stocky-status-warning border">
+            <span className="w-1.5 h-1.5 rounded-full bg-current" />
             Late
           </span>
         );
       case 'early_departure':
         return (
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium bg-orange-50 text-orange-700 border border-orange-200">
-            <span className="w-1.5 h-1.5 rounded-full bg-orange-500" />
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium stocky-status-critical border">
+            <span className="w-1.5 h-1.5 rounded-full bg-current" />
             Early Out
           </span>
         );
       case 'overtime':
         return (
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium bg-indigo-50 text-indigo-700 border border-indigo-200">
-            <span className="w-1.5 h-1.5 rounded-full bg-indigo-500" />
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium stocky-status-hold border">
+            <span className="w-1.5 h-1.5 rounded-full bg-current" />
             Overtime
           </span>
         );
       default:
         return (
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium bg-slate-50 text-slate-700 border border-slate-200">
-            <span className="w-1.5 h-1.5 rounded-full bg-slate-400" />
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium stocky-status-muted border">
+            <span className="w-1.5 h-1.5 rounded-full bg-current" />
             {status}
           </span>
         );
@@ -142,8 +142,8 @@ export function TimesheetsTableWidget({
     <div className="flex flex-col w-full">
       {/* Roll Call Stats Banner */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 p-3 sm:p-4 bg-stocky-bg-global/40 border-b border-stocky-border-subtle">
-        <div className="flex items-center gap-3 bg-white p-2.5 sm:p-3 rounded-xl border border-stocky-border-subtle shadow-2xs">
-          <div className="w-8 h-8 rounded-lg bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-600">
+        <div className="flex items-center gap-3 bg-stocky-bg-widget p-2.5 sm:p-3 rounded-widget border border-stocky-border-subtle shadow-sm">
+          <div className="w-8 h-8 rounded-lg stocky-status-success border flex items-center justify-center">
             <CheckCircleIcon size="xs" />
           </div>
           <div>
@@ -152,8 +152,8 @@ export function TimesheetsTableWidget({
           </div>
         </div>
 
-        <div className="flex items-center gap-3 bg-white p-2.5 sm:p-3 rounded-xl border border-stocky-border-subtle shadow-2xs">
-          <div className="w-8 h-8 rounded-lg bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600">
+        <div className="flex items-center gap-3 bg-stocky-bg-widget p-2.5 sm:p-3 rounded-widget border border-stocky-border-subtle shadow-sm">
+          <div className="w-8 h-8 rounded-lg stocky-status-info border flex items-center justify-center">
             <ClockIcon size="xs" />
           </div>
           <div>
@@ -164,8 +164,8 @@ export function TimesheetsTableWidget({
           </div>
         </div>
 
-        <div className="flex items-center gap-3 bg-white p-2.5 sm:p-3 rounded-xl border border-stocky-border-subtle shadow-2xs">
-          <div className="w-8 h-8 rounded-lg bg-amber-50 border border-amber-100 flex items-center justify-center text-amber-600">
+        <div className="flex items-center gap-3 bg-stocky-bg-widget p-2.5 sm:p-3 rounded-widget border border-stocky-border-subtle shadow-sm">
+          <div className="w-8 h-8 rounded-lg stocky-status-warning border flex items-center justify-center">
             <AlertTriangleIcon size="xs" />
           </div>
           <div>
@@ -174,9 +174,9 @@ export function TimesheetsTableWidget({
           </div>
         </div>
 
-        <div className="flex items-center gap-3 bg-white p-2.5 sm:p-3 rounded-xl border border-stocky-border-subtle shadow-2xs">
-          <div className="w-8 h-8 rounded-lg bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600">
-            <span className="w-2.5 h-2.5 rounded-full bg-indigo-500 animate-pulse" />
+        <div className="flex items-center gap-3 bg-stocky-bg-widget p-2.5 sm:p-3 rounded-widget border border-stocky-border-subtle shadow-sm">
+          <div className="w-8 h-8 rounded-lg stocky-status-hold border flex items-center justify-center">
+            <span className="w-2.5 h-2.5 rounded-full bg-current animate-pulse" />
           </div>
           <div>
             <div className="text-[11px] font-medium text-stocky-text-sub">Active Now</div>
@@ -188,7 +188,7 @@ export function TimesheetsTableWidget({
       {/* Shifts Table */}
       {paginatedShifts.length === 0 ? (
         <div className="flex flex-col items-center justify-center p-12 text-center">
-          <div className="w-12 h-12 rounded-2xl bg-stocky-bg-global border border-stocky-border-subtle flex items-center justify-center text-stocky-text-sub mb-3">
+          <div className="w-12 h-12 rounded-widget bg-stocky-bg-global border border-stocky-border-subtle flex items-center justify-center text-stocky-text-sub mb-3">
             <ClockIcon size="sm" />
           </div>
           <h3 className="text-sm font-semibold text-stocky-text-main">No attendance records found</h3>
@@ -198,7 +198,7 @@ export function TimesheetsTableWidget({
           <button
             type="button"
             onClick={onRequestLeave}
-            className="mt-4 stocky-table-toolbar-button stocky-table-toolbar-button--primary h-10 px-4 rounded-full text-xs font-medium inline-flex items-center justify-center gap-1.5 whitespace-nowrap cursor-pointer"
+            className="mt-4 stocky-table-toolbar-button stocky-table-toolbar-button--primary h-10 px-4 rounded-full text-xs font-medium inline-flex items-center justify-center gap-1.5 whitespace-nowrap cursor-pointer shadow-sm"
           >
             <PlusIcon size="xs" />
             <span>Request Leave</span>
@@ -295,7 +295,7 @@ export function TimesheetsTableWidget({
                     {/* Clock Out */}
                     <td className="px-4 py-3 whitespace-nowrap text-xs text-stocky-text-sub">
                       {isOngoing ? (
-                        <span className="text-blue-600 font-medium">In Progress</span>
+                        <span className="text-stocky-primary font-medium">In Progress</span>
                       ) : (
                         formatTime(shift.clockOutAt)
                       )}
@@ -324,7 +324,7 @@ export function TimesheetsTableWidget({
                           e.stopPropagation();
                           onSelectShift(shift);
                         }}
-                        className="px-3 py-1 rounded-full text-xs font-medium border border-stocky-border-subtle hover:border-stocky-primary hover:text-stocky-primary bg-white transition-colors cursor-pointer"
+                        className="px-3 py-1 rounded-full text-xs font-medium border border-stocky-border-subtle hover:border-stocky-primary hover:text-stocky-primary bg-stocky-bg-widget transition-colors cursor-pointer"
                       >
                         Inspect
                       </button>
@@ -339,7 +339,7 @@ export function TimesheetsTableWidget({
 
       {/* Pagination Bar */}
       {shifts.length > ITEMS_PER_PAGE && (
-        <div className="flex items-center justify-between px-4 py-3 border-t border-stocky-border-subtle bg-white rounded-b-2xl">
+        <div className="flex items-center justify-between px-4 py-3 border-t border-stocky-border-subtle bg-stocky-bg-widget rounded-b-card">
           <div className="text-xs text-stocky-text-sub">
             Showing <span className="font-semibold text-stocky-text-main">{startIndex + 1}</span> to{' '}
             <span className="font-semibold text-stocky-text-main">

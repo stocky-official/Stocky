@@ -153,14 +153,14 @@ export function AttendanceCalendarWidget({
   };
 
   return (
-    <div className="flex flex-col w-full bg-white">
+    <div className="flex flex-col w-full bg-stocky-bg-widget">
       {/* Google Calendar Controls Bar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 sm:p-4 border-b border-stocky-border-subtle bg-stocky-bg-global/20">
         <div className="flex items-center gap-2.5">
           <button
             type="button"
             onClick={handleToday}
-            className="h-9 px-3 rounded-full border border-stocky-border-subtle bg-white text-xs font-semibold text-stocky-text-main hover:border-stocky-primary hover:text-stocky-primary transition-colors cursor-pointer"
+            className="h-9 px-3 rounded-full border border-stocky-border-subtle bg-stocky-bg-widget text-xs font-semibold text-stocky-text-main hover:border-stocky-primary hover:text-stocky-primary transition-colors cursor-pointer"
           >
             Today
           </button>
@@ -168,14 +168,14 @@ export function AttendanceCalendarWidget({
             <button
               type="button"
               onClick={handlePrev}
-              className="p-1.5 rounded-full border border-stocky-border-subtle bg-white text-stocky-text-main hover:bg-stocky-bg-global transition-colors cursor-pointer"
+              className="p-1.5 rounded-full border border-stocky-border-subtle bg-stocky-bg-widget text-stocky-text-main hover:bg-stocky-bg-global transition-colors cursor-pointer"
             >
               <ChevronLeftIcon size="xs" />
             </button>
             <button
               type="button"
               onClick={handleNext}
-              className="p-1.5 rounded-full border border-stocky-border-subtle bg-white text-stocky-text-main hover:bg-stocky-bg-global transition-colors cursor-pointer"
+              className="p-1.5 rounded-full border border-stocky-border-subtle bg-stocky-bg-widget text-stocky-text-main hover:bg-stocky-bg-global transition-colors cursor-pointer"
             >
               <ChevronRightIcon size="xs" />
             </button>
@@ -194,7 +194,7 @@ export function AttendanceCalendarWidget({
               onClick={() => setViewMode(mode)}
               className={`px-3 py-1 rounded-full text-xs font-medium capitalize transition-colors cursor-pointer ${
                 viewMode === mode
-                  ? 'bg-white text-stocky-primary font-semibold shadow-2xs'
+                  ? 'bg-stocky-bg-widget text-stocky-primary font-semibold shadow-sm'
                   : 'text-stocky-text-sub hover:text-stocky-text-main'
               }`}
             >
@@ -229,8 +229,8 @@ export function AttendanceCalendarWidget({
                   <div
                     key={idx}
                     className={`min-h-[110px] p-2 flex flex-col transition-colors ${
-                      cell.isCurrentMonth ? 'bg-white' : 'bg-stocky-bg-global/20 opacity-60'
-                    } ${cell.isToday ? 'bg-emerald-50/20' : ''}`}
+                      cell.isCurrentMonth ? 'bg-stocky-bg-widget' : 'bg-stocky-bg-global/20 opacity-60'
+                    } ${cell.isToday ? 'bg-stocky-primary/5' : ''}`}
                   >
                     <div className="flex items-center justify-between mb-1.5">
                       <span
@@ -264,17 +264,17 @@ export function AttendanceCalendarWidget({
                             key={shift.id}
                             type="button"
                             onClick={() => onSelectShift(shift)}
-                            className={`w-full text-left px-1.5 py-0.5 rounded-md text-[10px] font-medium truncate flex items-center gap-1 transition-opacity hover:opacity-85 cursor-pointer ${
+                            className={`w-full text-left px-1.5 py-0.5 rounded-md text-[10px] font-medium truncate flex items-center gap-1 transition-opacity hover:opacity-85 cursor-pointer border ${
                               isOngoing
-                                ? 'bg-blue-100 text-blue-800'
+                                ? 'stocky-status-info'
                                 : isLate
-                                ? 'bg-amber-100 text-amber-800'
-                                : 'bg-emerald-100 text-emerald-800'
+                                ? 'stocky-status-warning'
+                                : 'stocky-status-success'
                             }`}
                           >
                             <span
                               className={`w-1.5 h-1.5 rounded-full shrink-0 ${
-                                isOngoing ? 'bg-blue-500 animate-pulse' : isLate ? 'bg-amber-500' : 'bg-emerald-500'
+                                isOngoing ? 'bg-current animate-pulse' : 'bg-current'
                               }`}
                             />
                             <span className="truncate">{memberName}</span>
@@ -292,9 +292,9 @@ export function AttendanceCalendarWidget({
                           <div
                             key={leave.id}
                             onClick={() => onSelectLeave?.(leave)}
-                            className="w-full text-left px-1.5 py-0.5 rounded-md text-[10px] font-medium bg-purple-100 text-purple-800 truncate flex items-center gap-1 cursor-pointer"
+                            className="w-full text-left px-1.5 py-0.5 rounded-md text-[10px] font-medium stocky-status-hold border truncate flex items-center gap-1 cursor-pointer"
                           >
-                            <span className="w-1.5 h-1.5 rounded-full bg-purple-500 shrink-0" />
+                            <span className="w-1.5 h-1.5 rounded-full bg-current shrink-0" />
                             <span className="truncate">{memberName} ({leave.leaveType.toUpperCase()})</span>
                           </div>
                         );
@@ -328,8 +328,8 @@ export function AttendanceCalendarWidget({
               return (
                 <div
                   key={dayOffset}
-                  className={`rounded-2xl border p-3 flex flex-col min-h-[360px] ${
-                    isToday ? 'border-stocky-primary bg-emerald-50/10' : 'border-stocky-border-subtle bg-white'
+                  className={`rounded-widget border p-3 flex flex-col min-h-[360px] ${
+                    isToday ? 'border-stocky-primary bg-stocky-primary/5' : 'border-stocky-border-subtle bg-stocky-bg-widget'
                   }`}
                 >
                   <div className="flex items-center justify-between border-b border-stocky-border-subtle pb-2 mb-2.5">
@@ -337,7 +337,7 @@ export function AttendanceCalendarWidget({
                       <div className="text-[11px] font-semibold text-stocky-text-sub uppercase">
                         {startOfWeek.toLocaleDateString(undefined, { weekday: 'short' })}
                       </div>
-                      <div className="text-sm font-bold text-stocky-text-main">
+                      <div className="text-sm font-semibold text-stocky-text-main">
                         {startOfWeek.getDate()}
                       </div>
                     </div>
@@ -364,7 +364,7 @@ export function AttendanceCalendarWidget({
                           <div
                             key={shift.id}
                             onClick={() => onSelectShift(shift)}
-                            className="p-2.5 rounded-xl border border-stocky-border-subtle bg-stocky-bg-global/30 hover:border-stocky-primary hover:bg-white transition-all cursor-pointer shadow-2xs"
+                            className="p-2.5 rounded-widget border border-stocky-border-subtle bg-stocky-bg-global/30 hover:border-stocky-primary hover:bg-stocky-bg-widget transition-all cursor-pointer shadow-sm"
                           >
                             <div className="flex items-center justify-between mb-1">
                               <span className="text-xs font-semibold text-stocky-text-main truncate">
@@ -372,7 +372,11 @@ export function AttendanceCalendarWidget({
                               </span>
                               <span
                                 className={`w-2 h-2 rounded-full ${
-                                  isOngoing ? 'bg-blue-500 animate-pulse' : isLate ? 'bg-amber-500' : 'bg-emerald-500'
+                                  isOngoing
+                                    ? 'bg-current text-stocky-status-info-fg animate-pulse'
+                                    : isLate
+                                    ? 'bg-current text-stocky-status-warning-fg'
+                                    : 'bg-current text-stocky-status-success-fg'
                                 }`}
                               />
                             </div>
@@ -429,14 +433,14 @@ export function AttendanceCalendarWidget({
                       <div
                         key={shift.id}
                         onClick={() => onSelectShift(shift)}
-                        className="p-4 rounded-2xl border border-stocky-border-subtle bg-white hover:border-stocky-primary transition-all cursor-pointer shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+                        className="p-4 rounded-widget border border-stocky-border-subtle bg-stocky-bg-widget hover:border-stocky-primary transition-all cursor-pointer shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3"
                       >
                         <div className="flex items-center gap-3.5">
-                          <div className="w-10 h-10 rounded-full bg-stocky-primary/10 text-stocky-primary flex items-center justify-center font-bold text-sm">
+                          <div className="w-10 h-10 rounded-full bg-stocky-primary/10 text-stocky-primary flex items-center justify-center font-semibold text-sm">
                             {memberName.slice(0, 2).toUpperCase()}
                           </div>
                           <div>
-                            <div className="text-xs font-bold text-stocky-text-main">
+                            <div className="text-xs font-semibold text-stocky-text-main">
                               {memberName}
                             </div>
                             <div className="text-[11px] text-stocky-text-sub flex items-center gap-1.5 mt-0.5">
@@ -459,12 +463,12 @@ export function AttendanceCalendarWidget({
                           </div>
 
                           <span
-                            className={`px-3 py-1 rounded-full text-xs font-medium ${
+                            className={`px-3 py-1 rounded-full text-xs font-medium border ${
                               isOngoing
-                                ? 'bg-blue-100 text-blue-800'
+                                ? 'stocky-status-info'
                                 : shift.status === 'late'
-                                ? 'bg-amber-100 text-amber-800'
-                                : 'bg-emerald-100 text-emerald-800'
+                                ? 'stocky-status-warning'
+                                : 'stocky-status-success'
                             }`}
                           >
                             {isOngoing ? 'Active' : shift.status}

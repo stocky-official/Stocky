@@ -57,12 +57,12 @@ export function ShiftDetailsDrawerWidget({
 
       <div className="p-6 space-y-6">
         {/* Employee Info */}
-        <div className="flex items-center gap-3.5 p-4 rounded-2xl bg-stocky-bg-global/40 border border-stocky-border-subtle">
-          <div className="w-12 h-12 rounded-full bg-stocky-primary/10 text-stocky-primary flex items-center justify-center font-bold text-base">
+        <div className="flex items-center gap-3.5 p-4 rounded-widget bg-stocky-bg-global border border-stocky-border-subtle">
+          <div className="w-12 h-12 rounded-full bg-stocky-primary/10 text-stocky-primary flex items-center justify-center font-semibold text-base">
             {memberName.slice(0, 2).toUpperCase()}
           </div>
           <div>
-            <div className="text-sm font-bold text-stocky-text-main">{memberName}</div>
+            <div className="text-sm font-semibold text-stocky-text-main">{memberName}</div>
             <div className="text-xs text-stocky-text-sub">{member?.email}</div>
             <div className="text-[11px] text-stocky-primary font-semibold capitalize mt-0.5">
               {member?.role || 'Staff'}
@@ -72,9 +72,9 @@ export function ShiftDetailsDrawerWidget({
 
         {/* Timestamps Card */}
         <div className="grid grid-cols-2 gap-3">
-          <div className="p-3.5 rounded-xl border border-stocky-border-subtle bg-white">
+          <div className="p-3.5 rounded-widget border border-stocky-border-subtle bg-stocky-bg-widget shadow-sm">
             <div className="text-[11px] text-stocky-text-sub font-medium mb-1">Clock In</div>
-            <div className="text-sm font-bold text-stocky-text-main">
+            <div className="text-sm font-semibold text-stocky-text-main">
               {shift.clockInAt ? new Date(shift.clockInAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—'}
             </div>
             <div className="text-[10px] text-stocky-text-sub capitalize mt-0.5">
@@ -82,11 +82,11 @@ export function ShiftDetailsDrawerWidget({
             </div>
           </div>
 
-          <div className="p-3.5 rounded-xl border border-stocky-border-subtle bg-white">
+          <div className="p-3.5 rounded-widget border border-stocky-border-subtle bg-stocky-bg-widget shadow-sm">
             <div className="text-[11px] text-stocky-text-sub font-medium mb-1">Clock Out</div>
-            <div className="text-sm font-bold text-stocky-text-main">
+            <div className="text-sm font-semibold text-stocky-text-main">
               {isOngoing ? (
-                <span className="text-blue-600">Active</span>
+                <span className="text-stocky-primary">Active</span>
               ) : (
                 new Date(shift.clockOutAt!).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
               )}
@@ -99,14 +99,14 @@ export function ShiftDetailsDrawerWidget({
 
         {/* Branch & Status Details */}
         <div className="space-y-3">
-          <div className="flex items-center justify-between p-3 rounded-xl bg-white border border-stocky-border-subtle text-xs">
+          <div className="flex items-center justify-between p-3 rounded-widget bg-stocky-bg-widget border border-stocky-border-subtle text-xs shadow-sm">
             <span className="text-stocky-text-sub flex items-center gap-1.5">
               <WarehouseIcon size="xs" /> Branch
             </span>
             <span className="font-semibold text-stocky-text-main">{location?.name || 'Main Branch'}</span>
           </div>
 
-          <div className="flex items-center justify-between p-3 rounded-xl bg-white border border-stocky-border-subtle text-xs">
+          <div className="flex items-center justify-between p-3 rounded-widget bg-stocky-bg-widget border border-stocky-border-subtle text-xs shadow-sm">
             <span className="text-stocky-text-sub flex items-center gap-1.5">
               <ClockIcon size="xs" /> Total Duration
             </span>
@@ -115,7 +115,7 @@ export function ShiftDetailsDrawerWidget({
             </span>
           </div>
 
-          <div className="flex items-center justify-between p-3 rounded-xl bg-white border border-stocky-border-subtle text-xs">
+          <div className="flex items-center justify-between p-3 rounded-widget bg-stocky-bg-widget border border-stocky-border-subtle text-xs shadow-sm">
             <span className="text-stocky-text-sub flex items-center gap-1.5">
               <CheckCircleIcon size="xs" /> Shift Status
             </span>
@@ -126,7 +126,7 @@ export function ShiftDetailsDrawerWidget({
         </div>
 
         {shift.notes && (
-          <div className="p-3.5 rounded-xl bg-stocky-bg-global/50 border border-stocky-border-subtle">
+          <div className="p-3.5 rounded-widget bg-stocky-bg-global border border-stocky-border-subtle">
             <div className="text-[11px] font-semibold text-stocky-text-sub mb-1">Shift Notes</div>
             <p className="text-xs text-stocky-text-main leading-relaxed">{shift.notes}</p>
           </div>

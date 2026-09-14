@@ -228,11 +228,11 @@ export function TimesheetsExportModalWidget({
       aria-modal="true"
       aria-labelledby="export-modal-title"
     >
-      <div className="w-full max-w-xl bg-white rounded-2xl border border-stocky-border-subtle shadow-2xl flex flex-col max-h-[90vh] overflow-hidden animate-scale-in">
+      <div className="w-full max-w-xl bg-stocky-bg-widget rounded-card border border-stocky-border-subtle shadow-bevel-float flex flex-col max-h-[90vh] overflow-hidden animate-scale-in">
         {/* Modal Header */}
         <div className="flex items-center justify-between px-4 sm:px-5 py-3.5 border-b border-stocky-border-subtle bg-stocky-bg-global/50">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-600 flex items-center justify-center shadow-xs">
+            <div className="w-8 h-8 rounded-widget stocky-status-info border flex items-center justify-center shadow-sm">
               <FileSpreadsheetIcon size="xs" />
             </div>
             <div>
@@ -285,7 +285,7 @@ export function TimesheetsExportModalWidget({
                   onClick={() => handlePresetSelect(p.id)}
                   className={`h-7 px-3 rounded-full text-xs font-medium cursor-pointer transition-colors ${
                     preset === p.id
-                      ? 'bg-stocky-primary text-white shadow-xs'
+                      ? 'bg-stocky-primary text-white shadow-sm'
                       : 'border border-stocky-border-subtle bg-stocky-bg-widget text-stocky-text-main hover:border-stocky-primary/50'
                   }`}
                 >
@@ -307,7 +307,7 @@ export function TimesheetsExportModalWidget({
                     setStartDate(e.target.value);
                     setPreset('custom');
                   }}
-                  className="w-full h-9 rounded-xl border border-stocky-border-subtle bg-stocky-bg-widget px-3 text-xs text-stocky-text-main focus:border-stocky-primary focus:outline-none transition-colors"
+                  className="w-full h-10 rounded-widget border border-stocky-border-subtle bg-stocky-bg-widget px-3 text-xs text-stocky-text-main focus:border-stocky-primary focus:outline-none transition-colors"
                 />
               </div>
               <div>
@@ -321,7 +321,7 @@ export function TimesheetsExportModalWidget({
                     setEndDate(e.target.value);
                     setPreset('custom');
                   }}
-                  className="w-full h-9 rounded-xl border border-stocky-border-subtle bg-stocky-bg-widget px-3 text-xs text-stocky-text-main focus:border-stocky-primary focus:outline-none transition-colors"
+                  className="w-full h-10 rounded-widget border border-stocky-border-subtle bg-stocky-bg-widget px-3 text-xs text-stocky-text-main focus:border-stocky-primary focus:outline-none transition-colors"
                 />
               </div>
             </div>
@@ -336,13 +336,13 @@ export function TimesheetsExportModalWidget({
                 <WarehouseIcon size="xs" className="text-stocky-primary" />
                 <span>Branches & Locations</span>
               </label>
-              <div className="flex items-center gap-1 bg-stocky-bg-global p-0.5 rounded-lg border border-stocky-border-subtle text-[11px]">
+              <div className="flex items-center gap-1 bg-stocky-bg-global p-1 rounded-full border border-stocky-border-subtle text-[11px]">
                 <button
                   type="button"
                   onClick={() => setBranchScope('all')}
-                  className={`px-2.5 py-0.5 rounded-md font-medium transition-colors cursor-pointer ${
+                  className={`px-3 py-1 rounded-full font-medium transition-colors cursor-pointer ${
                     branchScope === 'all'
-                      ? 'bg-white text-stocky-text-main shadow-xs font-semibold'
+                      ? 'bg-stocky-bg-widget text-stocky-text-main shadow-sm font-semibold'
                       : 'text-stocky-text-sub hover:text-stocky-text-main'
                   }`}
                 >
@@ -351,9 +351,9 @@ export function TimesheetsExportModalWidget({
                 <button
                   type="button"
                   onClick={() => setBranchScope('specific')}
-                  className={`px-2.5 py-0.5 rounded-md font-medium transition-colors cursor-pointer ${
+                  className={`px-3 py-1 rounded-full font-medium transition-colors cursor-pointer ${
                     branchScope === 'specific'
-                      ? 'bg-white text-stocky-text-main shadow-xs font-semibold'
+                      ? 'bg-stocky-bg-widget text-stocky-text-main shadow-sm font-semibold'
                       : 'text-stocky-text-sub hover:text-stocky-text-main'
                   }`}
                 >
@@ -385,7 +385,7 @@ export function TimesheetsExportModalWidget({
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 max-h-36 overflow-y-auto p-1 border border-stocky-border-subtle rounded-xl bg-stocky-bg-widget/40">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 max-h-36 overflow-y-auto p-1 border border-stocky-border-subtle rounded-widget bg-stocky-bg-widget/40">
                   {locations.map((loc) => {
                     const isSelected = selectedLocationIds.includes(loc.id);
                     return (
@@ -393,10 +393,10 @@ export function TimesheetsExportModalWidget({
                         key={loc.id}
                         type="button"
                         onClick={() => handleToggleLocation(loc.id)}
-                        className={`flex items-center justify-between p-2 rounded-lg border text-left text-xs transition-colors cursor-pointer ${
+                        className={`flex items-center justify-between p-2 rounded-widget border text-left text-xs transition-colors cursor-pointer ${
                           isSelected
                             ? 'border-stocky-primary bg-stocky-primary/5 text-stocky-text-main font-medium'
-                            : 'border-stocky-border-subtle bg-white text-stocky-text-sub hover:border-stocky-primary/40'
+                            : 'border-stocky-border-subtle bg-stocky-bg-widget text-stocky-text-sub hover:border-stocky-primary/40'
                         }`}
                       >
                         <div className="min-w-0 pr-2">
@@ -427,13 +427,13 @@ export function TimesheetsExportModalWidget({
                 <UsersIcon size="xs" className="text-stocky-primary" />
                 <span>Employees & Staff</span>
               </label>
-              <div className="flex items-center gap-1 bg-stocky-bg-global p-0.5 rounded-lg border border-stocky-border-subtle text-[11px]">
+              <div className="flex items-center gap-1 bg-stocky-bg-global p-1 rounded-full border border-stocky-border-subtle text-[11px]">
                 <button
                   type="button"
                   onClick={() => setStaffScope('all')}
-                  className={`px-2.5 py-0.5 rounded-md font-medium transition-colors cursor-pointer ${
+                  className={`px-3 py-1 rounded-full font-medium transition-colors cursor-pointer ${
                     staffScope === 'all'
-                      ? 'bg-white text-stocky-text-main shadow-xs font-semibold'
+                      ? 'bg-stocky-bg-widget text-stocky-text-main shadow-sm font-semibold'
                       : 'text-stocky-text-sub hover:text-stocky-text-main'
                   }`}
                 >
@@ -442,9 +442,9 @@ export function TimesheetsExportModalWidget({
                 <button
                   type="button"
                   onClick={() => setStaffScope('specific')}
-                  className={`px-2.5 py-0.5 rounded-md font-medium transition-colors cursor-pointer ${
+                  className={`px-3 py-1 rounded-full font-medium transition-colors cursor-pointer ${
                     staffScope === 'specific'
-                      ? 'bg-white text-stocky-text-main shadow-xs font-semibold'
+                      ? 'bg-stocky-bg-widget text-stocky-text-main shadow-sm font-semibold'
                       : 'text-stocky-text-sub hover:text-stocky-text-main'
                   }`}
                 >
@@ -466,7 +466,7 @@ export function TimesheetsExportModalWidget({
                     value={memberSearch}
                     onChange={(e) => setMemberSearch(e.target.value)}
                     placeholder="Search staff by name or email..."
-                    className="w-full h-8 rounded-xl border border-stocky-border-subtle bg-stocky-bg-widget pl-8 pr-3 text-xs text-stocky-text-main placeholder:text-stocky-text-sub focus:border-stocky-primary focus:outline-none transition-colors"
+                    className="w-full h-10 rounded-widget border border-stocky-border-subtle bg-stocky-bg-widget pl-8 pr-3 text-xs text-stocky-text-main placeholder:text-stocky-text-sub focus:border-stocky-primary focus:outline-none transition-colors"
                   />
                 </div>
 
@@ -491,7 +491,7 @@ export function TimesheetsExportModalWidget({
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 max-h-40 overflow-y-auto p-1 border border-stocky-border-subtle rounded-xl bg-stocky-bg-widget/40">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 max-h-40 overflow-y-auto p-1 border border-stocky-border-subtle rounded-widget bg-stocky-bg-widget/40">
                   {searchedMembers.length === 0 ? (
                     <p className="col-span-2 text-center text-xs text-stocky-text-sub py-3">
                       No staff members found matching “{memberSearch}”.
@@ -507,14 +507,14 @@ export function TimesheetsExportModalWidget({
                           key={member.id}
                           type="button"
                           onClick={() => handleToggleMember(member.id)}
-                          className={`flex items-center justify-between p-2 rounded-lg border text-left text-xs transition-colors cursor-pointer ${
+                          className={`flex items-center justify-between p-2 rounded-widget border text-left text-xs transition-colors cursor-pointer ${
                             isSelected
                               ? 'border-stocky-primary bg-stocky-primary/5 text-stocky-text-main font-medium'
-                              : 'border-stocky-border-subtle bg-white text-stocky-text-sub hover:border-stocky-primary/40'
+                              : 'border-stocky-border-subtle bg-stocky-bg-widget text-stocky-text-sub hover:border-stocky-primary/40'
                           }`}
                         >
                           <div className="flex items-center gap-2 min-w-0 pr-2">
-                            <div className="w-6 h-6 rounded-full bg-stocky-primary/10 text-stocky-primary text-[10px] font-bold flex items-center justify-center shrink-0">
+                            <div className="w-6 h-6 rounded-full bg-stocky-primary/10 text-stocky-primary text-[10px] font-semibold flex items-center justify-center shrink-0">
                               {initial}
                             </div>
                             <div className="min-w-0 truncate">
@@ -541,9 +541,9 @@ export function TimesheetsExportModalWidget({
           </div>
 
           {/* Section 4: Live Extraction Summary Card */}
-          <div className="p-3.5 rounded-xl border border-stocky-border-subtle bg-stocky-bg-global/70 flex items-center justify-between gap-3">
+          <div className="p-3.5 rounded-widget border border-stocky-border-subtle bg-stocky-bg-global flex items-center justify-between gap-3 shadow-sm">
             <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-full bg-emerald-500/10 text-emerald-600 flex items-center justify-center shrink-0">
+              <div className="w-8 h-8 rounded-full stocky-status-info border flex items-center justify-center shrink-0">
                 <FileSpreadsheetIcon size="xs" />
               </div>
               <div>
@@ -557,7 +557,7 @@ export function TimesheetsExportModalWidget({
             </div>
 
             {matchingShifts.length === 0 && (
-              <span className="text-[11px] text-amber-600 font-medium bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
+              <span className="text-[11px] stocky-status-warning border px-2.5 py-0.5 rounded-full font-medium">
                 No matching shifts
               </span>
             )}
@@ -569,7 +569,7 @@ export function TimesheetsExportModalWidget({
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 rounded-full border border-stocky-border-subtle bg-white text-xs font-medium text-stocky-text-sub hover:text-stocky-text-main hover:bg-stocky-bg-global transition-colors cursor-pointer"
+            className="h-10 px-5 rounded-full border border-stocky-border-subtle bg-stocky-bg-widget text-xs font-medium text-stocky-text-sub hover:text-stocky-text-main hover:bg-stocky-bg-global transition-colors cursor-pointer"
           >
             Cancel
           </button>
@@ -578,7 +578,7 @@ export function TimesheetsExportModalWidget({
             type="button"
             disabled={matchingShifts.length === 0}
             onClick={handleExecuteExport}
-            className="inline-flex items-center justify-center gap-2 px-5 py-2 rounded-full bg-stocky-primary text-white text-xs font-semibold hover:opacity-95 disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-sm cursor-pointer"
+            className="inline-flex items-center justify-center gap-2 h-10 px-5 rounded-full bg-stocky-primary text-white text-xs font-medium hover:bg-stocky-primary-hover disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-sm cursor-pointer"
           >
             <FileSpreadsheetIcon size="xs" />
             <span>Export to Excel (.xlsx)</span>

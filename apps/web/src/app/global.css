@@ -243,52 +243,87 @@
 @media (max-width: 640px) { .meridian-nav, .meridian-section, .meridian-footer, .meridian-trust-strip { width: calc(100% - 32px); }.meridian-nav { padding: 18px 0; }.meridian-nav-links, .meridian-nav-actions { display: none; }.meridian-menu-button { display: flex; }.meridian-hero { min-height: 760px; }.meridian-hero-copy { margin-top: -55px; }.meridian-hero h1 { margin-top: 20px; font-size: clamp(54px, 15vw, 74px); line-height: .91; }.meridian-hero h1 span { white-space: normal; }.meridian-hero-copy > p { max-width: 310px; font-size: 14px; }.meridian-hero-cta { min-width: 190px; }.meridian-hero-award { bottom: 30px; }.meridian-float-chip { transform: scale(.78); }.meridian-float-chip--one { top: 43%; right: -7%; }.meridian-float-chip--two { bottom: 18%; left: -7%; }.meridian-trust-strip { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; padding: 30px 0; }.meridian-trust-strip p { grid-column: 1 / -1; grid-row: 2; max-width: none; margin: 0; text-align: left; }.meridian-trust-mark { justify-content: flex-end; }.meridian-intro, .meridian-control, .meridian-relief, .meridian-calculator, .meridian-results, .meridian-faq { padding: 95px 0 105px; }.meridian-heading-block h2, .meridian-control h2, .meridian-relief h2, .meridian-faq h2, .meridian-final-cta h2 { font-size: clamp(43px, 13vw, 66px); }.meridian-heading-block > p:last-of-type { margin-top: 24px; font-size: 13px; }.meridian-intro-grid, .meridian-results-grid { grid-template-columns: 1fr; gap: 44px; margin-top: 55px; }.meridian-card-art { min-height: 350px; }.meridian-receiving-window { width: 72%; }.meridian-scan-phone { width: 57%; }.meridian-control-tabs button { min-height: 77px; grid-template-columns: 37px 1fr 14px; }.meridian-control-tabs button > span { padding-top: 19px; }.meridian-control-tabs button small { margin-top: -14px; font-size: 9px; }.meridian-control-preview { min-height: 405px; }.meridian-feature-visual { right: 19px; bottom: 20px; left: 19px; }.meridian-feature-window-body { padding: 12px; }.meridian-feature-window-nav { display: none; }.meridian-feature-chart { height: 92px; gap: 4px; }.meridian-relief-art { min-height: 350px; }.meridian-stock-snapshot { width: 90%; }.meridian-snapshot-table-head, .meridian-snapshot-row { grid-template-columns: 1.5fr .8fr .55fr; }.meridian-snapshot-table-head span:last-child, .meridian-snapshot-row strong { display: none; }.meridian-money-chip--one { top: 3%; right: -5%; }.meridian-money-chip--two { bottom: 4%; left: -5%; }.meridian-calculator-card { padding: 21px; }.meridian-calculator-top strong { font-size: 38px; }.meridian-compare-list > div { grid-template-columns: 1.1fr .9fr 28px; }.meridian-result-art { height: 260px; }.meridian-faq-heading .meridian-pill { margin-top: 25px; }.meridian-final-cta { min-height: 450px; padding: 70px 18px; }.meridian-footer { grid-template-columns: 1fr 1fr; }.meridian-footer > span { display: none; }.meridian-footer > div { justify-content: flex-end; gap: 12px; } }
 
 :root {
-  /* Shared operating palette: the platform carries the same warm paper,
-     ink, lime and green language as the public landing page. */
-  --stocky-bg-global: #F8F8F4;
-  --stocky-bg-widget: #FFFFFF;
-  --stocky-text-main: #11120F;
-  --stocky-text-sub: #6D7069;
+  /* ==========================================================================
+     STOCKY SOTA DESIGN SYSTEM - MECE TOKEN ARCHITECTURE
+     12-Dimension Mutually Exclusive, Collectively Exhaustive System
+     ========================================================================== */
+
+  /* --------------------------------------------------------------------------
+     1. SURFACES & CANVAS
+     Warm paper canvas, crisp white widgets, and layered contextual tints.
+     -------------------------------------------------------------------------- */
+  --stocky-bg-global: #F8F8F4;        /* Warm canvas background */
+  --stocky-bg-widget: #FFFFFF;        /* Elevated primary card & widget surface */
+  --stocky-bg-subtle: #F0F2EB;        /* Secondary subtle surface / container tint */
+  --stocky-bg-muted: #E6E9E0;         /* Inactive pills, muted tracks, disabled bg */
+  --stocky-bg-hover: #ECEFE6;         /* Interactive surface hover */
+  --stocky-bg-active: #E2E7DB;        /* Interactive surface pressed / active */
+  --stocky-overlay: rgba(17, 18, 15, 0.36); /* Backdrop dim overlay */
+
+  /* --------------------------------------------------------------------------
+     2. TYPOGRAPHY & FOREGROUND
+     Editorial contrast with strict tone hierarchy (Main > Sub > Muted > Placeholder).
+     -------------------------------------------------------------------------- */
+  --stocky-text-main: #11120F;         /* High-contrast primary copy & headers */
+  --stocky-text-sub: #6D7069;          /* Secondary descriptive copy & labels */
+  --stocky-text-muted: #8E9288;        /* Tertiary metadata, timestamps & captions */
+  --stocky-text-placeholder: #939A90;  /* Input placeholder text */
+  --stocky-text-disabled: #B4B9AE;     /* Disabled text & controls */
+  --stocky-text-inverse: #FFFFFF;      /* Text on dark or primary surfaces */
+  --stocky-text-primary: #0E8755;      /* Accent text in brand green */
+
+  /* --------------------------------------------------------------------------
+     3. BRAND ACCENT & ACTIONS
+     SOTA signature: Forest Green primary with Lime energizer.
+     -------------------------------------------------------------------------- */
   --stocky-primary: #0E8755;
   --stocky-primary-hover: #0A6D43;
-  --stocky-bg-hover: #F0F2EB;
   --stocky-accent: #D8FF00;
+  --stocky-accent-hover: #E3FF47;
   --stocky-accent-soft: rgba(216, 255, 0, 0.18);
 
-  /* Borders: Soft hairline borders */
-  --stocky-border-subtle: rgba(17, 18, 15, 0.10);
-  --stocky-border-default: rgba(17, 18, 15, 0.16);
-  --stocky-border-focus: #0E8755;
-  --stocky-overlay: rgba(17, 18, 15, 0.36);
-  --stocky-shadow-card: 0 10px 28px rgba(35, 43, 33, 0.05);
-  --stocky-shadow-card-hover: 0 16px 34px rgba(35, 43, 33, 0.09);
-  --stocky-shadow-float: 0 16px 42px rgba(35, 43, 33, 0.14);
-  --stocky-shadow-menu: 0 18px 42px rgba(35, 43, 33, 0.14);
+  /* --------------------------------------------------------------------------
+     4. BORDERS & DIVIDERS
+     Hairline architectural borders calibrated against the warm paper canvas.
+     -------------------------------------------------------------------------- */
+  --stocky-border-subtle: rgba(17, 18, 15, 0.08); /* Internal table rows, soft dividers */
+  --stocky-border-default: rgba(17, 18, 15, 0.14);/* Widget containers, cards, inputs */
+  --stocky-border-hover: rgba(17, 18, 15, 0.24);  /* Interactive hover border */
+  --stocky-border-focus: #0E8755;                  /* Focused input / active ring */
+  --stocky-border-active: #0E8755;                 /* Active tab / toggled control */
 
-  /* Semantic status tokens: components should use these instead of raw colors. */
+  /* --------------------------------------------------------------------------
+     5. SEMANTIC STATUS SYSTEM (3-Token Architecture: BG, FG, BORDER)
+     Mutually exclusive semantic states for badges, alerts, indicators, and chips.
+     -------------------------------------------------------------------------- */
   --stocky-status-critical-bg: #FEF2F2;
   --stocky-status-critical-fg: #B91C1C;
   --stocky-status-critical-border: #FECACA;
+
   --stocky-status-warning-bg: #FFFBEB;
   --stocky-status-warning-fg: #B45309;
   --stocky-status-warning-border: #FDE68A;
+
   --stocky-status-success-bg: #ECFDF5;
   --stocky-status-success-fg: #047857;
   --stocky-status-success-border: #A7F3D0;
+
   --stocky-status-info-bg: #EEF7F0;
   --stocky-status-info-fg: #0E8755;
   --stocky-status-info-border: #C8E4CF;
-  --stocky-status-muted-bg: #F3F4EF;
-  --stocky-status-muted-fg: #6D7069;
-  --stocky-status-muted-border: #DDE0D8;
+
   --stocky-status-hold-bg: #F4F0F7;
   --stocky-status-hold-fg: #73547F;
   --stocky-status-hold-border: #DED1E3;
 
-  /* ==========================================================================
-     4px / 8px Linear Spatial & Layout Design Tokens (Strict 4/8 Multiples)
-     ========================================================================== */
-  /* Spatial Scale */
+  --stocky-status-muted-bg: #F3F4EF;
+  --stocky-status-muted-fg: #6D7069;
+  --stocky-status-muted-border: #DDE0D8;
+
+  /* --------------------------------------------------------------------------
+     6. SPATIAL RHYTHM & PAGE LAYOUT (Strict 4px / 8px Scale)
+     -------------------------------------------------------------------------- */
+  --stocky-space-0: 0px;
   --stocky-space-1: 4px;    /* 0.25rem */
   --stocky-space-2: 8px;    /* 0.5rem  */
   --stocky-space-3: 12px;   /* 0.75rem */
@@ -300,61 +335,101 @@
   --stocky-space-12: 48px;  /* 3rem    */
   --stocky-space-16: 64px;  /* 4rem    */
 
-  /* Semantic Page & Container Spacing */
+  /* Semantic Page Rhythm */
   --stocky-page-max-width: 1600px;
   --stocky-page-gutter: var(--stocky-space-6);    /* 24px desktop */
   --stocky-page-gap: var(--stocky-space-6);       /* 24px vertical rhythm */
   --stocky-section-gap: var(--stocky-space-4);    /* 16px */
   --stocky-element-gap: var(--stocky-space-2);    /* 8px  */
   --stocky-item-gap: var(--stocky-space-1);       /* 4px  */
+  --stocky-gutter: 1rem;
+  --stocky-max-width: 1600px;
 
-  /* Component Dimensions */
+  /* --------------------------------------------------------------------------
+     7. BORDER RADII (Geometric Hierarchy)
+     -------------------------------------------------------------------------- */
+  --stocky-radius-xs: 4px;      /* Small chips, micro-indicators */
+  --stocky-radius-sm: 8px;      /* Sub-controls, dropdown menu items */
+  --stocky-radius-md: 12px;     /* Standard widgets, filter bars */
+  --stocky-radius-widget: 12px; /* Standard widget surface radius */
+  --stocky-radius-card: 16px;   /* Elevated cards, modals, hero panels */
+  --stocky-radius-lg: 16px;     /* Large containers */
+  --stocky-radius-xl: 24px;     /* Modals, drawers, hero cards */
+  --stocky-radius-full: 9999px; /* Pill buttons, status badges, avatars */
+
+  /* Backward Compatibility Aliases */
+  --stocky-radius-workspace: 8px;
+  --stocky-radius-control: 9999px;
+  --stocky-radius-pill: 9999px;
+  --stocky-radius-menu: 14px;
+  --stocky-radius-menu-item: 10px;
+
+  /* --------------------------------------------------------------------------
+     8. ELEVATION & SHADOWS (Bevel Depth System)
+     Calibrated diffuse drop-shadows with subtle top bevel lighting.
+     -------------------------------------------------------------------------- */
+  --stocky-shadow-bevel: 0 1px 3px rgba(17, 18, 15, 0.04), 0 4px 12px rgba(17, 18, 15, 0.03);
+  --stocky-shadow-bevel-hover: 0 2px 6px rgba(17, 18, 15, 0.06), 0 8px 20px rgba(17, 18, 15, 0.05);
+  --stocky-shadow-bevel-dock: 0 8px 32px rgba(17, 18, 15, 0.08), 0 2px 8px rgba(17, 18, 15, 0.04);
+  --stocky-shadow-bevel-float: 0 16px 40px -6px rgba(17, 18, 15, 0.16), 0 4px 12px rgba(17, 18, 15, 0.06);
+  --stocky-shadow-drawer: -8px 0 32px rgba(17, 18, 15, 0.12);
+
+  /* Legacy & Semantic Shadow Aliases */
+  --stocky-shadow-card: var(--stocky-shadow-bevel);
+  --stocky-shadow-card-hover: var(--stocky-shadow-bevel-hover);
+  --stocky-shadow-float: var(--stocky-shadow-bevel-float);
+  --stocky-shadow-menu: var(--stocky-shadow-bevel-float);
+
+  /* --------------------------------------------------------------------------
+     9. STACKING & Z-INDEX SCALE (Deterministic & Conflict-Free)
+     -------------------------------------------------------------------------- */
+  --stocky-z-base: 0;
+  --stocky-z-sticky-col: 10;
+  --stocky-z-sticky-header: 20;
+  --stocky-z-dropdown: 40;
+  --stocky-z-sticky-nav: 50;
+  --stocky-z-dock: 60;
+  --stocky-z-drawer: 80;
+  --stocky-z-modal: 100;
+  --stocky-z-toast: 110;
+  --stocky-z-tooltip: 120;
+
+  /* --------------------------------------------------------------------------
+     10. TYPOGRAPHY SCALE & FONT SYSTEM
+     Strict rem scale (1rem = 16px), Geist / Inter font stack.
+     -------------------------------------------------------------------------- */
+  --stocky-font-stack: var(--font-sans), Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --stocky-font-2xl: 2rem;       /* 32px - Max title */
+  --stocky-font-xl: 1.5rem;      /* 24px - Page headers */
+  --stocky-font-lg: 1.25rem;     /* 20px - Section headers */
+  --stocky-font-md: 1.125rem;    /* 18px - Sub-headers */
+  --stocky-font-base: 1rem;      /* 16px - Base body */
+  --stocky-font-sm: 0.875rem;    /* 14px - Compact body */
+  --stocky-font-xs: 0.75rem;     /* 12px - Controls, buttons, table data */
+  --stocky-font-2xs: 0.6875rem;  /* 11px - Captions, tags */
+  --stocky-font-table-header: 0.625rem;   /* 10px - Uppercase table header */
+  --stocky-font-table-subheader: 0.625rem;/* 10px - Secondary table subheader */
+  --stocky-font-action: var(--stocky-font-xs);
+  --stocky-font-placeholder: var(--stocky-font-xs);
+
+  /* --------------------------------------------------------------------------
+     11. COMPONENT INVARIANTS & GEOMETRY
+     Fixed ergonomic touch & click targets across all platforms.
+     -------------------------------------------------------------------------- */
   --stocky-height-control: 40px;                  /* Inputs, primary buttons, toolbar triggers */
   --stocky-height-control-sm: 32px;               /* Table row action buttons, chip buttons */
   --stocky-height-header: 44px;                   /* Table header cell height */
   --stocky-height-row: 48px;                      /* Table data row min-height */
   --stocky-height-badge: 24px;                    /* Status pills & tag badges */
 
-  /* Table Geometry & Padding */
+  /* Table Geometry */
   --stocky-table-cell-padding-x: var(--stocky-space-4);      /* 16px */
   --stocky-table-cell-padding-y: var(--stocky-space-3);      /* 12px */
   --stocky-table-header-padding-x: var(--stocky-space-4);    /* 16px */
   --stocky-table-header-padding-y: var(--stocky-space-3);    /* 12px */
   --stocky-table-header-height: 44px;
 
-  /* Normalized Radii */
-  --stocky-radius-xs: 4px;
-  --stocky-radius-sm: 8px;
-  --stocky-radius-md: 12px;
-  --stocky-radius-lg: 16px;
-  --stocky-radius-xl: 24px;
-  --stocky-radius-full: 9999px;
-
-  /* Backward compatibility aliases */
-  --stocky-radius-widget: 16px;
-  --stocky-radius-card: 16px;
-  --stocky-radius-workspace: 8px;
-  --stocky-radius-control: 9999px;
-  --stocky-radius-pill: 9999px;
-  --stocky-font-md: 1.125rem;  /* 18px */
-  --stocky-font-base: 1rem;    /* 16px */
-  --stocky-font-sm: 0.875rem;  /* 14px */
-  --stocky-font-xs: 0.75rem;   /* 12px */
-  --stocky-font-2xs: 0.6875rem; /* 11px */
-  --stocky-font-table-header: 0.625rem; /* 10px */
-  --stocky-font-table-subheader: 0.625rem; /* 10px */
-  --stocky-font-action: var(--stocky-font-xs);
-  --stocky-font-placeholder: var(--stocky-font-xs);
-  --stocky-text-placeholder: #939A90;
-  --stocky-font-stack: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-
-  /* Dropdowns and compact field controls */
-  --stocky-radius-menu: 14px;
-  --stocky-radius-menu-item: 10px;
-  --stocky-menu-hover: #EEF1EA;
-  --stocky-menu-selected: var(--stocky-status-info-bg);
-
-  /* Workspace navigation geometry */
+  /* Navigation & Rails */
   --stocky-topbar-height: 3rem;
   --stocky-mobile-subnav-height: 3rem;
   --stocky-sidebar-rail-width: 3rem;
@@ -362,8 +437,17 @@
   --stocky-sidebar-item-width: 2.25rem;
   --stocky-sidebar-motion: 240ms cubic-bezier(0.16, 1, 0.3, 1);
 
-  /* Animation Timings */
+  /* Menu & Popover Tokens */
+  --stocky-menu-hover: #EEF1EA;
+  --stocky-menu-selected: var(--stocky-status-info-bg);
+
+  /* --------------------------------------------------------------------------
+     12. MOTION & TRANSITIONS
+     Smooth cubic bezier curves for high-precision, natural UI motion.
+     -------------------------------------------------------------------------- */
   --stocky-transition: 180ms cubic-bezier(0.16, 1, 0.3, 1);
+  --stocky-transition-fast: 120ms cubic-bezier(0.16, 1, 0.3, 1);
+  --stocky-transition-slow: 300ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 /* Global Reset & Base Setup */
@@ -371,6 +455,38 @@
 *::before,
 *::after {
   box-sizing: border-box;
+}
+
+/* ==========================================================================
+   GLOBAL UTILITIES & STATUS ARCHITECTURE (Portals, Modals & Components)
+   ========================================================================== */
+.stocky-status-info { color: var(--stocky-status-info-fg); background: var(--stocky-status-info-bg); border-color: var(--stocky-status-info-border); }
+.stocky-status-muted { color: var(--stocky-status-muted-fg); background: var(--stocky-status-muted-bg); border-color: var(--stocky-status-muted-border); }
+.stocky-status-success { color: var(--stocky-status-success-fg); background: var(--stocky-status-success-bg); border-color: var(--stocky-status-success-border); }
+.stocky-status-warning { color: var(--stocky-status-warning-fg); background: var(--stocky-status-warning-bg); border-color: var(--stocky-status-warning-border); }
+.stocky-status-critical { color: var(--stocky-status-critical-fg); background: var(--stocky-status-critical-bg); border-color: var(--stocky-status-critical-border); }
+.stocky-status-hold { color: var(--stocky-status-hold-fg); background: var(--stocky-status-hold-bg); border-color: var(--stocky-status-hold-border); }
+
+/* Accessible Focus Ring Utility */
+.stocky-focus-ring:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--stocky-bg-global), 0 0 0 4px var(--stocky-primary);
+}
+
+/* Smooth Minimalist Scrollbars */
+.stocky-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.stocky-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.stocky-scrollbar::-webkit-scrollbar-thumb {
+  background: var(--stocky-border-default);
+  border-radius: var(--stocky-radius-full);
+}
+.stocky-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: var(--stocky-text-muted);
 }
 
 /* Bevel Frosted Glass & Surface Helpers */
@@ -2504,58 +2620,6 @@ a:hover {
   }
 }
 
-/* --------------------------------------------------------------------------
-   Platform Workspace Skeleton Animations & Badges
-   -------------------------------------------------------------------------- */
-@keyframes stocky-shimmer {
-  0% {
-    background-position: -200% 0;
-  }
-  100% {
-    background-position: 200% 0;
-  }
-}
-
-.stocky-skeleton-shimmer {
-  background: linear-gradient(
-    90deg,
-    rgba(229, 231, 235, 0.7) 25%,
-    rgba(243, 244, 246, 0.95) 37%,
-    rgba(229, 231, 235, 0.7) 63%
-  );
-  background-size: 400% 100%;
-  animation: stocky-shimmer 1.4s ease infinite;
-}
-
-.stocky-skeleton-shimmer-subtle {
-  background: linear-gradient(
-    90deg,
-    rgba(243, 244, 246, 0.6) 25%,
-    rgba(250, 250, 250, 0.9) 37%,
-    rgba(243, 244, 246, 0.6) 63%
-  );
-  background-size: 400% 100%;
-  animation: stocky-shimmer 1.6s ease infinite;
-}
-
-.stocky-skeleton-badge-healthy {
-  background: rgba(16, 185, 129, 0.15);
-  border: 1px solid rgba(16, 185, 129, 0.25);
-}
-
-.stocky-skeleton-badge-warning {
-  background: rgba(245, 158, 11, 0.15);
-  border: 1px solid rgba(245, 158, 11, 0.25);
-}
-
-.stocky-skeleton-badge-critical {
-  background: rgba(239, 68, 68, 0.15);
-  border: 1px solid rgba(239, 68, 68, 0.25);
-}
-
-.stocky-skeleton-glow {
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04), 0 1px 2px -1px rgba(0, 0, 0, 0.04);
-}
 
 /* --------------------------------------------------------------------------
    Meridian Landing Mobile Menu Drawer

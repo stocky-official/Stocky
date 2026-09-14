@@ -1,4 +1,4 @@
-﻿import Link from 'next/link';
+import Link from 'next/link';
 
 export default function NotFound() {
   return (
@@ -9,7 +9,7 @@ export default function NotFound() {
       </p>
       <Link
         href="/platform"
-        className="inline-flex items-center justify-center rounded-full bg-stocky-primary text-stocky-text-main font-medium px-5 py-2.5 text-xs hover:bg-[#c8ee00] transition-colors"
+        className="inline-flex items-center justify-center rounded-full bg-stocky-primary text-white font-medium px-5 py-2.5 text-xs hover:bg-stocky-primary-hover transition-colors"
       >
         Back to platform
       </Link>

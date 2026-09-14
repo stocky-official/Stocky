@@ -59,9 +59,12 @@ export function AttendanceWorkspaceWidget({
   onSubmitLeave,
   onReviewLeave,
 }: AttendanceWorkspaceWidgetProps) {
-  const [internalTab, setInternalTab] = useState<AttendanceTab>('timesheets');
+  const [internalTab, setInternalTab] = useState<AttendanceTab>(controlledTab ?? 'timesheets');
   const activeTab = controlledTab ?? internalTab;
-  const setActiveTab = onControlledTabChange ?? setInternalTab;
+  const setActiveTab = React.useCallback((tab: AttendanceTab) => {
+    setInternalTab(tab);
+    onControlledTabChange?.(tab);
+  }, [onControlledTabChange]);
   const [search, setSearch] = useState('');
   const [isLeaveDrawerOpen, setIsLeaveDrawerOpen] = useState(false);
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
@@ -90,7 +93,7 @@ export function AttendanceWorkspaceWidget({
   return (
     <div className="w-full space-y-4">
       {/* Unified Card Container */}
-      <div className="stocky-stock-unified-card rounded-2xl bg-white border border-stocky-border-subtle shadow-sm flex flex-col relative z-20 overflow-visible">
+      <div className="stocky-stock-unified-card rounded-card bg-stocky-bg-widget border border-stocky-border-subtle shadow-sm flex flex-col relative z-20 overflow-visible">
         {/* Integrated Toolbar */}
         <div className="p-3 sm:p-3.5 border-b border-stocky-border-subtle relative z-30">
           <AttendanceToolbarWidget

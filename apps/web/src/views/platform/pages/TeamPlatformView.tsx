@@ -34,7 +34,7 @@ export function TeamPlatformView(props: TeamPlatformViewProps) {
           <button
             type="button"
             onClick={() => setIsInviteOpen((prev) => !prev)}
-            className="stocky-primary-action h-8 px-3.5 rounded-full bg-stocky-accent text-stocky-text-main text-xs font-medium inline-flex items-center gap-1.5 hover:bg-[#E3FF47] transition-colors cursor-pointer"
+            className="stocky-primary-action h-8 px-3.5 rounded-full bg-stocky-accent text-stocky-text-main text-xs font-medium inline-flex items-center gap-1.5 hover:bg-stocky-accent-hover transition-colors cursor-pointer"
           >
             <PlusIcon size="xs" />
             <span>{isInviteOpen ? 'Close invite' : 'Invite member'}</span>

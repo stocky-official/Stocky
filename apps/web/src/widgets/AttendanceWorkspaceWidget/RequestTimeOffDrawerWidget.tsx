@@ -113,10 +113,10 @@ export function RequestTimeOffDrawerWidget({
                   key={type}
                   type="button"
                   onClick={() => setLeaveType(type)}
-                  className={`h-10 rounded-xl text-xs font-semibold capitalize border transition-all cursor-pointer ${
+                  className={`h-10 rounded-widget text-xs font-semibold capitalize border transition-all cursor-pointer ${
                     leaveType === type
                       ? 'border-stocky-primary bg-stocky-primary/10 text-stocky-primary'
-                      : 'border-stocky-border-subtle bg-white text-stocky-text-sub hover:border-stocky-primary/50'
+                      : 'border-stocky-border-subtle bg-stocky-bg-widget text-stocky-text-sub hover:border-stocky-primary/50'
                   }`}
                 >
                   {type === 'pto' ? 'Annual (PTO)' : type}
@@ -136,7 +136,7 @@ export function RequestTimeOffDrawerWidget({
                 required
                 value={startDate}
                 onChange={(e) => setStartDate(e.target.value)}
-                className="w-full h-10 rounded-xl border border-stocky-border-subtle px-3 text-xs text-stocky-text-main focus:border-stocky-primary focus:outline-none"
+                className="w-full h-10 rounded-widget border border-stocky-border-subtle bg-stocky-bg-widget px-3 text-xs text-stocky-text-main focus:border-stocky-primary focus:outline-none"
               />
             </div>
             <div>
@@ -149,14 +149,14 @@ export function RequestTimeOffDrawerWidget({
                 value={endDate}
                 onChange={(e) => setEndDate(e.target.value)}
                 min={startDate}
-                className="w-full h-10 rounded-xl border border-stocky-border-subtle px-3 text-xs text-stocky-text-main focus:border-stocky-primary focus:outline-none"
+                className="w-full h-10 rounded-widget border border-stocky-border-subtle bg-stocky-bg-widget px-3 text-xs text-stocky-text-main focus:border-stocky-primary focus:outline-none"
               />
             </div>
           </div>
 
-          <div className="p-3 rounded-xl bg-stocky-bg-global border border-stocky-border-subtle flex items-center justify-between text-xs">
+          <div className="p-3 rounded-widget bg-stocky-bg-global border border-stocky-border-subtle flex items-center justify-between text-xs">
             <span className="text-stocky-text-sub font-medium">Total Duration:</span>
-            <span className="font-bold text-stocky-text-main">{daysCount} Day{daysCount !== 1 ? 's' : ''}</span>
+            <span className="font-semibold text-stocky-text-main">{daysCount} Day{daysCount !== 1 ? 's' : ''}</span>
           </div>
 
           {/* Direct Manager Selector */}
@@ -167,7 +167,7 @@ export function RequestTimeOffDrawerWidget({
             <select
               value={managerUserId}
               onChange={(e) => setManagerUserId(e.target.value)}
-              className="w-full h-10 rounded-xl border border-stocky-border-subtle px-3 text-xs text-stocky-text-main focus:border-stocky-primary focus:outline-none cursor-pointer"
+              className="w-full h-10 rounded-widget border border-stocky-border-subtle bg-stocky-bg-widget px-3 text-xs text-stocky-text-main focus:border-stocky-primary focus:outline-none cursor-pointer"
             >
               {managers.map((m) => (
                 <option key={m.id} value={m.id}>
@@ -187,13 +187,13 @@ export function RequestTimeOffDrawerWidget({
               value={reason}
               onChange={(e) => setReason(e.target.value)}
               placeholder="Provide context for your leave request..."
-              className="w-full rounded-xl border border-stocky-border-subtle p-3 text-xs text-stocky-text-main focus:border-stocky-primary focus:outline-none resize-none"
+              className="w-full rounded-widget border border-stocky-border-subtle bg-stocky-bg-widget p-3 text-xs text-stocky-text-main focus:border-stocky-primary focus:outline-none resize-none"
             />
           </div>
 
           {/* Task Automation Alert */}
-          <div className="p-3.5 rounded-xl bg-blue-50 border border-blue-200 text-blue-900 flex items-start gap-2.5">
-            <AlertCircleIcon size="xs" className="text-blue-600 shrink-0 mt-0.5" />
+          <div className="p-3.5 rounded-widget stocky-status-info border flex items-start gap-2.5">
+            <AlertCircleIcon size="xs" className="shrink-0 mt-0.5 text-stocky-primary" />
             <p className="text-[11px] leading-relaxed">
               Once submitted, a review task will automatically be created and assigned to your manager in the <strong>Tasks workspace</strong>.
             </p>

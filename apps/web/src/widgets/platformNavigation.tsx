@@ -55,17 +55,19 @@ export const TAB_TO_PATH: Record<string, string> = {
 
 export function getTabFromPathname(pathname: string): string {
   if (!pathname || pathname === '/platform' || pathname === '/') return 'home';
-  if (pathname.endsWith('/stock') || pathname.endsWith('/inventory')) return 'stock';
-  if (pathname.endsWith('/activity') || pathname.endsWith('/logs')) return 'logs';
-  if (pathname.endsWith('/transfers')) return 'transfers';
-  if (pathname.endsWith('/suppliers')) return 'suppliers';
-  if (pathname.endsWith('/tasks')) return 'tasks';
-  if (pathname.endsWith('/attendance') || pathname.endsWith('/timesheets')) return 'attendance';
-  if (pathname.endsWith('/locations')) return 'locations';
-  if (pathname.endsWith('/team')) return 'team';
-  if (pathname.endsWith('/notifications')) return 'notifications';
-  if (pathname.endsWith('/settings')) return 'settings';
-  if (pathname.endsWith('/expiring') || pathname.endsWith('/expiry')) return 'stock';
+  const cleanPath = pathname.split('?')[0].replace(/\/+$/, '');
+  if (!cleanPath || cleanPath === '/platform') return 'home';
+  if (cleanPath.endsWith('/stock') || cleanPath.endsWith('/inventory')) return 'stock';
+  if (cleanPath.endsWith('/activity') || cleanPath.endsWith('/logs')) return 'logs';
+  if (cleanPath.endsWith('/transfers')) return 'transfers';
+  if (cleanPath.endsWith('/suppliers')) return 'suppliers';
+  if (cleanPath.endsWith('/tasks')) return 'tasks';
+  if (cleanPath.endsWith('/attendance') || cleanPath.endsWith('/timesheets')) return 'attendance';
+  if (cleanPath.endsWith('/locations')) return 'locations';
+  if (cleanPath.endsWith('/team')) return 'team';
+  if (cleanPath.endsWith('/notifications')) return 'notifications';
+  if (cleanPath.endsWith('/settings')) return 'settings';
+  if (cleanPath.endsWith('/expiring') || cleanPath.endsWith('/expiry')) return 'stock';
   return 'home';
 }
 

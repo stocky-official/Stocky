@@ -155,7 +155,7 @@ export function AttendanceKioskWidget({
       {/* Kiosk Mode Switcher */}
       <div className="flex items-center justify-between pb-4 mb-6 border-b border-stocky-border-subtle flex-wrap gap-3">
         <div>
-          <h2 className="text-base font-bold text-stocky-text-main">
+          <h2 className="text-base font-semibold text-stocky-text-main">
             Branch QR & Kiosk Attendance Station
           </h2>
           <p className="text-xs text-stocky-text-sub mt-0.5">
@@ -169,7 +169,7 @@ export function AttendanceKioskWidget({
             onClick={() => setActiveSection('poster')}
             className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-colors cursor-pointer ${
               activeSection === 'poster'
-                ? 'bg-white text-stocky-primary shadow-2xs'
+                ? 'bg-stocky-bg-widget text-stocky-primary shadow-sm'
                 : 'text-stocky-text-sub hover:text-stocky-text-main'
             }`}
           >
@@ -180,7 +180,7 @@ export function AttendanceKioskWidget({
             onClick={() => setActiveSection('scanner')}
             className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-colors cursor-pointer ${
               activeSection === 'scanner'
-                ? 'bg-white text-stocky-primary shadow-2xs'
+                ? 'bg-stocky-bg-widget text-stocky-primary shadow-sm'
                 : 'text-stocky-text-sub hover:text-stocky-text-main'
             }`}
           >
@@ -202,7 +202,7 @@ export function AttendanceKioskWidget({
           <select
             value={selectedLocationId}
             onChange={(e) => setSelectedLocationId(e.target.value)}
-            className="w-full h-10 rounded-full border border-stocky-border-subtle bg-white pl-9 pr-4 text-xs font-medium text-stocky-text-main focus:border-stocky-primary focus:outline-none cursor-pointer"
+            className="w-full h-10 rounded-full border border-stocky-border-subtle bg-stocky-bg-widget pl-9 pr-4 text-xs font-medium text-stocky-text-main focus:border-stocky-primary focus:outline-none cursor-pointer"
           >
             {locations.map((loc) => (
               <option key={loc.id} value={loc.id}>
@@ -215,12 +215,12 @@ export function AttendanceKioskWidget({
 
       {/* SECTION 1: QR POSTER */}
       {activeSection === 'poster' && (
-        <div className="max-w-xl mx-auto bg-white border border-stocky-border-subtle rounded-3xl p-8 shadow-sm text-center flex flex-col items-center">
-          <div className="w-12 h-12 rounded-2xl bg-stocky-primary/10 text-stocky-primary flex items-center justify-center mb-4">
+        <div className="max-w-xl mx-auto bg-stocky-bg-widget border border-stocky-border-subtle rounded-card p-8 shadow-sm text-center flex flex-col items-center">
+          <div className="w-12 h-12 rounded-widget bg-stocky-primary/10 text-stocky-primary flex items-center justify-center mb-4">
             <QrCodeIcon size="md" />
           </div>
 
-          <h3 className="text-lg font-bold text-stocky-text-main">
+          <h3 className="text-lg font-semibold text-stocky-text-main">
             {selectedLocation?.name || 'Stocky Branch'} Check-In Station
           </h3>
           <p className="text-xs text-stocky-text-sub mt-1 max-w-sm">
@@ -228,12 +228,12 @@ export function AttendanceKioskWidget({
           </p>
 
           {/* Generated QR Code */}
-          <div className="my-6 p-4 rounded-2xl border-2 border-dashed border-stocky-border-subtle bg-stocky-bg-global/30">
+          <div className="my-6 p-4 rounded-widget border-2 border-dashed border-stocky-border-subtle bg-stocky-bg-global/30">
             {qrUrl ? (
               <img
                 src={qrUrl}
                 alt="Branch Attendance QR Code"
-                className="w-56 h-56 rounded-xl object-contain mx-auto"
+                className="w-56 h-56 rounded-widget object-contain mx-auto"
               />
             ) : (
               <div className="w-56 h-56 flex items-center justify-center text-stocky-text-sub text-xs">
@@ -250,7 +250,7 @@ export function AttendanceKioskWidget({
             <button
               type="button"
               onClick={() => window.print()}
-              className="h-10 px-5 rounded-full bg-stocky-text-main text-white text-xs font-medium hover:bg-black transition-colors cursor-pointer"
+              className="h-10 px-5 rounded-full bg-stocky-primary text-white text-xs font-medium hover:bg-stocky-primary-hover transition-colors cursor-pointer"
             >
               Print QR Poster
             </button>
@@ -272,10 +272,10 @@ export function AttendanceKioskWidget({
         <div className="max-w-xl mx-auto flex flex-col items-center">
           {punchStatus && (
             <div
-              className={`w-full p-4 rounded-2xl mb-4 border flex items-center gap-3 ${
+              className={`w-full p-4 rounded-widget mb-4 border flex items-center gap-3 ${
                 punchStatus.success
-                  ? 'bg-emerald-50 border-emerald-200 text-emerald-800'
-                  : 'bg-rose-50 border-rose-200 text-rose-800'
+                  ? 'stocky-status-success border'
+                  : 'stocky-status-critical border'
               }`}
             >
               {punchStatus.success ? <CheckCircleIcon size="sm" /> : <AlertTriangleIcon size="sm" />}
@@ -283,21 +283,21 @@ export function AttendanceKioskWidget({
               <button
                 type="button"
                 onClick={() => setPunchStatus(null)}
-                className="text-xs font-bold hover:opacity-75 cursor-pointer"
+                className="text-xs font-semibold hover:opacity-75 cursor-pointer"
               >
                 ×
               </button>
             </div>
           )}
 
-          <div className="w-full bg-black/5 border border-stocky-border-subtle rounded-3xl p-6 text-center flex flex-col items-center">
+          <div className="w-full bg-stocky-bg-global border border-stocky-border-subtle rounded-card p-6 text-center flex flex-col items-center">
             <div
               id="stocky-kiosk-scanner-container"
-              className="w-full max-w-sm h-64 bg-black rounded-2xl overflow-hidden mb-4"
+              className="w-full max-w-sm h-64 bg-black rounded-widget overflow-hidden mb-4"
             />
 
             {scannerError && (
-              <div className="text-xs text-amber-600 mb-3 flex items-center gap-1.5">
+              <div className="text-xs text-stocky-status-warning-fg mb-3 flex items-center gap-1.5">
                 <AlertTriangleIcon size="xs" />
                 <span>{scannerError}</span>
               </div>
@@ -310,7 +310,7 @@ export function AttendanceKioskWidget({
             <button
               type="button"
               onClick={handleManualPunch}
-              className="stocky-table-toolbar-button stocky-table-toolbar-button--primary h-11 px-6 rounded-full text-xs font-bold inline-flex items-center justify-center gap-2 cursor-pointer shadow-sm"
+              className="stocky-table-toolbar-button stocky-table-toolbar-button--primary h-10 px-6 rounded-full text-xs font-semibold inline-flex items-center justify-center gap-2 cursor-pointer shadow-sm"
             >
               <ClockIcon size="xs" />
               <span>Punch In / Out Now</span>

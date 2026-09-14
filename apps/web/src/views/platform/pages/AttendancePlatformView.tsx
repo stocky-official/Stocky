@@ -13,6 +13,9 @@ import { PlatformPageLayout } from './PlatformPageLayout';
 import { AttendanceWorkspaceWidget, type AttendanceTab } from '@/widgets/AttendanceWorkspaceWidget';
 import { CalendarIcon, CheckCircleIcon } from '@stocky/icons';
 
+import { useOptionalPlatform } from '@/views/platform/PlatformContext';
+import { PlatformContextTabsWidget } from '@/widgets/PlatformContextTabsWidget/PlatformContextTabsWidget';
+
 export interface AttendancePlatformViewProps {
   shifts: AttendanceShift[];
   leaves: LeaveRequest[];
@@ -41,6 +44,10 @@ export interface AttendancePlatformViewProps {
 }
 
 export function AttendancePlatformView(props: AttendancePlatformViewProps) {
+  const platform = useOptionalPlatform();
+  const activeTab = props.activeTab ?? platform?.attendanceTab ?? 'timesheets';
+  const onTabChange = props.onTabChange ?? platform?.setAttendanceTab;
+
   const todayStr = new Date().toISOString().slice(0, 10);
   const presentToday = props.shifts.filter(
     (s) => s.shiftDate === todayStr || s.clockInAt?.startsWith(todayStr)
@@ -50,6 +57,15 @@ export function AttendancePlatformView(props: AttendancePlatformViewProps) {
     <PlatformPageLayout
       title="Attendance & Timesheets"
       subtitle="Track employee shifts, punch-ins, Google-style calendar attendance, and PTO requests."
+      navigation={
+        <PlatformContextTabsWidget
+          activeTab={platform?.activeTab || 'attendance'}
+          onTabChange={platform?.navigateToTab || (() => {})}
+          userRole={(props.userRole as any) || platform?.userRole || 'staff'}
+          attendanceTab={activeTab}
+          onAttendanceTabChange={onTabChange}
+        />
+      }
       actions={
         <div className="inline-flex items-center gap-2">
           <span className="inline-flex items-center gap-1.5 rounded-full stocky-status-info border px-3 py-1 text-xs font-medium">
@@ -59,7 +75,11 @@ export function AttendancePlatformView(props: AttendancePlatformViewProps) {
         </div>
       }
     >
-      <AttendanceWorkspaceWidget {...props} />
+      <AttendanceWorkspaceWidget
+        {...props}
+        activeTab={activeTab}
+        onTabChange={onTabChange}
+      />
     </PlatformPageLayout>
   );
 }

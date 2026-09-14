@@ -61,7 +61,7 @@ export function AttendanceToolbarWidget({
           type="button"
           onClick={onExportExcel}
           title="Export Timesheets to Excel"
-          className="stocky-table-toolbar-button h-10 px-3.5 sm:px-4 rounded-full border border-stocky-border-subtle bg-white text-xs font-medium text-stocky-text-main hover:border-stocky-primary hover:text-stocky-primary inline-flex items-center justify-center gap-1.5 whitespace-nowrap transition-colors cursor-pointer shadow-xs"
+          className="stocky-table-toolbar-button h-10 px-3.5 sm:px-4 rounded-full border border-stocky-border-subtle bg-stocky-bg-widget text-xs font-medium text-stocky-text-main hover:border-stocky-primary hover:text-stocky-primary inline-flex items-center justify-center gap-1.5 whitespace-nowrap transition-colors cursor-pointer shadow-sm"
         >
           <FileSpreadsheetIcon size="xs" />
           <span className="hidden sm:inline">Export Excel</span>
@@ -72,7 +72,7 @@ export function AttendanceToolbarWidget({
         <button
           type="button"
           onClick={onRequestLeave}
-          className="stocky-table-toolbar-button stocky-table-toolbar-button--primary h-10 px-4 rounded-full text-xs font-medium inline-flex items-center justify-center gap-1.5 whitespace-nowrap cursor-pointer shadow-xs"
+          className="stocky-table-toolbar-button stocky-table-toolbar-button--primary h-10 px-4 rounded-full text-xs font-medium inline-flex items-center justify-center gap-1.5 whitespace-nowrap cursor-pointer shadow-sm"
         >
           <PlusIcon size="xs" />
           <span>Request Leave</span>

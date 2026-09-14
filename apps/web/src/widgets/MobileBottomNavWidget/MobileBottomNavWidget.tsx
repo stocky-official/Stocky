@@ -121,7 +121,7 @@ export function MobileBottomNavWidget({
             height="22"
             viewBox="0 0 24 24"
             fill="none"
-            stroke="#191B1F"
+            stroke="currentColor"
             strokeWidth="1.85"
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -139,7 +139,7 @@ export function MobileBottomNavWidget({
             height="22"
             viewBox="0 0 24 24"
             fill="none"
-            stroke="#191B1F"
+            stroke="currentColor"
             strokeWidth="1.85"
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -156,7 +156,7 @@ export function MobileBottomNavWidget({
             height="22"
             viewBox="0 0 24 24"
             fill="none"
-            stroke="#191B1F"
+            stroke="currentColor"
             strokeWidth="1.85"
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -175,7 +175,7 @@ export function MobileBottomNavWidget({
             height="22"
             viewBox="0 0 24 24"
             fill="none"
-            stroke="#191B1F"
+            stroke="currentColor"
             strokeWidth="1.85"
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -184,12 +184,12 @@ export function MobileBottomNavWidget({
             <line x1="16" x2="16" y1="2" y2="6" />
             <line x1="8" x2="8" y1="2" y2="6" />
             <line x1="3" x2="21" y1="10" y2="10" />
-            <circle cx="8" cy="14" r="1" fill="#191B1F" stroke="none" />
-            <circle cx="12" cy="14" r="1" fill="#191B1F" stroke="none" />
-            <circle cx="16" cy="14" r="1" fill="#191B1F" stroke="none" />
-            <circle cx="8" cy="18" r="1" fill="#191B1F" stroke="none" />
-            <circle cx="12" cy="18" r="1" fill="#191B1F" stroke="none" />
-            <circle cx="16" cy="18" r="1" fill="#191B1F" stroke="none" />
+            <circle cx="8" cy="14" r="1" fill="currentColor" stroke="none" />
+            <circle cx="12" cy="14" r="1" fill="currentColor" stroke="none" />
+            <circle cx="16" cy="14" r="1" fill="currentColor" stroke="none" />
+            <circle cx="8" cy="18" r="1" fill="currentColor" stroke="none" />
+            <circle cx="12" cy="18" r="1" fill="currentColor" stroke="none" />
+            <circle cx="16" cy="18" r="1" fill="currentColor" stroke="none" />
           </svg>
         );
       case 'settings':
@@ -199,7 +199,7 @@ export function MobileBottomNavWidget({
             height="22"
             viewBox="0 0 24 24"
             fill="none"
-            stroke="#191B1F"
+            stroke="currentColor"
             strokeWidth="1.85"
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -358,7 +358,7 @@ export function MobileBottomNavWidget({
       }`}
       aria-label="Mobile navigation"
     >
-      <nav className="relative bg-white border-t border-[#EAEAEA] shadow-[0_-2px_12px_rgba(0,0,0,0.04)] pb-[max(env(safe-area-inset-bottom),0.5rem)] overflow-visible">
+      <nav className="relative bg-stocky-bg-widget border-t border-stocky-border-subtle shadow-[0_-2px_12px_rgba(0,0,0,0.04)] pb-[max(env(safe-area-inset-bottom),0.5rem)] overflow-visible">
         <div className="h-[62px] flex items-stretch relative px-0.5">
           {NAV_ITEMS.map((item) => {
             const isActive = currentNavId === item.id;
@@ -376,7 +376,7 @@ export function MobileBottomNavWidget({
                     {/* Elevated circular bubble popping above navbar */}
                     <motion.div
                       layoutId="mobileActiveNavBubble"
-                      className="absolute -top-3.5 w-[50px] h-[50px] rounded-full bg-[#191B1F] ring-[3.5px] ring-white shadow-[0_4px_14px_rgba(0,0,0,0.18)] flex items-center justify-center overflow-hidden z-10"
+                      className="absolute -top-3.5 w-[50px] h-[50px] rounded-full bg-stocky-text-main ring-[3.5px] ring-white shadow-[0_4px_14px_rgba(0,0,0,0.18)] flex items-center justify-center overflow-hidden z-10"
                       transition={{
                         type: 'spring',
                         stiffness: 420,
@@ -390,7 +390,7 @@ export function MobileBottomNavWidget({
                     <div className="h-[24px] w-[24px] mb-1 opacity-0 pointer-events-none" aria-hidden="true" />
                   </>
                 ) : (
-                  <div className="h-[24px] w-[24px] mb-1 flex items-center justify-center transition-transform group-active:scale-90">
+                  <div className="h-[24px] w-[24px] mb-1 flex items-center justify-center transition-transform group-active:scale-90 text-stocky-text-main">
                     {renderInactiveIcon(item.id)}
                   </div>
                 )}
@@ -398,7 +398,7 @@ export function MobileBottomNavWidget({
                 {/* Typography Label */}
                 <span
                   className={`text-[10px] sm:text-[11px] tracking-tight leading-none transition-all truncate max-w-[70px] ${
-                    isActive ? 'font-bold text-[#191B1F]' : 'font-medium text-[#191B1F]/75'
+                    isActive ? 'font-bold text-stocky-text-main' : 'font-medium text-stocky-text-sub'
                   }`}
                 >
                   {item.label}

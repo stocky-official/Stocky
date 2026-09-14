@@ -855,7 +855,7 @@ export function LocationsDirectoryWidget({
               {/* Card Body */}
               <div className="p-4 sm:p-5 flex flex-col gap-4 flex-1 justify-between">
                 {/* Staff & Manager Cardlet (Highlight requested by user) */}
-                <div className="rounded-xl bg-[#F8F9F5] border border-stocky-border-subtle p-3 flex flex-col gap-3">
+                <div className="rounded-widget bg-stocky-bg-subtle border border-stocky-border-subtle p-3 flex flex-col gap-3">
                   {/* Manager Row */}
                   <div className="flex items-center justify-between gap-2">
                     <div className="flex items-center gap-2.5 min-w-0">
@@ -1139,7 +1139,7 @@ export function LocationsDirectoryWidget({
                   <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent flex flex-col justify-between p-3.5">
                     <div className="flex justify-end">
                       <span className="inline-flex items-center gap-1.5 rounded-full bg-black/65 backdrop-blur-md px-2.5 py-1 text-[10px] font-medium text-white shadow-xs">
-                        <CheckIcon size="xs" className="text-[#E3FF47]" />
+                        <CheckIcon size="xs" className="text-stocky-accent" />
                         <span>Saved to stocky-private</span>
                       </span>
                     </div>
@@ -1185,7 +1185,7 @@ export function LocationsDirectoryWidget({
                   className={`group relative flex flex-col items-center justify-center rounded-2xl border-2 border-dashed p-6 text-center transition-all cursor-pointer ${
                     isDragOver
                       ? 'border-stocky-primary bg-stocky-primary/5 ring-4 ring-stocky-primary/10'
-                      : 'border-stocky-border-subtle bg-[#F8F9F5] hover:border-stocky-primary/50 hover:bg-[#F3F5EE]'
+                      : 'border-stocky-border-subtle bg-stocky-bg-subtle hover:border-stocky-primary/50 hover:bg-stocky-bg-hover'
                   } ${uploadingImage ? 'pointer-events-none opacity-60' : ''}`}
                 >
                   <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white shadow-xs border border-stocky-border-subtle text-stocky-primary group-hover:scale-110 transition-transform mb-2">
