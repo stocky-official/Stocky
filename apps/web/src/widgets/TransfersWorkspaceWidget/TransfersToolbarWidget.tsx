@@ -82,14 +82,20 @@ export function TransfersToolbarWidget({
       </div>
 
       {/* Queue Tabs & Primary Action */}
-      <div className="stocky-stock-table-toolbar__actions flex items-center justify-between sm:justify-end gap-2 flex-1 sm:flex-initial min-w-0 max-w-full">
+      <div className="stocky-stock-table-toolbar__actions flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto sm:ml-auto">
         <div
-          className="stocky-transfer-toolbar__queues stocky-mobile-pill-rail flex items-center gap-1.5 overflow-x-auto max-w-full py-0.5"
+          className="grid grid-cols-4 gap-1 w-full sm:flex sm:items-center sm:gap-1.5 sm:w-auto"
           role="tablist"
           aria-label="Transfer queues"
         >
           {queueTabs.map((tab) => {
             const isActive = queue === tab.id;
+            const mobileLabel =
+              tab.id === 'action'
+                ? 'Action'
+                : tab.id === 'all'
+                ? 'All'
+                : tab.label;
             return (
               <button
                 key={tab.id}
@@ -97,13 +103,14 @@ export function TransfersToolbarWidget({
                 role="tab"
                 aria-selected={isActive}
                 onClick={() => onQueueChange(tab.id)}
-                className={`stocky-table-toolbar-button shrink-0 h-10 px-3.5 sm:px-4 rounded-full text-xs font-medium inline-flex items-center justify-center whitespace-nowrap cursor-pointer transition-colors ${
+                className={`stocky-table-toolbar-button w-full sm:w-auto h-10 px-1 sm:px-4 rounded-full text-xs font-medium inline-flex items-center justify-center whitespace-nowrap cursor-pointer transition-colors ${
                   isActive
                     ? 'stocky-table-toolbar-button--active border-stocky-primary bg-stocky-primary/10 text-stocky-primary font-semibold'
                     : 'border border-stocky-border-subtle bg-white text-stocky-text-main hover:border-stocky-primary hover:text-stocky-primary'
                 }`}
               >
-                {tab.label}
+                <span className="sm:hidden">{mobileLabel}</span>
+                <span className="hidden sm:inline">{tab.label}</span>
               </button>
             );
           })}
@@ -112,9 +119,9 @@ export function TransfersToolbarWidget({
         <button
           type="button"
           onClick={onRequestStock}
-          className="stocky-table-toolbar-button stocky-table-toolbar-button--primary shrink-0 h-10 px-4 rounded-full text-xs font-medium inline-flex items-center justify-center gap-1.5 whitespace-nowrap cursor-pointer"
+          className="stocky-table-toolbar-button stocky-table-toolbar-button--primary w-full sm:w-auto h-10 px-4 rounded-full text-xs font-semibold inline-flex items-center justify-center gap-1.5 whitespace-nowrap cursor-pointer"
         >
-          <PlusIcon size="xs" /> <span>Request stock</span>
+          <PlusIcon size="xs" /> <span><span className="sm:hidden">Request</span><span className="hidden sm:inline">Request stock</span></span>
         </button>
       </div>
     </div>

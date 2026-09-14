@@ -690,15 +690,15 @@ export function LocationsDirectoryWidget({
             </div>
 
             {/* Quick View Filter Buttons & Actions */}
-            <div className="stocky-stock-table-toolbar__actions flex flex-wrap items-center gap-2">
+            <div className="stocky-stock-table-toolbar__actions flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full">
               {/* Quick type filter buttons */}
-              <div className="stocky-mobile-pill-rail flex items-center gap-1.5 overflow-x-auto max-w-full py-0.5" role="tablist">
+              <div className="grid grid-cols-3 gap-1.5 w-full sm:flex sm:items-center sm:gap-1.5 sm:w-auto" role="tablist">
                 <button
                   type="button"
                   role="tab"
                   aria-selected={quickTypeFilter === 'all'}
                   onClick={() => setQuickTypeFilter('all')}
-                  className={`stocky-table-toolbar-button shrink-0 h-10 px-4 rounded-full text-xs font-medium inline-flex items-center justify-center whitespace-nowrap cursor-pointer transition-colors ${
+                  className={`stocky-table-toolbar-button w-full sm:w-auto h-10 px-2 sm:px-4 rounded-full text-xs font-medium inline-flex items-center justify-center whitespace-nowrap cursor-pointer transition-colors ${
                     quickTypeFilter === 'all'
                       ? 'stocky-table-toolbar-button--active border-stocky-primary bg-stocky-primary/10 text-stocky-primary font-semibold'
                       : 'border border-stocky-border-subtle bg-white text-stocky-text-main hover:border-stocky-primary hover:text-stocky-primary'
@@ -711,7 +711,7 @@ export function LocationsDirectoryWidget({
                   role="tab"
                   aria-selected={quickTypeFilter === 'branch'}
                   onClick={() => setQuickTypeFilter('branch')}
-                  className={`stocky-table-toolbar-button shrink-0 h-10 px-4 rounded-full text-xs font-medium inline-flex items-center justify-center whitespace-nowrap cursor-pointer transition-colors ${
+                  className={`stocky-table-toolbar-button w-full sm:w-auto h-10 px-2 sm:px-4 rounded-full text-xs font-medium inline-flex items-center justify-center whitespace-nowrap cursor-pointer transition-colors ${
                     quickTypeFilter === 'branch'
                       ? 'stocky-table-toolbar-button--active border-stocky-primary bg-stocky-primary/10 text-stocky-primary font-semibold'
                       : 'border border-stocky-border-subtle bg-white text-stocky-text-main hover:border-stocky-primary hover:text-stocky-primary'
@@ -724,7 +724,7 @@ export function LocationsDirectoryWidget({
                   role="tab"
                   aria-selected={quickTypeFilter === 'warehouse'}
                   onClick={() => setQuickTypeFilter('warehouse')}
-                  className={`stocky-table-toolbar-button shrink-0 h-10 px-4 rounded-full text-xs font-medium inline-flex items-center justify-center whitespace-nowrap cursor-pointer transition-colors ${
+                  className={`stocky-table-toolbar-button w-full sm:w-auto h-10 px-2 sm:px-4 rounded-full text-xs font-medium inline-flex items-center justify-center whitespace-nowrap cursor-pointer transition-colors ${
                     quickTypeFilter === 'warehouse'
                       ? 'stocky-table-toolbar-button--active border-stocky-primary bg-stocky-primary/10 text-stocky-primary font-semibold'
                       : 'border border-stocky-border-subtle bg-white text-stocky-text-main hover:border-stocky-primary hover:text-stocky-primary'
@@ -734,23 +734,26 @@ export function LocationsDirectoryWidget({
                 </button>
               </div>
 
-              <button
-                type="button"
-                onClick={exportLocationsCsv}
-                className="stocky-table-toolbar-button h-10 px-4 rounded-full border border-stocky-border-subtle bg-white text-xs font-medium text-stocky-text-main hover:border-stocky-primary hover:text-stocky-primary inline-flex items-center gap-1.5 cursor-pointer transition-colors"
-                title="Export locations report"
-              >
-                <CloudDownloadIcon size="xs" /> <span>Export</span>
-              </button>
-              {canManage && (
+              {/* Actions row extending full width on mobile */}
+              <div className="flex items-center gap-2 w-full sm:w-auto sm:ml-auto">
                 <button
                   type="button"
-                  onClick={openCreateDrawer}
-                  className="stocky-table-toolbar-button stocky-table-toolbar-button--primary h-10 px-4 rounded-full text-xs font-medium inline-flex items-center justify-center gap-1.5 whitespace-nowrap cursor-pointer"
+                  onClick={exportLocationsCsv}
+                  className="stocky-table-toolbar-button flex-1 sm:flex-initial h-10 px-4 rounded-full border border-stocky-border-subtle bg-white text-xs font-medium text-stocky-text-main hover:border-stocky-primary hover:text-stocky-primary inline-flex items-center justify-center gap-1.5 cursor-pointer transition-colors"
+                  title="Export locations report"
                 >
-                  <PlusIcon size="xs" /> <span>Add location</span>
+                  <CloudDownloadIcon size="xs" /> <span>Export</span>
                 </button>
-              )}
+                {canManage && (
+                  <button
+                    type="button"
+                    onClick={openCreateDrawer}
+                    className="stocky-table-toolbar-button stocky-table-toolbar-button--primary flex-1 sm:flex-initial h-10 px-4 rounded-full text-xs font-semibold inline-flex items-center justify-center gap-1.5 whitespace-nowrap cursor-pointer"
+                  >
+                    <PlusIcon size="xs" /> <span><span className="sm:hidden">Add</span><span className="hidden sm:inline">Add location</span></span>
+                  </button>
+                )}
+              </div>
             </div>
           </div>
         </div>

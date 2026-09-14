@@ -81,12 +81,12 @@ export function InventoryToolbarWidget({
         </div>
       </div>
 
-      <div className="stocky-stock-table-toolbar__actions flex items-center gap-2 overflow-x-auto py-0.5">
+      <div className="stocky-stock-table-toolbar__actions flex items-center gap-1.5 sm:gap-2 w-full sm:w-auto">
         {canImport && onImport && (
           <button
             type="button"
             onClick={onImport}
-            className="stocky-table-toolbar-button shrink-0"
+            className="stocky-table-toolbar-button"
             title="Import stock data"
           >
             <CloudUploadIcon size="xs" />
@@ -97,7 +97,7 @@ export function InventoryToolbarWidget({
           <button
             type="button"
             onClick={onExport}
-            className="stocky-table-toolbar-button shrink-0"
+            className="stocky-table-toolbar-button"
             title="Export stock data"
           >
             <CloudDownloadIcon size="xs" />
@@ -108,7 +108,7 @@ export function InventoryToolbarWidget({
           <button
             type="button"
             onClick={onAudit}
-            className="stocky-table-toolbar-button shrink-0"
+            className="stocky-table-toolbar-button"
           >
             <CheckCircleIcon size="xs" /> <span>Audit</span>
           </button>
@@ -117,7 +117,7 @@ export function InventoryToolbarWidget({
           <button
             type="button"
             onClick={onResupply}
-            className="stocky-table-toolbar-button shrink-0"
+            className="stocky-table-toolbar-button"
             title="Compose supplier resupply email"
           >
             <MailIcon size="xs" /> <span>Resupply</span>
@@ -126,9 +126,9 @@ export function InventoryToolbarWidget({
         <button
           type="button"
           onClick={onReceive}
-          className="stocky-table-toolbar-button stocky-table-toolbar-button--primary shrink-0"
+          className="stocky-table-toolbar-button stocky-table-toolbar-button--primary"
         >
-          <PlusIcon size="xs" /> <span>Add inventory</span>
+          <PlusIcon size="xs" /> <span><span className="sm:hidden">Add</span><span className="hidden sm:inline">Add inventory</span></span>
         </button>
       </div>
     </div>

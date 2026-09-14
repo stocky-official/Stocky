@@ -78,12 +78,12 @@ export function SuppliersToolbarWidget({
       </div>
 
       {/* Actions */}
-      <div className="stocky-stock-table-toolbar__actions flex items-center gap-2 overflow-x-auto py-0.5">
+      <div className="stocky-stock-table-toolbar__actions flex items-center gap-2 w-full sm:w-auto">
         {canImport && onImport && (
           <button
             type="button"
             onClick={onImport}
-            className="stocky-table-toolbar-button shrink-0 h-10 px-4 rounded-full text-xs font-medium inline-flex items-center justify-center gap-1.5 whitespace-nowrap cursor-pointer transition-colors border border-stocky-border-subtle bg-white text-stocky-text-main hover:border-stocky-primary hover:text-stocky-primary"
+            className="stocky-table-toolbar-button h-10 px-3 sm:px-4 rounded-full text-xs font-medium inline-flex items-center justify-center gap-1.5 whitespace-nowrap cursor-pointer transition-colors border border-stocky-border-subtle bg-white text-stocky-text-main hover:border-stocky-primary hover:text-stocky-primary"
             title="Import suppliers from CSV"
           >
             <CloudUploadIcon size="xs" />
@@ -94,7 +94,7 @@ export function SuppliersToolbarWidget({
         <button
           type="button"
           onClick={onExport}
-          className="stocky-table-toolbar-button shrink-0 h-10 px-4 rounded-full text-xs font-medium inline-flex items-center justify-center gap-1.5 whitespace-nowrap cursor-pointer transition-colors border border-stocky-border-subtle bg-white text-stocky-text-main hover:border-stocky-primary hover:text-stocky-primary"
+          className="stocky-table-toolbar-button h-10 px-3 sm:px-4 rounded-full text-xs font-medium inline-flex items-center justify-center gap-1.5 whitespace-nowrap cursor-pointer transition-colors border border-stocky-border-subtle bg-white text-stocky-text-main hover:border-stocky-primary hover:text-stocky-primary"
           title="Export suppliers to Excel"
         >
           <ArrowDownIcon size="xs" />
@@ -105,10 +105,10 @@ export function SuppliersToolbarWidget({
           <button
             type="button"
             onClick={onAddSupplier}
-            className="stocky-table-toolbar-button stocky-table-toolbar-button--primary shrink-0 h-10 px-4 rounded-full text-xs font-medium inline-flex items-center justify-center gap-1.5 whitespace-nowrap cursor-pointer"
+            className="stocky-table-toolbar-button stocky-table-toolbar-button--primary h-10 px-3 sm:px-4 rounded-full text-xs font-semibold inline-flex items-center justify-center gap-1.5 whitespace-nowrap cursor-pointer"
           >
             <PlusIcon size="xs" />
-            <span>Add supplier</span>
+            <span><span className="sm:hidden">Add</span><span className="hidden sm:inline">Add supplier</span></span>
           </button>
         )}
       </div>

@@ -2119,24 +2119,23 @@ textarea::placeholder {
   .stocky-stock-table-toolbar__search-group { flex: 1 1 100%; width: 100%; display: flex; gap: 0.5rem; align-items: center; }
   .stocky-stock-table-toolbar__search-group > .relative { flex: 1 1 auto; min-width: 0; width: 100%; }
   .stocky-stock-table-toolbar__search-group .stocky-table-toolbar-button { flex: 0 0 auto; height: 2.5rem; padding-inline: 0.875rem; }
-  .stocky-stock-table-toolbar > .relative { width: 100%; }
   .stocky-stock-table-toolbar__actions {
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    overflow-x: auto;
-    scrollbar-width: none;
-    -webkit-overflow-scrolling: touch;
     width: 100%;
     flex-wrap: nowrap;
-    padding-bottom: 0.25rem;
+    overflow: visible;
   }
-  .stocky-stock-table-toolbar__actions::-webkit-scrollbar { display: none; }
   .stocky-stock-table-toolbar__actions .stocky-table-toolbar-button {
-    flex-shrink: 0;
+    flex: 1 1 0%;
+    min-width: 0;
     white-space: nowrap;
     height: 2.5rem;
-    padding-inline: 0.875rem;
+    padding-inline: 0.5rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
   }
   .stocky-mobile-pill-rail {
     display: flex;

@@ -377,15 +377,15 @@ export function TeamWorkspaceWidget({
             </div>
 
             {/* Actions & View Switcher Group */}
-            <div className="stocky-stock-table-toolbar__actions stocky-mobile-pill-rail flex items-center gap-2 overflow-x-auto py-0.5 justify-between sm:justify-end">
+            <div className="stocky-stock-table-toolbar__actions flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full">
               {/* 2-View Switcher Pill */}
-              <div className="inline-flex items-center gap-1.5 shrink-0" role="tablist" aria-label="View switcher">
+              <div className="grid grid-cols-2 gap-1.5 w-full sm:flex sm:items-center sm:gap-1.5 sm:w-auto" role="tablist" aria-label="View switcher">
                 <button
                   type="button"
                   role="tab"
                   aria-selected={viewMode === 'table'}
                   onClick={() => setViewMode('table')}
-                  className={`stocky-table-toolbar-button shrink-0 h-10 px-4 rounded-full text-xs font-medium inline-flex items-center justify-center gap-1.5 whitespace-nowrap cursor-pointer transition-colors ${
+                  className={`stocky-table-toolbar-button w-full sm:w-auto h-10 px-3 sm:px-4 rounded-full text-xs font-medium inline-flex items-center justify-center gap-1.5 whitespace-nowrap cursor-pointer transition-colors ${
                     viewMode === 'table'
                       ? 'stocky-table-toolbar-button--active border-stocky-primary bg-stocky-primary/10 text-stocky-primary font-semibold'
                       : 'border border-stocky-border-subtle bg-white text-stocky-text-main hover:border-stocky-primary hover:text-stocky-primary'
@@ -399,7 +399,7 @@ export function TeamWorkspaceWidget({
                   role="tab"
                   aria-selected={viewMode === 'org'}
                   onClick={() => setViewMode('org')}
-                  className={`stocky-table-toolbar-button shrink-0 h-10 px-4 rounded-full text-xs font-medium inline-flex items-center justify-center gap-1.5 whitespace-nowrap cursor-pointer transition-colors ${
+                  className={`stocky-table-toolbar-button w-full sm:w-auto h-10 px-3 sm:px-4 rounded-full text-xs font-medium inline-flex items-center justify-center gap-1.5 whitespace-nowrap cursor-pointer transition-colors ${
                     viewMode === 'org'
                       ? 'stocky-table-toolbar-button--active border-stocky-primary bg-stocky-primary/10 text-stocky-primary font-semibold'
                       : 'border border-stocky-border-subtle bg-white text-stocky-text-main hover:border-stocky-primary hover:text-stocky-primary'
@@ -410,28 +410,30 @@ export function TeamWorkspaceWidget({
                 </button>
               </div>
 
-              {/* Export Button */}
-              <button
-                type="button"
-                onClick={exportTeamCsv}
-                className="stocky-table-toolbar-button shrink-0 h-10 px-4 rounded-full border border-stocky-border-subtle bg-white text-xs font-medium text-stocky-text-main hover:border-stocky-primary hover:text-stocky-primary inline-flex items-center gap-1.5 cursor-pointer transition-colors"
-                title="Export team directory CSV"
-              >
-                <CloudDownloadIcon size="xs" />
-                <span>Export</span>
-              </button>
-
-              {/* Primary CTA: Invite Member (Signature Lime Accent) */}
-              {canManage && (
+              {/* Actions row extending full width on mobile */}
+              <div className="flex items-center gap-2 w-full sm:w-auto sm:ml-auto">
                 <button
                   type="button"
-                  onClick={() => setIsInviteOpen(true)}
-                  className="stocky-table-toolbar-button stocky-table-toolbar-button--primary shrink-0 h-10 px-4 rounded-full text-xs font-medium inline-flex items-center justify-center gap-1.5 whitespace-nowrap cursor-pointer"
+                  onClick={exportTeamCsv}
+                  className="stocky-table-toolbar-button flex-1 sm:flex-initial h-10 px-4 rounded-full border border-stocky-border-subtle bg-white text-xs font-medium text-stocky-text-main hover:border-stocky-primary hover:text-stocky-primary inline-flex items-center justify-center gap-1.5 cursor-pointer transition-colors"
+                  title="Export team directory CSV"
                 >
-                  <PlusIcon size="xs" />
-                  <span>Invite member</span>
+                  <CloudDownloadIcon size="xs" />
+                  <span>Export</span>
                 </button>
-              )}
+
+                {/* Primary CTA: Invite Member (Signature Lime Accent) */}
+                {canManage && (
+                  <button
+                    type="button"
+                    onClick={() => setIsInviteOpen(true)}
+                    className="stocky-table-toolbar-button stocky-table-toolbar-button--primary flex-1 sm:flex-initial h-10 px-4 rounded-full text-xs font-semibold inline-flex items-center justify-center gap-1.5 whitespace-nowrap cursor-pointer"
+                  >
+                    <PlusIcon size="xs" />
+                    <span><span className="sm:hidden">Invite</span><span className="hidden sm:inline">Invite member</span></span>
+                  </button>
+                )}
+              </div>
             </div>
           </div>
         </div>
