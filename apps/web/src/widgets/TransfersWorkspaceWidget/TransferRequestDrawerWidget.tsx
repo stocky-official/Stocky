@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useMemo, useState } from 'react';
-import { PlusIcon, TrashIcon, XIcon } from '@stocky/icons';
+import { ArrowRightIcon, BoxesIcon, PlusIcon, TrashIcon, WarehouseIcon, XIcon } from '@stocky/icons';
 import type { Location, Product, StockLot } from '@stocky/types';
 import { SideDrawer } from '@/components/ui/SideDrawer';
 
@@ -52,6 +52,15 @@ export function TransferRequestDrawerWidget({
   ]);
   const [requestNote, setRequestNote] = useState('');
   const [error, setError] = useState<string | null>(null);
+
+  const selectedSourceLoc = useMemo(
+    () => locations.find((location) => location.id === sourceLocationId),
+    [locations, sourceLocationId]
+  );
+  const selectedDestLoc = useMemo(
+    () => locations.find((location) => location.id === destinationLocationId),
+    [locations, destinationLocationId]
+  );
 
   useEffect(() => {
     if (!isOpen) return;
@@ -196,120 +205,224 @@ export function TransferRequestDrawerWidget({
             </div>
           )}
 
-          {/* Location Selectors */}
-          <div className="grid gap-3 sm:grid-cols-2">
-            <div>
-              <label className="block text-xs font-medium text-stocky-text-main">From (Source)</label>
-              <select
-                required
-                value={sourceLocationId}
-                onChange={(event) => {
-                  setSourceLocationId(event.target.value);
-                  setLines([{ productId: '', quantity: '' }]);
-                  setError(null);
-                }}
-                className="mt-1.5 h-10 w-full rounded-xl border border-stocky-border-subtle bg-stocky-bg-widget px-3 text-xs text-stocky-text-main focus:border-stocky-primary focus:outline-none"
-              >
-                <option value="">Choose source location</option>
-                {locations.map((location) => (
-                  <option key={location.id} value={location.id}>
-                    {location.name}
-                  </option>
-                ))}
-              </select>
+          {/* Paired Location Selectors (TASK-TRF-02) */}
+          <div className="rounded-2xl border border-stocky-border-subtle bg-stocky-bg-global/50 p-3.5 sm:p-4 flex flex-col gap-3">
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-stocky-text-sub">Transfer Route</span>
+              <span className="inline-flex items-center gap-1.5 text-xs font-medium text-stocky-primary">
+                <span>{selectedSourceLoc?.name || 'Origin'}</span>
+                <ArrowRightIcon size="xs" />
+                <span>{selectedDestLoc?.name || 'Destination'}</span>
+              </span>
             </div>
 
-            <div>
-              <label className="block text-xs font-medium text-stocky-text-main">To (Destination)</label>
-              <select
-                required
-                value={destinationLocationId}
-                onChange={(event) => {
-                  setDestinationLocationId(event.target.value);
-                  setError(null);
-                }}
-                className="mt-1.5 h-10 w-full rounded-xl border border-stocky-border-subtle bg-stocky-bg-widget px-3 text-xs text-stocky-text-main focus:border-stocky-primary focus:outline-none"
-              >
-                <option value="">Choose destination location</option>
-                {locations
-                  .filter((location) => location.id !== sourceLocationId)
-                  .map((location) => (
-                    <option key={location.id} value={location.id}>
-                      {location.name}
-                    </option>
-                  ))}
-              </select>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 items-center relative">
+              {/* Source Location Card */}
+              <div className="rounded-xl border border-stocky-border-subtle bg-white p-3 flex flex-col gap-1.5 focus-within:border-stocky-primary transition-colors shadow-2xs">
+                <div className="flex items-center justify-between">
+                  <label className="text-[11px] font-semibold text-stocky-text-sub uppercase tracking-wider flex items-center gap-1">
+                    <WarehouseIcon size="xs" className="text-stocky-primary" />
+                    <span>Origin (From)</span>
+                  </label>
+                  {selectedSourceLoc && (
+                    <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-stocky-primary/10 text-stocky-primary border border-stocky-primary/20 capitalize">
+                      {selectedSourceLoc.type}
+                    </span>
+                  )}
+                </div>
+                <select
+                  required
+                  value={sourceLocationId}
+                  onChange={(event) => {
+                    setSourceLocationId(event.target.value);
+                    setLines([{ productId: '', quantity: '' }]);
+                    setError(null);
+                  }}
+                  className="h-9 w-full bg-transparent text-xs font-semibold text-stocky-text-main outline-none cursor-pointer"
+                >
+                  <option value="">Choose source location</option>
+                  {locations.map((loc) => {
+                    const skuCountAtLoc = lots.filter(
+                      (l) => l.locationId === loc.id && l.quantityOnHand > 0
+                    ).length;
+                    return (
+                      <option key={loc.id} value={loc.id}>
+                        {loc.name} ({loc.type.toUpperCase()}) — {skuCountAtLoc} items in stock
+                      </option>
+                    );
+                  })}
+                </select>
+              </div>
+
+              {/* Directional arrow between them */}
+              <div className="hidden sm:flex absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 z-10 w-7 h-7 rounded-full bg-white border border-stocky-border-subtle shadow-2xs items-center justify-center text-stocky-primary">
+                <ArrowRightIcon size="xs" />
+              </div>
+
+              {/* Destination Location Card */}
+              <div className="rounded-xl border border-stocky-border-subtle bg-white p-3 flex flex-col gap-1.5 focus-within:border-stocky-primary transition-colors shadow-2xs">
+                <div className="flex items-center justify-between">
+                  <label className="text-[11px] font-semibold text-stocky-text-sub uppercase tracking-wider flex items-center gap-1">
+                    <WarehouseIcon size="xs" className="text-stocky-accent" />
+                    <span>Destination (To)</span>
+                  </label>
+                  {selectedDestLoc && (
+                    <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-stocky-bg-global text-stocky-text-sub border border-stocky-border-subtle capitalize">
+                      {selectedDestLoc.type}
+                    </span>
+                  )}
+                </div>
+                <select
+                  required
+                  value={destinationLocationId}
+                  onChange={(event) => {
+                    setDestinationLocationId(event.target.value);
+                    setError(null);
+                  }}
+                  className="h-9 w-full bg-transparent text-xs font-semibold text-stocky-text-main outline-none cursor-pointer"
+                >
+                  <option value="">Choose destination location</option>
+                  {locations
+                    .filter((loc) => loc.id !== sourceLocationId)
+                    .map((loc) => (
+                      <option key={loc.id} value={loc.id}>
+                        {loc.name} ({loc.type.toUpperCase()})
+                      </option>
+                    ))}
+                </select>
+              </div>
             </div>
           </div>
 
-          {/* Lines Section */}
-          <div className="rounded-xl border border-stocky-border-subtle overflow-hidden">
-            <div className="flex items-center justify-between bg-stocky-bg-global px-3.5 py-2.5 border-b border-stocky-border-subtle">
-              <span className="text-xs font-medium text-stocky-text-main">
-                Products in this transfer
-              </span>
+          {/* Lines Section (TASK-TRF-03) */}
+          <div className="rounded-2xl border border-stocky-border-subtle overflow-hidden bg-white">
+            <div className="flex items-center justify-between bg-stocky-bg-global px-4 py-3 border-b border-stocky-border-subtle">
+              <div>
+                <span className="text-xs font-semibold text-stocky-text-main">
+                  Products in this transfer
+                </span>
+                <span className="ml-1.5 text-[11px] text-stocky-text-sub">
+                  ({lines.filter((l) => l.productId).length} selected)
+                </span>
+              </div>
               <button
                 type="button"
                 onClick={addLine}
-                className="inline-flex items-center gap-1 text-xs font-medium text-stocky-primary hover:underline cursor-pointer"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-stocky-border-subtle text-xs font-medium text-stocky-primary hover:border-stocky-primary transition-colors cursor-pointer shadow-2xs"
               >
                 <PlusIcon size="xs" /> Add product
               </button>
             </div>
 
-            <div className="divide-y divide-stocky-border-subtle p-2">
+            <div className="flex flex-col gap-2.5 p-3 sm:p-3.5 bg-stocky-bg-global/30">
               {lines.map((line, index) => {
                 const available = line.productId ? availableFor(line.productId) : 0;
+                const selectedProd = products.find((p) => p.id === line.productId);
                 return (
-                  <div key={index} className="flex flex-col gap-2.5 p-2 sm:flex-row sm:items-end">
-                    <div className="min-w-0 flex-1">
-                      <label className="block text-[11px] font-medium text-stocky-text-sub">Product</label>
-                      <select
-                        required
-                        value={line.productId}
-                        onChange={(event) => updateLine(index, 'productId', event.target.value)}
-                        className="mt-1 h-9 w-full rounded-lg border border-stocky-border-subtle bg-stocky-bg-widget px-2.5 text-xs text-stocky-text-main focus:border-stocky-primary focus:outline-none"
-                      >
-                        <option value="">Choose product</option>
-                        {sourceProducts.map((product) => (
-                          <option key={product.id} value={product.id}>
-                            {product.name}
-                          </option>
-                        ))}
-                      </select>
+                  <div
+                    key={index}
+                    className="rounded-xl border border-stocky-border-subtle bg-white p-3.5 flex flex-col gap-3 shadow-2xs"
+                  >
+                    {/* Top: Product Selection & Stock Badge */}
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                      <div className="min-w-0 flex-1">
+                        <label className="block text-[10px] font-bold uppercase tracking-wider text-stocky-text-sub mb-1">
+                          Product Line #{index + 1}
+                        </label>
+                        <select
+                          required
+                          value={line.productId}
+                          onChange={(event) => updateLine(index, 'productId', event.target.value)}
+                          className="h-10 w-full rounded-xl border border-stocky-border-subtle bg-stocky-bg-widget px-3 text-xs font-medium text-stocky-text-main focus:border-stocky-primary focus:outline-none"
+                        >
+                          <option value="">Select a product from origin...</option>
+                          {sourceProducts.map((product) => {
+                            const avail = availableFor(product.id);
+                            return (
+                              <option key={product.id} value={product.id}>
+                                {product.name} {product.barcode ? `(${product.barcode})` : ''} — {avail} available
+                              </option>
+                            );
+                          })}
+                        </select>
+                      </div>
+
+                      {line.productId && (
+                        <div className="self-start sm:self-end shrink-0">
+                          <span
+                            className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium border ${
+                              available > 0
+                                ? 'bg-stocky-status-success-bg text-stocky-status-success-fg border-stocky-status-success-border'
+                                : 'bg-stocky-status-critical-bg text-stocky-status-critical-fg border-stocky-status-critical-border'
+                            }`}
+                          >
+                            <BoxesIcon size="xs" />
+                            <span>{available} in stock at origin</span>
+                          </span>
+                        </div>
+                      )}
                     </div>
 
-                    <div className="w-full sm:w-36">
-                      <div className="flex items-center justify-between">
-                        <label className="text-[11px] font-medium text-stocky-text-sub">Quantity</label>
-                        {line.productId && (
-                          <span className="text-[10px] text-stocky-text-sub">
-                            Avail: {available}
+                    {/* Bottom: Quantity Stepper & Remove */}
+                    <div className="flex items-center justify-between gap-3 pt-2.5 border-t border-stocky-border-subtle/60">
+                      <div className="flex items-center gap-2.5">
+                        <span className="text-xs font-medium text-stocky-text-sub">Transfer Qty:</span>
+                        <div className="inline-flex items-center rounded-xl border border-stocky-border-subtle bg-stocky-bg-global p-0.5">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const current = parseInt(line.quantity || '0', 10);
+                              if (current > 1) updateLine(index, 'quantity', String(current - 1));
+                            }}
+                            disabled={!line.quantity || parseInt(line.quantity, 10) <= 1}
+                            className="h-8 w-8 rounded-lg bg-white border border-stocky-border-subtle/80 flex items-center justify-center text-stocky-text-main hover:bg-stocky-bg-hover disabled:opacity-40 cursor-pointer font-bold text-sm"
+                            aria-label="Decrease quantity"
+                          >
+                            -
+                          </button>
+                          <input
+                            required
+                            type="number"
+                            min="1"
+                            max={available || undefined}
+                            value={line.quantity}
+                            onChange={(event) => updateLine(index, 'quantity', event.target.value)}
+                            placeholder="0"
+                            className="w-16 h-8 text-center text-xs font-bold text-stocky-text-main bg-transparent outline-none"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const current = parseInt(line.quantity || '0', 10);
+                              if (!available || current < available)
+                                updateLine(index, 'quantity', String(current + 1));
+                            }}
+                            disabled={Boolean(available && parseInt(line.quantity || '0', 10) >= available)}
+                            className="h-8 w-8 rounded-lg bg-white border border-stocky-border-subtle/80 flex items-center justify-center text-stocky-text-main hover:bg-stocky-bg-hover disabled:opacity-40 cursor-pointer font-bold text-sm"
+                            aria-label="Increase quantity"
+                          >
+                            +
+                          </button>
+                        </div>
+                        {selectedProd && (
+                          <span className="text-xs font-medium text-stocky-text-sub">
+                            {selectedProd.unitName || 'units'}
                           </span>
                         )}
                       </div>
-                      <input
-                        required
-                        type="number"
-                        min="1"
-                        max={available || undefined}
-                        value={line.quantity}
-                        onChange={(event) => updateLine(index, 'quantity', event.target.value)}
-                        placeholder="Qty"
-                        className="mt-1 h-9 w-full rounded-lg border border-stocky-border-subtle bg-stocky-bg-widget px-2.5 text-xs text-stocky-text-main focus:border-stocky-primary focus:outline-none"
-                      />
-                    </div>
 
-                    {lines.length > 1 && (
-                      <button
-                        type="button"
-                        onClick={() => removeLine(index)}
-                        className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg border border-stocky-border-subtle text-stocky-text-sub hover:bg-red-50 hover:border-red-200 hover:text-red-600 transition-colors cursor-pointer self-end"
-                        aria-label="Remove product"
-                      >
-                        <TrashIcon size="xs" />
-                      </button>
-                    )}
+                      {lines.length > 1 && (
+                        <button
+                          type="button"
+                          onClick={() => removeLine(index)}
+                          className="h-8 px-3 rounded-full border border-stocky-border-subtle text-xs text-stocky-text-sub hover:border-stocky-status-critical-border hover:text-stocky-status-critical-fg hover:bg-stocky-status-critical-bg transition-colors inline-flex items-center gap-1.5 cursor-pointer"
+                          aria-label="Remove product"
+                        >
+                          <TrashIcon size="xs" />
+                          <span className="hidden sm:inline">Remove</span>
+                        </button>
+                      )}
+                    </div>
                   </div>
                 );
               })}

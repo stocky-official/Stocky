@@ -1,8 +1,9 @@
 'use client';
 
 import React from 'react';
-import { CheckCircleIcon, PlusIcon, WarehouseIcon, TruckIcon } from '@stocky/icons';
+import { CheckCircleIcon, MailIcon, PlusIcon, WarehouseIcon, TruckIcon } from '@stocky/icons';
 import type { CompanyUserRole, Location, Product, Supplier, SupplierRequest } from '@stocky/types';
+import { SupplierEmailModal } from './SupplierEmailModal';
 
 export interface SupplierRequestsTableWidgetProps {
   requests: SupplierRequest[];
@@ -21,12 +22,12 @@ export interface SupplierRequestsTableWidgetProps {
 const statusOrder: SupplierRequest['status'][] = ['open', 'contacted', 'ordered', 'received', 'closed'];
 
 const statusBadgeClasses: Record<SupplierRequest['status'], string> = {
-  open: 'bg-amber-50 text-amber-700 border border-amber-200',
-  contacted: 'bg-blue-50 text-blue-700 border border-blue-200',
-  ordered: 'bg-indigo-50 text-indigo-700 border border-indigo-200',
-  received: 'bg-emerald-50 text-emerald-700 border border-emerald-200',
-  closed: 'bg-slate-100 text-slate-700 border border-slate-200',
-  cancelled: 'bg-red-50 text-red-700 border border-red-200',
+  open: 'bg-stocky-status-warning-bg text-stocky-status-warning-fg border border-stocky-status-warning-border',
+  contacted: 'bg-stocky-status-info-bg text-stocky-status-info-fg border border-stocky-status-info-border',
+  ordered: 'bg-stocky-status-info-bg text-stocky-status-info-fg border border-stocky-status-info-border',
+  received: 'bg-stocky-status-success-bg text-stocky-status-success-fg border border-stocky-status-success-border',
+  closed: 'bg-stocky-bg-global text-stocky-text-sub border border-stocky-border-subtle',
+  cancelled: 'bg-stocky-status-danger-bg text-stocky-status-danger-fg border border-stocky-status-danger-border',
 };
 
 export function SupplierRequestsTableWidget({
@@ -45,6 +46,7 @@ export function SupplierRequestsTableWidget({
   const productMap = React.useMemo(() => new Map(products.map((p) => [p.id, p])), [products]);
   const locationMap = React.useMemo(() => new Map(locations.map((l) => [l.id, l])), [locations]);
   const supplierMap = React.useMemo(() => new Map(suppliers.map((s) => [s.id, s])), [suppliers]);
+  const [emailRequest, setEmailRequest] = React.useState<SupplierRequest | null>(null);
 
   const pageCount = Math.max(1, Math.ceil(requests.length / pageSize));
   const currentPage = Math.min(page, pageCount - 1);
@@ -56,7 +58,7 @@ export function SupplierRequestsTableWidget({
     <div className="flex flex-col w-full">
       {pagedRequests.length === 0 ? (
         <div className="px-6 py-16 text-center">
-          <CheckCircleIcon size="md" className="mx-auto text-emerald-600/60" />
+          <CheckCircleIcon size="md" className="mx-auto text-stocky-status-success-fg/70" />
           <h2 className="mt-3 text-sm font-medium text-stocky-text-main">No supplier requests</h2>
           <p className="mt-1 text-xs text-stocky-text-sub">
             Create a request when inventory is low or a batch needs replacement.
@@ -126,20 +128,29 @@ export function SupplierRequestsTableWidget({
                         </span>
                       </td>
                       <td className="px-4 py-3 text-right">
-                        {userRole !== 'staff' &&
-                        request.status !== 'closed' &&
-                        request.status !== 'cancelled' &&
-                        nextStatus ? (
+                        <div className="flex items-center justify-end gap-1.5">
                           <button
                             type="button"
-                            onClick={() => onStatusChange(request, nextStatus)}
-                            className="h-8 rounded-full border border-stocky-border-subtle bg-white px-3 text-[11px] font-medium text-stocky-text-main hover:border-stocky-primary hover:text-stocky-primary cursor-pointer inline-flex items-center justify-center transition-colors"
+                            onClick={() => setEmailRequest(request)}
+                            title="Email supplier"
+                            className="h-8 w-8 rounded-full border border-stocky-border-subtle bg-white text-stocky-text-sub hover:border-stocky-primary hover:text-stocky-primary inline-flex items-center justify-center transition-colors cursor-pointer"
+                            aria-label="Email supplier"
                           >
-                            Mark {nextStatus}
+                            <MailIcon size="xs" />
                           </button>
-                        ) : (
-                          <span className="text-stocky-text-sub text-xs">—</span>
-                        )}
+                          {userRole !== 'staff' &&
+                          request.status !== 'closed' &&
+                          request.status !== 'cancelled' &&
+                          nextStatus ? (
+                            <button
+                              type="button"
+                              onClick={() => onStatusChange(request, nextStatus)}
+                              className="h-8 rounded-full border border-stocky-border-subtle bg-white px-3 text-[11px] font-medium text-stocky-text-main hover:border-stocky-primary hover:text-stocky-primary cursor-pointer inline-flex items-center justify-center transition-colors"
+                            >
+                              Mark {nextStatus}
+                            </button>
+                          ) : null}
+                        </div>
                       </td>
                     </tr>
                   );
@@ -206,21 +217,29 @@ export function SupplierRequestsTableWidget({
                     </div>
                   </div>
 
-                  {/* Row 3: Action Trigger (if status transition possible) */}
-                  {userRole !== 'staff' &&
-                  request.status !== 'closed' &&
-                  request.status !== 'cancelled' &&
-                  nextStatus ? (
-                    <div className="pt-1 flex items-center justify-end">
+                  {/* Row 3: Action Trigger */}
+                  <div className="pt-1 flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setEmailRequest(request)}
+                      className="flex-1 h-8 rounded-full border border-stocky-border-subtle bg-white px-3 text-xs font-medium text-stocky-text-main hover:border-stocky-primary hover:text-stocky-primary cursor-pointer inline-flex items-center justify-center gap-1.5 transition-colors shadow-2xs"
+                    >
+                      <MailIcon size="xs" />
+                      <span>Email Supplier</span>
+                    </button>
+                    {userRole !== 'staff' &&
+                    request.status !== 'closed' &&
+                    request.status !== 'cancelled' &&
+                    nextStatus ? (
                       <button
                         type="button"
                         onClick={() => onStatusChange(request, nextStatus)}
-                        className="w-full h-8 rounded-full border border-stocky-border-subtle bg-white px-3 text-xs font-semibold text-stocky-text-main hover:border-stocky-primary hover:text-stocky-primary cursor-pointer inline-flex items-center justify-center transition-colors shadow-2xs"
+                        className="flex-1 h-8 rounded-full border border-stocky-border-subtle bg-white px-3 text-xs font-semibold text-stocky-text-main hover:border-stocky-primary hover:text-stocky-primary cursor-pointer inline-flex items-center justify-center transition-colors shadow-2xs"
                       >
                         Mark as {nextStatus}
                       </button>
-                    </div>
-                  ) : null}
+                    ) : null}
+                  </div>
                 </div>
               );
             })}
@@ -275,6 +294,18 @@ export function SupplierRequestsTableWidget({
             </div>
           </footer>
         </>
+      )}
+
+      {emailRequest && (
+        <SupplierEmailModal
+          isOpen={Boolean(emailRequest)}
+          onClose={() => setEmailRequest(null)}
+          request={emailRequest}
+          product={productMap.get(emailRequest.productId)}
+          supplier={emailRequest.supplierId ? supplierMap.get(emailRequest.supplierId) ?? null : null}
+          location={locationMap.get(emailRequest.locationId)}
+          onMarkContacted={(req) => onStatusChange(req, 'contacted')}
+        />
       )}
     </div>
   );

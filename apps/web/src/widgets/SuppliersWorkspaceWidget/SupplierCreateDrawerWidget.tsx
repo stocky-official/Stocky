@@ -128,14 +128,14 @@ export function SupplierCreateDrawerWidget({
         {/* Form Body */}
         <form onSubmit={handleSubmit} className="flex flex-1 flex-col overflow-y-auto p-5 sm:p-6 gap-4">
           {error && (
-            <div className="rounded-xl border border-red-200 bg-red-50 p-3 text-xs text-red-700">
+            <div className="rounded-xl border border-stocky-status-danger-border bg-stocky-status-danger-bg p-3 text-xs text-stocky-status-danger-fg">
               {error}
             </div>
           )}
 
           <div>
             <label className="block text-xs font-medium text-stocky-text-main">
-              Supplier / Company name <span className="text-red-500">*</span>
+              Supplier / Company name <span className="text-stocky-status-danger-fg">*</span>
             </label>
             <input
               required
@@ -199,7 +199,7 @@ export function SupplierCreateDrawerWidget({
 
           <div>
             <label className="block text-xs font-medium text-stocky-text-main">
-              Contact person name <span className="text-red-500">*</span>
+              Contact person name <span className="text-stocky-status-danger-fg">*</span>
             </label>
             <input
               required
@@ -212,18 +212,18 @@ export function SupplierCreateDrawerWidget({
 
           <div>
             <label className="block text-xs font-medium text-stocky-text-main">
-              Phone number <span className="text-red-500">*</span>
+              Phone number <span className="text-stocky-status-danger-fg">*</span>
             </label>
             <div className="mt-1.5 flex gap-2">
               <select
                 value={phoneCountryCode}
                 onChange={(e) => setPhoneCountryCode(e.target.value)}
                 aria-label="Country calling code"
-                className="h-10 w-28 shrink-0 rounded-xl border border-stocky-border-subtle bg-stocky-bg-widget px-2 text-xs text-stocky-text-main focus:border-stocky-primary focus:outline-none"
+                className="h-10 w-36 sm:w-44 shrink-0 rounded-xl border border-stocky-border-subtle bg-stocky-bg-widget px-2 text-xs text-stocky-text-main focus:border-stocky-primary focus:outline-none"
               >
                 {supplierPhoneCountries.map((country) => (
                   <option key={country.code} value={country.code}>
-                    {country.flag} {country.code}
+                    {country.flag} {country.country} ({country.code})
                   </option>
                 ))}
               </select>

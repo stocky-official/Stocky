@@ -30,27 +30,27 @@ export interface SupplierContactsDrawerWidgetProps {
 }
 
 const phoneCountries = [
-  { code: '+20', label: '🇪🇬 +20' },
-  { code: '+1', label: '🇺🇸 +1' },
-  { code: '+44', label: '🇬🇧 +44' },
-  { code: '+971', label: '🇦🇪 +971' },
-  { code: '+966', label: '🇸🇦 +966' },
-  { code: '+974', label: '🇶🇦 +974' },
-  { code: '+965', label: '🇰🇼 +965' },
-  { code: '+973', label: '🇧🇭 +973' },
-  { code: '+968', label: '🇴🇲 +968' },
-  { code: '+212', label: '🇲🇦 +212' },
-  { code: '+213', label: '🇩🇿 +213' },
-  { code: '+216', label: '🇹🇳 +216' },
-  { code: '+249', label: '🇸🇩 +249' },
-  { code: '+91', label: '🇮🇳 +91' },
-  { code: '+86', label: '🇨🇳 +86' },
-  { code: '+33', label: '🇫🇷 +33' },
-  { code: '+49', label: '🇩🇪 +49' },
-  { code: '+81', label: '🇯🇵 +81' },
-  { code: '+61', label: '🇦🇺 +61' },
-  { code: '+55', label: '🇧🇷 +55' },
-  { code: '+27', label: '🇿🇦 +27' },
+  { code: '+20', country: 'Egypt', flag: '🇪🇬', label: '🇪🇬 Egypt (+20)' },
+  { code: '+966', country: 'Saudi Arabia', flag: '🇸🇦', label: '🇸🇦 Saudi Arabia (+966)' },
+  { code: '+971', country: 'United Arab Emirates', flag: '🇦🇪', label: '🇦🇪 UAE (+971)' },
+  { code: '+1', country: 'United States / Canada', flag: '🇺🇸', label: '🇺🇸 USA (+1)' },
+  { code: '+44', country: 'United Kingdom', flag: '🇬🇧', label: '🇬🇧 UK (+44)' },
+  { code: '+974', country: 'Qatar', flag: '🇶🇦', label: '🇶🇦 Qatar (+974)' },
+  { code: '+965', country: 'Kuwait', flag: '🇰🇼', label: '🇰🇼 Kuwait (+965)' },
+  { code: '+973', country: 'Bahrain', flag: '🇧🇭', label: '🇧🇭 Bahrain (+973)' },
+  { code: '+968', country: 'Oman', flag: '🇴🇲', label: '🇴🇲 Oman (+968)' },
+  { code: '+212', country: 'Morocco', flag: '🇲🇦', label: '🇲🇦 Morocco (+212)' },
+  { code: '+213', country: 'Algeria', flag: '🇩🇿', label: '🇩🇿 Algeria (+213)' },
+  { code: '+216', country: 'Tunisia', flag: '🇹🇳', label: '🇹🇳 Tunisia (+216)' },
+  { code: '+249', country: 'Sudan', flag: '🇸🇩', label: '🇸🇩 Sudan (+249)' },
+  { code: '+91', country: 'India', flag: '🇮🇳', label: '🇮🇳 India (+91)' },
+  { code: '+86', country: 'China', flag: '🇨🇳', label: '🇨🇳 China (+86)' },
+  { code: '+33', country: 'France', flag: '🇫🇷', label: '🇫🇷 France (+33)' },
+  { code: '+49', country: 'Germany', flag: '🇩🇪', label: '🇩🇪 Germany (+49)' },
+  { code: '+81', country: 'Japan', flag: '🇯🇵', label: '🇯🇵 Japan (+81)' },
+  { code: '+61', country: 'Australia', flag: '🇦🇺', label: '🇦🇺 Australia (+61)' },
+  { code: '+55', country: 'Brazil', flag: '🇧🇷', label: '🇧🇷 Brazil (+55)' },
+  { code: '+27', country: 'South Africa', flag: '🇿🇦', label: '🇿🇦 South Africa (+27)' },
 ] as const;
 
 function splitPhone(phone: string) {
@@ -325,15 +325,15 @@ export function SupplierContactsDrawerWidget({ supplier, contacts, products, sup
                 <label className="text-[11px] font-medium text-stocky-text-main">Role<input value={role} onChange={(event) => setRole(event.target.value)} placeholder="e.g. Sales" className="mt-1 h-9 w-full rounded-lg border border-stocky-border-subtle bg-white px-2.5 text-xs font-normal focus:border-stocky-primary focus:outline-none" /></label>
                 <label className="text-[11px] font-medium text-stocky-text-main">Email<input type="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="name@supplier.com" className="mt-1 h-9 w-full rounded-lg border border-stocky-border-subtle bg-white px-2.5 text-xs font-normal focus:border-stocky-primary focus:outline-none" /></label>
               </div>
-              <label className="text-[11px] font-medium text-stocky-text-main">Phone<div className="mt-1 flex gap-1"><select value={countryCode} onChange={(event) => setCountryCode(event.target.value)} aria-label="Country calling code" className="h-9 w-24 shrink-0 rounded-lg border border-stocky-border-subtle bg-white px-1 text-[11px] font-normal focus:border-stocky-primary focus:outline-none">{phoneCountries.map((country) => <option key={country.code} value={country.code}>{country.label}</option>)}</select><input required type="tel" inputMode="tel" value={phoneNumber} onChange={(event) => setPhoneNumber(event.target.value)} placeholder="Phone number" className="h-9 min-w-0 flex-1 rounded-lg border border-stocky-border-subtle bg-white px-2.5 text-xs font-normal focus:border-stocky-primary focus:outline-none" /></div></label>
+              <label className="text-[11px] font-medium text-stocky-text-main">Phone<div className="mt-1 flex gap-1"><select value={countryCode} onChange={(event) => setCountryCode(event.target.value)} aria-label="Country calling code" className="h-9 w-32 sm:w-40 shrink-0 rounded-lg border border-stocky-border-subtle bg-white px-2 text-[11px] font-normal focus:border-stocky-primary focus:outline-none">{phoneCountries.map((country) => <option key={country.code} value={country.code}>{country.label}</option>)}</select><input required type="tel" inputMode="tel" value={phoneNumber} onChange={(event) => setPhoneNumber(event.target.value)} placeholder="Phone number" className="h-9 min-w-0 flex-1 rounded-lg border border-stocky-border-subtle bg-white px-2.5 text-xs font-normal focus:border-stocky-primary focus:outline-none" /></div></label>
               <label className="flex items-center gap-2 text-[11px] font-normal text-stocky-text-main"><input type="checkbox" checked={isPrimary} onChange={(event) => setIsPrimary(event.target.checked)} className="h-3.5 w-3.5 accent-stocky-primary" />Use as primary contact</label>
-              {error && <p className="rounded-lg border border-red-200 bg-red-50 px-2.5 py-2 text-[11px] text-red-700">{error}</p>}
+              {error && <p className="rounded-lg border border-stocky-status-danger-border bg-stocky-status-danger-bg px-2.5 py-2 text-[11px] text-stocky-status-danger-fg">{error}</p>}
               <div className="flex justify-end gap-2"><button type="button" onClick={resetForm} disabled={saving} className="h-8 rounded-full border border-stocky-border-subtle bg-white px-3 text-[11px] cursor-pointer disabled:opacity-50">Cancel</button><button type="submit" disabled={saving} className="h-8 rounded-full bg-stocky-primary px-3 text-[11px] font-medium text-white cursor-pointer disabled:opacity-50">{saving ? 'Saving…' : editingContact ? 'Save changes' : 'Add contact'}</button></div>
             </form>}
 
-            {error && !showForm && <p className="mb-4 rounded-lg border border-red-200 bg-red-50 px-2.5 py-2 text-[11px] text-red-700">{error}</p>}
+            {error && !showForm && <p className="mb-4 rounded-lg border border-stocky-status-danger-border bg-stocky-status-danger-bg px-2.5 py-2 text-[11px] text-stocky-status-danger-fg">{error}</p>}
             {contacts.length === 0 ? <div className="rounded-xl border border-dashed border-stocky-border-subtle px-5 py-12 text-center"><p className="text-sm font-medium text-stocky-text-main">No contacts yet</p><p className="mt-1 text-xs text-stocky-text-sub">Add a contact when another person handles this supplier.</p></div> : <div className="overflow-hidden rounded-xl border border-stocky-border-subtle"><div className="divide-y divide-stocky-border-subtle">{contacts.map((contact) => <article key={contact.id} className="p-3.5">
-              <div className="flex items-start justify-between gap-3"><div className="min-w-0"><div className="flex flex-wrap items-center gap-2"><p className="truncate text-xs font-medium text-stocky-text-main">{contact.name}</p>{contact.isPrimary && <span className="rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[10px] font-medium text-emerald-700">Primary</span>}</div><p className="mt-1 text-[11px] text-stocky-text-sub">{contact.role || 'Contact person'}</p></div><div className="flex shrink-0 items-center gap-1">{contact.email && <button type="button" onClick={() => openEmailDraft(contact)} aria-label={`Email ${contact.name}`} title="Draft email" className="stocky-icon-button stocky-icon-button--small"><MailIcon size="xs" /></button>}{contact.phone && <button type="button" onClick={() => openWhatsApp(contact)} aria-label={`Message ${contact.name} on WhatsApp`} title="Open WhatsApp" className="stocky-icon-button stocky-icon-button--small"><MessageCircleIcon size="xs" /></button>}{canManage && <>{!contact.isPrimary && <button type="button" onClick={() => void onSetPrimary(contact)} className="h-7 rounded-full border border-stocky-border-subtle px-2 text-[10px] text-stocky-text-sub cursor-pointer">Set primary</button>}<button type="button" onClick={() => startEdit(contact)} aria-label={`Edit ${contact.name}`} className="stocky-icon-button stocky-icon-button--small"><EditIcon size="xs" /></button>{confirmDeleteId === contact.id ? <button type="button" onClick={() => void remove(contact)} disabled={saving} className="h-7 rounded-full bg-red-600 px-2 text-[10px] font-medium text-white cursor-pointer disabled:opacity-50">Sure?</button> : <button type="button" onClick={() => void remove(contact)} aria-label={`Delete ${contact.name}`} className="stocky-icon-button stocky-icon-button--small stocky-icon-button--danger"><TrashIcon size="xs" /></button>}</>}</div></div>
+              <div className="flex items-start justify-between gap-3"><div className="min-w-0"><div className="flex flex-wrap items-center gap-2"><p className="truncate text-xs font-medium text-stocky-text-main">{contact.name}</p>{contact.isPrimary && <span className="rounded-full border border-stocky-status-success-border bg-stocky-status-success-bg px-2 py-0.5 text-[10px] font-medium text-stocky-status-success-fg">Primary</span>}</div><p className="mt-1 text-[11px] text-stocky-text-sub">{contact.role || 'Contact person'}</p></div><div className="flex shrink-0 items-center gap-1">{contact.email && <button type="button" onClick={() => openEmailDraft(contact)} aria-label={`Email ${contact.name}`} title="Draft email" className="stocky-icon-button stocky-icon-button--small"><MailIcon size="xs" /></button>}{contact.phone && <button type="button" onClick={() => openWhatsApp(contact)} aria-label={`Message ${contact.name} on WhatsApp`} title="Open WhatsApp" className="stocky-icon-button stocky-icon-button--small"><MessageCircleIcon size="xs" /></button>}{canManage && <>{!contact.isPrimary && <button type="button" onClick={() => void onSetPrimary(contact)} className="h-7 rounded-full border border-stocky-border-subtle px-2 text-[10px] text-stocky-text-sub cursor-pointer">Set primary</button>}<button type="button" onClick={() => startEdit(contact)} aria-label={`Edit ${contact.name}`} className="stocky-icon-button stocky-icon-button--small"><EditIcon size="xs" /></button>{confirmDeleteId === contact.id ? <button type="button" onClick={() => void remove(contact)} disabled={saving} className="h-7 rounded-full bg-stocky-status-danger-fg px-2 text-[10px] font-medium text-white cursor-pointer disabled:opacity-50">Sure?</button> : <button type="button" onClick={() => void remove(contact)} aria-label={`Delete ${contact.name}`} className="stocky-icon-button stocky-icon-button--small stocky-icon-button--danger"><TrashIcon size="xs" /></button>}</>}</div></div>
               <div className="mt-3 grid grid-cols-1 gap-2 text-[11px] text-stocky-text-sub sm:grid-cols-2"><a href={`tel:${contact.phone}`} className="truncate hover:text-stocky-primary">{contact.phone}</a>{contact.email ? <a href={`mailto:${contact.email}`} className="truncate hover:text-stocky-primary">{contact.email}</a> : <span>Not recorded</span>}</div>
             </article>)}</div></div>}
           </> : <>
@@ -351,8 +351,93 @@ export function SupplierContactsDrawerWidget({ supplier, contacts, products, sup
               </div>}
             </div>
 
-            {error && <p className="mb-4 rounded-lg border border-red-200 bg-red-50 px-2.5 py-2 text-[11px] text-red-700">{error}</p>}
-            {linkedSupplierProducts.length === 0 && pendingProductIds.length === 0 ? <div className="rounded-xl border border-dashed border-stocky-border-subtle px-5 py-12 text-center"><p className="text-sm font-medium text-stocky-text-main">No products assigned</p><p className="mt-1 text-xs text-stocky-text-sub">Use the search field above to add the first product.</p></div> : <div className="overflow-hidden rounded-xl border border-stocky-border-subtle"><div className="divide-y divide-stocky-border-subtle">{linkedSupplierProducts.map((link) => { const product = productMap.get(link.productId); if (!product) return null; const pending = pendingProductLinkIds.includes(link.id); return <article key={link.id} className="flex items-center justify-between gap-3 p-3"><div className="min-w-0"><p className="truncate text-xs font-medium text-stocky-text-main">{product.name}</p><p className="mt-0.5 truncate text-[10px] text-stocky-text-sub">{product.barcode || 'No barcode'} · {product.categoryName}</p></div>{canManage && <button type="button" onClick={() => void removeProduct(link)} disabled={pending} aria-label={`Remove ${product.name}`} className="stocky-icon-button stocky-icon-button--small stocky-icon-button--danger disabled:opacity-50">{pending ? <span className="text-[10px]">…</span> : <TrashIcon size="xs" />}</button>}</article>; })}{pendingProductIds.filter((productId) => !linkedSupplierProducts.some((link) => link.productId === productId)).map((productId) => { const product = productMap.get(productId); if (!product) return null; return <article key={productId} className="flex items-center justify-between gap-3 p-3"><div className="min-w-0"><p className="truncate text-xs font-medium text-stocky-text-main">{product.name}</p><p className="mt-0.5 text-[10px] text-stocky-text-sub">Adding product…</p></div><span className="text-[10px] text-stocky-primary">…</span></article>; })}</div></div>}
+            {error && <p className="mb-4 rounded-lg border border-stocky-status-danger-border bg-stocky-status-danger-bg px-2.5 py-2 text-[11px] text-stocky-status-danger-fg">{error}</p>}
+            {linkedSupplierProducts.length === 0 && pendingProductIds.length === 0 ? (
+              <div className="rounded-xl border border-dashed border-stocky-border-subtle px-5 py-12 text-center">
+                <p className="text-sm font-medium text-stocky-text-main">No products assigned</p>
+                <p className="mt-1 text-xs text-stocky-text-sub">Use the search field above to link products supplied by this vendor.</p>
+              </div>
+            ) : (
+              <div className="space-y-2.5">
+                {linkedSupplierProducts.map((link) => {
+                  const product = productMap.get(link.productId);
+                  if (!product) return null;
+                  const pending = pendingProductLinkIds.includes(link.id);
+                  const displayCost = link.unitCost ?? product.unitCost;
+                  const sku = link.supplierSku || product.barcode || product.id.slice(0, 8).toUpperCase();
+
+                  return (
+                    <article
+                      key={link.id}
+                      className="group flex flex-col justify-between gap-2.5 rounded-xl border border-stocky-border-subtle bg-white p-3.5 shadow-sm transition-all hover:border-stocky-border-strong sm:flex-row sm:items-center"
+                    >
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2">
+                          <p className="truncate text-xs font-semibold text-stocky-text-main">
+                            {product.name}
+                          </p>
+                          <span className="shrink-0 rounded-md border border-stocky-border-subtle bg-stocky-bg-global px-1.5 py-0.5 font-mono text-[10px] text-stocky-text-sub">
+                            SKU: {sku}
+                          </span>
+                        </div>
+                        <div className="mt-1.5 flex flex-wrap items-center gap-2 text-[11px] text-stocky-text-sub">
+                          <span className="rounded bg-stocky-bg-global/70 px-1.5 py-0.5 text-[10px] font-medium text-stocky-text-main">
+                            {product.categoryName}
+                          </span>
+                          {product.barcode && (
+                            <span className="font-mono text-[10px] text-stocky-text-sub">
+                              BC: {product.barcode}
+                            </span>
+                          )}
+                          {typeof displayCost === 'number' && (
+                            <span className="font-medium text-stocky-primary text-[11px]">
+                              ${displayCost.toFixed(2)} / {product.unitName || 'unit'}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+
+                      {canManage && (
+                        <div className="flex shrink-0 items-center justify-end border-t border-stocky-border-subtle/50 pt-2 sm:border-t-0 sm:pt-0">
+                          <button
+                            type="button"
+                            onClick={() => void removeProduct(link)}
+                            disabled={pending}
+                            aria-label={`Unlink ${product.name}`}
+                            title="Unlink product"
+                            className="flex h-8 items-center gap-1.5 rounded-lg border border-stocky-border-subtle px-2.5 text-xs text-stocky-status-danger-fg transition-colors hover:border-stocky-status-danger-border hover:bg-stocky-status-danger-bg cursor-pointer disabled:opacity-50"
+                          >
+                            <TrashIcon size="xs" />
+                            <span className="text-[11px] font-medium">{pending ? 'Removing…' : 'Unlink'}</span>
+                          </button>
+                        </div>
+                      )}
+                    </article>
+                  );
+                })}
+
+                {pendingProductIds
+                  .filter((productId) => !linkedSupplierProducts.some((link) => link.productId === productId))
+                  .map((productId) => {
+                    const product = productMap.get(productId);
+                    if (!product) return null;
+                    return (
+                      <article
+                        key={productId}
+                        className="flex items-center justify-between gap-3 rounded-xl border border-dashed border-stocky-border-subtle bg-stocky-bg-global/50 p-3.5"
+                      >
+                        <div className="min-w-0">
+                          <p className="truncate text-xs font-medium text-stocky-text-main">{product.name}</p>
+                          <p className="mt-0.5 text-[10px] text-stocky-text-sub">Linking product to supplier…</p>
+                        </div>
+                        <span className="inline-flex items-center gap-1 rounded-full bg-stocky-primary/10 px-2 py-0.5 text-[10px] font-medium text-stocky-primary">
+                          Linking…
+                        </span>
+                      </article>
+                    );
+                  })}
+              </div>
+            )}
           </>}
         </div>
       </>}

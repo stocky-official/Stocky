@@ -13,6 +13,7 @@ import {
   ArrowUpRight,
   ArrowDownLeft,
   Plus,
+  Minus,
   Search,
   Filter,
   RefreshCw,
@@ -39,6 +40,7 @@ import {
   X,
   ArrowUp,
   ArrowDown,
+  ArrowRight,
   CloudUpload,
   CloudDownload,
   Users,
@@ -92,6 +94,7 @@ export const ArrowUpDownIcon = createIcon(ArrowUpDown, 'ArrowUpDownIcon');
 export const ArrowUpRightIcon = createIcon(ArrowUpRight, 'ArrowUpRightIcon');
 export const ArrowDownLeftIcon = createIcon(ArrowDownLeft, 'ArrowDownLeftIcon');
 export const PlusIcon = createIcon(Plus, 'PlusIcon');
+export const MinusIcon = createIcon(Minus, 'MinusIcon');
 export const SearchIcon = createIcon(Search, 'SearchIcon');
 export const FilterIcon = createIcon(Filter, 'FilterIcon');
 export const RefreshIcon = createIcon(RefreshCw, 'RefreshIcon');
@@ -118,6 +121,7 @@ export const PanelLeftOpenIcon = createIcon(PanelLeftOpen, 'PanelLeftOpenIcon');
 export const XIcon = createIcon(X, 'XIcon');
 export const ArrowUpIcon = createIcon(ArrowUp, 'ArrowUpIcon');
 export const ArrowDownIcon = createIcon(ArrowDown, 'ArrowDownIcon');
+export const ArrowRightIcon = createIcon(ArrowRight, 'ArrowRightIcon');
 export const CloudUploadIcon = createIcon(CloudUpload, 'CloudUploadIcon');
 export const CloudDownloadIcon = createIcon(CloudDownload, 'CloudDownloadIcon');
 export const UsersIcon = createIcon(Users, 'UsersIcon');

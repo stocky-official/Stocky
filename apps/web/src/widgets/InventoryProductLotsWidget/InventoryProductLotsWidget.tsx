@@ -1,7 +1,20 @@
 'use client';
 
 import React, { useEffect, useMemo, useState } from 'react';
-import { BoxesIcon, CheckIcon, EditIcon, SearchIcon, TagIcon, TrashIcon, XIcon } from '@stocky/icons';
+import {
+  AlertCircleIcon,
+  AlertTriangleIcon,
+  BoxesIcon,
+  CheckCircleIcon,
+  CheckIcon,
+  ClockIcon,
+  EditIcon,
+  SearchIcon,
+  TagIcon,
+  TrashIcon,
+  WarehouseIcon,
+  XIcon,
+} from '@stocky/icons';
 import type { Location, Product, StockLot, Supplier } from '@stocky/types';
 import type { StockLotUpdateInput } from '../StockLotEditDrawerWidget/StockLotEditDrawerWidget';
 
@@ -19,15 +32,15 @@ export interface InventoryProductLotsWidgetProps {
 export type StockProductLotsWidgetProps = InventoryProductLotsWidgetProps;
 
 function getLotState(lot: StockLot) {
-  if (lot.status === 'disposed') return { label: 'Removed', tone: 'critical' as const, attention: false, history: true };
-  if (lot.status === 'returned') return { label: 'Returned', tone: 'critical' as const, attention: false, history: true };
-  if (lot.quantityOnHand <= 0 || lot.status === 'depleted') return { label: 'Out of stock', tone: 'muted' as const, attention: false, history: true };
-  if (lot.status === 'on_hold') return { label: 'On hold', tone: 'hold' as const, attention: true, history: false };
-  if (!lot.expiryDate) return { label: 'Missing expiry', tone: 'critical' as const, attention: true, history: false };
+  if (lot.status === 'disposed') return { label: 'Removed', countdown: null, tone: 'critical' as const, attention: false, history: true };
+  if (lot.status === 'returned') return { label: 'Returned', countdown: null, tone: 'critical' as const, attention: false, history: true };
+  if (lot.quantityOnHand <= 0 || lot.status === 'depleted') return { label: 'Depleted', countdown: null, tone: 'muted' as const, attention: false, history: true };
+  if (lot.status === 'on_hold') return { label: 'On hold', countdown: null, tone: 'hold' as const, attention: true, history: false };
+  if (!lot.expiryDate) return { label: 'No expiry', countdown: null, tone: 'warning' as const, attention: true, history: false };
   const days = Math.ceil((new Date(lot.expiryDate).getTime() - Date.now()) / 86400000);
-  if (days < 0) return { label: 'Expired', tone: 'critical' as const, attention: true, history: false };
-  if (days <= (lot.expiryNotificationDays ?? 0)) return { label: `${days}d left`, tone: 'warning' as const, attention: true, history: false };
-  return { label: `${days}d left`, tone: 'success' as const, attention: false, history: false };
+  if (days < 0) return { label: 'Expired', countdown: `${Math.abs(days)}d ago`, tone: 'critical' as const, attention: true, history: false };
+  if (days <= (lot.expiryNotificationDays ?? 14)) return { label: 'Expiring Soon', countdown: `${days}d left`, tone: 'warning' as const, attention: true, history: false };
+  return { label: 'Valid', countdown: `${days}d left`, tone: 'success' as const, attention: false, history: false };
 }
 
 function formatDate(value?: string | null) {
@@ -209,45 +222,53 @@ export function InventoryProductLotsWidget({ product, lots, locations, suppliers
           return (
             <article
               key={lot.id}
-              className={`rounded-widget border ${
+              className={`rounded-2xl border transition-all ${
                 isEditing
-                  ? 'border-stocky-primary bg-stocky-bg-widget ring-1 ring-stocky-primary'
+                  ? 'border-stocky-primary bg-white ring-1 ring-stocky-primary p-4'
                   : isConfirmingDelete
-                  ? 'border-red-300 bg-red-50/20'
-                  : 'border-stocky-border-subtle bg-stocky-bg-widget hover:border-stocky-border-default'
-              } p-3.5 transition-all flex flex-col gap-3`}
+                  ? 'border-stocky-status-critical-border bg-stocky-status-critical-bg/20 p-4'
+                  : 'border-stocky-border-subtle bg-white hover:border-stocky-border-strong hover:shadow-xs p-4'
+              } flex flex-col gap-3`}
             >
-              {/* Card Header */}
-              <div className="flex items-center justify-between gap-2">
+              {/* Card Header: Lot Badge + Status Badge + Location */}
+              <div className="flex items-center justify-between gap-2 flex-wrap">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-stocky-bg-global text-stocky-text-main border border-stocky-border-subtle">
-                    Batch #{lotLabel}
+                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold bg-stocky-bg-global text-stocky-text-main border border-stocky-border-subtle">
+                    <TagIcon size="xs" className="text-stocky-text-sub" />
+                    <span>Batch #{lotLabel}</span>
                   </span>
                   <span
-                    className={`px-2 py-0.5 rounded-full text-xs font-normal border ${
+                    className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium border ${
                       state.tone === 'critical'
-                        ? 'bg-red-50 text-red-700 border-red-200'
+                        ? 'bg-stocky-status-critical-bg text-stocky-status-critical-fg border-stocky-status-critical-border'
                         : state.tone === 'warning'
-                        ? 'bg-amber-50 text-amber-700 border-amber-200'
+                        ? 'bg-stocky-status-warning-bg text-stocky-status-warning-fg border-stocky-status-warning-border'
                         : state.tone === 'hold'
-                        ? 'bg-purple-50 text-purple-700 border-purple-200'
+                        ? 'bg-stocky-status-hold-bg text-stocky-status-hold-fg border-stocky-status-hold-border'
                         : state.tone === 'muted'
-                        ? 'bg-gray-50 text-gray-600 border-gray-200'
-                        : 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                        ? 'bg-stocky-status-muted-bg text-stocky-status-muted-fg border-stocky-status-muted-border'
+                        : 'bg-stocky-status-success-bg text-stocky-status-success-fg border-stocky-status-success-border'
                     }`}
                   >
-                    {state.label}
+                    {state.tone === 'critical' && <AlertCircleIcon size="xs" />}
+                    {state.tone === 'warning' && <AlertTriangleIcon size="xs" />}
+                    {state.tone === 'success' && <CheckCircleIcon size="xs" />}
+                    {state.tone === 'hold' && <ClockIcon size="xs" />}
+                    {state.tone === 'muted' && <BoxesIcon size="xs" />}
+                    <span>{state.label}</span>
+                    {state.countdown && <span className="opacity-75">· {state.countdown}</span>}
                   </span>
                 </div>
 
-                <span className="inline-flex items-center gap-1 text-xs text-stocky-text-sub truncate max-w-[150px]" title={locationName}>
-                  {locationName}
+                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium text-stocky-text-sub bg-stocky-bg-global border border-stocky-border-subtle truncate max-w-[170px]" title={locationName}>
+                  <WarehouseIcon size="xs" />
+                  <span className="truncate">{locationName}</span>
                 </span>
               </div>
 
               {/* Card Body: Editing Mode vs View Mode */}
               {isEditing ? (
-                <div className="flex flex-col gap-3 pt-1 border-t border-stocky-border-subtle">
+                <div className="flex flex-col gap-3 pt-2 border-t border-stocky-border-subtle">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                     <div>
                       <label className="block text-[11px] font-medium text-stocky-text-sub mb-1">Lot / Batch Number</label>
@@ -337,7 +358,7 @@ export function InventoryProductLotsWidget({ product, lots, locations, suppliers
                       type="button"
                       onClick={cancelEdit}
                       disabled={savingLotId === lot.id}
-                      className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-stocky-border-subtle text-xs font-normal text-stocky-text-main hover:bg-stocky-bg-global transition-colors"
+                      className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full border border-stocky-border-subtle text-xs font-normal text-stocky-text-main hover:bg-stocky-bg-global transition-colors cursor-pointer"
                     >
                       <XIcon size="xs" />
                       Cancel
@@ -346,7 +367,7 @@ export function InventoryProductLotsWidget({ product, lots, locations, suppliers
                       type="button"
                       onClick={() => void saveEdit(lot)}
                       disabled={savingLotId === lot.id}
-                      className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-stocky-primary text-white text-xs font-medium hover:bg-stocky-primary-hover transition-colors disabled:opacity-50"
+                      className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-stocky-primary text-white text-xs font-medium hover:bg-stocky-primary-hover transition-colors disabled:opacity-50 cursor-pointer"
                     >
                       <CheckIcon size="xs" />
                       {savingLotId === lot.id ? 'Saving…' : 'Save Batch'}
@@ -355,23 +376,29 @@ export function InventoryProductLotsWidget({ product, lots, locations, suppliers
                 </div>
               ) : (
                 <>
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 py-1 bg-stocky-bg-global/60 p-2.5 rounded-lg border border-stocky-border-subtle/70">
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 py-1 bg-stocky-bg-global/70 p-3 rounded-xl border border-stocky-border-subtle">
                     <div>
-                      <span className="block text-[10px] uppercase font-medium text-stocky-text-sub/70 tracking-wider">Quantity</span>
-                      <span className="text-sm font-medium text-stocky-text-main">
-                        {lot.quantityOnHand.toLocaleString()}{' '}
+                      <span className="block text-[10px] uppercase font-semibold text-stocky-text-sub tracking-wider">Quantity on hand</span>
+                      <span className="mt-0.5 inline-flex items-center gap-1 text-sm font-semibold text-stocky-text-main">
+                        {lot.quantityOnHand.toLocaleString()}
                         <span className="text-xs font-normal text-stocky-text-sub">{product.unitName || 'units'}</span>
                       </span>
                     </div>
                     <div>
-                      <span className="block text-[10px] uppercase font-medium text-stocky-text-sub/70 tracking-wider">Unit Cost</span>
-                      <span className="text-sm font-medium text-stocky-text-main">
+                      <span className="block text-[10px] uppercase font-semibold text-stocky-text-sub tracking-wider">Unit Cost</span>
+                      <span className="mt-0.5 block text-sm font-semibold text-stocky-text-main">
                         {formatCurrency(lot.unitCost)}
                       </span>
                     </div>
                     <div>
-                      <span className="block text-[10px] uppercase font-medium text-stocky-text-sub/70 tracking-wider">Expiry</span>
-                      <span className={`text-xs font-medium ${state.tone === 'critical' ? 'text-red-600' : state.tone === 'warning' ? 'text-amber-600' : 'text-stocky-text-main'}`}>
+                      <span className="block text-[10px] uppercase font-semibold text-stocky-text-sub tracking-wider">Expiry</span>
+                      <span className={`mt-0.5 block text-xs font-semibold ${
+                        state.tone === 'critical'
+                          ? 'text-stocky-status-critical-fg'
+                          : state.tone === 'warning'
+                          ? 'text-stocky-status-warning-fg'
+                          : 'text-stocky-text-main'
+                      }`}>
                         {formatDate(lot.expiryDate)}
                       </span>
                       <span className="block text-[10px] text-stocky-text-sub">
@@ -379,8 +406,8 @@ export function InventoryProductLotsWidget({ product, lots, locations, suppliers
                       </span>
                     </div>
                     <div>
-                      <span className="block text-[10px] uppercase font-medium text-stocky-text-sub/70 tracking-wider">Supplier</span>
-                      <span className="text-xs font-normal text-stocky-text-main truncate block" title={supplierName}>
+                      <span className="block text-[10px] uppercase font-semibold text-stocky-text-sub tracking-wider">Supplier</span>
+                      <span className="mt-0.5 text-xs font-medium text-stocky-text-main truncate block" title={supplierName}>
                         {supplierName}
                       </span>
                       <span className="block text-[10px] text-stocky-text-sub">
@@ -390,33 +417,33 @@ export function InventoryProductLotsWidget({ product, lots, locations, suppliers
                   </div>
 
                   {lot.notes && (
-                    <p className="text-xs text-stocky-text-sub bg-stocky-bg-global px-2.5 py-1.5 rounded-md border border-stocky-border-subtle/60 italic">
+                    <p className="text-xs text-stocky-text-sub bg-stocky-bg-global px-3 py-1.5 rounded-lg border border-stocky-border-subtle italic">
                       {lot.notes}
                     </p>
                   )}
 
                   {/* Card Actions */}
-                  <div className="flex items-center justify-between pt-1 border-t border-stocky-border-subtle/50 text-xs">
+                  <div className="flex items-center justify-between pt-1 border-t border-stocky-border-subtle text-xs">
                     <span className="text-[11px] text-stocky-text-sub">
-                      Total Value: <strong className="font-medium text-stocky-text-main">{formatCurrency(lot.quantityOnHand * lot.unitCost)}</strong>
+                      Total Value: <strong className="font-semibold text-stocky-text-main">{formatCurrency(lot.quantityOnHand * lot.unitCost)}</strong>
                     </span>
 
                     <div className="flex items-center gap-1.5">
                       {isConfirmingDelete ? (
-                        <div className="flex items-center gap-1.5 bg-red-50 p-1 rounded-md border border-red-200">
-                          <span className="text-xs text-red-700 px-1">Delete batch?</span>
+                        <div className="flex items-center gap-1.5 bg-stocky-status-critical-bg px-2 py-1 rounded-lg border border-stocky-status-critical-border">
+                          <span className="text-xs font-medium text-stocky-status-critical-fg px-1">Delete batch?</span>
                           <button
                             type="button"
                             onClick={() => void confirmDelete(lot)}
                             disabled={deletingLotId === lot.id}
-                            className="px-2 py-0.5 rounded bg-red-600 text-white text-xs font-medium hover:bg-red-700 transition-colors"
+                            className="px-2.5 py-0.5 rounded-md bg-red-600 text-white text-xs font-medium hover:bg-red-700 transition-colors cursor-pointer"
                           >
                             {deletingLotId === lot.id ? 'Deleting…' : 'Yes'}
                           </button>
                           <button
                             type="button"
                             onClick={() => setDeleteConfirmLotId(null)}
-                            className="px-2 py-0.5 rounded bg-white text-gray-700 border border-gray-200 text-xs hover:bg-gray-50 transition-colors"
+                            className="px-2.5 py-0.5 rounded-md bg-white text-stocky-text-main border border-stocky-border-subtle text-xs hover:bg-stocky-bg-global transition-colors cursor-pointer"
                           >
                             Cancel
                           </button>
@@ -427,11 +454,11 @@ export function InventoryProductLotsWidget({ product, lots, locations, suppliers
                             <button
                               type="button"
                               onClick={() => beginEdit(lot)}
-                              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-stocky-border-subtle text-xs font-medium text-stocky-text-main hover:bg-stocky-bg-global transition-colors"
+                              className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-stocky-border-subtle bg-white text-xs font-medium text-stocky-text-main hover:border-stocky-primary hover:text-stocky-primary transition-colors cursor-pointer"
                               aria-label={`Edit ${lotLabel}`}
                             >
                               <EditIcon size="xs" />
-                              Edit
+                              <span>Edit</span>
                             </button>
                           )}
                           {onDeleteLot && (
@@ -443,7 +470,7 @@ export function InventoryProductLotsWidget({ product, lots, locations, suppliers
                                 setRowError(null);
                                 setDeleteConfirmLotId(lot.id);
                               }}
-                              className="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-normal text-red-600 hover:bg-red-50 transition-colors"
+                              className="inline-flex items-center gap-1 px-2 py-1 rounded-full border border-stocky-border-subtle text-xs font-normal text-stocky-text-sub hover:border-stocky-status-critical-border hover:text-stocky-status-critical-fg hover:bg-stocky-status-critical-bg transition-colors cursor-pointer"
                               aria-label={`Delete ${lotLabel}`}
                             >
                               <TrashIcon size="xs" />

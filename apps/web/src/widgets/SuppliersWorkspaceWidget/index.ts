@@ -7,3 +7,4 @@ export * from './SupplierRequestsTableWidget';
 export * from './SupplierCreateDrawerWidget';
 export * from './SupplierRequestDrawerWidget';
 export * from './SupplierProductLinkDrawerWidget';
+export * from './SupplierEmailModal';

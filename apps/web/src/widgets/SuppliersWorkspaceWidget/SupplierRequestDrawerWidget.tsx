@@ -1,7 +1,12 @@
 'use client';
 
-import React, { useState } from 'react';
-import { XIcon } from '@stocky/icons';
+import React, { useMemo, useState } from 'react';
+import {
+  CalendarIcon,
+  MinusIcon,
+  PlusIcon,
+  XIcon,
+} from '@stocky/icons';
 import type { Location, Product, Supplier } from '@stocky/types';
 import { SideDrawer } from '@/components/ui/SideDrawer';
 
@@ -20,8 +25,16 @@ export interface SupplierRequestDrawerWidgetProps {
     supplierId?: string;
     requestType: 'replenish' | 'return' | 'replace';
     quantity?: number;
+    targetDate?: string;
+    notes?: string;
   }) => void;
 }
+
+const REQUEST_TYPES = [
+  { id: 'replenish', label: 'Replenish', description: 'Order new inventory' },
+  { id: 'return', label: 'Return', description: 'Send back excess/damaged' },
+  { id: 'replace', label: 'Replace', description: 'Defective batch swap' },
+] as const;
 
 export function SupplierRequestDrawerWidget({
   isOpen,
@@ -34,21 +47,53 @@ export function SupplierRequestDrawerWidget({
   selectedLocationId,
   onCreate,
 }: SupplierRequestDrawerWidgetProps) {
+  const [requestType, setRequestType] = useState<'replenish' | 'return' | 'replace'>('replenish');
+  const [supplierId, setSupplierId] = useState(defaultSupplierId || '');
   const [productId, setProductId] = useState(defaultProductId || '');
   const [locationId, setLocationId] = useState(
     selectedLocationId === 'all' ? locations[0]?.id || '' : selectedLocationId
   );
-  const [supplierId, setSupplierId] = useState(defaultSupplierId || '');
-  const [requestType, setRequestType] = useState<'replenish' | 'return' | 'replace'>('replenish');
-  const [quantity, setQuantity] = useState('');
+  const [quantity, setQuantity] = useState('1');
+  const [targetDate, setTargetDate] = useState('');
+  const [notes, setNotes] = useState('');
   const [error, setError] = useState<string | null>(null);
+
+  // Sync defaults when drawer opens or defaults change
+  React.useEffect(() => {
+    if (isOpen) {
+      if (defaultProductId) setProductId(defaultProductId);
+      if (defaultSupplierId) setSupplierId(defaultSupplierId);
+      if (selectedLocationId && selectedLocationId !== 'all') {
+        setLocationId(selectedLocationId);
+      } else if (!locationId && locations[0]?.id) {
+        setLocationId(locations[0].id);
+      }
+    }
+  }, [isOpen, defaultProductId, defaultSupplierId, selectedLocationId, locations]);
+
+  const selectedProduct = useMemo(
+    () => products.find((p) => p.id === productId),
+    [products, productId]
+  );
+
+  const filteredProducts = useMemo(() => {
+    if (!supplierId) return products;
+    // If supplier is selected, products with matching defaultSupplierId appear first
+    return [...products].sort((a, b) => {
+      const aMatch = a.defaultSupplierId === supplierId ? 1 : 0;
+      const bMatch = b.defaultSupplierId === supplierId ? 1 : 0;
+      return bMatch - aMatch;
+    });
+  }, [products, supplierId]);
 
   const resetForm = () => {
     setProductId(defaultProductId || '');
     setLocationId(selectedLocationId === 'all' ? locations[0]?.id || '' : selectedLocationId);
     setSupplierId(defaultSupplierId || '');
     setRequestType('replenish');
-    setQuantity('');
+    setQuantity('1');
+    setTargetDate('');
+    setNotes('');
     setError(null);
   };
 
@@ -57,10 +102,16 @@ export function SupplierRequestDrawerWidget({
     onClose();
   };
 
+  const handleQuantityStep = (delta: number) => {
+    const current = parseInt(quantity, 10) || 0;
+    const next = Math.max(1, current + delta);
+    setQuantity(String(next));
+  };
+
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
     if (!productId || !locationId) {
-      setError('Please select a product and target location.');
+      setError('Please select a product and target destination location.');
       return;
     }
 
@@ -76,9 +127,14 @@ export function SupplierRequestDrawerWidget({
       supplierId: supplierId || undefined,
       requestType,
       quantity: parsedQty,
+      targetDate: targetDate || undefined,
+      notes: notes.trim() || undefined,
     });
     handleClose();
   };
+
+  // Today ISO string for date picker min
+  const todayIso = new Date().toISOString().split('T')[0];
 
   return (
     <SideDrawer isOpen={isOpen} onClose={handleClose} ariaLabel="Create supplier request">
@@ -86,9 +142,9 @@ export function SupplierRequestDrawerWidget({
         {/* Header */}
         <div className="flex items-center justify-between border-b border-stocky-border-subtle p-5 sm:p-6">
           <div>
-            <h2 className="text-base font-medium text-stocky-text-main">New supplier request</h2>
+            <h2 className="text-base font-semibold text-stocky-text-main">New supplier request</h2>
             <p className="mt-0.5 text-xs text-stocky-text-sub">
-              Request replenishment, returns, or replacements for inventory batches.
+              Replenish inventory, return items, or request batch replacements.
             </p>
           </div>
           <button
@@ -101,77 +157,71 @@ export function SupplierRequestDrawerWidget({
           </button>
         </div>
 
-        {/* Form Body */}
+        {/* Form Body - Ordered 1 to 7 */}
         <form onSubmit={handleSubmit} className="flex flex-1 flex-col overflow-y-auto p-5 sm:p-6 gap-4">
           {error && (
-            <div className="rounded-xl border border-red-200 bg-red-50 p-3 text-xs text-red-700">
+            <div className="rounded-xl border border-stocky-status-danger-border bg-stocky-status-danger-bg p-3 text-xs text-stocky-status-danger-fg">
               {error}
             </div>
           )}
 
+          {/* 1. Request Type */}
           <div>
-            <label className="block text-xs font-medium text-stocky-text-main">
-              Product <span className="text-red-500">*</span>
+            <label className="block text-xs font-medium text-stocky-text-main mb-1.5">
+              1. Request Type <span className="text-stocky-status-danger-fg">*</span>
             </label>
-            <select
-              required
-              value={productId}
-              onChange={(e) => setProductId(e.target.value)}
-              className="mt-1.5 h-10 w-full rounded-xl border border-stocky-border-subtle bg-stocky-bg-widget px-3 text-xs text-stocky-text-main focus:border-stocky-primary focus:outline-none"
-            >
-              <option value="">Choose product</option>
-              {products.map((product) => (
-                <option key={product.id} value={product.id}>
-                  {product.name} {product.barcode ? `(${product.barcode})` : ''}
-                </option>
-              ))}
-            </select>
+            <div className="grid grid-cols-3 gap-2">
+              {REQUEST_TYPES.map((type) => {
+                const isSelected = requestType === type.id;
+                return (
+                  <button
+                    key={type.id}
+                    type="button"
+                    onClick={() => setRequestType(type.id)}
+                    className={`flex flex-col items-center justify-center rounded-xl border p-2.5 text-center transition-all cursor-pointer ${
+                      isSelected
+                        ? 'border-stocky-primary bg-stocky-primary/5 ring-1 ring-stocky-primary'
+                        : 'border-stocky-border-subtle bg-stocky-bg-widget hover:border-stocky-border-strong'
+                    }`}
+                  >
+                    <span
+                      className={`text-xs font-semibold ${
+                        isSelected ? 'text-stocky-primary' : 'text-stocky-text-main'
+                      }`}
+                    >
+                      {type.label}
+                    </span>
+                    <span className="mt-0.5 text-[10px] text-stocky-text-sub line-clamp-1">
+                      {type.description}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
           </div>
 
+          {/* 2. Supplier Select */}
           <div>
-            <label className="block text-xs font-medium text-stocky-text-main">
-              Location <span className="text-red-500">*</span>
-            </label>
-            <select
-              required
-              value={locationId}
-              onChange={(e) => setLocationId(e.target.value)}
-              className="mt-1.5 h-10 w-full rounded-xl border border-stocky-border-subtle bg-stocky-bg-widget px-3 text-xs text-stocky-text-main focus:border-stocky-primary focus:outline-none"
-            >
-              <option value="">Choose location</option>
-              {locations.map((location) => (
-                <option key={location.id} value={location.id}>
-                  {location.name}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-xs font-medium text-stocky-text-main">
-              Request type <span className="text-red-500">*</span>
-            </label>
-            <select
-              value={requestType}
-              onChange={(e) => setRequestType(e.target.value as typeof requestType)}
-              className="mt-1.5 h-10 w-full rounded-xl border border-stocky-border-subtle bg-stocky-bg-widget px-3 text-xs text-stocky-text-main focus:border-stocky-primary focus:outline-none"
-            >
-              <option value="replenish">Replenish (Order new stock)</option>
-              <option value="return">Return (Send damaged/excess items back)</option>
-              <option value="replace">Replace (Exchange defective batch)</option>
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-xs font-medium text-stocky-text-main">
-              Supplier <span className="text-stocky-text-sub font-normal">(optional)</span>
-            </label>
+            <div className="flex items-center justify-between">
+              <label className="block text-xs font-medium text-stocky-text-main">
+                2. Supplier <span className="text-stocky-text-sub font-normal">(optional)</span>
+              </label>
+              {supplierId && (
+                <button
+                  type="button"
+                  onClick={() => setSupplierId('')}
+                  className="text-[11px] text-stocky-text-sub hover:text-stocky-primary cursor-pointer"
+                >
+                  Clear supplier
+                </button>
+              )}
+            </div>
             <select
               value={supplierId}
               onChange={(e) => setSupplierId(e.target.value)}
               className="mt-1.5 h-10 w-full rounded-xl border border-stocky-border-subtle bg-stocky-bg-widget px-3 text-xs text-stocky-text-main focus:border-stocky-primary focus:outline-none"
             >
-              <option value="">Choose supplier (or leave unassigned)</option>
+              <option value="">Choose supplier (or unassigned)</option>
               {suppliers.map((supplier) => (
                 <option key={supplier.id} value={supplier.id}>
                   {supplier.name}
@@ -180,17 +230,145 @@ export function SupplierRequestDrawerWidget({
             </select>
           </div>
 
+          {/* 3. Product Selection */}
           <div>
             <label className="block text-xs font-medium text-stocky-text-main">
-              Quantity <span className="text-stocky-text-sub font-normal">(optional units)</span>
+              3. Product Selection <span className="text-stocky-status-danger-fg">*</span>
             </label>
-            <input
-              type="number"
-              min="1"
-              value={quantity}
-              onChange={(e) => setQuantity(e.target.value)}
-              placeholder="e.g. 100"
-              className="mt-1.5 h-10 w-full rounded-xl border border-stocky-border-subtle bg-stocky-bg-widget px-3 text-xs text-stocky-text-main placeholder:text-stocky-text-sub/50 focus:border-stocky-primary focus:outline-none"
+            <select
+              required
+              value={productId}
+              onChange={(e) => setProductId(e.target.value)}
+              className="mt-1.5 h-10 w-full rounded-xl border border-stocky-border-subtle bg-stocky-bg-widget px-3 text-xs text-stocky-text-main focus:border-stocky-primary focus:outline-none"
+            >
+              <option value="">Select a product...</option>
+              {filteredProducts.map((product) => {
+                const isPreferred = supplierId && product.defaultSupplierId === supplierId;
+                return (
+                  <option key={product.id} value={product.id}>
+                    {product.name} {product.barcode ? `(${product.barcode})` : ''}{' '}
+                    {isPreferred ? '★ Preferred' : ''}
+                  </option>
+                );
+              })}
+            </select>
+
+            {selectedProduct && (
+              <div className="mt-2 flex flex-wrap items-center gap-2 rounded-lg border border-stocky-border-subtle bg-stocky-bg-global/50 p-2.5 text-xs text-stocky-text-sub">
+                <span className="rounded bg-white px-2 py-0.5 text-[11px] font-medium text-stocky-text-main border border-stocky-border-subtle">
+                  {selectedProduct.categoryName}
+                </span>
+                {selectedProduct.barcode && (
+                  <span className="font-mono text-[10px]">BC: {selectedProduct.barcode}</span>
+                )}
+                <span className="text-stocky-primary font-medium">
+                  ${selectedProduct.unitCost.toFixed(2)} / {selectedProduct.unitName || 'unit'}
+                </span>
+                {selectedProduct.reorderPoint > 0 && (
+                  <span className="text-[10px]">
+                    Reorder point: {selectedProduct.reorderPoint} {selectedProduct.unitName || 'units'}
+                  </span>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* 4. Destination Location */}
+          <div>
+            <label className="block text-xs font-medium text-stocky-text-main">
+              4. Destination Location <span className="text-stocky-status-danger-fg">*</span>
+            </label>
+            <select
+              required
+              value={locationId}
+              onChange={(e) => setLocationId(e.target.value)}
+              className="mt-1.5 h-10 w-full rounded-xl border border-stocky-border-subtle bg-stocky-bg-widget px-3 text-xs text-stocky-text-main focus:border-stocky-primary focus:outline-none"
+            >
+              <option value="">Choose receiving location</option>
+              {locations.map((loc) => (
+                <option key={loc.id} value={loc.id}>
+                  {loc.name} ({loc.type || 'Location'})
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* 5. Quantity & Units */}
+          <div>
+            <label className="block text-xs font-medium text-stocky-text-main">
+              5. Quantity <span className="text-stocky-text-sub font-normal">({selectedProduct?.unitName || 'units'})</span>
+            </label>
+            <div className="mt-1.5 flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => handleQuantityStep(-10)}
+                title="Subtract 10"
+                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-stocky-border-subtle bg-stocky-bg-widget text-xs font-semibold text-stocky-text-main hover:bg-stocky-bg-global active:scale-95 transition-all cursor-pointer"
+              >
+                -10
+              </button>
+              <button
+                type="button"
+                onClick={() => handleQuantityStep(-1)}
+                title="Subtract 1"
+                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-stocky-border-subtle bg-stocky-bg-widget text-stocky-text-main hover:bg-stocky-bg-global active:scale-95 transition-all cursor-pointer"
+              >
+                <MinusIcon size="xs" />
+              </button>
+              <input
+                type="number"
+                min="1"
+                value={quantity}
+                onChange={(e) => setQuantity(e.target.value)}
+                placeholder="100"
+                className="h-10 min-w-0 flex-1 rounded-xl border border-stocky-border-subtle bg-stocky-bg-widget px-3 text-center text-xs font-semibold text-stocky-text-main placeholder:text-stocky-text-sub/50 focus:border-stocky-primary focus:outline-none"
+              />
+              <button
+                type="button"
+                onClick={() => handleQuantityStep(1)}
+                title="Add 1"
+                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-stocky-border-subtle bg-stocky-bg-widget text-stocky-text-main hover:bg-stocky-bg-global active:scale-95 transition-all cursor-pointer"
+              >
+                <PlusIcon size="xs" />
+              </button>
+              <button
+                type="button"
+                onClick={() => handleQuantityStep(10)}
+                title="Add 10"
+                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-stocky-border-subtle bg-stocky-bg-widget text-xs font-semibold text-stocky-text-main hover:bg-stocky-bg-global active:scale-95 transition-all cursor-pointer"
+              >
+                +10
+              </button>
+            </div>
+          </div>
+
+          {/* 6. Target Delivery Date */}
+          <div>
+            <label className="block text-xs font-medium text-stocky-text-main">
+              6. Target Delivery Date <span className="text-stocky-text-sub font-normal">(optional)</span>
+            </label>
+            <div className="relative mt-1.5">
+              <input
+                type="date"
+                min={todayIso}
+                value={targetDate}
+                onChange={(e) => setTargetDate(e.target.value)}
+                className="h-10 w-full rounded-xl border border-stocky-border-subtle bg-stocky-bg-widget px-3 text-xs text-stocky-text-main focus:border-stocky-primary focus:outline-none"
+              />
+            </div>
+          </div>
+
+          {/* 7. Notes & Justification */}
+          <div>
+            <label className="block text-xs font-medium text-stocky-text-main">
+              7. Notes & Justification <span className="text-stocky-text-sub font-normal">(optional)</span>
+            </label>
+            <textarea
+              rows={3}
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              placeholder="e.g. Urgent reorder due to weekend sales surge or batch recall instructions..."
+              className="mt-1.5 w-full rounded-xl border border-stocky-border-subtle bg-stocky-bg-widget p-3 text-xs text-stocky-text-main placeholder:text-stocky-text-sub/50 focus:border-stocky-primary focus:outline-none resize-none"
             />
           </div>
 
