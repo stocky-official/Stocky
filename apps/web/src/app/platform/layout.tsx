@@ -118,6 +118,7 @@ function PlatformShell({ children }: { children?: React.ReactNode }) {
         userEmail={platform.userEmail}
         userName={platform.userName}
         userTitle={platform.userTitle}
+        userRole={platform.userRole}
         userAvatarUrl={platform.userAvatarUrl}
         companyName={platform.company?.name}
         companyLogoUrl={platform.company?.logo_url}
@@ -128,6 +129,7 @@ function PlatformShell({ children }: { children?: React.ReactNode }) {
           if (query.trim()) platform.navigateToTab('stock');
         }}
         onSettingsClick={() => platform.navigateToTab('settings')}
+        onNavigateToTab={platform.navigateToTab}
         onNotificationsClick={() => platform.openNotifications()}
         isNotificationsOpen={platform.notificationsOpen}
         notificationCount={platform.notificationItems.length}
@@ -225,6 +227,11 @@ function PlatformShell({ children }: { children?: React.ReactNode }) {
         userAvatarUrl={platform.userAvatarUrl}
         userName={platform.userName}
         notificationCount={platform.notificationItems.length}
+        tasksCount={
+          platform.tasks?.filter((task) =>
+            ['assigned', 'in_progress', 'rejected', 'submitted'].includes(task.status)
+          ).length ?? 0
+        }
         onPostClick={() => platform.openReceive()}
       />
     </PageLayout>

@@ -521,6 +521,7 @@ export function RedesignedPlatformView() {
         userEmail={userEmail}
         userName={userName}
         userTitle={userTitle}
+        userRole={userRole}
         userAvatarUrl={userAvatarUrl}
         companyName={company?.name}
         companyLogoUrl={company?.logo_url}
@@ -528,6 +529,7 @@ export function RedesignedPlatformView() {
         hidden={!isChromeVisible}
         onSearch={(query) => { setGlobalSearchQuery(query); if (query.trim()) setActiveTab('stock'); }}
         onSettingsClick={() => handleNavigationChange('settings')}
+        onNavigateToTab={handleNavigationChange}
         onNotificationsClick={() => setNotificationsOpen(true)}
         isNotificationsOpen={notificationsOpen}
         notificationCount={notificationItems.length}
@@ -640,6 +642,11 @@ export function RedesignedPlatformView() {
         userAvatarUrl={userAvatarUrl}
         userName={userName}
         notificationCount={notificationItems.length}
+        tasksCount={
+          tasks?.filter((task) =>
+            ['assigned', 'in_progress', 'rejected', 'submitted'].includes(task.status)
+          ).length ?? 0
+        }
         onPostClick={() => openReceive()}
       />
     </>

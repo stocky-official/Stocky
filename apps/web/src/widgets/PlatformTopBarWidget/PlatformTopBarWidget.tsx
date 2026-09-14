@@ -13,12 +13,14 @@ export interface PlatformTopBarWidgetProps {
   userEmail?: string | null;
   userName?: string | null;
   userTitle?: string | null;
+  userRole?: string | null;
   userAvatarUrl?: string | null;
   companyName?: string;
   companyLogoUrl?: string | null;
   searchValue?: string;
   onSearch?: (query: string) => void;
   onSettingsClick?: () => void;
+  onNavigateToTab?: (tab: string) => void;
   hidden?: boolean;
   onNotificationsClick?: () => void;
   notificationCount?: number;
@@ -34,12 +36,14 @@ export function PlatformTopBarWidget({
   userEmail,
   userName,
   userTitle,
+  userRole,
   userAvatarUrl,
   companyName,
   companyLogoUrl,
   searchValue = '',
   onSearch,
   onSettingsClick,
+  onNavigateToTab,
   hidden = false,
   onNotificationsClick,
   notificationCount = 0,
@@ -135,8 +139,12 @@ export function PlatformTopBarWidget({
           userEmail={userEmail}
           userName={userName}
           userTitle={userTitle}
+          userRole={userRole}
           userAvatarUrl={userAvatarUrl}
+          companyName={companyName}
+          companyLogoUrl={companyLogoUrl}
           onSettingsClick={onSettingsClick}
+          onNavigateToTab={onNavigateToTab}
         />
       </div>
     </header>

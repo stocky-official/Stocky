@@ -123,8 +123,12 @@ export function SidebarNavWidget({
             userEmail={userEmail}
             userName={userName}
             userTitle={userTitle}
+            userRole={userRole}
             userAvatarUrl={userAvatarUrl}
+            companyName={companyName}
+            companyLogoUrl={companyLogoUrl}
             onSettingsClick={onSettingsClick}
+            onNavigateToTab={onTabChange}
           />
         </div>
       </div>

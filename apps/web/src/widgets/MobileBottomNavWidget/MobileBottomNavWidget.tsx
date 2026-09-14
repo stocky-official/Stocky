@@ -13,10 +13,11 @@ export interface MobileBottomNavWidgetProps {
   userAvatarUrl?: string | null;
   userName?: string | null;
   notificationCount?: number;
+  tasksCount?: number;
   onPostClick?: () => void;
 }
 
-type NavItemId = 'dashboard' | 'stock' | 'suppliers' | 'attendance' | 'settings';
+type NavItemId = 'dashboard' | 'stock' | 'tasks' | 'suppliers' | 'attendance';
 
 interface NavItemConfig {
   id: NavItemId;
@@ -27,31 +28,32 @@ interface NavItemConfig {
 const NAV_ITEMS: NavItemConfig[] = [
   { id: 'dashboard', label: 'Dashboard', routeTab: 'home' },
   { id: 'stock', label: 'Inventory', routeTab: 'stock' },
+  { id: 'tasks', label: 'Tasks', routeTab: 'tasks' },
   { id: 'suppliers', label: 'Suppliers', routeTab: 'suppliers' },
   { id: 'attendance', label: 'Attendance', routeTab: 'attendance' },
-  { id: 'settings', label: 'Settings', routeTab: 'settings' },
 ];
 
 /**
  * MobileBottomNavWidget
- * 1-to-1 reproduction of the phone navigation bar in navbarphone.gif adapted for Stocky:
- * - 5 core operational pages: Dashboard, Stock, Suppliers, Attendance & Timesheets, Settings
- * - Edge-to-edge solid white bar with flat top line (#EAEAEA) and safe-area inset padding
+ * Operational phone navigation bar adapted for Stocky:
+ * - 5 core operational hubs: Dashboard, Inventory, Tasks, Suppliers, Attendance & Timesheets
+ * - Edge-to-edge solid white bar with flat top line and safe-area inset padding
  * - Elevated circular dark bubble (#191B1F, 50px) with 3.5px solid white ring that pops above the top edge
- * - Instant optimistic tab switching + route prefetching (zero perceived lag)
+ * - Instant optimistic tab switching + route prefetching
  * - Smooth Framer Motion spring physics (stiffness: 420, damping: 30)
  * - Micro-interactions:
  *   - Dashboard: layout quad-grid with subtle fill
  *   - Stock: 3D inventory package with sparkling star
+ *   - Tasks: operational checklist clipboard with check animation & live task count badge
  *   - Suppliers: delivery truck with spring drive micro-bounce
  *   - Attendance: calendar and timesheet schedule with glowing presence markers
- *   - Settings: sleek gear icon with spring rotation micro-animation
  */
 export function MobileBottomNavWidget({
   activeTab,
   hidden = false,
   onTabChange,
   notificationCount = 0,
+  tasksCount = 0,
 }: MobileBottomNavWidgetProps) {
   const router = useRouter();
   const [optimisticNavId, setOptimisticNavId] = useState<NavItemId | null>(null);
@@ -72,10 +74,12 @@ export function MobileBottomNavWidget({
       activeTab === 'transfers' ||
       activeTab === 'expiry' ||
       activeTab === 'expiring' ||
-      activeTab === 'tasks' ||
       activeTab === 'receive'
     ) {
       return 'stock';
+    }
+    if (activeTab === 'tasks' || activeTab === 'tasks-completed') {
+      return 'tasks';
     }
     if (activeTab === 'suppliers' || activeTab === 'supplier-requests') {
       return 'suppliers';
@@ -84,7 +88,7 @@ export function MobileBottomNavWidget({
       return 'attendance';
     }
     if (activeTab === 'settings' || activeTab === 'team' || activeTab === 'locations') {
-      return 'settings';
+      return null;
     }
     if (activeTab === 'notifications') {
       return null;
@@ -149,6 +153,23 @@ export function MobileBottomNavWidget({
             <path d="M12 22V12" />
           </svg>
         );
+      case 'tasks':
+        return (
+          <svg
+            width="22"
+            height="22"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.85"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+            <rect x="8" y="2" width="8" height="4" rx="1" />
+            <path d="m9 14 2 2 4-4" />
+          </svg>
+        );
       case 'suppliers':
         return (
           <svg
@@ -190,22 +211,6 @@ export function MobileBottomNavWidget({
             <circle cx="8" cy="18" r="1" fill="currentColor" stroke="none" />
             <circle cx="12" cy="18" r="1" fill="currentColor" stroke="none" />
             <circle cx="16" cy="18" r="1" fill="currentColor" stroke="none" />
-          </svg>
-        );
-      case 'settings':
-        return (
-          <svg
-            width="22"
-            height="22"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.85"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" />
-            <circle cx="12" cy="12" r="3" />
           </svg>
         );
     }
@@ -268,6 +273,34 @@ export function MobileBottomNavWidget({
             </svg>
           </motion.div>
         );
+      case 'tasks':
+        return (
+          <motion.div
+            initial={{ scale: 0.85 }}
+            animate={{ scale: 1 }}
+            transition={{ duration: 0.25 }}
+            className="relative flex items-center justify-center"
+          >
+            <svg
+              width="22"
+              height="22"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="white"
+              strokeWidth="1.9"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path
+                d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"
+                fill="white"
+                fillOpacity="0.2"
+              />
+              <rect x="8" y="2" width="8" height="4" rx="1" fill="white" fillOpacity="0.4" />
+              <path d="m9 14 2 2 4-4" stroke="white" strokeWidth="2.2" />
+            </svg>
+          </motion.div>
+        );
       case 'suppliers':
         return (
           <motion.div
@@ -325,29 +358,6 @@ export function MobileBottomNavWidget({
             </svg>
           </motion.div>
         );
-      case 'settings':
-        return (
-          <motion.div
-            initial={{ rotate: -40, scale: 0.85 }}
-            animate={{ rotate: 0, scale: 1 }}
-            transition={{ type: 'spring', stiffness: 420, damping: 24 }}
-            className="relative flex items-center justify-center"
-          >
-            <svg
-              width="22"
-              height="22"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="white"
-              strokeWidth="1.9"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" />
-              <circle cx="12" cy="12" r="3" />
-            </svg>
-          </motion.div>
-        );
     }
   };
 
@@ -362,6 +372,7 @@ export function MobileBottomNavWidget({
         <div className="h-[62px] flex items-stretch relative px-0.5">
           {NAV_ITEMS.map((item) => {
             const isActive = currentNavId === item.id;
+            const hasTaskBadge = item.id === 'tasks' && tasksCount > 0;
 
             return (
               <button
@@ -390,8 +401,13 @@ export function MobileBottomNavWidget({
                     <div className="h-[24px] w-[24px] mb-1 opacity-0 pointer-events-none" aria-hidden="true" />
                   </>
                 ) : (
-                  <div className="h-[24px] w-[24px] mb-1 flex items-center justify-center transition-transform group-active:scale-90 text-stocky-text-main">
+                  <div className="relative h-[24px] w-[24px] mb-1 flex items-center justify-center transition-transform group-active:scale-90 text-stocky-text-main">
                     {renderInactiveIcon(item.id)}
+                    {hasTaskBadge && (
+                      <span className="absolute -top-1 -right-2 min-w-4 h-4 px-1 rounded-full bg-stocky-status-warning-fg text-white text-[9px] font-bold flex items-center justify-center ring-2 ring-white shadow-xs">
+                        {tasksCount > 9 ? '9+' : tasksCount}
+                      </span>
+                    )}
                   </div>
                 )}
 
