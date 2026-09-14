@@ -61,6 +61,7 @@ import {
   Table,
   QrCode,
   FileSpreadsheet,
+  Network,
   type LucideIcon,
 } from 'lucide-react';
 import { StockyIcon } from './StockyIcon';
@@ -139,3 +140,4 @@ export const KanbanIcon = createIcon(Kanban, 'KanbanIcon');
 export const TableIcon = createIcon(Table, 'TableIcon');
 export const QrCodeIcon = createIcon(QrCode, 'QrCodeIcon');
 export const FileSpreadsheetIcon = createIcon(FileSpreadsheet, 'FileSpreadsheetIcon');
+export const NetworkIcon = createIcon(Network, 'NetworkIcon');

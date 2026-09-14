@@ -29,8 +29,8 @@ export function LocationsPlatformView(props: LocationsPlatformViewProps) {
 
   return (
     <PlatformPageLayout
-      title="Locations directory"
-      subtitle="View operational health across branches and warehouses."
+      title="Locations"
+      subtitle="Manage branches and warehouses, track active inventory health, and oversee site staffing."
     >
       <LocationsDirectoryWidget
         {...props}

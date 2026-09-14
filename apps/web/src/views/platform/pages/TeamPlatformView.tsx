@@ -1,18 +1,15 @@
-import React, { useState } from 'react';
+import React from 'react';
 import type { CompanyUserRole, Location } from '@stocky/types';
-import { PlusIcon } from '@stocky/icons';
 import { PlatformPageLayout } from './PlatformPageLayout';
-import { TeamAccessWidget } from '@/widgets';
-
-type TeamMember = { id: string; email: string; full_name?: string | null; avatar_url?: string | null; role: CompanyUserRole; status?: string };
-type Assignment = { id: string; user_id: string; location_id: string };
+import { TeamWorkspaceWidget, type TeamMemberData } from '@/widgets/TeamWorkspaceWidget';
 
 export interface TeamPlatformViewProps {
-  members: TeamMember[];
+  members: TeamMemberData[];
   locations: Location[];
-  assignments: Assignment[];
+  assignments: Array<{ id: string; user_id: string; location_id: string }>;
   canManage: boolean;
-  onInvite: (input: { email: string; fullName?: string; role: CompanyUserRole; locationId?: string }) => Promise<void>;
+  onInvite: (input: { email: string; fullName?: string; jobTitle?: string; role: CompanyUserRole; locationId?: string; reportsTo?: string }) => Promise<void>;
+  onUpdateMember?: (memberId: string, input: { fullName?: string; jobTitle?: string; role?: CompanyUserRole; reportsTo?: string | null; permissions?: Record<string, any> }) => Promise<void>;
   onRoleChange: (memberId: string, role: CompanyUserRole) => Promise<void>;
   onAssign: (memberId: string, locationId: string) => Promise<void>;
   onUnassign: (assignmentId: string) => Promise<void>;
@@ -20,33 +17,16 @@ export interface TeamPlatformViewProps {
 
 /**
  * TeamPlatformView (PageView)
- * Orchestrates layout, header, and team invitation / location assignment workflows.
+ * Orchestrates layout, clean 2-tier header, and team management workspace.
  */
 export function TeamPlatformView(props: TeamPlatformViewProps) {
-  const [isInviteOpen, setIsInviteOpen] = useState(false);
-
   return (
     <PlatformPageLayout
-      title="Team management"
-      subtitle="Invite members with simple roles and assign the locations they can work in."
-      actions={
-        props.canManage ? (
-          <button
-            type="button"
-            onClick={() => setIsInviteOpen((prev) => !prev)}
-            className="stocky-primary-action h-8 px-3.5 rounded-full bg-stocky-accent text-stocky-text-main text-xs font-medium inline-flex items-center gap-1.5 hover:bg-stocky-accent-hover transition-colors cursor-pointer"
-          >
-            <PlusIcon size="xs" />
-            <span>{isInviteOpen ? 'Close invite' : 'Invite member'}</span>
-          </button>
-        ) : undefined
-      }
+      title="Team & Organization"
+      subtitle="Manage team roles, job titles, authorizations, and organizational structure."
     >
-      <TeamAccessWidget
-        {...props}
-        isInviteOpen={isInviteOpen}
-        onToggleInvite={() => setIsInviteOpen((prev) => !prev)}
-      />
+      <TeamWorkspaceWidget {...props} />
     </PlatformPageLayout>
   );
 }
+

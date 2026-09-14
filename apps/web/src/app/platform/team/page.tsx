@@ -18,6 +18,7 @@ export default function TeamRoutePage() {
       assignments={platform.teamAssignments}
       canManage={platform.canManage}
       onInvite={platform.inviteMember}
+      onUpdateMember={platform.updateMemberDetails}
       onRoleChange={platform.updateMemberRole}
       onAssign={platform.assignLocation}
       onUnassign={platform.unassignLocation}

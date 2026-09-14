@@ -111,7 +111,6 @@ export function getPlatformNavigation(userRole: CompanyUserRole, tenantPrefix = 
   const organizationItems: PlatformNavItem[] = [
     { id: 'locations', label: 'Locations', icon: <WarehouseIcon size="xs" />, href: makeHref('locations') },
     ...(canManageOrganization ? [{ id: 'team', label: 'Team', icon: <UsersIcon size="xs" />, href: makeHref('team') }] : []),
-    { id: 'settings', label: 'Settings', icon: <SettingsIcon size="xs" />, href: makeHref('settings') },
   ];
 
   return [

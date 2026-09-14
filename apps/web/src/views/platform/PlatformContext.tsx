@@ -189,6 +189,7 @@ export interface PlatformContextValue {
   unassignLocation: (assignmentId: string) => Promise<void>;
   inviteMember: (input: { email: string; fullName?: string; role: CompanyUserRole; locationId?: string }) => Promise<void>;
   updateMemberRole: (memberId: string, role: CompanyUserRole) => Promise<void>;
+  updateMemberDetails: (memberId: string, input: { fullName?: string; jobTitle?: string; role?: CompanyUserRole; reportsTo?: string | null; permissions?: Record<string, any> }) => Promise<void>;
   createStockTask: (input: CreateStockTaskCommand) => Promise<void>;
   startStockTask: (taskId: string) => Promise<void>;
   submitStockTask: (taskId: string, items: SubmitStockTaskCommand['items']) => Promise<void>;
@@ -586,7 +587,7 @@ export function PlatformProvider({
         supabase.from('stock_transfers').select('*').eq('company_id', profile.company_id).order('requested_at', { ascending: false }),
         supabase.from('stock_count_sessions').select('*').eq('company_id', profile.company_id).order('created_at', { ascending: false }),
         supabase.from('stock_count_lines').select('*').order('created_at', { ascending: true }),
-        supabase.from('company_users').select('id,email,full_name,avatar_url,role,status').eq('company_id', profile.company_id).order('full_name'),
+        supabase.from('company_users').select('id,email,full_name,avatar_url,role,status,job_title,reports_to,permissions').eq('company_id', profile.company_id).order('full_name'),
         supabase.from('stock_movements').select('*').eq('company_id', profile.company_id).order('created_at', { ascending: false }).limit(300),
         supabase.from('stock_tasks').select('*').eq('company_id', profile.company_id).order('created_at', { ascending: false }),
         supabase.from('stock_task_items').select('id,task_id,product_id,stock_lot_id,counted_quantity,observed_expiry_date,note,status,completed_at,created_at,updated_at').eq('company_id', profile.company_id).order('created_at', { ascending: true }),
@@ -1095,6 +1096,36 @@ export function PlatformProvider({
     else refresh();
   };
 
+  const updateMemberDetails = async (
+    memberId: string,
+    input: {
+      fullName?: string;
+      jobTitle?: string;
+      role?: CompanyUserRole;
+      reportsTo?: string | null;
+      permissions?: Record<string, any>;
+    }
+  ) => {
+    const patch: any = { updated_at: new Date().toISOString() };
+    if (input.fullName !== undefined) patch.full_name = input.fullName || null;
+    if (input.jobTitle !== undefined) patch.job_title = input.jobTitle || null;
+    if (input.role !== undefined) patch.role = input.role;
+    if (input.reportsTo !== undefined) patch.reports_to = input.reportsTo || null;
+    if (input.permissions !== undefined) patch.permissions = input.permissions;
+
+    const { error } = await supabase
+      .from('company_users')
+      .update(patch)
+      .eq('id', memberId)
+      .eq('company_id', companyId);
+
+    if (error) {
+      alert(error.message);
+      return;
+    }
+    refresh();
+  };
+
   const createStockTask = async (input: CreateStockTaskCommand) => {
     const { error } = await supabase.rpc('create_stock_task', {
       p_location_id: input.locationId,
@@ -1256,6 +1287,7 @@ export function PlatformProvider({
     unassignLocation,
     inviteMember,
     updateMemberRole,
+    updateMemberDetails,
     createStockTask,
     startStockTask,
     submitStockTask,

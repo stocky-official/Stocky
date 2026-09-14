@@ -30,6 +30,7 @@ export * from './SuppliersWorkspaceWidget';
 export * from './SupplierContactsDrawerWidget/SupplierContactsDrawerWidget';
 export * from './NotificationCenterWidget/NotificationCenterWidget';
 export * from './TeamAccessWidget/TeamAccessWidget';
+export * from './TeamWorkspaceWidget';
 export * from './TransfersWorkspaceWidget/TransfersWorkspaceWidget';
 export * from './TransfersWorkspaceWidget/TransfersToolbarWidget';
 export * from './TransfersWorkspaceWidget/TransfersTableWidget';

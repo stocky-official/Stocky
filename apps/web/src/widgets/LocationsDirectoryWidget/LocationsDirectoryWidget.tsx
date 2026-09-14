@@ -154,7 +154,7 @@ export function LocationsDirectoryWidget({
           const { data: profile } = await supabase
             .from('company_users')
             .select('company_id')
-            .eq('id', user.id)
+            .or(`auth_user_id.eq.${user.id},email.eq.${user.email?.toLowerCase()}`)
             .maybeSingle();
           if (profile?.company_id) {
             targetCompanyId = profile.company_id;
@@ -489,530 +489,559 @@ export function LocationsDirectoryWidget({
 
   return (
     <div className="stocky-locations-workspace flex flex-col gap-6">
-      {/* Search & Buttons Toolbar (matching Stock and Suppliers workspaces) */}
-      <section className="stocky-stock-filterbar stocky-locations-filterbar">
-        <div className="stocky-stock-table-toolbar stocky-locations-toolbar">
-          {/* Split Search Field */}
-          <div className="relative min-w-0 flex-1" ref={filterPanelRef}>
-            <div className="stocky-split-search-field">
-              <div className="stocky-split-search-field__input-wrap">
-                <SearchIcon size="xs" className="pointer-events-none text-stocky-text-sub shrink-0" />
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search branches, addresses, managers, phone..."
-                  aria-label="Search locations"
-                  className="stocky-split-search-field__input"
-                />
-                {searchQuery && (
-                  <button
-                    type="button"
-                    onClick={() => setSearchQuery('')}
-                    className="text-stocky-text-sub hover:text-stocky-text-main cursor-pointer shrink-0"
-                    aria-label="Clear location search"
-                  >
-                    <XIcon size="xs" />
-                  </button>
-                )}
-              </div>
-              <button
-                type="button"
-                onClick={() => setIsFilterPanelOpen((open) => !open)}
-                aria-label="Filter locations"
-                aria-expanded={isFilterPanelOpen}
-                className={`stocky-split-search-field__filter-btn ${isFilterPanelOpen || activeFilterCount > 0 ? 'stocky-split-search-field__filter-btn--active' : ''}`}
-                title="Filter by columns"
-              >
-                <FilterIcon size="xs" />
-                {activeFilterCount > 0 && (
-                  <span className="stocky-split-search-field__badge">{activeFilterCount}</span>
-                )}
-              </button>
-            </div>
-
-            {/* Floating Column Filter Panel */}
-            {isFilterPanelOpen && (
-              <div className="stocky-column-filter-panel" role="dialog" aria-label="Location column filters">
-                {/* Sticky Header */}
-                <div className="sticky top-0 z-10 flex shrink-0 items-center justify-between border-b border-stocky-border-subtle bg-white px-4 py-2.5">
-                  <div className="flex items-center gap-2">
-                    <FilterIcon size="xs" className="text-stocky-primary" />
-                    <h3 className="text-xs font-semibold text-stocky-text-main">Location Filters</h3>
-                    {activeFilterCount > 0 && (
-                      <span className="rounded-full bg-stocky-primary/10 px-2 py-0.5 text-[10px] font-semibold text-stocky-primary">
-                        {activeFilterCount} active
-                      </span>
-                    )}
-                  </div>
-                  {activeFilterCount > 0 && (
+      {/* Unified Workspace Card */}
+      <div className="stocky-stock-unified-card rounded-2xl bg-white border border-stocky-border-subtle shadow-xs flex flex-col relative z-20 overflow-visible">
+        {/* Integrated Toolbar Header */}
+        <div className="p-3 sm:p-3.5 border-b border-stocky-border-subtle relative z-30">
+          <div className="stocky-stock-table-toolbar stocky-locations-toolbar flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            {/* Split Search Field */}
+            <div className="relative min-w-0 flex-1" ref={filterPanelRef}>
+              <div className="stocky-split-search-field">
+                <div className="stocky-split-search-field__input-wrap">
+                  <SearchIcon size="xs" className="pointer-events-none text-stocky-text-sub shrink-0" />
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="Search branches, addresses, managers, phone..."
+                    aria-label="Search locations"
+                    className="stocky-split-search-field__input"
+                  />
+                  {searchQuery && (
                     <button
                       type="button"
-                      onClick={resetFilters}
-                      className="text-[11px] font-medium text-stocky-primary hover:underline cursor-pointer"
+                      onClick={() => setSearchQuery('')}
+                      className="text-stocky-text-sub hover:text-stocky-text-main cursor-pointer shrink-0"
+                      aria-label="Clear location search"
                     >
-                      Reset all
+                      <XIcon size="xs" />
                     </button>
                   )}
                 </div>
-
-                <div className="stocky-column-filter-panel__body space-y-3">
-                  {/* Search in Fields */}
-                  <div className="space-y-1.5">
-                    <div className="flex items-center justify-between">
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-stocky-text-sub">Search In Fields</span>
-                      <button
-                        type="button"
-                        onClick={() => setSelectedColumns({ name: true, address: true, manager: true, phone: true })}
-                        className="text-[10px] text-stocky-text-sub hover:text-stocky-primary cursor-pointer"
-                      >
-                        Select all
-                      </button>
-                    </div>
-                    <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-4">
-                      <label className="flex items-center gap-1.5 text-xs text-stocky-text-main cursor-pointer hover:bg-stocky-bg-global rounded px-1.5 py-1">
-                        <input
-                          type="checkbox"
-                          checked={selectedColumns.name}
-                          onChange={(e) => setSelectedColumns((prev) => ({ ...prev, name: e.target.checked }))}
-                          className="accent-stocky-primary rounded"
-                        />
-                        <span className="truncate">Name</span>
-                      </label>
-                      <label className="flex items-center gap-1.5 text-xs text-stocky-text-main cursor-pointer hover:bg-stocky-bg-global rounded px-1.5 py-1">
-                        <input
-                          type="checkbox"
-                          checked={selectedColumns.address}
-                          onChange={(e) => setSelectedColumns((prev) => ({ ...prev, address: e.target.checked }))}
-                          className="accent-stocky-primary rounded"
-                        />
-                        <span className="truncate">Address</span>
-                      </label>
-                      <label className="flex items-center gap-1.5 text-xs text-stocky-text-main cursor-pointer hover:bg-stocky-bg-global rounded px-1.5 py-1">
-                        <input
-                          type="checkbox"
-                          checked={selectedColumns.manager}
-                          onChange={(e) => setSelectedColumns((prev) => ({ ...prev, manager: e.target.checked }))}
-                          className="accent-stocky-primary rounded"
-                        />
-                        <span className="truncate">Manager</span>
-                      </label>
-                      <label className="flex items-center gap-1.5 text-xs text-stocky-text-main cursor-pointer hover:bg-stocky-bg-global rounded px-1.5 py-1">
-                        <input
-                          type="checkbox"
-                          checked={selectedColumns.phone}
-                          onChange={(e) => setSelectedColumns((prev) => ({ ...prev, phone: e.target.checked }))}
-                          className="accent-stocky-primary rounded"
-                        />
-                        <span className="truncate">Phone</span>
-                      </label>
-                    </div>
-                  </div>
-
-                  {/* Dropdown Filters */}
-                  <div className="space-y-2 border-t border-stocky-border-subtle pt-2.5">
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-stocky-text-sub">Filter By Attributes</span>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                      <label className="block text-xs font-medium text-stocky-text-main">
-                        Location Type
-                        <select
-                          value={filterType}
-                          onChange={(e) => setFilterType(e.target.value as any)}
-                          className="mt-1 h-8 w-full rounded-lg border border-stocky-border-subtle bg-stocky-bg-global px-2 text-xs text-stocky-text-main focus:border-stocky-primary focus:outline-none"
-                        >
-                          <option value="all">All types</option>
-                          <option value="branch">Branch only</option>
-                          <option value="warehouse">Warehouse only</option>
-                        </select>
-                      </label>
-
-                      <label className="block text-xs font-medium text-stocky-text-main">
-                        Manager Status
-                        <select
-                          value={filterManagerStatus}
-                          onChange={(e) => setFilterManagerStatus(e.target.value as any)}
-                          className="mt-1 h-8 w-full rounded-lg border border-stocky-border-subtle bg-stocky-bg-global px-2 text-xs text-stocky-text-main focus:border-stocky-primary focus:outline-none"
-                        >
-                          <option value="all">All locations</option>
-                          <option value="assigned">Manager assigned</option>
-                          <option value="unassigned">No manager assigned</option>
-                        </select>
-                      </label>
-
-                      <label className="block text-xs font-medium text-stocky-text-main">
-                        Staffing Level
-                        <select
-                          value={filterStaffing}
-                          onChange={(e) => setFilterStaffing(e.target.value as any)}
-                          className="mt-1 h-8 w-full rounded-lg border border-stocky-border-subtle bg-stocky-bg-global px-2 text-xs text-stocky-text-main focus:border-stocky-primary focus:outline-none"
-                        >
-                          <option value="all">Any staff count</option>
-                          <option value="has_staff">Has staff members</option>
-                          <option value="no_staff">No staff assigned</option>
-                        </select>
-                      </label>
-
-                      <label className="block text-xs font-medium text-stocky-text-main">
-                        Operational Health
-                        <select
-                          value={filterHealth}
-                          onChange={(e) => setFilterHealth(e.target.value as any)}
-                          className="mt-1 h-8 w-full rounded-lg border border-stocky-border-subtle bg-stocky-bg-global px-2 text-xs text-stocky-text-main focus:border-stocky-primary focus:outline-none"
-                        >
-                          <option value="all">All operational statuses</option>
-                          <option value="expiring">Has expiry issues</option>
-                          <option value="low_stock">Has low stock</option>
-                          <option value="healthy">Healthy stock</option>
-                        </select>
-                      </label>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Sticky Footer */}
-                <div className="sticky bottom-0 z-10 flex shrink-0 items-center justify-between border-t border-stocky-border-subtle bg-stocky-bg-global px-4 py-2">
-                  <span className="text-[11px] font-medium text-stocky-text-sub">
-                    {filteredStats.length} location{filteredStats.length === 1 ? '' : 's'} matching
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => setIsFilterPanelOpen(false)}
-                    className="h-7 rounded-full bg-stocky-primary px-3 text-xs font-medium text-white hover:bg-stocky-primary-hover cursor-pointer"
-                  >
-                    Done
-                  </button>
-                </div>
+                <button
+                  type="button"
+                  onClick={() => setIsFilterPanelOpen((open) => !open)}
+                  aria-label="Filter locations"
+                  aria-expanded={isFilterPanelOpen}
+                  className={`stocky-split-search-field__filter-btn ${isFilterPanelOpen || activeFilterCount > 0 ? 'stocky-split-search-field__filter-btn--active' : ''}`}
+                  title="Filter by columns"
+                >
+                  <FilterIcon size="xs" />
+                  {activeFilterCount > 0 && (
+                    <span className="stocky-split-search-field__badge">{activeFilterCount}</span>
+                  )}
+                </button>
               </div>
-            )}
-          </div>
 
-          {/* Quick View Filter Pills & Action Buttons */}
-          <div className="stocky-stock-table-toolbar__actions">
-            {/* Quick type filter pills */}
-            <div className="hidden sm:inline-flex items-center rounded-full bg-stocky-bg-global border border-stocky-border-subtle p-0.5 h-10">
-              <button
-                type="button"
-                onClick={() => setQuickTypeFilter('all')}
-                className={`h-8 px-3 rounded-full text-xs font-medium transition-colors cursor-pointer ${quickTypeFilter === 'all' ? 'bg-white shadow-xs text-stocky-text-main font-semibold' : 'text-stocky-text-sub hover:text-stocky-text-main'}`}
-              >
-                All ({allLocationStats.length})
-              </button>
-              <button
-                type="button"
-                onClick={() => setQuickTypeFilter('branch')}
-                className={`h-8 px-3 rounded-full text-xs font-medium transition-colors cursor-pointer ${quickTypeFilter === 'branch' ? 'bg-white shadow-xs text-stocky-text-main font-semibold' : 'text-stocky-text-sub hover:text-stocky-text-main'}`}
-              >
-                Branches ({allLocationStats.filter((s) => s.location.type === 'branch').length})
-              </button>
-              <button
-                type="button"
-                onClick={() => setQuickTypeFilter('warehouse')}
-                className={`h-8 px-3 rounded-full text-xs font-medium transition-colors cursor-pointer ${quickTypeFilter === 'warehouse' ? 'bg-white shadow-xs text-stocky-text-main font-semibold' : 'text-stocky-text-sub hover:text-stocky-text-main'}`}
-              >
-                Warehouses ({allLocationStats.filter((s) => s.location.type === 'warehouse').length})
-              </button>
-            </div>
-
-            <button
-              type="button"
-              onClick={exportLocationsCsv}
-              className="stocky-table-toolbar-button"
-              title="Export locations report"
-            >
-              <CloudDownloadIcon size="xs" /> Export
-            </button>
-            {canManage && (
-              <button
-                type="button"
-                onClick={openCreateDrawer}
-                className="stocky-table-toolbar-button stocky-table-toolbar-button--primary"
-              >
-                <PlusIcon size="xs" /> Add location
-              </button>
-            )}
-          </div>
-        </div>
-      </section>
-
-      {/* Locations Cards Grid */}
-      <section className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-        {filteredStats.map(
-          ({
-            location,
-            skuCount,
-            units,
-            value,
-            expiring,
-            lowStock,
-            pendingTransfers,
-            lastCompletedCount,
-            manager,
-            assignedStaff,
-          }) => (
-            <div
-              key={location.id}
-              role="button"
-              tabIndex={0}
-              onClick={() => onOpenStock(location.id)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                  e.preventDefault();
-                  onOpenStock(location.id);
-                }
-              }}
-              className="group flex flex-col rounded-2xl bg-white border border-stocky-border-subtle shadow-xs hover:border-stocky-primary/50 hover:shadow-md transition-all duration-200 cursor-pointer overflow-hidden text-left"
-            >
-              {/* Branch Cover Header (with photo or curated architectural header) */}
-              {location.imageUrl ? (
-                <div className="relative h-40 w-full overflow-hidden bg-slate-100">
-                  <img
-                    src={location.imageUrl}
-                    alt={location.name}
-                    referrerPolicy="no-referrer"
-                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                    onError={(e) => {
-                      (e.currentTarget as HTMLImageElement).style.display = 'none';
-                    }}
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/25 to-black/10" />
-
-                  {/* Top Header floating badge & actions */}
-                  <div className="absolute top-3 inset-x-3 flex items-center justify-between">
-                    <span className="inline-flex items-center gap-1.5 rounded-full bg-white/95 backdrop-blur-md px-2.5 py-1 text-[11px] font-semibold text-stocky-text-main shadow-xs">
-                      {location.type === 'warehouse' ? <WarehouseIcon size="xs" /> : <BoxIcon size="xs" />}
-                      <span>{location.type === 'warehouse' ? 'Warehouse' : 'Branch'}</span>
-                    </span>
-
-                    {canManage && (
+              {/* Floating Column Filter Panel */}
+              {isFilterPanelOpen && (
+                <div className="stocky-column-filter-panel" role="dialog" aria-label="Location column filters">
+                  {/* Sticky Header */}
+                  <div className="sticky top-0 z-10 flex shrink-0 items-center justify-between border-b border-stocky-border-subtle bg-white px-4 py-2.5">
+                    <div className="flex items-center gap-2">
+                      <FilterIcon size="xs" className="text-stocky-primary" />
+                      <h3 className="text-xs font-semibold text-stocky-text-main">Location Filters</h3>
+                      {activeFilterCount > 0 && (
+                        <span className="rounded-full bg-stocky-primary/10 px-2 py-0.5 text-[10px] font-semibold text-stocky-primary">
+                          {activeFilterCount} active
+                        </span>
+                      )}
+                    </div>
+                    {activeFilterCount > 0 && (
                       <button
                         type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          openEditDrawer(location);
-                        }}
-                        className="flex h-7 w-7 items-center justify-center rounded-full bg-white/90 backdrop-blur-md hover:bg-white text-stocky-text-main transition-colors shadow-xs cursor-pointer"
-                        title="Edit location"
+                        onClick={resetFilters}
+                        className="text-[11px] font-medium text-stocky-primary hover:underline cursor-pointer"
                       >
-                        <EditIcon size="xs" />
+                        Reset all
                       </button>
                     )}
                   </div>
 
-                  {/* Bottom title on image banner */}
-                  <div className="absolute bottom-3 inset-x-3 text-white">
-                    <h2 className="text-base font-semibold drop-shadow-sm truncate">{location.name}</h2>
-                    <p className="text-xs text-white/90 drop-shadow-sm truncate mt-0.5">
-                      {location.address || 'Address not registered'}
-                    </p>
-                  </div>
-                </div>
-              ) : (
-                <div className="relative h-28 w-full overflow-hidden bg-gradient-to-br from-[#F5F7F0] via-[#EBF1E5] to-slate-100 p-4 border-b border-stocky-border-subtle">
-                  <div className="flex items-center justify-between">
-                    <span className="inline-flex items-center gap-1.5 rounded-full bg-white px-2.5 py-1 text-[11px] font-semibold text-stocky-text-main border border-stocky-border-subtle shadow-xs">
-                      {location.type === 'warehouse' ? <WarehouseIcon size="xs" /> : <BoxIcon size="xs" />}
-                      <span>{location.type === 'warehouse' ? 'Warehouse' : 'Branch'}</span>
-                    </span>
-
-                    {canManage && (
-                      <div className="flex items-center gap-1.5">
+                  <div className="stocky-column-filter-panel__body space-y-3">
+                    {/* Search in Fields */}
+                    <div className="space-y-1.5">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-stocky-text-sub">Search In Fields</span>
                         <button
                           type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            openEditDrawer(location);
-                          }}
-                          className="flex h-7 items-center gap-1 rounded-full bg-white px-2.5 text-[10px] font-medium text-stocky-text-sub hover:text-stocky-primary border border-stocky-border-subtle shadow-xs transition-colors cursor-pointer"
-                          title="Add branch photo"
+                          onClick={() => setSelectedColumns({ name: true, address: true, manager: true, phone: true })}
+                          className="text-[10px] text-stocky-text-sub hover:text-stocky-primary cursor-pointer"
                         >
-                          <CameraIcon size="xs" />
-                          <span>Add photo</span>
-                        </button>
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            openEditDrawer(location);
-                          }}
-                          className="flex h-7 w-7 items-center justify-center rounded-full bg-white text-stocky-text-main hover:text-stocky-primary border border-stocky-border-subtle shadow-xs transition-colors cursor-pointer"
-                          title="Edit location"
-                        >
-                          <EditIcon size="xs" />
+                          Select all
                         </button>
                       </div>
-                    )}
+                      <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-4">
+                        <label className="flex items-center gap-1.5 text-xs text-stocky-text-main cursor-pointer hover:bg-stocky-bg-global rounded px-1.5 py-1">
+                          <input
+                            type="checkbox"
+                            checked={selectedColumns.name}
+                            onChange={(e) => setSelectedColumns((prev) => ({ ...prev, name: e.target.checked }))}
+                            className="accent-stocky-primary rounded"
+                          />
+                          <span className="truncate">Name</span>
+                        </label>
+                        <label className="flex items-center gap-1.5 text-xs text-stocky-text-main cursor-pointer hover:bg-stocky-bg-global rounded px-1.5 py-1">
+                          <input
+                            type="checkbox"
+                            checked={selectedColumns.address}
+                            onChange={(e) => setSelectedColumns((prev) => ({ ...prev, address: e.target.checked }))}
+                            className="accent-stocky-primary rounded"
+                          />
+                          <span className="truncate">Address</span>
+                        </label>
+                        <label className="flex items-center gap-1.5 text-xs text-stocky-text-main cursor-pointer hover:bg-stocky-bg-global rounded px-1.5 py-1">
+                          <input
+                            type="checkbox"
+                            checked={selectedColumns.manager}
+                            onChange={(e) => setSelectedColumns((prev) => ({ ...prev, manager: e.target.checked }))}
+                            className="accent-stocky-primary rounded"
+                          />
+                          <span className="truncate">Manager</span>
+                        </label>
+                        <label className="flex items-center gap-1.5 text-xs text-stocky-text-main cursor-pointer hover:bg-stocky-bg-global rounded px-1.5 py-1">
+                          <input
+                            type="checkbox"
+                            checked={selectedColumns.phone}
+                            onChange={(e) => setSelectedColumns((prev) => ({ ...prev, phone: e.target.checked }))}
+                            className="accent-stocky-primary rounded"
+                          />
+                          <span className="truncate">Phone</span>
+                        </label>
+                      </div>
+                    </div>
+
+                    {/* Dropdown Filters */}
+                    <div className="space-y-2 border-t border-stocky-border-subtle pt-2.5">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-stocky-text-sub">Filter By Attributes</span>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        <label className="block text-xs font-medium text-stocky-text-main">
+                          Location Type
+                          <select
+                            value={filterType}
+                            onChange={(e) => setFilterType(e.target.value as any)}
+                            className="mt-1 h-8 w-full rounded-lg border border-stocky-border-subtle bg-stocky-bg-global px-2 text-xs text-stocky-text-main focus:border-stocky-primary focus:outline-none"
+                          >
+                            <option value="all">All Types</option>
+                            <option value="branch">Branches only</option>
+                            <option value="warehouse">Warehouses only</option>
+                          </select>
+                        </label>
+
+                        <label className="block text-xs font-medium text-stocky-text-main">
+                          Branch Manager
+                          <select
+                            value={filterManagerStatus}
+                            onChange={(e) => setFilterManagerStatus(e.target.value as any)}
+                            className="mt-1 h-8 w-full rounded-lg border border-stocky-border-subtle bg-stocky-bg-global px-2 text-xs text-stocky-text-main focus:border-stocky-primary focus:outline-none"
+                          >
+                            <option value="all">All manager statuses</option>
+                            <option value="assigned">Manager assigned</option>
+                            <option value="unassigned">No manager assigned</option>
+                          </select>
+                        </label>
+
+                        <label className="block text-xs font-medium text-stocky-text-main">
+                          Staffing Level
+                          <select
+                            value={filterStaffing}
+                            onChange={(e) => setFilterStaffing(e.target.value as any)}
+                            className="mt-1 h-8 w-full rounded-lg border border-stocky-border-subtle bg-stocky-bg-global px-2 text-xs text-stocky-text-main focus:border-stocky-primary focus:outline-none"
+                          >
+                            <option value="all">Any staff count</option>
+                            <option value="has_staff">Has staff members</option>
+                            <option value="no_staff">No staff assigned</option>
+                          </select>
+                        </label>
+
+                        <label className="block text-xs font-medium text-stocky-text-main">
+                          Operational Health
+                          <select
+                            value={filterHealth}
+                            onChange={(e) => setFilterHealth(e.target.value as any)}
+                            className="mt-1 h-8 w-full rounded-lg border border-stocky-border-subtle bg-stocky-bg-global px-2 text-xs text-stocky-text-main focus:border-stocky-primary focus:outline-none"
+                          >
+                            <option value="all">All operational statuses</option>
+                            <option value="expiring">Has expiry issues</option>
+                            <option value="low_stock">Has low stock</option>
+                            <option value="healthy">Healthy stock</option>
+                          </select>
+                        </label>
+                      </div>
+                    </div>
                   </div>
-                  <div className="mt-2.5">
-                    <h2 className="text-base font-semibold text-stocky-text-main truncate">{location.name}</h2>
-                    <p className="text-xs text-stocky-text-sub truncate mt-0.5">
-                      {location.address || 'Address not registered'}
-                    </p>
+
+                  {/* Sticky Footer */}
+                  <div className="sticky bottom-0 z-10 flex shrink-0 items-center justify-between border-t border-stocky-border-subtle bg-stocky-bg-global px-4 py-2">
+                    <span className="text-[11px] font-medium text-stocky-text-sub">
+                      {filteredStats.length} location{filteredStats.length === 1 ? '' : 's'} matching
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setIsFilterPanelOpen(false)}
+                      className="h-7 rounded-full bg-stocky-primary px-3 text-xs font-medium text-white hover:bg-stocky-primary-hover cursor-pointer"
+                    >
+                      Done
+                    </button>
                   </div>
                 </div>
               )}
+            </div>
 
-              {/* Card Body */}
-              <div className="p-4 sm:p-5 flex flex-col gap-4 flex-1 justify-between">
-                {/* Staff & Manager Cardlet (Highlight requested by user) */}
-                <div className="rounded-widget bg-stocky-bg-subtle border border-stocky-border-subtle p-3 flex flex-col gap-3">
-                  {/* Manager Row */}
-                  <div className="flex items-center justify-between gap-2">
-                    <div className="flex items-center gap-2.5 min-w-0">
-                      {manager ? (
-                        <UserAvatar
-                          src={manager.avatar_url}
-                          name={manager.full_name}
-                          email={manager.email}
-                          size="md"
-                          variant="solid"
-                          className="ring-2 ring-white shrink-0"
+            {/* Quick View Filter Buttons & Actions */}
+            <div className="stocky-stock-table-toolbar__actions flex flex-wrap items-center gap-2">
+              {/* Quick type filter buttons */}
+              <div className="hidden sm:inline-flex items-center gap-1.5" role="tablist">
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={quickTypeFilter === 'all'}
+                  onClick={() => setQuickTypeFilter('all')}
+                  className={`stocky-table-toolbar-button h-10 px-4 rounded-full text-xs font-medium inline-flex items-center justify-center whitespace-nowrap cursor-pointer transition-colors ${
+                    quickTypeFilter === 'all'
+                      ? 'stocky-table-toolbar-button--active border-stocky-primary bg-stocky-primary/10 text-stocky-primary font-semibold'
+                      : 'border border-stocky-border-subtle bg-white text-stocky-text-main hover:border-stocky-primary hover:text-stocky-primary'
+                  }`}
+                >
+                  All ({allLocationStats.length})
+                </button>
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={quickTypeFilter === 'branch'}
+                  onClick={() => setQuickTypeFilter('branch')}
+                  className={`stocky-table-toolbar-button h-10 px-4 rounded-full text-xs font-medium inline-flex items-center justify-center whitespace-nowrap cursor-pointer transition-colors ${
+                    quickTypeFilter === 'branch'
+                      ? 'stocky-table-toolbar-button--active border-stocky-primary bg-stocky-primary/10 text-stocky-primary font-semibold'
+                      : 'border border-stocky-border-subtle bg-white text-stocky-text-main hover:border-stocky-primary hover:text-stocky-primary'
+                  }`}
+                >
+                  Branches ({allLocationStats.filter((s) => s.location.type === 'branch').length})
+                </button>
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={quickTypeFilter === 'warehouse'}
+                  onClick={() => setQuickTypeFilter('warehouse')}
+                  className={`stocky-table-toolbar-button h-10 px-4 rounded-full text-xs font-medium inline-flex items-center justify-center whitespace-nowrap cursor-pointer transition-colors ${
+                    quickTypeFilter === 'warehouse'
+                      ? 'stocky-table-toolbar-button--active border-stocky-primary bg-stocky-primary/10 text-stocky-primary font-semibold'
+                      : 'border border-stocky-border-subtle bg-white text-stocky-text-main hover:border-stocky-primary hover:text-stocky-primary'
+                  }`}
+                >
+                  Warehouses ({allLocationStats.filter((s) => s.location.type === 'warehouse').length})
+                </button>
+              </div>
+
+              <button
+                type="button"
+                onClick={exportLocationsCsv}
+                className="stocky-table-toolbar-button h-10 px-4 rounded-full border border-stocky-border-subtle bg-white text-xs font-medium text-stocky-text-main hover:border-stocky-primary hover:text-stocky-primary inline-flex items-center gap-1.5 cursor-pointer transition-colors"
+                title="Export locations report"
+              >
+                <CloudDownloadIcon size="xs" /> <span>Export</span>
+              </button>
+              {canManage && (
+                <button
+                  type="button"
+                  onClick={openCreateDrawer}
+                  className="stocky-table-toolbar-button stocky-table-toolbar-button--primary h-10 px-4 rounded-full text-xs font-medium inline-flex items-center justify-center gap-1.5 whitespace-nowrap cursor-pointer"
+                >
+                  <PlusIcon size="xs" /> <span>Add location</span>
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Integrated Data View (Horizontal Cards) */}
+        <div className="p-3 sm:p-4 w-full">
+          {filteredStats.length > 0 ? (
+            <div className="flex flex-col gap-3.5">
+              {filteredStats.map(
+                ({
+                  location,
+                  skuCount,
+                  units,
+                  value,
+                  expiring,
+                  lowStock,
+                  pendingTransfers,
+                  lastCompletedCount,
+                  manager,
+                  assignedStaff,
+                }) => (
+                  <div
+                    key={location.id}
+                    role="button"
+                    tabIndex={0}
+                    onClick={() => onOpenStock(location.id)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        onOpenStock(location.id);
+                      }
+                    }}
+                    className="group flex flex-col md:flex-row items-stretch rounded-2xl bg-white border border-stocky-border-subtle shadow-2xs hover:border-stocky-border-strong hover:shadow-xs transition-all duration-200 cursor-pointer overflow-hidden text-left"
+                  >
+                    {/* Left: Landscape Thumbnail Banner */}
+                    <div className="relative w-full md:w-56 lg:w-64 h-36 md:h-auto shrink-0 bg-stocky-bg-subtle overflow-hidden border-b md:border-b-0 md:border-r border-stocky-border-subtle">
+                      {location.imageUrl ? (
+                        <img
+                          src={location.imageUrl}
+                          alt={location.name}
+                          referrerPolicy="no-referrer"
+                          className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-500"
+                          onError={(e) => {
+                            (e.currentTarget as HTMLElement).style.display = 'none';
+                          }}
                         />
                       ) : (
-                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-amber-50 text-amber-600 border border-amber-200 text-xs shrink-0">
-                          <UsersIcon size="xs" />
+                        <div className="h-full w-full flex flex-col items-center justify-center p-4 bg-gradient-to-br from-[#F5F7F0] via-[#EBF1E5] to-slate-100 text-stocky-text-sub">
+                          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white border border-stocky-border-subtle shadow-2xs text-stocky-primary mb-1.5">
+                            {location.type === 'warehouse' ? <WarehouseIcon size="md" /> : <BoxIcon size="md" />}
+                          </div>
+                          <span className="text-[10px] font-medium text-stocky-text-sub">No image</span>
                         </div>
                       )}
-                      <div className="min-w-0">
-                        <p className="text-[10px] uppercase font-bold tracking-wider text-stocky-text-sub">
-                          Branch Manager
-                        </p>
-                        <p className="text-xs font-semibold text-stocky-text-main truncate">
-                          {manager ? (
-                            manager.full_name || manager.email
-                          ) : (
-                            <span className="text-amber-700 font-medium">No manager assigned</span>
-                          )}
-                        </p>
+
+                      {/* Top Floating Badge */}
+                      <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5">
+                        <span className="inline-flex items-center gap-1 rounded-full bg-white/95 backdrop-blur-md px-2.5 py-0.5 text-[10px] font-semibold text-stocky-text-main shadow-2xs border border-stocky-border-subtle">
+                          {location.type === 'warehouse' ? <WarehouseIcon size="xs" /> : <BoxIcon size="xs" />}
+                          <span>{location.type === 'warehouse' ? 'Warehouse' : 'Branch'}</span>
+                        </span>
                       </div>
+
+                      {/* Edit photo shortcut */}
+                      {canManage && (
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            openEditDrawer(location);
+                          }}
+                          className="absolute top-2.5 right-2.5 flex h-7 w-7 items-center justify-center rounded-full bg-white/90 backdrop-blur-md text-stocky-text-sub hover:text-stocky-primary hover:bg-white shadow-2xs border border-stocky-border-subtle transition-colors cursor-pointer"
+                          title="Edit location details or photo"
+                        >
+                          <CameraIcon size="xs" />
+                        </button>
+                      )}
                     </div>
 
-                    {canManage && !manager && (
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          openEditDrawer(location);
-                        }}
-                        className="text-[11px] font-medium text-stocky-primary hover:underline shrink-0 cursor-pointer"
-                      >
-                        Assign
-                      </button>
-                    )}
-                  </div>
-
-                  {/* Staffers Count & Overlapping Avatar Stack */}
-                  <div className="flex items-center justify-between border-t border-stocky-border-subtle/80 pt-2 gap-2 text-xs">
-                    <div className="flex items-center gap-1.5 text-stocky-text-sub text-[11px]">
-                      <UsersIcon size="xs" className="text-stocky-text-sub/80 shrink-0" />
-                      <span>
-                        <strong className="font-semibold text-stocky-text-main">{assignedStaff.length}</strong>{' '}
-                        {assignedStaff.length === 1 ? 'staffer' : 'staffers'}
-                      </span>
-                    </div>
-
-                    {assignedStaff.length > 0 ? (
-                      <div className="flex items-center -space-x-1.5 shrink-0" title={assignedStaff.map((s) => s.full_name || s.email).join(', ')}>
-                        {assignedStaff.slice(0, 4).map((member) => (
-                          <div key={member.id} className="relative">
-                            <UserAvatar
-                              src={member.avatar_url}
-                              name={member.full_name}
-                              email={member.email}
-                              size="xs"
-                              className="ring-2 ring-white"
-                            />
+                    {/* Center: Core Details & Staffing */}
+                    <div className="flex-1 p-4 sm:p-5 flex flex-col justify-between min-w-0">
+                      <div>
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-2">
+                              <h2 className="text-base font-semibold text-stocky-text-main truncate">{location.name}</h2>
+                              <span
+                                className={`inline-flex rounded-full px-2 py-0.5 text-[10px] font-medium border ${location.isActive ? 'stocky-status-success' : 'stocky-status-muted'}`}
+                              >
+                                {location.isActive ? 'Active' : 'Archived'}
+                              </span>
+                            </div>
+                            <p className="text-xs text-stocky-text-sub truncate mt-1">
+                              {location.address || 'Address not registered'}
+                              {location.phone ? ` · ${location.phone}` : ''}
+                            </p>
                           </div>
-                        ))}
-                        {assignedStaff.length > 4 && (
-                          <span className="flex h-6 w-6 items-center justify-center rounded-full bg-stocky-bg-global ring-2 ring-white text-[9px] font-bold text-stocky-text-sub">
-                            +{assignedStaff.length - 4}
-                          </span>
-                        )}
+                        </div>
+
+                        {/* Staff & Manager Info Cardlet */}
+                        <div className="mt-3.5 flex flex-wrap items-center gap-3 py-2 px-3 rounded-xl bg-stocky-bg-global border border-stocky-border-subtle text-xs">
+                          <div className="flex items-center gap-2 min-w-0">
+                            {manager ? (
+                              <UserAvatar
+                                src={manager.avatar_url}
+                                name={manager.full_name}
+                                email={manager.email}
+                                size="sm"
+                                className="ring-1 ring-white shrink-0"
+                              />
+                            ) : (
+                              <div className="flex h-6 w-6 items-center justify-center rounded-full bg-amber-50 text-amber-600 border border-amber-200 text-[10px] shrink-0">
+                                <UsersIcon size="xs" />
+                              </div>
+                            )}
+                            <div className="min-w-0">
+                              <span className="text-[10px] uppercase font-bold tracking-wider text-stocky-text-sub block">
+                                Branch Manager
+                              </span>
+                              <span className="text-xs font-medium text-stocky-text-main truncate block">
+                                {manager ? (
+                                  manager.full_name || manager.email
+                                ) : (
+                                  <span className="text-amber-700">Not assigned</span>
+                                )}
+                              </span>
+                            </div>
+                            {canManage && !manager && (
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  openEditDrawer(location);
+                                }}
+                                className="text-[11px] font-medium text-stocky-primary hover:underline ml-1 cursor-pointer"
+                              >
+                                Assign
+                              </button>
+                            )}
+                          </div>
+
+                          <div className="h-4 w-px bg-stocky-border-subtle hidden sm:block" />
+
+                          {/* Staff count & avatars */}
+                          <div className="flex items-center gap-2">
+                            <span className="text-[10px] uppercase font-bold tracking-wider text-stocky-text-sub">
+                              Staff:
+                            </span>
+                            {assignedStaff.length > 0 ? (
+                              <div className="flex items-center gap-1.5">
+                                <div className="flex items-center -space-x-1.5 shrink-0" title={assignedStaff.map((s) => s.full_name || s.email).join(', ')}>
+                                  {assignedStaff.slice(0, 3).map((member) => (
+                                    <div key={member.id} className="relative">
+                                      <UserAvatar
+                                        src={member.avatar_url}
+                                        name={member.full_name}
+                                        email={member.email}
+                                        size="xs"
+                                        className="ring-1 ring-white"
+                                      />
+                                    </div>
+                                  ))}
+                                  {assignedStaff.length > 3 && (
+                                    <span className="flex h-5 w-5 items-center justify-center rounded-full bg-white ring-1 ring-stocky-border-subtle text-[8px] font-bold text-stocky-text-sub">
+                                      +{assignedStaff.length - 3}
+                                    </span>
+                                  )}
+                                </div>
+                                <span className="text-xs font-medium text-stocky-text-main">
+                                  ({assignedStaff.length})
+                                </span>
+                              </div>
+                            ) : (
+                              <span className="text-xs text-stocky-text-sub italic">None assigned</span>
+                            )}
+                          </div>
+                        </div>
                       </div>
-                    ) : (
-                      <span className="text-[10px] text-stocky-text-sub italic">No staff assigned</span>
-                    )}
-                  </div>
-                </div>
 
-                {/* Inventory Metrics Grid */}
-                <div className="grid grid-cols-3 gap-2 py-0.5">
-                  <div className="rounded-xl bg-stocky-bg-global/70 p-2.5 text-center">
-                    <p className="text-[10px] font-medium text-stocky-text-sub uppercase tracking-wider">Products</p>
-                    <p className="text-sm font-semibold text-stocky-text-main mt-0.5">{skuCount}</p>
-                  </div>
-                  <div className="rounded-xl bg-stocky-bg-global/70 p-2.5 text-center">
-                    <p className="text-[10px] font-medium text-stocky-text-sub uppercase tracking-wider">Units</p>
-                    <p className="text-sm font-semibold text-stocky-text-main mt-0.5">{units.toLocaleString()}</p>
-                  </div>
-                  <div className="rounded-xl bg-stocky-bg-global/70 p-2.5 text-center">
-                    <p className="text-[10px] font-medium text-stocky-text-sub uppercase tracking-wider">Value</p>
-                    <p className="text-sm font-semibold text-stocky-text-main mt-0.5">
-                      {value.toLocaleString(undefined, { maximumFractionDigits: 0 })}
-                    </p>
-                  </div>
-                </div>
+                      <div className="mt-2 text-[11px] text-stocky-text-sub truncate">
+                        Last count: {lastCompletedCount ? new Date(lastCompletedCount).toLocaleDateString() : 'Not recorded'}
+                      </div>
+                    </div>
 
-                {/* Operational Health Status Pills */}
-                <div className="flex flex-wrap gap-1.5 text-[11px]">
-                  <span
-                    className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 border ${expiring ? 'stocky-status-warning font-medium' : 'stocky-status-success'}`}
-                  >
-                    <ClockIcon size="xs" /> {expiring} expiry issue{expiring === 1 ? '' : 's'}
-                  </span>
-                  <span
-                    className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 border ${lowStock ? 'stocky-status-critical font-medium' : 'stocky-status-muted'}`}
-                  >
-                    <AlertCircleIcon size="xs" /> {lowStock} low stock
-                  </span>
-                </div>
+                    {/* Right: Operational Health Metrics & Action Triggers */}
+                    <div className="p-4 sm:p-5 md:w-72 lg:w-80 shrink-0 flex flex-col justify-between border-t md:border-t-0 md:border-l border-stocky-border-subtle bg-stocky-bg-subtle/30">
+                      <div>
+                        <div className="grid grid-cols-2 gap-2">
+                          <div className="rounded-xl bg-white p-2 border border-stocky-border-subtle">
+                            <span className="text-[10px] uppercase font-semibold text-stocky-text-sub block">Active SKUs</span>
+                            <span className="text-sm font-semibold text-stocky-text-main">{skuCount}</span>
+                          </div>
+                          <div className="rounded-xl bg-white p-2 border border-stocky-border-subtle">
+                            <span className="text-[10px] uppercase font-semibold text-stocky-text-sub block">Total Units</span>
+                            <span className="text-sm font-semibold text-stocky-text-main">{units.toLocaleString()}</span>
+                          </div>
+                        </div>
 
-                {/* Transfer & Count Summary */}
-                <p className="text-[11px] text-stocky-text-sub truncate">
-                  {pendingTransfers} pending transfer{pendingTransfers === 1 ? '' : 's'} · Last count:{' '}
-                  {lastCompletedCount ? new Date(lastCompletedCount).toLocaleDateString() : 'Not completed'}
-                </p>
+                        {/* Operational Alerts */}
+                        <div className="mt-2 flex flex-wrap items-center gap-1.5">
+                          {expiring > 0 ? (
+                            <span className="inline-flex items-center gap-1 rounded-full border stocky-status-hold px-2.5 py-0.5 text-[10px] font-medium">
+                              <ClockIcon size="xs" /> {expiring} expiring
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1 rounded-full border stocky-status-success px-2.5 py-0.5 text-[10px] font-medium">
+                              <CheckIcon size="xs" /> Expiry healthy
+                            </span>
+                          )}
 
-                {/* Card Footer Actions */}
-                <div className="pt-2.5 border-t border-stocky-border-subtle flex items-center justify-between text-xs">
-                  <span className="font-medium text-stocky-primary inline-flex items-center gap-1 group-hover:underline">
-                    Open location stock <ChevronRightIcon size="xs" />
-                  </span>
-                  {location.phone && (
-                    <span className="text-[11px] text-stocky-text-sub">{location.phone}</span>
-                  )}
-                </div>
-              </div>
+                          {pendingTransfers > 0 && (
+                            <span className="inline-flex items-center gap-1 rounded-full border stocky-status-info px-2.5 py-0.5 text-[10px] font-medium">
+                              <BoxesIcon size="xs" /> {pendingTransfers} in transit
+                            </span>
+                          )}
+
+                          {lowStock > 0 && (
+                            <span className="inline-flex items-center gap-1 rounded-full border stocky-status-critical px-2.5 py-0.5 text-[10px] font-medium">
+                              <AlertCircleIcon size="xs" /> {lowStock} low stock
+                            </span>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Action Triggers */}
+                      <div className="mt-4 pt-3 border-t border-stocky-border-subtle flex items-center justify-end gap-2">
+                        {canManage && (
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              openEditDrawer(location);
+                            }}
+                            className="h-10 px-3.5 rounded-full border border-stocky-border-subtle bg-white text-xs font-medium text-stocky-text-main hover:bg-stocky-bg-global hover:border-stocky-border-strong transition-colors cursor-pointer inline-flex items-center gap-1.5"
+                            title="Edit location"
+                          >
+                            <EditIcon size="xs" />
+                            <span>Edit</span>
+                          </button>
+                        )}
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onOpenStock(location.id);
+                          }}
+                          className="h-10 px-4 rounded-full border border-stocky-border-subtle bg-white text-xs font-medium text-stocky-text-main hover:border-stocky-primary hover:text-stocky-primary transition-colors cursor-pointer inline-flex items-center justify-center gap-1.5 shadow-2xs flex-1"
+                        >
+                          <span>View stock</span>
+                          <ChevronRightIcon size="xs" />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )
+              )}
             </div>
-          )
-        )}
-      </section>
-
-      {/* Empty State */}
-      {filteredStats.length === 0 && (
-        <div className="rounded-2xl bg-white border border-stocky-border-subtle px-6 py-16 text-center">
-          <BoxesIcon size="md" className="mx-auto text-stocky-text-sub/50" />
-          <h2 className="mt-3 text-base font-semibold text-stocky-text-main">No locations found</h2>
-          <p className="mt-1 text-sm text-stocky-text-sub">
-            {searchQuery || activeFilterCount > 0
-              ? 'Try adjusting your search query or column filters.'
-              : 'Create a branch or warehouse to begin managing inventory.'}
-          </p>
-          {(searchQuery || activeFilterCount > 0) && (
-            <button
-              type="button"
-              onClick={() => {
-                setSearchQuery('');
-                resetFilters();
-              }}
-              className="mt-4 inline-flex items-center gap-1.5 rounded-full bg-stocky-bg-global px-4 py-1.5 text-xs font-medium text-stocky-text-main hover:bg-stocky-border-subtle cursor-pointer"
-            >
-              Clear all filters
-            </button>
+          ) : (
+            /* Empty State */
+            <div className="rounded-2xl bg-white px-6 py-16 text-center">
+              <BoxesIcon size="md" className="mx-auto text-stocky-text-sub/50" />
+              <h2 className="mt-3 text-base font-semibold text-stocky-text-main">No locations found</h2>
+              <p className="mt-1 text-sm text-stocky-text-sub">
+                {searchQuery || activeFilterCount > 0
+                  ? 'Try adjusting your search query or column filters.'
+                  : 'Create a branch or warehouse to begin managing inventory.'}
+              </p>
+              {(searchQuery || activeFilterCount > 0) ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSearchQuery('');
+                    resetFilters();
+                  }}
+                  className="mt-4 inline-flex items-center gap-1.5 rounded-full bg-stocky-bg-global px-4 py-2 text-xs font-medium text-stocky-text-main hover:bg-stocky-border-subtle cursor-pointer"
+                >
+                  Clear all filters
+                </button>
+              ) : canManage ? (
+                <button
+                  type="button"
+                  onClick={openCreateDrawer}
+                  className="mt-4 stocky-table-toolbar-button stocky-table-toolbar-button--primary h-10 px-4 rounded-full text-xs font-medium inline-flex items-center justify-center gap-1.5 whitespace-nowrap cursor-pointer"
+                >
+                  <PlusIcon size="xs" /> Add location
+                </button>
+              ) : null}
+            </div>
           )}
         </div>
-      )}
+      </div>
 
       {/* SideDrawer: Create & Edit Location */}
       <SideDrawer
@@ -1338,7 +1367,7 @@ export function LocationsDirectoryWidget({
               type="button"
               onClick={closeDrawer}
               disabled={drawerSaving}
-              className="h-9 rounded-full border border-stocky-border-subtle bg-white px-4 text-xs font-medium text-stocky-text-main hover:bg-stocky-bg-hover cursor-pointer"
+              className="h-10 rounded-full border border-stocky-border-subtle bg-white px-5 text-xs font-medium text-stocky-text-main hover:bg-stocky-bg-global transition-colors cursor-pointer"
             >
               Cancel
             </button>
@@ -1346,7 +1375,7 @@ export function LocationsDirectoryWidget({
               type="submit"
               form="location-drawer-form"
               disabled={drawerSaving || !drawerName.trim()}
-              className="h-9 rounded-full bg-stocky-primary px-5 text-xs font-medium text-white hover:bg-stocky-primary-hover disabled:opacity-50 cursor-pointer"
+              className="h-10 rounded-full bg-stocky-primary px-6 text-xs font-medium text-white hover:bg-stocky-primary-hover transition-colors shadow-xs disabled:opacity-50 cursor-pointer"
             >
               {drawerSaving
                 ? 'Saving...'

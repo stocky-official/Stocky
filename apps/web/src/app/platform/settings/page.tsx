@@ -1,30 +1,21 @@
 'use client';
 
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { usePlatform } from '@/views/platform/PlatformContext';
-import { SettingsPlatformView } from '@/views/platform/pages/SettingsPlatformView';
 import { PlatformWorkspaceSkeleton } from '@/widgets';
 
 export default function SettingsRoutePage() {
+  const router = useRouter();
   const platform = usePlatform();
 
-  if (platform.loading) {
-    return <PlatformWorkspaceSkeleton variant="settings" />;
-  }
+  useEffect(() => {
+    const target = platform.tenantPrefix === '/platform'
+      ? '/platform/locations'
+      : `${platform.tenantPrefix}/locations`;
+    router.replace(target);
+  }, [router, platform.tenantPrefix]);
 
-  return (
-    <SettingsPlatformView
-      companyName={platform.company?.name}
-      userName={platform.userName}
-      userTitle={
-        platform.userRole === 'manager'
-          ? 'Branch manager'
-          : platform.userRole === 'staff'
-          ? 'Staff member'
-          : platform.userRole === 'admin'
-          ? 'Administrator'
-          : 'Owner'
-      }
-      userRole={platform.userRole}
-    />
-  );
+  return <PlatformWorkspaceSkeleton variant="stock" />;
 }
+
