@@ -259,7 +259,7 @@
      1. SURFACES & CANVAS
      Warm paper canvas, crisp white widgets, and layered contextual tints.
      -------------------------------------------------------------------------- */
-  --stocky-bg-global: #F8F8F4;        /* Warm canvas background */
+  --stocky-bg-global: #FAFAFA;        /* Canvas background */
   --stocky-bg-widget: #FFFFFF;        /* Elevated primary card & widget surface */
   --stocky-bg-subtle: #F0F2EB;        /* Secondary subtle surface / container tint */
   --stocky-bg-muted: #E6E9E0;         /* Inactive pills, muted tracks, disabled bg */

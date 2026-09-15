@@ -214,7 +214,7 @@ export function HomeHeroWidget({
           xmlns="http://www.w3.org/2000/svg"
           preserveAspectRatio="none"
           className="w-full h-6 sm:h-9 block"
-          style={{ color: 'var(--stocky-bg-global, #F8F8F4)' }}
+          style={{ color: 'var(--stocky-bg-global, #FAFAFA)' }}
         >
           <path
             d="M0,18 C220,38 460,38 720,22 C980,6 1220,20 1440,24 L1440,64 L0,64 Z"
