@@ -1,14 +1,17 @@
 'use client';
 
 import React, { type UIEvent, useRef, useState, useEffect, useMemo } from 'react';
+import { usePathname } from 'next/navigation';
 import { PlatformProvider, usePlatform } from '@/views/platform/PlatformContext';
 import { PageLayout } from '@/components/ui/PageLayout';
 import { HydrationFadeWrapper } from '@/components/ui/Skeleton';
 import { signOutUser } from '@/lib/auth';
 import { syncPWATheme } from '@/components/PWAThemeColorSync';
 import {
+  AttendanceQrScannerModal,
   BarcodeScannerWidget,
   MobileBottomNavWidget,
+  MobileFloatingActionsWidget,
   MobileSubNavWidget,
   NotificationsDrawerWidget,
   PlatformTopBarWidget,
@@ -20,7 +23,9 @@ import {
 
 function PlatformShell({ children }: { children?: React.ReactNode }) {
   const platform = usePlatform();
+  const pathname = usePathname();
   const [isChromeVisible, setIsChromeVisible] = useState(true);
+  const [attendanceScannerOpen, setAttendanceScannerOpen] = useState(false);
   const lastScrollTopRef = useRef(0);
   const chromeVisibilityRef = useRef(true);
   const chromeTransitionTimerRef = useRef<number | null>(null);
@@ -221,6 +226,7 @@ function PlatformShell({ children }: { children?: React.ReactNode }) {
       <BarcodeScannerWidget
         isOpen={platform.scannerOpen}
         onClose={platform.closeScanner}
+        hideFloatingButton={true}
         onProductFound={() => undefined}
         onBarcodeFound={(barcode) => {
           platform.setGlobalSearchQuery(barcode);
@@ -230,6 +236,29 @@ function PlatformShell({ children }: { children?: React.ReactNode }) {
         onCodeNotFound={(barcode) => {
           platform.openReceive(undefined, barcode);
         }}
+      />
+      <AttendanceQrScannerModal
+        isOpen={attendanceScannerOpen}
+        onClose={() => setAttendanceScannerOpen(false)}
+        locations={platform.visibleLocations}
+        currentUserId={platform.companyUserId}
+        activeShift={
+          platform.attendanceShifts?.find(
+            (s) => (s.companyUserId === platform.companyUserId || !platform.companyUserId) && !s.clockOutAt
+          ) ?? null
+        }
+        onPunchAttendance={platform.punchAttendance}
+      />
+      <MobileFloatingActionsWidget
+        isAttendancePage={platform.activeTab === 'attendance' || Boolean(pathname?.includes('/attendance'))}
+        isClockedIn={Boolean(
+          platform.attendanceShifts?.some(
+            (s) => (s.companyUserId === platform.companyUserId || !platform.companyUserId) && !s.clockOutAt
+          )
+        )}
+        onOpenAttendanceScanner={() => setAttendanceScannerOpen(true)}
+        onOpenBarcodeScanner={() => platform.openScanner()}
+        hideBarcodeScanner={false}
       />
       <MobileBottomNavWidget
         activeTab={platform.activeTab}

@@ -3,11 +3,13 @@
 import React, { type UIEvent, useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase/client';
-import type { AttendanceShift, CompanyUserRole, CreateStockTaskCommand, InventoryTransfer, Location, NotificationTask, Product, ReviewStockTaskCommand, StockActivityLog, StockLot, StockMovement, StockTask, StockTaskExpected, StockTaskItem, SubmitStockTaskCommand, Supplier, SupplierContact, SupplierProduct, SupplierRequest } from '@stocky/types';
+import type { AttendanceShift, CompanyUserRole, CreateStockTaskCommand, InventoryTransfer, Location, NotificationTask, Product, PunchMethod, ReviewStockTaskCommand, StockActivityLog, StockLot, StockMovement, StockTask, StockTaskExpected, StockTaskItem, SubmitStockTaskCommand, Supplier, SupplierContact, SupplierProduct, SupplierRequest } from '@stocky/types';
 import {
+  AttendanceQrScannerModal,
   BarcodeScannerWidget,
   type NotificationQueueItem,
   MobileBottomNavWidget,
+  MobileFloatingActionsWidget,
   MobileSubNavWidget,
   NotificationsDrawerWidget,
   PlatformTopBarWidget,
@@ -96,6 +98,7 @@ export function RedesignedPlatformView() {
   const [taskExpected, setTaskExpected] = useState<StockTaskExpected[]>([]);
   const [activityLogs, setActivityLogs] = useState<StockActivityLog[]>([]);
   const [attendanceShifts, setAttendanceShifts] = useState<AttendanceShift[]>([]);
+  const [attendanceScannerOpen, setAttendanceScannerOpen] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -525,6 +528,18 @@ export function RedesignedPlatformView() {
     ).length;
   }, [tasks]);
 
+  const punchAttendance = async (input: { locationId: string; method?: PunchMethod; qrToken?: string; notes?: string }): Promise<AttendanceShift> => {
+    const { data, error } = await supabase.rpc('punch_attendance', {
+      p_location_id: input.locationId,
+      p_method: input.method || 'qr_scan',
+      p_qr_token: input.qrToken || null,
+      p_notes: input.notes || null,
+    });
+    if (error) throw error;
+    refresh();
+    return data as any;
+  };
+
   return (
     <>
       <PlatformTopBarWidget
@@ -650,9 +665,33 @@ export function RedesignedPlatformView() {
       <BarcodeScannerWidget
         isOpen={isScannerOpen}
         onClose={() => setIsScannerOpen(false)}
+        hideFloatingButton={true}
         onProductFound={() => undefined}
         onBarcodeFound={(barcode) => { setGlobalSearchQuery(barcode); setTaskScanQuery(barcode); setActiveTab('stock'); }}
         onCodeNotFound={(barcode) => { openReceive(undefined, barcode); }}
+      />
+      <AttendanceQrScannerModal
+        isOpen={attendanceScannerOpen}
+        onClose={() => setAttendanceScannerOpen(false)}
+        locations={visibleLocations}
+        currentUserId={companyUserId}
+        activeShift={
+          attendanceShifts?.find(
+            (s) => (s.companyUserId === companyUserId || !companyUserId) && !s.clockOutAt
+          ) ?? null
+        }
+        onPunchAttendance={punchAttendance}
+      />
+      <MobileFloatingActionsWidget
+        isAttendancePage={activeTab === 'attendance' || activeTab === 'timesheets'}
+        isClockedIn={Boolean(
+          attendanceShifts?.some(
+            (s) => (s.companyUserId === companyUserId || !companyUserId) && !s.clockOutAt
+          )
+        )}
+        onOpenAttendanceScanner={() => setAttendanceScannerOpen(true)}
+        onOpenBarcodeScanner={() => setIsScannerOpen(true)}
+        hideBarcodeScanner={false}
       />
       <MobileBottomNavWidget
         activeTab={activeTab}

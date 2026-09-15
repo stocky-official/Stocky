@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  CameraIcon,
+  BarcodeIcon,
   XIcon,
   ZapIcon,
   ZapOffIcon,
@@ -534,21 +534,23 @@ export function BarcodeScannerWidget({
 
   return (
     <>
-      {/* 1. Mobile Floating Camera Button (Shown on phone viewports) */}
+      {/* 1. Mobile Floating Barcode Button (Shown on phone viewports) */}
       {!hideFloatingButton && (
-        <motion.button
-          type="button"
-          onClick={() => setIsOpen(true)}
-          initial={{ scale: 0, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          whileHover={{ scale: 1.08 }}
-          whileTap={{ scale: 0.92 }}
-          aria-label="Scan Barcode with Camera"
-          className="fixed bottom-[5.25rem] right-4 z-40 md:hidden bg-stocky-primary text-white rounded-full flex items-center justify-center shadow-xl hover:bg-stocky-primary-hover active:bg-stocky-primary-active transition-all focus:outline-none"
-          style={{ width: '54px', height: '54px' }}
-        >
-          <CameraIcon size="md" className="text-white" />
-        </motion.button>
+        <div className="fixed bottom-[5.25rem] right-0 w-[20%] flex items-center justify-center z-40 md:hidden pointer-events-none">
+          <motion.button
+            type="button"
+            onClick={() => setIsOpen(true)}
+            initial={{ scale: 0, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            whileHover={{ scale: 1.08 }}
+            whileTap={{ scale: 0.92 }}
+            aria-label="Scan Barcode"
+            className="pointer-events-auto bg-stocky-primary text-white rounded-full flex items-center justify-center shadow-xl hover:bg-stocky-primary-hover active:bg-stocky-primary-active transition-all focus:outline-none"
+            style={{ width: '54px', height: '54px' }}
+          >
+            <BarcodeIcon size="md" className="text-white" />
+          </motion.button>
+        </div>
       )}
 
       {/* 2. Full-Screen Camera Viewfinder Modal */}

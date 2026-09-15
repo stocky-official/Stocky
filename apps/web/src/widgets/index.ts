@@ -53,4 +53,5 @@ export * from './SupplierResupplyModalWidget/SupplierResupplyModalWidget';
 export * from './InventoryToolbarWidget/InventoryToolbarWidget';
 export * from './AttendanceWorkspaceWidget';
 export * from './StandardToolbarWidget/StandardToolbarWidget';
+export * from './MobileFloatingActionsWidget/MobileFloatingActionsWidget';
 
