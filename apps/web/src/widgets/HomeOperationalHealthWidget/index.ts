@@ -5,4 +5,6 @@ export * from './HomeLaggingProductsChartWidget';
 export * from './HomeBranchesAnalysisChartWidget';
 export * from './HomeTeamAttendanceChartWidget';
 export * from './HomeDesktopAnalyticsWidget';
+export * from './HomeGlobalSlicersWidget';
+export * from './HomeExecutiveKpiStripWidget';
 export * from './ChartFilterBottomSheet';

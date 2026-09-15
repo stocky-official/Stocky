@@ -275,6 +275,7 @@ export function HomePlatformView({
             }}
             onOpenProduct={() => onOpenStock()}
             onOpenAttendance={onOpenAttendance}
+            onOpenExpiry={onOpenExpiry}
           />
         </section>
 

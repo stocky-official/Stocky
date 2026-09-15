@@ -22,6 +22,7 @@ export interface HomeOperationalHealthWidgetProps {
   onOpenStock?: (locationId?: string) => void;
   onOpenProduct?: (productId: string) => void;
   onOpenAttendance?: () => void;
+  onOpenExpiry?: () => void;
 }
 
 export function HomeOperationalHealthWidget({
@@ -37,6 +38,7 @@ export function HomeOperationalHealthWidget({
   onOpenStock,
   onOpenProduct,
   onOpenAttendance,
+  onOpenExpiry,
 }: HomeOperationalHealthWidgetProps) {
   // Active slide index for mobile swipe carousel
   const [activeSlide, setActiveSlide] = useState<number>(0);
@@ -182,6 +184,7 @@ export function HomeOperationalHealthWidget({
           onOpenStock={onOpenStock}
           onOpenProduct={onOpenProduct}
           onOpenAttendance={onOpenAttendance}
+          onOpenExpiry={onOpenExpiry}
         />
       </div>
     </div>

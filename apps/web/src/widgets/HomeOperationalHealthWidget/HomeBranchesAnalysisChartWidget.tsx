@@ -2,7 +2,7 @@
 
 import React, { useMemo, useState } from 'react';
 import type { Location, StockLot, StockMovement, StockTask } from '@stocky/types';
-import { FilterIcon, InfoIcon, XIcon } from '@stocky/icons';
+import { FilterIcon, InfoIcon, XIcon, FileSpreadsheetIcon } from '@stocky/icons';
 import {
   ResponsiveContainer,
   BarChart,
@@ -14,6 +14,7 @@ import {
   Cell,
 } from 'recharts';
 import { ChartFilterBottomSheet } from './ChartFilterBottomSheet';
+import { exportVisualDataToExcel } from '@/lib/excel/export';
 
 export type BranchAnalysisMetric = 'units' | 'value' | 'moving' | 'lagging' | 'staff';
 
@@ -25,6 +26,8 @@ export interface HomeBranchesAnalysisChartWidgetProps {
   teamMembers?: Array<{ id: string; branchIds?: string[] }>;
   teamAssignments?: Array<{ user_id: string; location_id: string }>;
   onSelectLocation?: (locationId: string) => void;
+  externalTimeframe?: '7D' | '14D' | '30D' | '90D' | 'YTD';
+  externalLocationId?: string;
 }
 
 export function HomeBranchesAnalysisChartWidget({
@@ -35,9 +38,12 @@ export function HomeBranchesAnalysisChartWidget({
   teamMembers = [],
   teamAssignments = [],
   onSelectLocation,
+  externalTimeframe,
+  externalLocationId,
 }: HomeBranchesAnalysisChartWidgetProps) {
   const [metric, setMetric] = useState<BranchAnalysisMetric>('units');
-  const [timeframe, setTimeframe] = useState<'7D' | '14D' | '30D' | '90D'>('30D');
+  const [internalTimeframe, setInternalTimeframe] = useState<'7D' | '14D' | '30D' | '90D'>('30D');
+  const effectiveTimeframe = (externalTimeframe && externalTimeframe !== 'YTD' ? externalTimeframe : internalTimeframe) as '7D' | '14D' | '30D' | '90D';
 
   // UI state for bottom sheet filter & info popover
   const [isFilterSheetOpen, setIsFilterSheetOpen] = useState(false);
@@ -84,17 +90,25 @@ export function HomeBranchesAnalysisChartWidget({
 
   // Compile comparison data per branch
   const chartData = useMemo(() => {
-    const fallbackLocations = locations.length > 0 ? locations : [
-      { id: 'loc-1', companyId: 'c1', name: 'Olaya Central', type: 'branch', address: 'Riyadh', isActive: true, createdAt: '', updatedAt: '' },
-      { id: 'loc-2', companyId: 'c1', name: 'Corniche Retail', type: 'branch', address: 'Jeddah', isActive: true, createdAt: '', updatedAt: '' },
-      { id: 'loc-3', companyId: 'c1', name: 'Eastern Warehouse', type: 'warehouse', address: 'Dammam', isActive: true, createdAt: '', updatedAt: '' },
-      { id: 'loc-4', companyId: 'c1', name: 'Madinah Branch', type: 'branch', address: 'Madinah', isActive: true, createdAt: '', updatedAt: '' },
-    ];
+    let baseLocations: Array<{ id: string; name: string; type: string; address?: string | null }> =
+      locations.length > 0
+        ? locations
+        : [
+            { id: 'loc-1', name: 'Olaya Central', type: 'branch', address: 'Riyadh' },
+            { id: 'loc-2', name: 'Corniche Retail', type: 'branch', address: 'Jeddah' },
+            { id: 'loc-3', name: 'Eastern Warehouse', type: 'warehouse', address: 'Dammam' },
+            { id: 'loc-4', name: 'Madinah Branch', type: 'branch', address: 'Madinah' },
+          ];
 
-    const days = timeframe === '7D' ? 7 : timeframe === '14D' ? 14 : timeframe === '30D' ? 30 : 90;
+    if (externalLocationId && externalLocationId !== 'all') {
+      const match = baseLocations.filter((l) => l.id === externalLocationId);
+      if (match.length > 0) baseLocations = match;
+    }
+
+    const days = effectiveTimeframe === '7D' ? 7 : effectiveTimeframe === '14D' ? 14 : effectiveTimeframe === '30D' ? 30 : 90;
     const cutoff = new Date(Date.now() - days * 86400000).toISOString();
 
-    return fallbackLocations.map((loc, idx) => {
+    return baseLocations.map((loc, idx) => {
       const branchLots = lots.filter((l) => l.locationId === loc.id && (l.quantityOnHand || 0) > 0);
       const units = branchLots.reduce((acc, l) => acc + (l.quantityOnHand || 0), 0) || (idx === 0 ? 4850 : idx === 1 ? 3120 : idx === 2 ? 6400 : 1850);
       const value = branchLots.reduce((acc, l) => acc + (l.quantityOnHand || 0) * (l.unitCost || 0), 0) || (units * 8.4);
@@ -120,17 +134,41 @@ export function HomeBranchesAnalysisChartWidget({
       return {
         id: loc.id,
         name: loc.name,
-        shortName: loc.name.length > 14 ? `${loc.name.slice(0, 12)}...` : loc.name,
-        type: loc.type,
+        shortName: loc.name.length > 13 ? `${loc.name.slice(0, 11)}...` : loc.name,
+        type: loc.type || 'branch',
         units,
-        value: Math.round(value),
+        value,
         moving,
         lagging,
         staffCount,
         metricValue,
       };
     });
-  }, [locations, lots, movements, teamMembers, teamAssignments, metric, timeframe]);
+  }, [locations, lots, movements, teamMembers, teamAssignments, effectiveTimeframe, metric, externalLocationId]);
+
+  const handleExportExcel = () => {
+    exportVisualDataToExcel({
+      reportTitle: 'Branch Comparative Benchmark',
+      filenamePrefix: 'Stocky_Branch_Benchmark',
+      sheetName: 'Branch Benchmark',
+      appliedFilters: {
+        timeframe: effectiveTimeframe,
+        location: externalLocationId || 'All',
+        metric: currentConfig.label,
+      },
+      rows: chartData.map((d) => ({
+        'Location Name': d.name,
+        'Branch Type': d.type.toUpperCase(),
+        'Inventory Units': d.units,
+        'Valuation ($)': Number(d.value.toFixed(2)),
+        'Units Moved': d.moving,
+        'Lagging Units': d.lagging,
+        'Active Staff': d.staffCount,
+        'Active Benchmark Metric': currentConfig.label,
+        'Benchmark Score': currentConfig.formatter(d.metricValue),
+      })),
+    });
+  };
 
   return (
     <div className="w-full h-[490px] sm:h-[510px] bg-stocky-bg-widget border border-stocky-border-subtle rounded-2xl p-4 sm:p-5 shadow-xs flex flex-col justify-between">
@@ -139,7 +177,7 @@ export function HomeBranchesAnalysisChartWidget({
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-1.5 min-w-0">
             <h3 className="text-sm sm:text-base font-semibold text-stocky-text-main tracking-tight truncate">
-              Branch Comparative Analysis
+              Branch Comparison
             </h3>
             <button
               type="button"
@@ -153,12 +191,12 @@ export function HomeBranchesAnalysisChartWidget({
           </div>
 
           <div className="flex items-center gap-2 shrink-0">
-            {/* Desktop Visual / Data Table Toggle */}
+            {/* Desktop Visual / Table Toggle */}
             <div className="hidden sm:inline-flex items-center p-0.5 rounded-lg bg-stocky-bg-global border border-stocky-border-subtle">
               <button
                 type="button"
                 onClick={() => setViewMode('chart')}
-                className={`px-2.5 py-1 rounded-md text-[11px] font-semibold transition-all cursor-pointer ${
+                className={`px-2 py-1 rounded-md text-[11px] font-semibold transition-all cursor-pointer ${
                   viewMode === 'chart'
                     ? 'bg-stocky-bg-widget text-stocky-text-main shadow-xs'
                     : 'text-stocky-text-sub hover:text-stocky-text-main'
@@ -170,23 +208,35 @@ export function HomeBranchesAnalysisChartWidget({
                 type="button"
                 data-toggle-mode="table"
                 onClick={() => setViewMode('table')}
-                className={`px-2.5 py-1 rounded-md text-[11px] font-semibold transition-all cursor-pointer ${
+                className={`px-2 py-1 rounded-md text-[11px] font-semibold transition-all cursor-pointer ${
                   viewMode === 'table'
                     ? 'bg-stocky-bg-widget text-stocky-text-main shadow-xs'
                     : 'text-stocky-text-sub hover:text-stocky-text-main'
                 }`}
               >
-                Data Table
+                Table
               </button>
             </div>
+
+            {/* Excel (.xlsx) Extract Button */}
+            <button
+              type="button"
+              data-testid="export-excel-branch-btn"
+              onClick={handleExportExcel}
+              className="hidden sm:inline-flex h-8 px-2.5 rounded-lg border border-stocky-border-subtle bg-stocky-bg-global hover:bg-stocky-border-subtle text-xs font-semibold text-stocky-text-main items-center gap-1.5 cursor-pointer shadow-xs transition-colors"
+              title="Extract visual data as Excel (.xlsx)"
+            >
+              <FileSpreadsheetIcon size="xs" />
+              <span>Excel</span>
+            </button>
 
             <button
               type="button"
               onClick={() => setIsFilterSheetOpen(true)}
-              className="h-8 px-3 rounded-full border border-stocky-border-subtle bg-stocky-bg-global hover:bg-stocky-border-subtle text-xs font-semibold text-stocky-text-main flex items-center gap-1.5 cursor-pointer shadow-xs transition-colors"
+              className="h-8 px-2.5 rounded-full border border-stocky-border-subtle bg-stocky-bg-global hover:bg-stocky-border-subtle text-xs font-semibold text-stocky-text-main flex items-center gap-1.5 cursor-pointer shadow-xs transition-colors"
+              title="Filter by metric"
             >
               <FilterIcon size="xs" />
-              <span>Filter</span>
               <span className="px-1.5 py-0.5 rounded-full bg-stocky-primary text-white text-[10px] font-bold">
                 {currentConfig.label.split(' ')[0]}
               </span>
@@ -335,7 +385,7 @@ export function HomeBranchesAnalysisChartWidget({
         title="Branch Analysis Filters"
         onReset={() => {
           setMetric('units');
-          setTimeframe('30D');
+          setInternalTimeframe('30D');
         }}
       >
         <div className="space-y-4">
@@ -377,9 +427,9 @@ export function HomeBranchesAnalysisChartWidget({
                 <button
                   key={t}
                   type="button"
-                  onClick={() => setTimeframe(t)}
+                  onClick={() => setInternalTimeframe(t)}
                   className={`h-9 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
-                    timeframe === t
+                    internalTimeframe === t
                       ? 'bg-stocky-primary text-white shadow-xs'
                       : 'bg-stocky-bg-global text-stocky-text-sub border border-stocky-border-subtle'
                   }`}

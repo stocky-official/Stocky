@@ -2,7 +2,7 @@
 
 import React, { useMemo, useState } from 'react';
 import type { Product, StockLot, StockTask, StockTaskItem } from '@stocky/types';
-import { FilterIcon, InfoIcon, XIcon } from '@stocky/icons';
+import { FilterIcon, InfoIcon, XIcon, FileSpreadsheetIcon } from '@stocky/icons';
 import {
   ResponsiveContainer,
   BarChart,
@@ -14,6 +14,7 @@ import {
   Cell,
 } from 'recharts';
 import { ChartFilterBottomSheet } from './ChartFilterBottomSheet';
+import { exportVisualDataToExcel } from '@/lib/excel/export';
 
 export interface HomeLaggingProductsChartWidgetProps {
   products?: Product[];
@@ -21,6 +22,9 @@ export interface HomeLaggingProductsChartWidgetProps {
   tasks?: StockTask[];
   taskItems?: StockTaskItem[];
   onOpenProduct?: (productId: string) => void;
+  externalTimeframe?: '7D' | '14D' | '30D' | '90D' | 'YTD';
+  externalCategory?: string;
+  externalLocationId?: string;
 }
 
 export function HomeLaggingProductsChartWidget({
@@ -29,9 +33,15 @@ export function HomeLaggingProductsChartWidget({
   tasks = [],
   taskItems = [],
   onOpenProduct,
+  externalTimeframe,
+  externalCategory,
+  externalLocationId,
 }: HomeLaggingProductsChartWidgetProps) {
-  const [dormantThresholdDays, setDormantThresholdDays] = useState<number>(30);
-  const [categoryFilter, setCategoryFilter] = useState<string>('all');
+  const [internalThresholdDays, setInternalThresholdDays] = useState<number>(30);
+  const [internalCategoryFilter, setInternalCategoryFilter] = useState<string>('all');
+
+  const effectiveThreshold = externalTimeframe === '7D' ? 14 : externalTimeframe === '14D' ? 14 : externalTimeframe === '30D' ? 30 : externalTimeframe === '90D' || externalTimeframe === 'YTD' ? 60 : internalThresholdDays;
+  const effectiveCategory = externalCategory !== undefined && externalCategory !== 'all' ? externalCategory : internalCategoryFilter;
 
   // UI state for bottom sheet filter & info popover
   const [isFilterSheetOpen, setIsFilterSheetOpen] = useState(false);
@@ -63,15 +73,15 @@ export function HomeLaggingProductsChartWidget({
     ];
 
     const filtered = fallbackProducts.filter(
-      (p) => categoryFilter === 'all' || p.categoryName === categoryFilter
+      (p) => effectiveCategory === 'all' || p.categoryName === effectiveCategory
     );
 
     const scored = filtered.map((p, index) => {
-      const productLots = lots.filter((l) => l.productId === p.id && (l.quantityOnHand || 0) > 0);
+      const productLots = lots.filter((l) => l.productId === p.id && (!externalLocationId || externalLocationId === 'all' || l.locationId === externalLocationId) && (l.quantityOnHand || 0) > 0);
       const stockOnHand = productLots.reduce((acc, l) => acc + (l.quantityOnHand || 0), 0) || Math.max(45, 120 - index * 18);
       const tiedUpValue = stockOnHand * (p.unitCost || 5);
       const auditsCount = auditCountByProduct.get(p.id) || Math.max(2, (index * 2 + 3) % 5);
-      const daysDormant = Math.max(dormantThresholdDays + 5, dormantThresholdDays + (index * 14 + 10) % 45);
+      const daysDormant = Math.max(effectiveThreshold + 5, effectiveThreshold + (index * 14 + 10) % 45);
 
       return {
         id: p.id,
@@ -87,10 +97,32 @@ export function HomeLaggingProductsChartWidget({
 
     // Filter by threshold and take top 5 stagnant items
     return scored
-      .filter((item) => item.daysDormant >= dormantThresholdDays)
+      .filter((item) => item.daysDormant >= effectiveThreshold)
       .sort((a, b) => b.tiedUpValue - a.tiedUpValue)
       .slice(0, 5);
-  }, [products, lots, taskItems, dormantThresholdDays, categoryFilter]);
+  }, [products, lots, taskItems, effectiveThreshold, effectiveCategory, externalLocationId]);
+
+  const handleExportExcel = () => {
+    exportVisualDataToExcel({
+      reportTitle: 'Lagging & Stagnant Inventory Analysis',
+      filenamePrefix: 'Stocky_Lagging_Inventory',
+      sheetName: 'Lagging Stock',
+      appliedFilters: {
+        inactivityThreshold: `>${effectiveThreshold} days`,
+        category: effectiveCategory,
+        location: externalLocationId || 'All',
+      },
+      rows: chartData.map((d, rank) => ({
+        'Rank': rank + 1,
+        'Product Name': d.name,
+        'Category': d.category,
+        'Units on Hand': d.stockOnHand,
+        'Tied-up Valuation ($)': d.tiedUpValue,
+        'Dormant Days': d.daysDormant,
+        'Audit Cycles': d.auditsCount,
+      })),
+    });
+  };
 
   return (
     <div className="w-full h-[490px] sm:h-[510px] bg-stocky-bg-widget border border-stocky-border-subtle rounded-2xl p-4 sm:p-5 shadow-xs flex flex-col justify-between">
@@ -130,15 +162,27 @@ export function HomeLaggingProductsChartWidget({
                 type="button"
                 data-toggle-mode="table"
                 onClick={() => setViewMode('table')}
-                className={`px-2.5 py-1 rounded-md text-[11px] font-semibold transition-all cursor-pointer ${
+                className={`px-2 py-1 rounded-md text-[11px] font-semibold transition-all cursor-pointer ${
                   viewMode === 'table'
                     ? 'bg-stocky-bg-widget text-stocky-text-main shadow-xs'
                     : 'text-stocky-text-sub hover:text-stocky-text-main'
                 }`}
               >
-                Data Table
+                Table
               </button>
             </div>
+
+            {/* Excel (.xlsx) Extract Button */}
+            <button
+              type="button"
+              data-testid="export-excel-lagging-btn"
+              onClick={handleExportExcel}
+              className="hidden sm:inline-flex h-8 px-2.5 rounded-lg border border-stocky-border-subtle bg-stocky-bg-global hover:bg-stocky-border-subtle text-xs font-semibold text-stocky-text-main items-center gap-1.5 cursor-pointer shadow-xs transition-colors"
+              title="Extract visual data as Excel (.xlsx)"
+            >
+              <FileSpreadsheetIcon size="xs" />
+              <span>Excel</span>
+            </button>
 
             <button
               type="button"
@@ -148,7 +192,7 @@ export function HomeLaggingProductsChartWidget({
               <FilterIcon size="xs" />
               <span>Filter</span>
               <span className="px-1.5 py-0.5 rounded-full bg-amber-600 text-white text-[10px] font-bold">
-                &gt;{dormantThresholdDays}d
+                &gt;{effectiveThreshold}d
               </span>
             </button>
           </div>
@@ -294,8 +338,8 @@ export function HomeLaggingProductsChartWidget({
         onClose={() => setIsFilterSheetOpen(false)}
         title="Lagging Stock Filters"
         onReset={() => {
-          setDormantThresholdDays(30);
-          setCategoryFilter('all');
+          setInternalThresholdDays(30);
+          setInternalCategoryFilter('all');
         }}
       >
         <div className="space-y-4">
@@ -308,9 +352,9 @@ export function HomeLaggingProductsChartWidget({
                 <button
                   key={days}
                   type="button"
-                  onClick={() => setDormantThresholdDays(days)}
+                  onClick={() => setInternalThresholdDays(days)}
                   className={`h-9 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
-                    dormantThresholdDays === days
+                    internalThresholdDays === days
                       ? 'bg-amber-600 text-white shadow-xs'
                       : 'bg-stocky-bg-global text-stocky-text-sub border border-stocky-border-subtle'
                   }`}
@@ -330,8 +374,8 @@ export function HomeLaggingProductsChartWidget({
                 Filter by Category
               </label>
               <select
-                value={categoryFilter}
-                onChange={(e) => setCategoryFilter(e.target.value)}
+                value={internalCategoryFilter}
+                onChange={(e) => setInternalCategoryFilter(e.target.value)}
                 className="w-full h-10 px-3 rounded-xl text-xs font-medium bg-stocky-bg-global text-stocky-text-main border border-stocky-border-subtle cursor-pointer focus:outline-none"
               >
                 <option value="all">All Categories</option>

@@ -178,3 +178,81 @@ export function exportTimesheetsToExcel(
   XLSX.utils.book_append_sheet(workbook, worksheet, 'Shift Timesheets');
   XLSX.writeFile(workbook, filename);
 }
+
+export interface VisualExportOptions {
+  reportTitle: string;
+  filenamePrefix: string;
+  sheetName?: string;
+  appliedFilters?: Record<string, string | number | undefined>;
+  rows: Record<string, any>[];
+}
+
+/**
+ * Universal exporter for Power BI visual cards.
+ * Generates formatted .xlsx with column autofitting and clean timestamp.
+ */
+export function exportVisualDataToExcel({
+  reportTitle,
+  filenamePrefix,
+  sheetName = 'Data Extract',
+  appliedFilters = {},
+  rows,
+}: VisualExportOptions) {
+  if (!rows || rows.length === 0) return;
+
+  const todayStr = new Date().toISOString().split('T')[0];
+  const filename = `${filenamePrefix}_${todayStr}.xlsx`;
+
+  const formattedRows = rows.map((r, idx) => {
+    const formatted: Record<string, any> = { '#': idx + 1 };
+    for (const [k, v] of Object.entries(r)) {
+      if (v === null || v === undefined) {
+        formatted[k] = '';
+      } else if (typeof v === 'number') {
+        formatted[k] = Number.isInteger(v) ? v : Number(v.toFixed(2));
+      } else {
+        formatted[k] = v;
+      }
+    }
+    return formatted;
+  });
+
+  const worksheet = XLSX.utils.json_to_sheet(formattedRows);
+  autoFitColumns(formattedRows, worksheet);
+
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, sheetName.slice(0, 31));
+  XLSX.writeFile(workbook, filename);
+}
+
+export interface DashboardSheetPayload {
+  sheetName: string;
+  rows: Record<string, any>[];
+}
+
+/**
+ * Multi-sheet dashboard exporter for Power BI command center.
+ */
+export function exportFullDashboardToExcel({
+  dashboardName = 'Stocky_Executive_Dashboard',
+  sheets,
+}: {
+  dashboardName?: string;
+  sheets: DashboardSheetPayload[];
+}) {
+  const todayStr = new Date().toISOString().split('T')[0];
+  const filename = `${dashboardName}_${todayStr}.xlsx`;
+  const workbook = XLSX.utils.book_new();
+
+  sheets.forEach((sheet) => {
+    if (sheet.rows && sheet.rows.length > 0) {
+      const formattedRows = sheet.rows.map((r, idx) => ({ '#': idx + 1, ...r }));
+      const worksheet = XLSX.utils.json_to_sheet(formattedRows);
+      autoFitColumns(formattedRows, worksheet);
+      XLSX.utils.book_append_sheet(workbook, worksheet, sheet.sheetName.slice(0, 31));
+    }
+  });
+
+  XLSX.writeFile(workbook, filename);
+}
+

@@ -2,7 +2,7 @@
 
 import React, { useMemo, useState } from 'react';
 import type { Product, StockLot, StockMovement } from '@stocky/types';
-import { FilterIcon, InfoIcon, XIcon } from '@stocky/icons';
+import { FilterIcon, InfoIcon, XIcon, FileSpreadsheetIcon } from '@stocky/icons';
 import {
   ResponsiveContainer,
   BarChart,
@@ -14,12 +14,16 @@ import {
   Cell,
 } from 'recharts';
 import { ChartFilterBottomSheet } from './ChartFilterBottomSheet';
+import { exportVisualDataToExcel } from '@/lib/excel/export';
 
 export interface HomeTopMovingProductsChartWidgetProps {
   products?: Product[];
   lots?: StockLot[];
   movements?: StockMovement[];
   onOpenProduct?: (productId: string) => void;
+  externalTimeframe?: '7D' | '14D' | '30D' | '90D' | 'YTD';
+  externalCategory?: string;
+  externalLocationId?: string;
 }
 
 export function HomeTopMovingProductsChartWidget({
@@ -27,9 +31,14 @@ export function HomeTopMovingProductsChartWidget({
   lots = [],
   movements = [],
   onOpenProduct,
+  externalTimeframe,
+  externalCategory,
+  externalLocationId,
 }: HomeTopMovingProductsChartWidgetProps) {
-  const [timeframe, setTimeframe] = useState<'7D' | '14D' | '30D' | '90D'>('30D');
-  const [categoryFilter, setCategoryFilter] = useState<string>('all');
+  const [internalTimeframe, setInternalTimeframe] = useState<'7D' | '14D' | '30D' | '90D'>('30D');
+  const [internalCategoryFilter, setInternalCategoryFilter] = useState<string>('all');
+  const effectiveTimeframe = (externalTimeframe && externalTimeframe !== 'YTD' ? externalTimeframe : internalTimeframe) as '7D' | '14D' | '30D' | '90D';
+  const effectiveCategory = externalCategory !== undefined && externalCategory !== 'all' ? externalCategory : internalCategoryFilter;
 
   // UI state for bottom sheet filter & info popover
   const [isFilterSheetOpen, setIsFilterSheetOpen] = useState(false);
@@ -45,12 +54,13 @@ export function HomeTopMovingProductsChartWidget({
   }, [products]);
 
   const chartData = useMemo(() => {
-    const days = timeframe === '7D' ? 7 : timeframe === '14D' ? 14 : timeframe === '30D' ? 30 : 90;
+    const days = effectiveTimeframe === '7D' ? 7 : effectiveTimeframe === '14D' ? 14 : effectiveTimeframe === '30D' ? 30 : 90;
     const cutoffDate = new Date(Date.now() - days * 86400000).toISOString();
 
     const volumeByProduct = new Map<string, { totalMoved: number; movementCount: number }>();
 
     movements.forEach((m) => {
+      if (externalLocationId && externalLocationId !== 'all' && m.locationId !== externalLocationId) return;
       if (!m.createdAt || m.createdAt >= cutoffDate) {
         const cur = volumeByProduct.get(m.productId) || { totalMoved: 0, movementCount: 0 };
         cur.totalMoved += Math.abs(m.quantityDelta || 0);
@@ -60,6 +70,7 @@ export function HomeTopMovingProductsChartWidget({
     });
 
     lots.forEach((lot) => {
+      if (externalLocationId && externalLocationId !== 'all' && lot.locationId !== externalLocationId) return;
       if (lot.receivedAt && lot.receivedAt >= cutoffDate) {
         const cur = volumeByProduct.get(lot.productId) || { totalMoved: 0, movementCount: 0 };
         cur.totalMoved += lot.quantityOnHand || 0;
@@ -78,7 +89,7 @@ export function HomeTopMovingProductsChartWidget({
     ];
 
     const filtered = fallbackProducts.filter(
-      (p) => categoryFilter === 'all' || p.categoryName === categoryFilter
+      (p) => effectiveCategory === 'all' || p.categoryName === effectiveCategory
     );
 
     const scored = filtered.map((p, index) => {
@@ -99,7 +110,28 @@ export function HomeTopMovingProductsChartWidget({
     });
 
     return scored.sort((a, b) => b.unitsMoved - a.unitsMoved).slice(0, 6);
-  }, [products, lots, movements, timeframe, categoryFilter]);
+  }, [products, lots, movements, effectiveTimeframe, effectiveCategory, externalLocationId]);
+
+  const handleExportExcel = () => {
+    exportVisualDataToExcel({
+      reportTitle: 'Top Moving Products Analysis',
+      filenamePrefix: 'Stocky_Top_Moving_Products',
+      sheetName: 'Top Movers',
+      appliedFilters: {
+        timeframe: effectiveTimeframe,
+        category: effectiveCategory,
+        location: externalLocationId || 'All',
+      },
+      rows: chartData.map((d, rank) => ({
+        'Rank': rank + 1,
+        'Product Name': d.name,
+        'Category': d.category,
+        'Units Moved': d.unitsMoved,
+        'Active Batches': d.batches,
+        'Velocity Score (Units/Wk)': d.velocityScore,
+      })),
+    });
+  };
 
   return (
     <div className="w-full h-[490px] sm:h-[510px] bg-stocky-bg-widget border border-stocky-border-subtle rounded-2xl p-4 sm:p-5 shadow-xs flex flex-col justify-between">
@@ -139,15 +171,27 @@ export function HomeTopMovingProductsChartWidget({
                 type="button"
                 data-toggle-mode="table"
                 onClick={() => setViewMode('table')}
-                className={`px-2.5 py-1 rounded-md text-[11px] font-semibold transition-all cursor-pointer ${
+                className={`px-2 py-1 rounded-md text-[11px] font-semibold transition-all cursor-pointer ${
                   viewMode === 'table'
                     ? 'bg-stocky-bg-widget text-stocky-text-main shadow-xs'
                     : 'text-stocky-text-sub hover:text-stocky-text-main'
                 }`}
               >
-                Data Table
+                Table
               </button>
             </div>
+
+            {/* Excel (.xlsx) Extract Button */}
+            <button
+              type="button"
+              data-testid="export-excel-top-movers-btn"
+              onClick={handleExportExcel}
+              className="hidden sm:inline-flex h-8 px-2.5 rounded-lg border border-stocky-border-subtle bg-stocky-bg-global hover:bg-stocky-border-subtle text-xs font-semibold text-stocky-text-main items-center gap-1.5 cursor-pointer shadow-xs transition-colors"
+              title="Extract visual data as Excel (.xlsx)"
+            >
+              <FileSpreadsheetIcon size="xs" />
+              <span>Excel</span>
+            </button>
 
             <button
               type="button"
@@ -157,7 +201,7 @@ export function HomeTopMovingProductsChartWidget({
               <FilterIcon size="xs" />
               <span>Filter</span>
               <span className="px-1.5 py-0.5 rounded-full bg-stocky-primary text-white text-[10px] font-bold">
-                {timeframe}
+                {effectiveTimeframe}
               </span>
             </button>
           </div>
@@ -300,8 +344,8 @@ export function HomeTopMovingProductsChartWidget({
         onClose={() => setIsFilterSheetOpen(false)}
         title="Top Movers Filters"
         onReset={() => {
-          setTimeframe('30D');
-          setCategoryFilter('all');
+          setInternalTimeframe('30D');
+          setInternalCategoryFilter('all');
         }}
       >
         <div className="space-y-4">
@@ -314,9 +358,9 @@ export function HomeTopMovingProductsChartWidget({
                 <button
                   key={t}
                   type="button"
-                  onClick={() => setTimeframe(t)}
+                  onClick={() => setInternalTimeframe(t)}
                   className={`h-9 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
-                    timeframe === t
+                    internalTimeframe === t
                       ? 'bg-stocky-primary text-white shadow-xs'
                       : 'bg-stocky-bg-global text-stocky-text-sub border border-stocky-border-subtle'
                   }`}
@@ -333,8 +377,8 @@ export function HomeTopMovingProductsChartWidget({
                 Filter by Category
               </label>
               <select
-                value={categoryFilter}
-                onChange={(e) => setCategoryFilter(e.target.value)}
+                value={internalCategoryFilter}
+                onChange={(e) => setInternalCategoryFilter(e.target.value)}
                 className="w-full h-10 px-3 rounded-xl text-xs font-medium bg-stocky-bg-global text-stocky-text-main border border-stocky-border-subtle cursor-pointer focus:outline-none"
               >
                 <option value="all">All Categories</option>

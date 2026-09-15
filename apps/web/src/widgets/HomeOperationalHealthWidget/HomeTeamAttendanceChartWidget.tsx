@@ -2,7 +2,7 @@
 
 import React, { useMemo, useState } from 'react';
 import type { AttendanceShift, Location } from '@stocky/types';
-import { FilterIcon, InfoIcon, XIcon } from '@stocky/icons';
+import { FilterIcon, InfoIcon, XIcon, FileSpreadsheetIcon } from '@stocky/icons';
 import {
   ResponsiveContainer,
   BarChart,
@@ -14,6 +14,7 @@ import {
   Legend,
 } from 'recharts';
 import { ChartFilterBottomSheet } from './ChartFilterBottomSheet';
+import { exportVisualDataToExcel } from '@/lib/excel/export';
 
 export interface HomeTeamAttendanceChartWidgetProps {
   shifts?: AttendanceShift[];
@@ -21,6 +22,8 @@ export interface HomeTeamAttendanceChartWidgetProps {
   teamMembers?: Array<{ id: string; fullName?: string | null; name?: string; role?: string; avatarUrl?: string | null }>;
   teamAssignments?: Array<{ user_id: string; location_id: string }>;
   onOpenAttendance?: () => void;
+  externalTimeframe?: '7D' | '14D' | '30D' | '90D' | 'YTD';
+  externalLocationId?: string;
 }
 
 export function HomeTeamAttendanceChartWidget({
@@ -29,11 +32,16 @@ export function HomeTeamAttendanceChartWidget({
   teamMembers = [],
   teamAssignments = [],
   onOpenAttendance,
+  externalTimeframe,
+  externalLocationId,
 }: HomeTeamAttendanceChartWidgetProps) {
   const [analysisMode, setAnalysisMode] = useState<'branch' | 'person'>('branch');
   const [selectedBranchId, setSelectedBranchId] = useState<string>('all');
   const [selectedPersonId, setSelectedPersonId] = useState<string>('all');
-  const [timeframeDays, setTimeframeDays] = useState<number>(7);
+  const [internalTimeframeDays, setInternalTimeframeDays] = useState<number>(7);
+
+  const effectiveDays = externalTimeframe === '7D' ? 7 : externalTimeframe === '14D' ? 14 : externalTimeframe === '30D' ? 30 : externalTimeframe === '90D' || externalTimeframe === 'YTD' ? 90 : internalTimeframeDays;
+  const effectiveBranchId = externalLocationId !== undefined && externalLocationId !== 'all' ? externalLocationId : selectedBranchId;
 
   // UI state for bottom sheet filter & info popover
   const [isFilterSheetOpen, setIsFilterSheetOpen] = useState(false);
@@ -60,13 +68,13 @@ export function HomeTeamAttendanceChartWidget({
   const datesList = useMemo(() => {
     const list: string[] = [];
     const today = new Date();
-    for (let i = timeframeDays - 1; i >= 0; i--) {
+    for (let i = effectiveDays - 1; i >= 0; i--) {
       const d = new Date(today);
       d.setDate(d.getDate() - i);
       list.push(d.toISOString().split('T')[0]);
     }
     return list;
-  }, [timeframeDays]);
+  }, [effectiveDays]);
 
   // Compute breakdown dataset
   const chartData = useMemo(() => {
@@ -79,8 +87,8 @@ export function HomeTeamAttendanceChartWidget({
         (s) => s.shiftDate === dateStr || s.clockInAt?.startsWith(dateStr)
       );
 
-      if (analysisMode === 'branch' && selectedBranchId !== 'all') {
-        matchingShifts = matchingShifts.filter((s) => s.locationId === selectedBranchId);
+      if (analysisMode === 'branch' && effectiveBranchId !== 'all') {
+        matchingShifts = matchingShifts.filter((s) => s.locationId === effectiveBranchId);
       } else if (analysisMode === 'person' && selectedPersonId !== 'all') {
         matchingShifts = matchingShifts.filter((s) => s.companyUserId === selectedPersonId);
       }
@@ -120,13 +128,34 @@ export function HomeTeamAttendanceChartWidget({
         hoursLogged: Number(hoursLogged.toFixed(1)),
       };
     });
-  }, [datesList, shifts, analysisMode, selectedBranchId, selectedPersonId, memberList.length]);
+  }, [datesList, shifts, analysisMode, effectiveBranchId, selectedPersonId, memberList.length]);
 
   // Overall attendance rate KPI
   const totalPresent = chartData.reduce((acc, d) => acc + d.Present, 0);
   const totalLate = chartData.reduce((acc, d) => acc + d.Late, 0);
   const totalOff = chartData.reduce((acc, d) => acc + d['Off / Leave'], 0);
   const overallPct = Math.round(((totalPresent + totalLate) / Math.max(1, totalPresent + totalLate + totalOff)) * 100);
+
+  const handleExportExcel = () => {
+    exportVisualDataToExcel({
+      reportTitle: 'Team Attendance & Punctuality Ledger',
+      filenamePrefix: 'Stocky_Attendance_Ledger',
+      sheetName: 'Attendance',
+      appliedFilters: {
+        timeframe: `${effectiveDays} Days`,
+        branch: effectiveBranchId,
+        mode: analysisMode,
+      },
+      rows: chartData.map((d) => ({
+        'Date': d.date,
+        'Day Label': d.label,
+        'Present Count': d.Present,
+        'Late Count': d.Late,
+        'Off / Leave Count': d['Off / Leave'],
+        'Hours Logged': d.hoursLogged,
+      })),
+    });
+  };
 
   return (
     <div className="w-full h-[490px] sm:h-[510px] bg-stocky-bg-widget border border-stocky-border-subtle rounded-2xl p-4 sm:p-5 shadow-xs flex flex-col justify-between">
@@ -166,15 +195,27 @@ export function HomeTeamAttendanceChartWidget({
                 type="button"
                 data-toggle-mode="table"
                 onClick={() => setViewMode('table')}
-                className={`px-2.5 py-1 rounded-md text-[11px] font-semibold transition-all cursor-pointer ${
+                className={`px-2 py-1 rounded-md text-[11px] font-semibold transition-all cursor-pointer ${
                   viewMode === 'table'
                     ? 'bg-stocky-bg-widget text-stocky-text-main shadow-xs'
                     : 'text-stocky-text-sub hover:text-stocky-text-main'
                 }`}
               >
-                Data Table
+                Table
               </button>
             </div>
+
+            {/* Excel (.xlsx) Extract Button */}
+            <button
+              type="button"
+              data-testid="export-excel-attendance-btn"
+              onClick={handleExportExcel}
+              className="hidden sm:inline-flex h-8 px-2.5 rounded-lg border border-stocky-border-subtle bg-stocky-bg-global hover:bg-stocky-border-subtle text-xs font-semibold text-stocky-text-main items-center gap-1.5 cursor-pointer shadow-xs transition-colors"
+              title="Extract visual data as Excel (.xlsx)"
+            >
+              <FileSpreadsheetIcon size="xs" />
+              <span>Excel</span>
+            </button>
 
             <button
               type="button"
@@ -184,7 +225,7 @@ export function HomeTeamAttendanceChartWidget({
               <FilterIcon size="xs" />
               <span>Filter</span>
               <span className="px-1.5 py-0.5 rounded-full bg-stocky-primary text-white text-[10px] font-bold">
-                {analysisMode === 'branch' ? 'Branch' : 'Person'} • {timeframeDays}D
+                {analysisMode === 'branch' ? 'Branch' : 'Person'} • {effectiveDays}D
               </span>
             </button>
           </div>
@@ -328,7 +369,7 @@ export function HomeTeamAttendanceChartWidget({
 
       {/* 4. Footer Summary */}
       <div className="flex items-center justify-between text-[11px] text-stocky-text-sub pt-2 border-t border-stocky-border-subtle font-medium">
-        <span>Showing {timeframeDays}-day attendance trend</span>
+        <span>Showing {effectiveDays}-day attendance trend</span>
         <span className="text-emerald-600 font-semibold">
           Total Present: {totalPresent} shifts
         </span>
@@ -343,7 +384,7 @@ export function HomeTeamAttendanceChartWidget({
           setAnalysisMode('branch');
           setSelectedBranchId('all');
           setSelectedPersonId('all');
-          setTimeframeDays(7);
+          setInternalTimeframeDays(7);
         }}
       >
         <div className="space-y-4">
@@ -419,9 +460,9 @@ export function HomeTeamAttendanceChartWidget({
                 <button
                   key={days}
                   type="button"
-                  onClick={() => setTimeframeDays(days)}
+                  onClick={() => setInternalTimeframeDays(days)}
                   className={`h-9 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
-                    timeframeDays === days
+                    internalTimeframeDays === days
                       ? 'bg-stocky-primary text-white shadow-xs'
                       : 'bg-stocky-bg-global text-stocky-text-sub border border-stocky-border-subtle'
                   }`}
