@@ -14,6 +14,8 @@ export * from './HomeHeaderWidget/HomeHeaderWidget';
 export * from './HomeHeroWidget/HomeHeroWidget';
 export * from './HomeHeroWidget/HomeAssetCardsWidget';
 export * from './HomeHeroWidget/HomeHighlightsWidget';
+export * from './HomeHeroWidget/HomeQuickActionsWidget';
+export * from './HomeOperationalHealthWidget';
 export * from './HomeStockFlowWidget/HomeStockFlowWidget';
 export * from './HomeSpeedometerWidget/HomeSpeedometerWidget';
 export * from './HomeTriageWidget/HomeTriageWidget';

@@ -29,6 +29,9 @@ export default function PlatformHomePage() {
       onOpenAttendance={() => platform.navigateToTab('attendance')}
       onOpenScanner={platform.openScanner}
       onOpenNotifications={platform.openNotifications}
+      onOpenSettings={() => platform.navigateToTab('settings')}
+      onOpenTeam={() => platform.navigateToTab('team')}
+      onOpenLogs={() => platform.navigateToTab('logs')}
       unreadNotificationsCount={platform.notificationItems.length}
       companyName={platform.company?.name}
       companyLogoUrl={platform.company?.logo_url}
@@ -42,6 +45,8 @@ export default function PlatformHomePage() {
       tasks={platform.tasks}
       taskItems={platform.taskItems}
       teamMembers={platform.teamMembers}
+      teamAssignments={platform.teamAssignments}
+      movements={platform.movements}
       activityLogs={platform.activityLogs}
       selectedLocationId={platform.locationScope}
     />

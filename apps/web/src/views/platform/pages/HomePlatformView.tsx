@@ -9,18 +9,17 @@ import type {
   Product,
   StockActivityLog,
   StockLot,
+  StockMovement,
   StockTask,
   StockTaskItem,
   Supplier,
   SupplierRequest,
 } from '@stocky/types';
 import {
-  HomeHighlightsWidget,
   HomeHeroWidget,
-  HomeStockFlowWidget,
-  HomeSpeedometerWidget,
-  HomeTriageWidget,
-  type UrgentTriageItem,
+  HomeHighlightsWidget,
+  HomeQuickActionsWidget,
+  HomeOperationalHealthWidget,
 } from '@/widgets';
 
 export interface HomeMetrics {
@@ -51,6 +50,9 @@ export interface HomePlatformViewProps {
   onOpenAttendance?: () => void;
   onOpenScanner?: () => void;
   onOpenNotifications?: () => void;
+  onOpenSettings?: () => void;
+  onOpenTeam?: () => void;
+  onOpenLogs?: () => void;
   unreadNotificationsCount?: number;
   companyName?: string;
   companyLogoUrl?: string | null;
@@ -65,6 +67,8 @@ export interface HomePlatformViewProps {
   tasks?: StockTask[];
   taskItems?: StockTaskItem[];
   teamMembers?: any[];
+  teamAssignments?: any[];
+  movements?: StockMovement[];
   activityLogs?: StockActivityLog[];
   selectedLocationId?: string;
 }
@@ -72,6 +76,11 @@ export interface HomePlatformViewProps {
 /**
  * HomePlatformView (PageView Orchestrator)
  * Owns page-level data coordination, header copy, responsive grids, and layout gaps for the Home platform tab.
+ * Structured strictly into 4 consecutive sections:
+ * 1. Hero Section (greeting, logo, search bar, branch switcher)
+ * 2. Quick Navigation (4 action buttons to settings, team, locations, audits log)
+ * 3. Operational Highlights (2x2 grid of key metric call cards)
+ * 4. Operational Health & Analytics (side-swiping carousel on phone, 12-column grid on desktop)
  */
 export function HomePlatformView({
   userName,
@@ -90,6 +99,9 @@ export function HomePlatformView({
   onOpenAttendance,
   onOpenScanner,
   onOpenNotifications,
+  onOpenSettings,
+  onOpenTeam,
+  onOpenLogs,
   unreadNotificationsCount = 0,
   companyName,
   companyLogoUrl,
@@ -103,6 +115,8 @@ export function HomePlatformView({
   tasks = [],
   taskItems = [],
   teamMembers = [],
+  teamAssignments = [],
+  movements = [],
   activityLogs = [],
   selectedLocationId,
 }: HomePlatformViewProps) {
@@ -110,7 +124,6 @@ export function HomePlatformView({
   const [locationFilter, setLocationFilter] = useState<string>(
     selectedLocationId && selectedLocationId !== 'all' ? selectedLocationId : 'all'
   );
-  const [timeframe, setTimeframe] = useState<string>('Last 30 Days');
 
   // Location filter mappings
   const locationMap = useMemo(() => new Map(locations.map((l) => [l.id, l.name])), [locations]);
@@ -127,28 +140,7 @@ export function HomePlatformView({
     return tasks.filter((t) => t.locationId === locationFilter);
   }, [tasks, locationFilter]);
 
-  // Metric Computations
-  const totalValuation = useMemo(() => {
-    return scopedLots.reduce((sum, lot) => sum + (lot.quantityOnHand || 0) * (lot.unitCost || 0), 0) || 142500;
-  }, [scopedLots]);
-
-  const totalUnits = useMemo(() => {
-    return scopedLots.reduce((sum, lot) => sum + (lot.quantityOnHand || 0), 0) || 14250;
-  }, [scopedLots]);
-
   const todayStr = useMemo(() => new Date().toISOString().split('T')[0], []);
-
-  const expiredLotsCount = useMemo(() => {
-    return scopedLots.filter((l) => l.expiryDate && l.expiryDate < todayStr).length || metrics.expiredLots;
-  }, [scopedLots, todayStr, metrics.expiredLots]);
-
-  const expiringLotsCount = useMemo(() => {
-    const next30 = new Date(Date.now() + 30 * 86400000).toISOString().split('T')[0];
-    return (
-      scopedLots.filter((l) => l.expiryDate && l.expiryDate >= todayStr && l.expiryDate <= next30).length ||
-      metrics.expiringLots
-    );
-  }, [scopedLots, todayStr, metrics.expiringLots]);
 
   // 1. Highlight: Distinct Expiring SKUs Count (within 30-day window)
   const expiringSkuCount = useMemo(() => {
@@ -190,173 +182,102 @@ export function HomePlatformView({
     };
   }, [teamMembers, attendanceShifts, todayStr]);
 
-  const lowStockCount = useMemo(() => {
-    const qtyByProduct = new Map<string, number>();
-    scopedLots.forEach((l) => {
-      qtyByProduct.set(l.productId, (qtyByProduct.get(l.productId) || 0) + (l.quantityOnHand || 0));
-    });
-    return (
-      products.filter((p) => (qtyByProduct.get(p.id) || 0) <= (p.reorderPoint || 0)).length || metrics.lowStockProducts
-    );
-  }, [scopedLots, products, metrics.lowStockProducts]);
-
-  // MECE Health Breakdown
-  const availabilityRatePct = useMemo(() => {
-    const total = products.length || 120;
-    const inStock = Math.max(0, total - lowStockCount);
-    return Number(((inStock / total) * 100).toFixed(1));
-  }, [products.length, lowStockCount]);
-
-  const freshnessRatePct = useMemo(() => {
-    const total = scopedLots.length || 100;
-    const fresh = Math.max(0, total - expiredLotsCount);
-    return Number(((fresh / total) * 100).toFixed(1));
-  }, [scopedLots.length, expiredLotsCount]);
-
-  const auditAccuracyPct = 99.1;
-
-  const healthPct = useMemo(() => {
-    return Math.round(0.4 * availabilityRatePct + 0.3 * freshnessRatePct + 0.3 * auditAccuracyPct);
-  }, [availabilityRatePct, freshnessRatePct]);
-
-  // Urgent Triage Items
-  const triageItems: UrgentTriageItem[] = useMemo(() => {
-    const items: UrgentTriageItem[] = [];
-
-    if (expiredLotsCount > 0) {
-      items.push({
-        id: 'expired-triage',
-        type: 'expired',
-        title: `${expiredLotsCount} Expired Batches Detected`,
-        subtitle: 'Inventory past shelf life must be quarantined or returned.',
-        priority: 'critical',
-        actionLabel: 'Resolve',
-        onAction: onOpenExpiry,
-      });
-    }
-
-    if (expiringLotsCount > 0) {
-      items.push({
-        id: 'expiring-triage',
-        type: 'expiring',
-        title: `${expiringLotsCount} Batches Expiring Soon`,
-        subtitle: 'Review batches for markdown or return before alert date.',
-        priority: 'high',
-        actionLabel: 'Review',
-        onAction: onOpenExpiry,
-      });
-    }
-
-    if (lowStockCount > 0) {
-      items.push({
-        id: 'lowstock-triage',
-        type: 'stockout',
-        title: `${lowStockCount} Products Below Reorder Point`,
-        subtitle: 'Stock depleted below minimum buffer. Reorder now.',
-        priority: 'high',
-        actionLabel: 'Restock',
-        onAction: onOpenStock,
-      });
-    }
-
-    const pendingReviewTasks = scopedTasks.filter((t) => t.status === 'submitted');
-    if (pendingReviewTasks.length > 0) {
-      items.push({
-        id: 'tasks-triage',
-        type: 'task_review',
-        title: `${pendingReviewTasks.length} Physical Audits Awaiting Review`,
-        subtitle: 'Staff submitted cycle counts with variances for manager sign-off.',
-        priority: 'medium',
-        actionLabel: 'Review',
-        onAction: onOpenTasks || onOpenCount,
-      });
-    }
-
-    return items;
-  }, [expiredLotsCount, expiringLotsCount, lowStockCount, scopedTasks, onOpenExpiry, onOpenStock, onOpenTasks, onOpenCount]);
-
-  // Top Product Spotlight Name
-  const topProduct = products[0];
-  const topProductName = topProduct ? topProduct.name : 'Al-Marai Fresh Milk 1L';
-
   return (
     <div className="flex flex-col w-full min-h-full">
-      {/* 1. Solid Hero with Talabat-style smooth wavy bottom edge extending to top and sides */}
-      <HomeHeroWidget
-        userName={userName}
-        locationName={activeLocationName}
-        locations={locations}
-        selectedLocationId={locationFilter}
-        companyName={companyName}
-        companyLogoUrl={companyLogoUrl}
-        onSelectLocation={setLocationFilter}
-        onSearch={() => onOpenStock()}
-        onOpenScanner={onOpenScanner || onOpenStock}
-        onOpenNotifications={onOpenNotifications}
-        unreadNotificationsCount={unreadNotificationsCount}
-      />
-
-      {/* 2. Centered Page Content Container */}
-      <div className="w-full max-w-[var(--stocky-page-max-width)] mx-auto px-4 sm:px-6 lg:px-8 py-5 flex flex-col gap-5">
-        {/* Row 1: 4 Operational Highlight Call Cards (2x2 on Mobile, 4-col on Desktop) */}
-        <HomeHighlightsWidget
-          expiringSkuCount={expiringSkuCount}
-          pendingSupplierRequestsCount={pendingSupplierRequestsCount}
-          assignedTasksCount={assignedTasksCount}
-          attendancePct={attendancePct}
-          activeStaffPresent={activeStaffPresent}
-          totalStaff={totalStaff}
-          onOpenExpiry={onOpenExpiry}
-          onOpenSuppliers={onOpenSuppliers}
-          onOpenTasks={onOpenTasks || onOpenCount}
-          onOpenAttendance={onOpenAttendance}
+      {/* SECTION 1: HERO SECTION */}
+      <section id="home-hero" aria-label="Hero Overview">
+        <HomeHeroWidget
+          userName={userName}
+          locationName={activeLocationName}
+          locations={locations}
+          selectedLocationId={locationFilter}
+          companyName={companyName}
+          companyLogoUrl={companyLogoUrl}
+          onSelectLocation={setLocationFilter}
+          onSearch={() => onOpenStock()}
+          onOpenScanner={onOpenScanner || onOpenStock}
+          onOpenNotifications={onOpenNotifications}
+          unreadNotificationsCount={unreadNotificationsCount}
         />
+      </section>
 
-        {/* Responsive Cockpit Grid (Stacked on Mobile, 12 Columns on Desktop) */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
-          {/* Left Column (7 cols): Capital & Flow Card */}
-          <div className="lg:col-span-7 flex flex-col gap-5">
-            <HomeStockFlowWidget
-              totalFlowValue={`$${(totalValuation / 1000).toFixed(1)}K`}
-              totalUnits={totalUnits}
-              activeSkusCount={products.length || 120}
-              changePct={4.2}
-              changeAmount="+$12.4k vs prev. 30 days"
-              timeframe={timeframe}
-              onTimeframeChange={setTimeframe}
-              onOpenStock={onOpenStock}
-              onOpenCount={onOpenCount}
-              onOpenTransfers={onOpenTransfers}
-              onOpenSuppliers={onOpenSuppliers}
-            />
+      {/* Centered Page Content Container with Generous Section Breathing Room */}
+      <div className="w-full max-w-[var(--stocky-page-max-width)] mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 flex flex-col gap-8 sm:gap-10">
+        
+        {/* SECTION 2: 4 QUICK ACCESS BUTTONS */}
+        <section id="home-quick-nav" aria-labelledby="quick-nav-heading" className="flex flex-col gap-3">
+          <div className="flex flex-col">
+            <h2 id="quick-nav-heading" className="text-base sm:text-lg font-bold text-stocky-text-main tracking-tight">
+              Quick Navigation
+            </h2>
+            <p className="text-xs text-stocky-text-sub mt-0.5">
+              Direct shortcuts to organization settings, team permissions, branch locations, and system activity logs.
+            </p>
           </div>
 
-          {/* Right Column (5 cols): Glowing Radial Speedometer Health Card + Urgent Triage Items */}
-          <div className="lg:col-span-5 flex flex-col gap-5">
-            <HomeSpeedometerWidget
-              healthPct={healthPct}
-              availabilityRatePct={availabilityRatePct}
-              freshnessRatePct={freshnessRatePct}
-              auditAccuracyPct={auditAccuracyPct}
-              activeProductsCount={products.length || 120}
-              topProductName={topProductName}
-              topProductUnits="2,102 Orders • $29,200"
-              onOpenCount={onOpenCount}
-              onOpenStock={onOpenStock}
-            />
+          <HomeQuickActionsWidget
+            onOpenSettings={onOpenSettings}
+            onOpenTeam={onOpenTeam}
+            onOpenLocations={onOpenLocations}
+            onOpenLogs={onOpenLogs}
+          />
+        </section>
 
-            {/* Urgent Triage Deck */}
-            {triageItems.length > 0 && (
-              <HomeTriageWidget
-                items={triageItems}
-                onSearch={() => onOpenStock()}
-                onOpenReceive={onOpenReceive}
-                onOpenCount={onOpenCount}
-                onOpenTransfers={onOpenTransfers}
-              />
-            )}
+        {/* SECTION 3: 2x2 OPERATIONAL HIGHLIGHT CALL CARDS (KEY METRICS) */}
+        <section id="home-operational-highlights" aria-labelledby="highlights-heading" className="flex flex-col gap-3">
+          <div className="flex flex-col">
+            <h2 id="highlights-heading" className="text-base sm:text-lg font-bold text-stocky-text-main tracking-tight">
+              Operational Highlights
+            </h2>
+            <p className="text-xs text-stocky-text-sub mt-0.5">
+              High-priority stock expirations, pending restock orders, task assignments, and active staff presence.
+            </p>
           </div>
-        </div>
+
+          <HomeHighlightsWidget
+            expiringSkuCount={expiringSkuCount}
+            pendingSupplierRequestsCount={pendingSupplierRequestsCount}
+            assignedTasksCount={assignedTasksCount}
+            attendancePct={attendancePct}
+            activeStaffPresent={activeStaffPresent}
+            totalStaff={totalStaff}
+            onOpenExpiry={onOpenExpiry}
+            onOpenSuppliers={onOpenSuppliers}
+            onOpenTasks={onOpenTasks || onOpenCount}
+            onOpenAttendance={onOpenAttendance}
+          />
+        </section>
+
+        {/* SECTION 4: OPERATIONAL HEALTH & ANALYTICS SECTION */}
+        <section id="home-operational-health" aria-labelledby="operational-health-heading" className="flex flex-col gap-3">
+          <div className="flex flex-col">
+            <h2 id="operational-health-heading" className="text-base sm:text-lg font-bold text-stocky-text-main tracking-tight">
+              Operational Health & Analytics
+            </h2>
+            <p className="text-xs text-stocky-text-sub mt-0.5">
+              Live branch distribution, high-velocity product turnover, dormant inventory detection, and team attendance dynamics.
+            </p>
+          </div>
+
+          <HomeOperationalHealthWidget
+            locations={locations}
+            products={products}
+            lots={scopedLots}
+            movements={movements}
+            tasks={scopedTasks}
+            taskItems={taskItems}
+            shifts={attendanceShifts}
+            teamMembers={teamMembers}
+            teamAssignments={teamAssignments}
+            onOpenStock={(locId) => {
+              if (locId) setLocationFilter(locId);
+              onOpenStock();
+            }}
+            onOpenProduct={() => onOpenStock()}
+            onOpenAttendance={onOpenAttendance}
+          />
+        </section>
+
       </div>
     </div>
   );
