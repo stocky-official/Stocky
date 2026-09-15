@@ -480,20 +480,22 @@
   box-shadow: 0 0 0 2px var(--stocky-bg-global), 0 0 0 4px var(--stocky-primary);
 }
 
-/* Smooth Minimalist Scrollbars */
-.stocky-scrollbar::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-.stocky-scrollbar::-webkit-scrollbar-track {
-  background: transparent;
-}
-.stocky-scrollbar::-webkit-scrollbar-thumb {
-  background: var(--stocky-border-default);
-  border-radius: var(--stocky-radius-full);
-}
-.stocky-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: var(--stocky-text-muted);
+/* Smooth Minimalist Scrollbars for Desktop */
+@media (min-width: 769px) and (pointer: fine) {
+  .stocky-scrollbar::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  .stocky-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .stocky-scrollbar::-webkit-scrollbar-thumb {
+    background: var(--stocky-border-default);
+    border-radius: var(--stocky-radius-full);
+  }
+  .stocky-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: var(--stocky-text-muted);
+  }
 }
 
 /* Bevel Frosted Glass & Surface Helpers */
@@ -2260,23 +2262,60 @@ a:hover {
   opacity: 0.85;
 }
 
-/* Custom Scrollbar styled for clean minimal design */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+/* Custom Scrollbar styled for clean minimal design on desktop */
+@media (min-width: 769px) and (pointer: fine) {
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: var(--stocky-bg-global);
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: var(--stocky-border-default);
+    border-radius: var(--stocky-radius-widget);
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: #D0D0D0;
+  }
 }
 
-::-webkit-scrollbar-track {
-  background: var(--stocky-bg-global);
+/* ==========================================================================
+   MOBILE SCROLLBAR HIDING
+   On mobile phones and touch viewports, hide scrollbar bars and tracks
+   to provide a clean, native-app scrolling feel without scrollbar chrome.
+   ========================================================================== */
+.scrollbar-none,
+.no-scrollbar {
+  -ms-overflow-style: none !important;
+  scrollbar-width: none !important;
+}
+.scrollbar-none::-webkit-scrollbar,
+.no-scrollbar::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
 }
 
-::-webkit-scrollbar-thumb {
-  background: var(--stocky-border-default);
-  border-radius: var(--stocky-radius-widget);
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: #D0D0D0;
+@media (max-width: 768px), (pointer: coarse) {
+  html,
+  body,
+  .stocky-platform-shell,
+  .stocky-platform-content,
+  .stocky-page-content,
+  .stocky-scrollbar,
+  * {
+    -ms-overflow-style: none !important;
+    scrollbar-width: none !important;
+  }
+  ::-webkit-scrollbar {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+  }
 }
 
 /* ==========================================================================
