@@ -10,6 +10,8 @@ import {
 
 export interface HomeSpeedometerWidgetProps {
   healthPct?: number;
+  availabilityRatePct?: number;
+  freshnessRatePct?: number;
   activeProductsCount?: number;
   auditAccuracyPct?: number;
   topProductName?: string;
@@ -19,9 +21,11 @@ export interface HomeSpeedometerWidgetProps {
 }
 
 export function HomeSpeedometerWidget({
-  healthPct = 88.5,
+  healthPct = 98,
+  availabilityRatePct = 96.4,
+  freshnessRatePct = 98.2,
   activeProductsCount = 120,
-  auditAccuracyPct = 98,
+  auditAccuracyPct = 99.1,
   topProductName = 'Al-Marai Fresh Milk 1L',
   topProductUnits = '2,102 Orders • $29,200',
   onOpenCount,
@@ -178,6 +182,34 @@ export function HomeSpeedometerWidget({
             <PlusIcon size="sm" />
           </button>
         )}
+      </div>
+
+      {/* 3-Pillar MECE Inventory Health Breakdown */}
+      <div className="grid grid-cols-3 gap-2 w-full mt-4 pt-4 border-t border-white/10 text-center">
+        <div className="flex flex-col items-center">
+          <span className="text-xs sm:text-sm font-bold text-white tracking-tight">
+            {availabilityRatePct}%
+          </span>
+          <span className="text-[10px] text-white/70 font-medium mt-0.5">
+            In-Stock Rate
+          </span>
+        </div>
+        <div className="flex flex-col items-center border-x border-white/10">
+          <span className="text-xs sm:text-sm font-bold text-emerald-400 tracking-tight">
+            {freshnessRatePct}%
+          </span>
+          <span className="text-[10px] text-white/70 font-medium mt-0.5">
+            Batch Freshness
+          </span>
+        </div>
+        <div className="flex flex-col items-center">
+          <span className="text-xs sm:text-sm font-bold text-stocky-accent tracking-tight">
+            {auditAccuracyPct}%
+          </span>
+          <span className="text-[10px] text-white/70 font-medium mt-0.5">
+            Count Accuracy
+          </span>
+        </div>
       </div>
     </div>
   );

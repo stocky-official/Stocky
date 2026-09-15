@@ -12,6 +12,8 @@ import {
 
 export interface HomeStockFlowWidgetProps {
   totalFlowValue?: string;
+  totalUnits?: number;
+  activeSkusCount?: number;
   changePct?: number;
   changeAmount?: string;
   timeframe?: string;
@@ -24,6 +26,8 @@ export interface HomeStockFlowWidgetProps {
 
 export function HomeStockFlowWidget({
   totalFlowValue = '$142.5K',
+  totalUnits = 14250,
+  activeSkusCount = 120,
   changePct = 3.2,
   changeAmount = '+$12.4k vs prev. 30 days',
   timeframe = 'Last 30 Days',
@@ -50,7 +54,7 @@ export function HomeStockFlowWidget({
             <TrendingUpIcon size="xs" />
           </span>
           <span className="text-xs sm:text-sm font-semibold text-stocky-text-main">
-            Total Stock Flow & Capital
+            Total Inventory Valuation & Capital Flow
           </span>
         </div>
 
@@ -62,7 +66,7 @@ export function HomeStockFlowWidget({
       </div>
 
       {/* KPI & Dual-line Chart Row */}
-      <div className="flex items-center justify-between gap-4 pb-5 border-b border-stocky-border-subtle">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-stocky-border-subtle">
         <div>
           <div className="flex items-center gap-2">
             <span className="text-2xl sm:text-3xl font-semibold text-stocky-text-main tracking-tight">
@@ -74,32 +78,44 @@ export function HomeStockFlowWidget({
             </span>
           </div>
           <span className="text-[11px] text-stocky-text-sub mt-1 block font-medium">
-            {changeAmount}
+            {totalUnits.toLocaleString()} tracked units across {activeSkusCount} SKUs • {changeAmount}
           </span>
         </div>
 
-        {/* Mini Dual-line Graph */}
-        <div className="w-36 sm:w-44 h-14 relative shrink-0">
-          <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-full overflow-visible">
-            {/* Outbound line */}
-            <path
-              d={line2}
-              fill="none"
-              stroke="var(--stocky-text-muted)"
-              strokeWidth="2.2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-            {/* Inbound line */}
-            <path
-              d={line1}
-              fill="none"
-              stroke="var(--stocky-primary)"
-              strokeWidth="2.2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
+        {/* Mini Dual-line Graph & Legend */}
+        <div className="flex flex-col items-end gap-1 shrink-0">
+          <div className="w-36 sm:w-44 h-12 relative">
+            <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-full overflow-visible">
+              {/* Outbound line */}
+              <path
+                d={line2}
+                fill="none"
+                stroke="var(--stocky-text-muted)"
+                strokeWidth="2.2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              {/* Inbound line */}
+              <path
+                d={line1}
+                fill="none"
+                stroke="var(--stocky-primary)"
+                strokeWidth="2.2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </div>
+          <div className="flex items-center gap-3 text-[10px] text-stocky-text-sub font-medium">
+            <span className="flex items-center gap-1">
+              <span className="w-2 h-2 rounded-full bg-stocky-primary" />
+              Inbound Receipts
+            </span>
+            <span className="flex items-center gap-1">
+              <span className="w-2 h-2 rounded-full bg-stocky-text-muted" />
+              Consumption
+            </span>
+          </div>
         </div>
       </div>
 
