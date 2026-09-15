@@ -177,8 +177,51 @@ export function PlatformTopBarWidget({
     >
       {/* 1. Row 1: Brand & User Utility Bar (h-12 / 48px) */}
       <div className="w-full h-12 flex items-center justify-between px-3.5">
-        {/* Left: Brand logo & Company name */}
-        <div className="flex items-center gap-2.5 min-w-0">
+        {/* Left: Account Menu & Notifications Bell */}
+        <div className="flex items-center gap-1.5 min-w-0 shrink-0">
+          <PlatformAccountMenuWidget
+            userEmail={userEmail}
+            userName={userName}
+            userTitle={userTitle}
+            userRole={userRole}
+            userAvatarUrl={userAvatarUrl}
+            companyName={companyName}
+            companyLogoUrl={companyLogoUrl}
+            onSettingsClick={onSettingsClick}
+            onNavigateToTab={onNavigateToTab}
+            className="stocky-topbar-account max-w-[180px]"
+          />
+          {onNotificationsClick && (
+            <button
+              type="button"
+              onClick={onNotificationsClick}
+              aria-label={`Notifications${notificationCount > 0 ? `, ${notificationCount} unread` : ''}`}
+              title="Notifications"
+              className={`relative w-8 h-8 rounded-full flex items-center justify-center transition-colors cursor-pointer shrink-0 ${
+                isNotificationsOpen || activeTab === 'notifications'
+                  ? 'bg-stocky-primary text-stocky-text-main'
+                  : 'text-stocky-text-sub hover:text-stocky-text-main hover:bg-stocky-bg-global active:scale-95'
+              }`}
+            >
+              <BellIcon size="xs" />
+              {notificationCount > 0 && (
+                <span
+                  className={`absolute top-1 right-1 w-2 h-2 rounded-full ${
+                    isNotificationsOpen || activeTab === 'notifications'
+                      ? 'bg-stocky-text-main ring-1 ring-stocky-primary'
+                      : 'bg-stocky-primary ring-2 ring-white'
+                  }`}
+                />
+              )}
+            </button>
+          )}
+        </div>
+
+        {/* Right: Company Name & Brand logo */}
+        <div className="flex items-center gap-2 min-w-0 shrink-0">
+          <span className="text-sm font-semibold text-stocky-text-main truncate tracking-tight text-right max-w-[130px] sm:max-w-[200px]">
+            {companyName || 'Stocky'}
+          </span>
           <div className="w-8 h-8 rounded-lg bg-stocky-bg-global border border-stocky-border-subtle flex items-center justify-center shrink-0 overflow-hidden">
             {companyLogoUrl && !logoFailed ? (
               // eslint-disable-next-line @next/next/no-img-element
@@ -191,55 +234,13 @@ export function PlatformTopBarWidget({
               />
             ) : (
               <div
-                className="w-full h-full bg-stocky-primary text-white flex items-center justify-center"
+                className="w-full h-full bg-stocky-primary text-stocky-text-main flex items-center justify-center font-bold"
                 title={companyName || 'Stocky'}
               >
                 <BoxesIcon size="xs" />
               </div>
             )}
           </div>
-          <span className="text-sm font-semibold text-stocky-text-main truncate tracking-tight">
-            {companyName || 'Stocky'}
-          </span>
-        </div>
-
-        {/* Right: Notifications Bell & Account Menu */}
-        <div className="flex items-center gap-1.5 shrink-0">
-          {onNotificationsClick && (
-            <button
-              type="button"
-              onClick={onNotificationsClick}
-              aria-label={`Notifications${notificationCount > 0 ? `, ${notificationCount} unread` : ''}`}
-              title="Notifications"
-              className={`relative w-8 h-8 rounded-full flex items-center justify-center transition-colors cursor-pointer shrink-0 ${
-                isNotificationsOpen || activeTab === 'notifications'
-                  ? 'bg-stocky-primary text-white'
-                  : 'text-stocky-text-sub hover:text-stocky-text-main hover:bg-stocky-bg-global active:scale-95'
-              }`}
-            >
-              <BellIcon size="xs" />
-              {notificationCount > 0 && (
-                <span
-                  className={`absolute top-1 right-1 w-2 h-2 rounded-full ${
-                    isNotificationsOpen || activeTab === 'notifications'
-                      ? 'bg-white ring-1 ring-stocky-primary'
-                      : 'bg-stocky-primary ring-2 ring-white'
-                  }`}
-                />
-              )}
-            </button>
-          )}
-          <PlatformAccountMenuWidget
-            userEmail={userEmail}
-            userName={userName}
-            userTitle={userTitle}
-            userRole={userRole}
-            userAvatarUrl={userAvatarUrl}
-            companyName={companyName}
-            companyLogoUrl={companyLogoUrl}
-            onSettingsClick={onSettingsClick}
-            onNavigateToTab={onNavigateToTab}
-          />
         </div>
       </div>
 

@@ -1016,7 +1016,8 @@
 }
 
 @media (max-width: 639px) {
-  .stocky-topbar-account .stocky-account-trigger__copy,
+  .stocky-topbar-account .stocky-account-trigger__copy { display: flex; max-width: 6.5rem; }
+  .stocky-topbar-account .stocky-account-trigger__title { display: none; }
   .stocky-topbar-account .stocky-account-trigger__chevron { display: none; }
   .stocky-topbar-account .stocky-account-trigger { padding-inline: 0.2rem; }
 }

@@ -32,7 +32,7 @@ export function MobileFloatingActionsWidget({
 }: MobileFloatingActionsWidgetProps) {
   return (
     <div
-      className="fixed bottom-[5.25rem] right-0 w-[20%] flex flex-col items-center gap-2.5 z-40 md:hidden pointer-events-none [&>*]:pointer-events-auto select-none"
+      className="fixed bottom-[7.25rem] right-0 w-[20%] flex flex-col items-center gap-2.5 z-40 md:hidden pointer-events-none [&>*]:pointer-events-auto select-none"
       aria-label="Floating Action Controls"
     >
       {/* 1. Top FAB: Attendance QR Clock Button (Shown on Attendance page only) */}
@@ -53,7 +53,7 @@ export function MobileFloatingActionsWidget({
             className={`relative rounded-full flex items-center justify-center ring-[2.5px] ring-white shadow-xl transition-colors focus:outline-none cursor-pointer ${
               isClockedIn
                 ? 'bg-emerald-500 text-white shadow-emerald-500/30'
-                : 'bg-stocky-text-main text-white hover:bg-black active:bg-neutral-800'
+                : 'bg-stocky-accent text-stocky-text-main hover:bg-stocky-accent-hover active:bg-[#C9EE00]'
             }`}
             style={{ width: '52px', height: '52px' }}
           >
@@ -65,7 +65,7 @@ export function MobileFloatingActionsWidget({
               </>
             )}
 
-            <ClockIcon size="md" className={isClockedIn ? 'text-white' : 'text-white'} />
+            <ClockIcon size="md" className={isClockedIn ? 'text-white' : 'text-stocky-text-main'} />
           </motion.button>
         )}
       </AnimatePresence>
@@ -83,10 +83,10 @@ export function MobileFloatingActionsWidget({
           transition={{ type: 'spring', stiffness: 450, damping: 28 }}
           aria-label="Scan Barcode with Camera"
           title="Scan Barcode"
-          className="bg-stocky-primary text-stocky-text-main rounded-full flex items-center justify-center ring-[2.5px] ring-white shadow-xl hover:bg-stocky-primary-hover active:bg-stocky-primary-active transition-all focus:outline-none cursor-pointer"
+          className="bg-stocky-text-main text-white rounded-full flex items-center justify-center ring-[2.5px] ring-white shadow-xl hover:bg-black active:bg-neutral-800 transition-all focus:outline-none cursor-pointer"
           style={{ width: '52px', height: '52px' }}
         >
-          <BarcodeIcon size="md" className="text-stocky-text-main" />
+          <BarcodeIcon size="md" className="text-white" />
         </motion.button>
       )}
     </div>
