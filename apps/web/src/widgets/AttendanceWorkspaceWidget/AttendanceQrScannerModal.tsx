@@ -165,6 +165,8 @@ export function AttendanceQrScannerModal({
   const handleDecodedQrRef = useRef(handleDecodedQr);
   handleDecodedQrRef.current = handleDecodedQr;
 
+  const isStartingRef = useRef(false);
+
   const stopScanner = async () => {
     if (rafIdRef.current) {
       cancelAnimationFrame(rafIdRef.current);
@@ -199,13 +201,13 @@ export function AttendanceQrScannerModal({
       });
     } catch {}
 
-    // 3. Stop Html5Qrcode
+    // 3. Stop Html5Qrcode safely with try/catch and promise catch
     if (scannerRef.current) {
       const scanner = scannerRef.current;
       scannerRef.current = null;
       try {
         if (scanner.isScanning) {
-          await scanner.stop();
+          await scanner.stop().catch(() => {});
         }
       } catch {}
       try {
@@ -219,25 +221,34 @@ export function AttendanceQrScannerModal({
     let isMounted = true;
 
     if (!isOpen || punchResult) {
-      stopScanner();
+      stopScanner().catch(() => {});
       return;
     }
 
     const containerId = 'stocky-attendance-qr-scanner-element';
 
     const startScanner = async () => {
+      if (isStartingRef.current) return;
+      isStartingRef.current = true;
+
       try {
         setErrorMsg(null);
         isProcessingRef.current = false;
 
         // Small tick for DOM mount
         await new Promise((r) => setTimeout(r, 100));
-        if (!isMounted) return;
+        if (!isMounted) {
+          isStartingRef.current = false;
+          return;
+        }
 
-        await stopScanner();
+        await stopScanner().catch(() => {});
 
         const viewportEl = document.getElementById(containerId);
-        if (!viewportEl) return;
+        if (!viewportEl) {
+          isStartingRef.current = false;
+          return;
+        }
         viewportEl.innerHTML = '';
 
         const html5QrCode = new Html5Qrcode(containerId, {
@@ -267,6 +278,18 @@ export function AttendanceQrScannerModal({
             // Frame scanned, no QR detected yet
           }
         );
+
+        if (!isMounted) {
+          try {
+            if (html5QrCode.isScanning) {
+              await html5QrCode.stop().catch(() => {});
+            }
+          } catch {}
+          try {
+            html5QrCode.clear();
+          } catch {}
+          return;
+        }
 
         // Store active stream reference
         const videoEl = document.querySelector(
@@ -326,16 +349,20 @@ export function AttendanceQrScannerModal({
           }
         }
       } catch (err: any) {
-        console.error('Attendance QR scanner error:', err);
-        setErrorMsg('Unable to access device camera. Please check browser permissions.');
+        if (isMounted) {
+          console.warn('Attendance QR scanner error:', err);
+          setErrorMsg('Unable to access device camera. Please check browser permissions.');
+        }
+      } finally {
+        isStartingRef.current = false;
       }
     };
 
-    startScanner();
+    startScanner().catch(() => {});
 
     return () => {
       isMounted = false;
-      stopScanner();
+      stopScanner().catch(() => {});
     };
   }, [isOpen, punchResult]);
 
@@ -364,7 +391,7 @@ export function AttendanceQrScannerModal({
   };
 
   const handleCloseModal = async () => {
-    await stopScanner();
+    await stopScanner().catch(() => {});
     setPunchResult(null);
     setErrorMsg(null);
     setPunching(false);

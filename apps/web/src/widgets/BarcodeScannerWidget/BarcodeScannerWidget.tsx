@@ -255,7 +255,7 @@ export function BarcodeScannerWidget({
       scannerRef.current = null;
       try {
         if (scanner.isScanning) {
-          await scanner.stop();
+          await scanner.stop().catch(() => {});
         }
       } catch (err) {
         // Ignore if already stopped
