@@ -571,7 +571,17 @@ export function InventoryWorkspaceWidget({
             <strong>{row.product.name}</strong>
             <small>{supplierName ? `${supplierName} · ` : ''}{row.product.categoryName || 'General'} · <span className="stocky-mobile-stock-row__barcode">{row.product.barcode || 'No barcode'}</span></small>
           </span>
-          <span className="stocky-mobile-stock-row__summary"><strong>{row.totalQuantity.toLocaleString()}</strong><small className={state.tone === 'red' ? 'stocky-text-critical' : state.tone === 'amber' ? 'stocky-text-warning' : 'stocky-text-success'}>{state.label}</small></span>
+          <span className="stocky-mobile-stock-row__summary">
+            <strong>
+              {row.totalQuantity.toLocaleString()}{' '}
+              <span className="text-[11px] font-normal text-stocky-text-sub">
+                {row.product.unitName ? (row.totalQuantity === 1 ? row.product.unitName : `${row.product.unitName}s`) : 'units'}
+              </span>
+            </strong>
+            <small className={state.tone === 'red' ? 'stocky-text-critical font-medium' : state.tone === 'amber' ? 'stocky-text-warning font-medium' : 'stocky-text-success font-medium'}>
+              {state.label === 'No expiry date' ? 'No expiry' : `Exp: ${state.label}`}
+            </small>
+          </span>
         </div>;
       })}
     </div>

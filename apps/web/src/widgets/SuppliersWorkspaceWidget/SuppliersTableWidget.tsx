@@ -75,7 +75,8 @@ export function SuppliersTableWidget({
         </div>
       ) : (
         <>
-          <div className="overflow-x-auto">
+          {/* 1. Desktop Table (hidden on mobile) */}
+          <div className="hidden sm:block overflow-x-auto">
             <table className="w-full min-w-[780px] table-fixed text-left text-[11px] stocky-board-table">
               <colgroup>
                 <col className="w-[22%]" />
@@ -138,45 +139,35 @@ export function SuppliersTableWidget({
                             )}
                           </div>
                           <div className="min-w-0 flex-1">
-                            <p className="font-medium text-stocky-text-main text-xs truncate" title={supplier.name}>
+                            <p className="font-semibold text-stocky-text-main text-xs truncate">
                               {supplier.name}
                             </p>
-                            <p className="mt-0.5 text-[10px] text-stocky-text-sub">
-                              {openRequests} open request{openRequests === 1 ? '' : 's'}
+                            <p className="text-[10px] text-stocky-text-sub truncate">
+                              {supplier.contactName || 'No contact specified'}
                             </p>
                           </div>
                         </div>
                       </td>
-                      <td className="px-4 py-3 text-stocky-text-sub">
-                        <span className="line-clamp-2">{supplier.address || 'Not recorded'}</span>
-                      </td>
                       <td className="px-4 py-3">
-                        <p className="line-clamp-2 text-stocky-text-main text-xs">
-                          {linkedNames.length
-                            ? linkedNames.slice(0, 2).join(', ')
-                            : supplier.itemsSupplied?.slice(0, 2).join(', ') || 'Not recorded'}
-                          {(linkedNames.length > 2 || (supplier.itemsSupplied?.length || 0) > 2) && (
-                            <span className="text-stocky-text-sub">
-                              {' '}
-                              · +{Math.max(linkedNames.length, supplier.itemsSupplied?.length || 0) - 2}
-                            </span>
-                          )}
-                        </p>
-                        <p className="mt-0.5 text-[10px] text-stocky-text-sub">
-                          {linked.length || supplier.itemCount || supplier.itemsSupplied?.length || 0} linked
+                        <p className="text-xs text-stocky-text-main truncate max-w-[200px]">
+                          {supplier.address || <span className="text-stocky-text-sub italic">Not recorded</span>}
                         </p>
                       </td>
                       <td className="px-4 py-3">
-                        <p className="line-clamp-2 text-stocky-text-main text-xs">
-                          {contactNames.length
-                            ? contactNames.slice(0, 2).join(', ')
-                            : primary?.name || supplier.contactName || 'Not recorded'}
-                          {contactNames.length > 2 && (
-                            <span className="text-stocky-text-sub"> · +{contactNames.length - 2}</span>
-                          )}
+                        <p className="text-xs font-medium text-stocky-text-main">
+                          {linked.length} linked product{linked.length === 1 ? '' : 's'}
                         </p>
-                        <p className="mt-0.5 truncate text-[10px] text-stocky-text-sub">
-                          {primary?.email ||
+                        <p className="text-[10px] text-stocky-text-sub truncate max-w-[180px]">
+                          {linkedNames.slice(0, 2).join(', ') || 'No catalog items'}
+                          {linkedNames.length > 2 ? ` +${linkedNames.length - 2}` : ''}
+                        </p>
+                      </td>
+                      <td className="px-4 py-3">
+                        <p className="text-xs text-stocky-text-main truncate max-w-[160px]">
+                          {primary?.phone || primary?.email || 'No primary details'}
+                        </p>
+                        <p className="text-[10px] text-stocky-text-sub truncate max-w-[160px]">
+                          {supplier.contactPhone ||
                             supplier.contactEmail ||
                             primary?.phone ||
                             supplier.contactPhone ||
@@ -208,6 +199,80 @@ export function SuppliersTableWidget({
                 })}
               </tbody>
             </table>
+          </div>
+
+          {/* 2. Mobile Card List (sm:hidden) */}
+          <div className="sm:hidden divide-y divide-stocky-border-subtle w-full">
+            {pagedSuppliers.map((supplier) => {
+              const linked = supplierProducts.filter((link) => link.supplierId === supplier.id);
+              const supplierRequests = requests.filter((r) => r.supplierId === supplier.id);
+              const openRequests = supplierRequests.filter(
+                (r) => !['closed', 'cancelled'].includes(r.status)
+              ).length;
+              const contacts = supplierContactsMap.get(supplier.id) || [];
+              const primary = contacts.find((contact) => contact.isPrimary) || contacts[0];
+              const contactSnippet = primary?.name || supplier.contactName || (contacts.length > 0 ? `${contacts.length} contacts` : null);
+
+              return (
+                <article
+                  key={supplier.id}
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => onSelectSupplier(supplier)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      onSelectSupplier(supplier);
+                    }
+                  }}
+                  className="p-3.5 flex items-center justify-between gap-3 bg-white hover:bg-stocky-bg-global/30 active:bg-stocky-bg-global/60 transition-colors cursor-pointer text-left"
+                >
+                  {/* Left Anchor + Center Info */}
+                  <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                    <div className="relative flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-stocky-border-subtle bg-stocky-bg-global text-stocky-text-sub select-none font-medium">
+                      {supplier.imageUrl ? (
+                        <img
+                          src={supplier.imageUrl}
+                          alt={supplier.name}
+                          className="h-full w-full object-cover"
+                          onError={(e) => {
+                            (e.currentTarget as HTMLElement).style.display = 'none';
+                          }}
+                        />
+                      ) : (
+                        <span className="text-[11px] font-semibold text-stocky-text-main uppercase tracking-wider">
+                          {supplier.name.slice(0, 2)}
+                        </span>
+                      )}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <h4 className="text-xs font-semibold text-stocky-text-main leading-tight truncate">
+                        {supplier.name}
+                      </h4>
+                      <p className="mt-0.5 text-[11px] text-stocky-text-sub flex items-center gap-1.5 truncate">
+                        <span className="truncate max-w-[130px]">{supplier.address || 'No address'}</span>
+                        {contactSnippet && (
+                          <>
+                            <span>·</span>
+                            <span className="truncate max-w-[100px]">{contactSnippet}</span>
+                          </>
+                        )}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Right Metric & Requests Stack */}
+                  <div className="shrink-0 flex flex-col items-end gap-0.5">
+                    <span className="text-xs font-semibold text-stocky-text-main">
+                      {linked.length} product{linked.length === 1 ? '' : 's'}
+                    </span>
+                    <span className={`text-[10px] font-medium mt-0.5 ${openRequests > 0 ? 'text-stocky-text-warning' : 'text-stocky-text-sub'}`}>
+                      {openRequests > 0 ? `${openRequests} open req` : 'No open req'}
+                    </span>
+                  </div>
+                </article>
+              );
+            })}
           </div>
 
           {/* Pagination Footer */}

@@ -500,60 +500,48 @@ export function TimesheetsTableWidget({
                 .toUpperCase()
                 .slice(0, 2);
 
+              const timeDisplay = isOngoing
+                ? `${formatTime(shift.clockInAt)} – Active`
+                : `${formatTime(shift.clockInAt)} – ${formatTime(shift.clockOutAt)}`;
+
               return (
                 <article
                   key={shift.id}
+                  role="button"
+                  tabIndex={0}
                   onClick={() => onSelectShift(shift)}
-                  className="p-3.5 flex flex-col gap-2.5 bg-stocky-bg-widget hover:bg-stocky-bg-global/40 active:bg-stocky-bg-global/60 transition-colors cursor-pointer"
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      onSelectShift(shift);
+                    }
+                  }}
+                  className="p-3.5 flex items-center justify-between gap-3 bg-white hover:bg-stocky-bg-global/30 active:bg-stocky-bg-global/60 transition-colors cursor-pointer text-left"
                 >
-                  {/* Top row: Avatar + Name & Date + Status Badge */}
-                  <div className="flex items-center justify-between gap-2">
-                    <div className="flex items-center gap-2.5 min-w-0">
-                      <div className="w-8 h-8 rounded-full bg-stocky-primary/10 border border-stocky-primary/20 text-stocky-primary flex items-center justify-center text-xs font-semibold shrink-0">
-                        {memberInitials}
-                      </div>
-                      <div className="min-w-0">
-                        <div className="text-xs font-semibold text-stocky-text-main truncate">
-                          {memberName}
-                        </div>
-                        <div className="text-[11px] text-stocky-text-sub truncate">
-                          {shift.shiftDate}
-                        </div>
-                      </div>
+                  {/* Left Anchor + Center Info Stack */}
+                  <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                    <div className="w-9 h-9 rounded-full bg-stocky-primary/10 border border-stocky-primary/20 text-stocky-primary flex items-center justify-center text-xs font-semibold shrink-0">
+                      {memberInitials}
                     </div>
-                    <div className="shrink-0">
-                      {getStatusBadge(shift.status, isOngoing)}
-                    </div>
-                  </div>
-
-                  {/* Times & Duration Box */}
-                  <div className="flex items-center justify-between px-3 py-2 rounded-lg bg-stocky-bg-global/50 border border-stocky-border-subtle/60 text-xs">
-                    <div className="flex items-center gap-1.5 text-stocky-text-main font-medium">
-                      <ClockIcon size="xs" className="text-stocky-text-sub shrink-0" />
-                      <span>{formatTime(shift.clockInAt)}</span>
-                      <span className="text-stocky-text-sub">→</span>
-                      <span className={isOngoing ? 'text-stocky-primary font-semibold' : 'text-stocky-text-main'}>
-                        {isOngoing ? 'Active Now' : formatTime(shift.clockOutAt)}
-                      </span>
-                    </div>
-                    <div className="text-[11px] font-semibold text-stocky-text-main">
-                      {formatDuration(shift.totalMinutes)}
+                    <div className="min-w-0 flex-1">
+                      <h4 className="text-xs font-semibold text-stocky-text-main leading-tight truncate">
+                        {memberName}
+                      </h4>
+                      <p className="mt-0.5 text-[11px] text-stocky-text-sub flex items-center gap-1.5 truncate">
+                        <span className="truncate max-w-[110px]">{locationName}</span>
+                        <span>·</span>
+                        <span className="capitalize">{shift.punchInMethod || 'kiosk'}</span>
+                        <span>·</span>
+                        <span>{shift.shiftDate}</span>
+                      </p>
                     </div>
                   </div>
 
-                  {/* Bottom row: Location + Method + Inspect Action */}
-                  <div className="flex items-center justify-between gap-2 pt-0.5">
-                    <div className="flex items-center gap-2 min-w-0">
-                      <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-stocky-bg-global border border-stocky-border-subtle text-[11px] text-stocky-text-main font-medium truncate">
-                        <WarehouseIcon size="xs" className="text-stocky-text-sub shrink-0" />
-                        <span className="truncate">{locationName}</span>
-                      </div>
-                      {getMethodBadge(shift.punchInMethod)}
-                    </div>
-
-                    <span className="inline-flex items-center gap-0.5 text-[11px] font-medium text-stocky-text-sub hover:text-stocky-primary">
-                      <span>Inspect</span>
-                      <ChevronRightIcon size="xs" />
+                  {/* Right Status & Time Stack */}
+                  <div className="shrink-0 flex flex-col items-end gap-0.5">
+                    {getStatusBadge(shift.status, isOngoing)}
+                    <span className="text-[10px] text-stocky-text-sub font-normal mt-0.5 whitespace-nowrap">
+                      {timeDisplay} {(shift.totalMinutes ?? 0) > 0 ? `· ${formatDuration(shift.totalMinutes!)}` : ''}
                     </span>
                   </div>
                 </article>

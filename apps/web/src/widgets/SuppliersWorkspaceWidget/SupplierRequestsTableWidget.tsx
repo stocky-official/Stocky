@@ -172,75 +172,64 @@ export function SupplierRequestsTableWidget({
                   : null;
 
               return (
-                <div key={request.id} className="p-3.5 flex flex-col gap-2.5 bg-stocky-bg-widget hover:bg-stocky-bg-global/20 transition-colors">
-                  {/* Row 1: Product Name & Status Badge */}
-                  <div className="flex items-start justify-between gap-2">
+                <article key={request.id} className="p-3.5 flex items-center justify-between gap-3 bg-white hover:bg-stocky-bg-global/30 transition-colors text-left">
+                  {/* Left Anchor + Center Info */}
+                  <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-stocky-border-subtle bg-stocky-bg-global text-stocky-text-sub">
+                      <TruckIcon size="xs" />
+                    </div>
                     <div className="min-w-0 flex-1">
-                      <h4 className="text-xs font-semibold text-stocky-text-main truncate">
+                      <h4 className="text-xs font-semibold text-stocky-text-main leading-tight truncate">
                         {product?.name || 'Product'}
                       </h4>
-                      <div className="flex items-center gap-1.5 mt-0.5 text-[11px] text-stocky-text-sub">
-                        <span className="capitalize font-medium">{request.requestType}</span>
+                      <p className="mt-0.5 text-[11px] text-stocky-text-sub flex items-center gap-1.5 truncate">
+                        <span className="truncate max-w-[100px]">{location?.name || 'Branch'}</span>
+                        <span>·</span>
+                        <span className="truncate max-w-[100px]">{supplier?.name || 'Supplier'}</span>
                         {request.quantityRequested ? (
                           <>
                             <span>·</span>
-                            <span className="font-semibold text-stocky-text-main">
-                              {request.quantityRequested} units
-                            </span>
+                            <span className="font-semibold text-stocky-text-main">{request.quantityRequested} units</span>
                           </>
                         ) : null}
-                      </div>
+                      </p>
                     </div>
+                  </div>
+
+                  {/* Right Status & Action Stack */}
+                  <div className="shrink-0 flex flex-col items-end gap-1">
                     <span
-                      className={`inline-flex items-center shrink-0 rounded-full px-2.5 py-0.5 text-[10px] font-semibold capitalize ${
+                      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[10px] font-semibold capitalize ${
                         statusBadgeClasses[request.status] || 'bg-slate-100 text-slate-700'
                       }`}
                     >
                       {request.status}
                     </span>
-                  </div>
-
-                  {/* Row 2: Location & Supplier Badges */}
-                  <div className="flex flex-wrap items-center gap-2 text-xs text-stocky-text-sub bg-stocky-bg-global/50 px-2.5 py-1.5 rounded-lg border border-stocky-border-subtle/60">
-                    <div className="inline-flex items-center gap-1 min-w-0">
-                      <WarehouseIcon size="xs" className="shrink-0 text-stocky-text-sub" />
-                      <span className="text-[11px] font-medium text-stocky-text-main truncate max-w-[130px]">
-                        {location?.name || 'Location'}
-                      </span>
-                    </div>
-                    <span className="text-stocky-border-subtle">|</span>
-                    <div className="inline-flex items-center gap-1 min-w-0">
-                      <TruckIcon size="xs" className="shrink-0 text-stocky-text-sub" />
-                      <span className="text-[11px] font-medium text-stocky-text-main truncate max-w-[130px]">
-                        {supplier?.name || 'Vendor not recorded'}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Row 3: Action Trigger */}
-                  <div className="pt-1 flex items-center gap-2">
-                    <button
-                      type="button"
-                      onClick={() => setEmailRequest(request)}
-                      className="flex-1 h-8 rounded-full border border-stocky-border-subtle bg-white px-3 text-xs font-medium text-stocky-text-main hover:border-stocky-primary hover:text-stocky-primary cursor-pointer inline-flex items-center justify-center gap-1.5 transition-colors shadow-2xs"
-                    >
-                      <MailIcon size="xs" />
-                      <span>Email Supplier</span>
-                    </button>
-                    {userRole !== 'staff' &&
-                    request.status !== 'closed' &&
-                    request.status !== 'cancelled' &&
-                    nextStatus ? (
+                    <div className="flex items-center gap-1 mt-0.5">
                       <button
                         type="button"
-                        onClick={() => onStatusChange(request, nextStatus)}
-                        className="flex-1 h-8 rounded-full border border-stocky-border-subtle bg-white px-3 text-xs font-semibold text-stocky-text-main hover:border-stocky-primary hover:text-stocky-primary cursor-pointer inline-flex items-center justify-center transition-colors shadow-2xs"
+                        onClick={() => setEmailRequest(request)}
+                        title="Email supplier"
+                        className="h-6 w-6 rounded-full border border-stocky-border-subtle bg-white text-stocky-text-sub hover:text-stocky-primary hover:border-stocky-primary inline-flex items-center justify-center transition-colors cursor-pointer"
+                        aria-label="Email supplier"
                       >
-                        Mark as {nextStatus}
+                        <MailIcon size="xs" />
                       </button>
-                    ) : null}
+                      {userRole !== 'staff' &&
+                      request.status !== 'closed' &&
+                      request.status !== 'cancelled' &&
+                      nextStatus ? (
+                        <button
+                          type="button"
+                          onClick={() => onStatusChange(request, nextStatus)}
+                          className="h-6 px-2 rounded-full border border-stocky-border-subtle bg-white text-[10px] font-medium text-stocky-text-main hover:border-stocky-primary hover:text-stocky-primary cursor-pointer transition-colors shadow-2xs"
+                        >
+                          → {nextStatus}
+                        </button>
+                      ) : null}
+                    </div>
                   </div>
-                </div>
+                </article>
               );
             })}
           </div>

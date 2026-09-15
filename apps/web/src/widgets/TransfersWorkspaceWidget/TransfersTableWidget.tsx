@@ -257,47 +257,96 @@ export function TransfersTableWidget({
           </div>
 
           {/* Mobile Card List */}
-          <div className="stocky-transfer-mobile-list divide-y divide-stocky-border-subtle sm:hidden">
+          <div className="stocky-transfer-mobile-list divide-y divide-stocky-border-subtle sm:hidden w-full">
             {pageTransfers.map((transfer) => {
-              const productNames = productsForTransfer(transfer.id);
               const transferLinesForRow = linesForTransfer(transfer.id);
+              const sourceName = locationMap.get(transfer.sourceLocationId)?.name || 'Source';
+              const destName = locationMap.get(transfer.destinationLocationId)?.name || 'Destination';
+              const lineCount = transferLinesForRow.length || 0;
+
+              const isActionableReceive =
+                isApprovedAllowed &&
+                (transfer.status === 'approved' ||
+                  transfer.status === 'in_transit' ||
+                  transfer.status === 'partially_received');
+              const isActionableApprove = isApprovedAllowed && transfer.status === 'requested';
+
+              const handleCardClick = () => {
+                if (isActionableReceive) {
+                  onOpenReceipt(transfer);
+                } else if (isActionableApprove) {
+                  onApprove(transfer);
+                }
+              };
+
               return (
-                <article key={transfer.id} className="stocky-transfer-mobile-card p-4 flex flex-col gap-3">
-                  <div className="stocky-transfer-mobile-card__top flex items-center justify-between">
-                    <div className="stocky-transfer-id flex items-center gap-2">
-                      <span className="stocky-transfer-icon stocky-status-info">
-                        <ArrowUpDownIcon size="xs" />
-                      </span>
-                      <div>
-                        <span className="stocky-transfer-main font-medium text-xs">
-                          #{transfer.id.slice(0, 8)}
-                        </span>
-                        <span className="stocky-transfer-sub text-[11px] text-stocky-text-sub block">
-                          {formatDate(transfer.requestedAt)}
-                        </span>
-                      </div>
+                <div
+                  key={transfer.id}
+                  role={isActionableReceive || isActionableApprove ? 'button' : undefined}
+                  tabIndex={isActionableReceive || isActionableApprove ? 0 : undefined}
+                  onClick={handleCardClick}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      handleCardClick();
+                    }
+                  }}
+                  className={`p-3.5 flex items-center justify-between gap-3 bg-stocky-bg-widget hover:bg-stocky-bg-global/30 active:bg-stocky-bg-global/50 transition-colors text-left ${
+                    isActionableReceive || isActionableApprove ? 'cursor-pointer' : ''
+                  }`}
+                >
+                  {/* Left Stack: Icon Badge + Reference & Route */}
+                  <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                    <div className="h-9 w-9 rounded-xl bg-stocky-bg-global border border-stocky-border-subtle flex items-center justify-center shrink-0 text-stocky-primary">
+                      <ArrowUpDownIcon size="xs" />
                     </div>
-                    <span className={`stocky-transfer-status ${statusTone[transfer.status]}`}>
+                    <div className="min-w-0 flex-1">
+                      <p className="font-semibold text-stocky-text-main text-xs truncate leading-tight">
+                        #{transfer.id.slice(0, 8)}
+                        {transfer.note ? (
+                          <span className="font-normal text-stocky-text-sub ml-1">· {transfer.note}</span>
+                        ) : null}
+                      </p>
+                      <p className="text-[11px] text-stocky-text-sub truncate mt-0.5">
+                        {sourceName} → {destName} · {lineCount} product{lineCount === 1 ? '' : 's'}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Right Stack: Status & Action/Date */}
+                  <div className="shrink-0 flex flex-col items-end gap-1">
+                    <span className={`stocky-transfer-status text-[10px] font-medium px-2 py-0.5 rounded-full border capitalize ${statusTone[transfer.status]}`}>
                       {statusLabels[transfer.status]}
                     </span>
+                    {isActionableApprove ? (
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onApprove(transfer);
+                        }}
+                        className="h-6 px-2.5 rounded-full stocky-status-info text-[10px] font-medium border shadow-2xs hover:brightness-95 transition-all cursor-pointer"
+                      >
+                        Approve
+                      </button>
+                    ) : isActionableReceive ? (
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onOpenReceipt(transfer);
+                        }}
+                        className="h-6 px-2.5 rounded-full bg-stocky-primary text-white text-[10px] font-medium shadow-2xs hover:bg-stocky-primary-hover transition-colors cursor-pointer"
+                      >
+                        Receive
+                      </button>
+                    ) : (
+                      <span className="text-[10px] text-stocky-text-sub">
+                        {formatDate(transfer.requestedAt)}
+                      </span>
+                    )}
                   </div>
-
-                  <div className="stocky-transfer-mobile-card__route flex items-center gap-1.5 text-xs text-stocky-text-main">
-                    <span>{locationMap.get(transfer.sourceLocationId)?.name || 'Source'}</span>
-                    <ChevronRightIcon size="xs" className="text-stocky-text-sub" />
-                    <span>{locationMap.get(transfer.destinationLocationId)?.name || 'Destination'}</span>
-                  </div>
-
-                  <p className="stocky-transfer-mobile-card__items text-xs text-stocky-text-sub">
-                    {transferLinesForRow.length || 0} product{transferLinesForRow.length === 1 ? '' : 's'}
-                    {productNames.length > 0 ? ` · ${productNames.slice(0, 2).join(', ')}` : ''}
-                    {productNames.length > 2 ? ` +${productNames.length - 2}` : ''}
-                  </p>
-
-                  <div className="stocky-transfer-mobile-card__actions flex justify-end pt-1">
-                    {renderTransferActions(transfer)}
-                  </div>
-                </article>
+                </div>
               );
             })}
           </div>

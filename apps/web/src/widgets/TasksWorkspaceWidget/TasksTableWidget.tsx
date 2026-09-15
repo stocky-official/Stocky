@@ -369,6 +369,7 @@ export function TasksTableWidget({
           return (
             <article
               key={task.id}
+              role="button"
               tabIndex={0}
               onClick={() => handleTaskClick(task)}
               onKeyDown={(event) => {
@@ -377,122 +378,43 @@ export function TasksTableWidget({
                   handleTaskClick(task);
                 }
               }}
-              className="p-3.5 flex flex-col gap-2.5 bg-white hover:bg-stocky-bg-global/30 active:bg-stocky-bg-global/60 transition-all cursor-pointer"
+              className="p-3.5 flex items-center justify-between gap-3 bg-white hover:bg-stocky-bg-global/30 active:bg-stocky-bg-global/60 transition-colors cursor-pointer text-left"
             >
-              {/* Row 1: Type Icon + Title & Date + Status Badge */}
-              <div className="flex items-start justify-between gap-2.5">
-                <div className="flex items-start gap-2.5 min-w-0 flex-1">
-                  <span
-                    className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border mt-0.5 ${
-                      isCount
-                        ? 'stocky-status-info bg-emerald-50 text-emerald-600 border-emerald-200'
-                        : 'stocky-status-warning bg-amber-50 text-amber-600 border-amber-200'
-                    }`}
-                  >
-                    {isCount ? (
-                      <CheckCircleIcon size="xs" />
-                    ) : (
-                      <ClockIcon size="xs" />
-                    )}
-                  </span>
-                  <div className="min-w-0 flex-1">
-                    <h4 className="text-xs font-semibold text-stocky-text-main leading-snug truncate">
-                      {task.title}
-                    </h4>
-                    <p className="mt-0.5 text-[11px] text-stocky-text-sub flex items-center gap-1.5 truncate">
-                      <span>{taskTypeLabel(task.taskType)}</span>
-                      <span>·</span>
-                      <span>{formatDate(task.createdAt)}</span>
-                    </p>
-                  </div>
-                </div>
-                <div className="shrink-0">
-                  {getStatusBadge(task.status)}
+              {/* Left Anchor + Center Info Stack */}
+              <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                <span
+                  className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border ${
+                    isCount
+                      ? 'stocky-status-info bg-emerald-50 text-emerald-600 border-emerald-200'
+                      : 'stocky-status-warning bg-amber-50 text-amber-600 border-amber-200'
+                  }`}
+                >
+                  {isCount ? (
+                    <CheckCircleIcon size="xs" />
+                  ) : (
+                    <ClockIcon size="xs" />
+                  )}
+                </span>
+                <div className="min-w-0 flex-1">
+                  <h4 className="text-xs font-semibold text-stocky-text-main leading-tight truncate">
+                    {task.title}
+                  </h4>
+                  <p className="mt-0.5 text-[11px] text-stocky-text-sub flex items-center gap-1.5 truncate">
+                    <span className="truncate max-w-[110px]">{locationName}</span>
+                    <span>·</span>
+                    <span className="truncate max-w-[100px]">{assignee?.full_name?.split(' ')[0] || assignee?.email?.split('@')[0] || 'Unassigned'}</span>
+                    <span>·</span>
+                    <span className="font-medium text-stocky-text-main">{completed}/{items.length} items</span>
+                  </p>
                 </div>
               </div>
 
-              {/* Row 2: Location & Progress Summary Box */}
-              <div className="flex items-center justify-between px-3 py-2 rounded-xl bg-stocky-bg-global/50 border border-stocky-border-subtle/70 text-xs">
-                <div className="flex items-center gap-1.5 min-w-0">
-                  <WarehouseIcon size="xs" className="text-stocky-text-sub shrink-0" />
-                  <span className="text-[11px] font-medium text-stocky-text-main truncate">
-                    {locationName}
-                  </span>
-                </div>
-                <div className="shrink-0 flex items-center gap-1.5">
-                  <span className="text-[10px] text-stocky-text-sub">Counted:</span>
-                  <span className="inline-flex items-center rounded-full bg-white border border-stocky-border-subtle px-2 py-0.5 text-[10px] font-semibold text-stocky-text-main shadow-2xs">
-                    {completed}/{items.length} items
-                  </span>
-                </div>
-              </div>
-
-              {/* Row 3: Assignee + Action Button */}
-              <div className="flex items-center justify-between gap-2 pt-0.5">
-                <div className="flex items-center gap-2 min-w-0">
-                  <UserAvatar
-                    src={assignee?.avatar_url}
-                    name={assignee?.full_name}
-                    email={assignee?.email}
-                    size="xs"
-                    className="h-6 w-6 shrink-0"
-                  />
-                  <div className="min-w-0">
-                    <span className="text-[11px] font-medium text-stocky-text-main truncate block">
-                      {assignee?.full_name || assignee?.email?.split('@')[0] || 'Unassigned'}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="shrink-0">
-                  {canRun && (
-                    <button
-                      type="button"
-                      onClick={(event) => {
-                        event.stopPropagation();
-                        onOpenRunner(task);
-                      }}
-                      className="inline-flex h-8 items-center gap-1 rounded-full bg-stocky-primary hover:bg-stocky-primary-hover px-3 text-xs font-semibold text-white transition-colors cursor-pointer active:scale-95 shadow-2xs"
-                    >
-                      <span>
-                        {task.status === 'assigned'
-                          ? 'Start'
-                          : task.status === 'rejected'
-                          ? 'Correct'
-                          : 'Continue'}
-                      </span>
-                      <ChevronRightIcon size="xs" />
-                    </button>
-                  )}
-
-                  {canReview && (
-                    <button
-                      type="button"
-                      onClick={(event) => {
-                        event.stopPropagation();
-                        onOpenReview(task);
-                      }}
-                      className="inline-flex h-8 items-center gap-1 rounded-full bg-stocky-primary hover:bg-stocky-primary-hover px-3 text-xs font-semibold text-white transition-colors cursor-pointer active:scale-95 shadow-2xs"
-                    >
-                      <span>Review</span>
-                      <ChevronRightIcon size="xs" />
-                    </button>
-                  )}
-
-                  {!canRun && !canReview && (
-                    <button
-                      type="button"
-                      onClick={(event) => {
-                        event.stopPropagation();
-                        onOpenDetails(task);
-                      }}
-                      className="inline-flex h-8 items-center gap-1 rounded-full border border-stocky-border-subtle hover:border-stocky-primary/40 bg-stocky-bg-widget px-3 text-xs font-medium text-stocky-text-main hover:text-stocky-primary transition-colors cursor-pointer active:scale-95"
-                    >
-                      <span>View</span>
-                      <ChevronRightIcon size="xs" />
-                    </button>
-                  )}
-                </div>
+              {/* Right Status & Date Stack */}
+              <div className="shrink-0 flex flex-col items-end gap-0.5">
+                {getStatusBadge(task.status)}
+                <span className="text-[10px] text-stocky-text-sub font-normal mt-0.5">
+                  {formatDate(task.createdAt)}
+                </span>
               </div>
             </article>
           );

@@ -247,8 +247,16 @@ export function TeamTableWidget({
       <div className="sm:hidden divide-y divide-stocky-border-subtle w-full">
         {members.map((member) => {
           const memberAssignments = assignments.filter((a) => a.user_id === member.id);
-          const manager = member.reports_to ? members.find((m) => m.id === member.reports_to) : null;
-          const allowedPages = member.permissions?.pages || ['inventory', 'transfers', 'suppliers', 'tasks', 'attendance', 'locations'];
+          const locationText =
+            memberAssignments.length > 0
+              ? (locations.find((l) => l.id === memberAssignments[0].location_id)?.name || 'Branch') +
+                (memberAssignments.length > 1 ? ` +${memberAssignments.length - 1}` : '')
+              : 'All Locations';
+
+          const subtitleText = [
+            member.job_title || null,
+            locationText,
+          ].filter(Boolean).join(' · ') || member.email;
 
           return (
             <div
@@ -262,92 +270,42 @@ export function TeamTableWidget({
                   onSelectMember(member);
                 }
               }}
-              className="p-3.5 flex flex-col gap-2.5 bg-stocky-bg-widget hover:bg-stocky-bg-global/30 active:bg-stocky-bg-global/50 transition-colors cursor-pointer text-left"
+              className="p-3.5 flex items-center justify-between gap-3 bg-stocky-bg-widget hover:bg-stocky-bg-global/30 active:bg-stocky-bg-global/50 transition-colors cursor-pointer text-left"
             >
-              {/* Row 1: Avatar, Name, Role & Status */}
-              <div className="flex items-start justify-between gap-2.5">
-                <div className="flex items-center gap-2.5 min-w-0 flex-1">
-                  <UserAvatar
-                    src={member.avatar_url}
-                    name={member.full_name}
-                    email={member.email}
-                    size="sm"
-                    className="ring-1 ring-stocky-border-subtle shrink-0"
-                  />
-                  <div className="min-w-0 flex-1">
-                    <p className="font-semibold text-stocky-text-main text-xs truncate">
-                      {member.full_name || member.email}
-                    </p>
-                    <p className="text-[11px] text-stocky-text-sub truncate">
-                      {member.email}
-                    </p>
-                  </div>
+              {/* Left Stack: Avatar + Name & Subtitle */}
+              <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                <UserAvatar
+                  src={member.avatar_url}
+                  name={member.full_name}
+                  email={member.email}
+                  size="sm"
+                  className="ring-1 ring-stocky-border-subtle shrink-0"
+                />
+                <div className="min-w-0 flex-1">
+                  <p className="font-semibold text-stocky-text-main text-xs truncate leading-tight">
+                    {member.full_name || member.email}
+                  </p>
+                  <p className="text-[11px] text-stocky-text-sub truncate mt-0.5">
+                    {subtitleText}
+                  </p>
                 </div>
+              </div>
 
-                <div className="flex items-center gap-1.5 shrink-0">
-                  {getRoleBadge(member.role)}
+              {/* Right Stack: Role & Status */}
+              <div className="shrink-0 flex flex-col items-end gap-1">
+                {getRoleBadge(member.role)}
+                <span
+                  className={`inline-flex items-center rounded-full px-2 py-0.5 text-[9px] font-medium border capitalize ${
+                    member.status === 'active' ? 'stocky-status-success' : 'stocky-status-warning'
+                  }`}
+                >
                   <span
-                    className={`inline-flex rounded-full px-2 py-0.5 text-[9px] font-medium border capitalize ${
-                      member.status === 'active' ? 'stocky-status-success' : 'stocky-status-warning'
+                    className={`w-1.5 h-1.5 rounded-full mr-1 ${
+                      member.status === 'active' ? 'bg-emerald-500' : 'bg-amber-500'
                     }`}
-                  >
-                    {member.status || 'active'}
-                  </span>
-                </div>
-              </div>
-
-              {/* Row 2: Job Title & Hierarchy */}
-              <div className="flex flex-wrap items-center gap-2 text-xs bg-stocky-bg-global/60 p-2 rounded-xl border border-stocky-border-subtle/70">
-                <div className="flex items-center gap-1.5 min-w-0">
-                  <span className="text-[10px] uppercase font-bold tracking-wider text-stocky-text-sub shrink-0">Title:</span>
-                  <span className="text-xs font-semibold text-stocky-text-main truncate max-w-[170px]">
-                    {member.job_title || <span className="text-stocky-text-sub font-normal italic">No title</span>}
-                  </span>
-                </div>
-                <span className="text-stocky-border-subtle">·</span>
-                <div className="flex items-center gap-1 min-w-0 text-[11px] text-stocky-text-sub">
-                  <span className="text-[10px] font-medium uppercase text-stocky-text-sub">Supervisor:</span>
-                  <span className="font-medium text-stocky-text-main truncate max-w-[130px]">
-                    {manager ? (manager.full_name || manager.email?.split('@')[0]) : member.role === 'owner' ? 'Owner' : 'None'}
-                  </span>
-                </div>
-              </div>
-
-              {/* Row 3: Assigned Locations & Authorizations */}
-              <div className="flex items-center justify-between gap-2 text-xs pt-0.5">
-                <div className="flex items-center gap-1.5 min-w-0 flex-1">
-                  <WarehouseIcon size="xs" className="text-stocky-text-sub shrink-0" />
-                  <div className="flex items-center gap-1 overflow-hidden">
-                    {memberAssignments.length > 0 ? (
-                      memberAssignments.slice(0, 2).map((a) => {
-                        const loc = locations.find((l) => l.id === a.location_id);
-                        return (
-                          <span
-                            key={a.id}
-                            className="inline-flex rounded-full border stocky-status-info px-2 py-0.5 text-[10px] truncate max-w-[100px]"
-                          >
-                            {loc?.name || 'Branch'}
-                          </span>
-                        );
-                      })
-                    ) : (
-                      <span className="text-[11px] text-stocky-text-sub italic">No location</span>
-                    )}
-                    {memberAssignments.length > 2 && (
-                      <span className="text-[10px] text-stocky-text-sub font-medium">
-                        +{memberAssignments.length - 2}
-                      </span>
-                    )}
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-1.5 shrink-0">
-                  <span className="inline-flex items-center gap-1 rounded-full bg-stocky-bg-global px-2 py-0.5 text-[10px] font-medium text-stocky-text-main border border-stocky-border-subtle">
-                    <ShieldIcon size="xs" className="text-stocky-primary" />
-                    <span>{allowedPages.length} pages</span>
-                  </span>
-                  <ChevronRightIcon size="xs" className="text-stocky-text-sub" />
-                </div>
+                  />
+                  {member.status || 'active'}
+                </span>
               </div>
             </div>
           );

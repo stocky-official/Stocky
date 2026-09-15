@@ -306,100 +306,67 @@ export function TimeOffWidget({
                 .slice(0, 2);
 
               return (
-                <article key={req.id} className="p-3.5 flex flex-col gap-2.5 bg-stocky-bg-widget hover:bg-stocky-bg-global/40 transition-colors">
-                  {/* Top row: Member + Leave type + Status badge */}
-                  <div className="flex items-center justify-between gap-2">
-                    <div className="flex items-center gap-2.5 min-w-0">
-                      <div className="w-8 h-8 rounded-full bg-stocky-primary/10 border border-stocky-primary/20 text-stocky-primary flex items-center justify-center text-xs font-semibold shrink-0">
-                        {memberInitials}
-                      </div>
-                      <div className="min-w-0">
-                        <div className="text-xs font-semibold text-stocky-text-main truncate">
-                          {memberName}
-                        </div>
-                        <div className="text-[11px] text-stocky-text-sub truncate">
-                          Manager: {approverName}
-                        </div>
-                      </div>
+                <article key={req.id} className="p-3.5 flex items-center justify-between gap-3 bg-white hover:bg-stocky-bg-global/30 transition-colors text-left">
+                  {/* Left Anchor + Center Info */}
+                  <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                    <div className="w-9 h-9 rounded-full bg-stocky-primary/10 border border-stocky-primary/20 text-stocky-primary flex items-center justify-center text-xs font-semibold shrink-0">
+                      {memberInitials}
                     </div>
-                    <div className="flex items-center gap-1.5 shrink-0">
-                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider stocky-status-muted border">
-                        {req.leaveType}
-                      </span>
-                      {isPending ? (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium stocky-status-warning border">
+                    <div className="min-w-0 flex-1">
+                      <h4 className="text-xs font-semibold text-stocky-text-main leading-tight truncate">
+                        {memberName}
+                      </h4>
+                      <p className="mt-0.5 text-[11px] text-stocky-text-sub flex items-center gap-1.5 truncate">
+                        <span className="uppercase font-medium text-stocky-text-main">{req.leaveType}</span>
+                        <span>·</span>
+                        <span>{req.startDate} → {req.endDate}</span>
+                        <span>·</span>
+                        <span>{req.daysCount}d</span>
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Right Status & Actions */}
+                  <div className="shrink-0 flex flex-col items-end gap-1">
+                    {isPending ? (
+                      canReview ? (
+                        <div className="inline-flex items-center gap-1.5">
+                          <button
+                            type="button"
+                            disabled={reviewingId === req.id}
+                            onClick={() => handleReview(req.id, true)}
+                            className="h-7 px-2.5 rounded-full bg-stocky-primary text-white text-xs font-medium hover:bg-stocky-primary-hover transition-colors inline-flex items-center gap-1 cursor-pointer shadow-2xs"
+                          >
+                            <CheckIcon size="xs" />
+                            <span>Approve</span>
+                          </button>
+                          <button
+                            type="button"
+                            disabled={reviewingId === req.id}
+                            onClick={() => handleReview(req.id, false)}
+                            className="h-7 px-2 rounded-full border border-stocky-border-subtle bg-white text-stocky-text-sub hover:text-stocky-status-critical-fg text-xs font-medium transition-colors inline-flex items-center cursor-pointer"
+                          >
+                            <XIcon size="xs" />
+                          </button>
+                        </div>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-medium stocky-status-warning border">
                           <span className="w-1.5 h-1.5 rounded-full bg-current animate-pulse" />
                           Pending
                         </span>
-                      ) : req.status === 'approved' ? (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium stocky-status-success border">
-                          <span className="w-1.5 h-1.5 rounded-full bg-current" />
-                          Approved
-                        </span>
-                      ) : (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium stocky-status-critical border">
-                          <span className="w-1.5 h-1.5 rounded-full bg-current" />
-                          Rejected
-                        </span>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Period & Days strip */}
-                  <div className="flex items-center justify-between px-3 py-2 rounded-lg bg-stocky-bg-global/50 border border-stocky-border-subtle/60 text-xs">
-                    <div className="flex items-center gap-1.5 text-stocky-text-main font-medium">
-                      <CalendarIcon size="xs" className="text-stocky-text-sub shrink-0" />
-                      <span>{req.startDate}</span>
-                      <span className="text-stocky-text-sub">→</span>
-                      <span>{req.endDate}</span>
-                    </div>
-                    <span className="text-[11px] font-semibold text-stocky-text-main">
-                      {req.daysCount} day{req.daysCount !== 1 ? 's' : ''}
-                    </span>
-                  </div>
-
-                  {/* Reason note snippet */}
-                  {req.reason && (
-                    <p className="text-[11px] text-stocky-text-sub bg-stocky-bg-global/30 p-2 rounded-md border border-stocky-border-subtle/40 italic">
-                      &ldquo;{req.reason}&rdquo;
-                    </p>
-                  )}
-
-                  {/* Task Dispatched status & Review Actions */}
-                  <div className="flex items-center justify-between pt-0.5">
-                    <div>
-                      {req.taskId ? (
-                        <span className="inline-flex items-center gap-1 text-[10px] font-medium stocky-status-success border px-2 py-0.5 rounded-full">
-                          <CheckCircleIcon size="xs" />
-                          <span>Task Dispatched</span>
-                        </span>
-                      ) : (
-                        <span className="text-[10px] text-stocky-text-sub">Direct Approval</span>
-                      )}
-                    </div>
-
-                    {canReview && isPending && (
-                      <div className="inline-flex items-center gap-2">
-                        <button
-                          type="button"
-                          disabled={reviewingId === req.id}
-                          onClick={() => handleReview(req.id, true)}
-                          className="h-8 px-3 rounded-full bg-stocky-primary text-white text-xs font-semibold hover:bg-stocky-primary-hover transition-colors inline-flex items-center gap-1 cursor-pointer"
-                        >
-                          <CheckIcon size="xs" />
-                          <span>Approve</span>
-                        </button>
-                        <button
-                          type="button"
-                          disabled={reviewingId === req.id}
-                          onClick={() => handleReview(req.id, false)}
-                          className="h-8 px-3 rounded-full border border-stocky-border-subtle bg-stocky-bg-widget text-stocky-status-critical-fg hover:bg-stocky-status-critical-bg text-xs font-medium transition-colors inline-flex items-center gap-1 cursor-pointer"
-                        >
-                          <XIcon size="xs" />
-                          <span>Reject</span>
-                        </button>
-                      </div>
+                      )
+                    ) : req.status === 'approved' ? (
+                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-medium stocky-status-success border">
+                        Approved
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-medium stocky-status-critical border">
+                        Rejected
+                      </span>
                     )}
+                    <span className="text-[10px] text-stocky-text-sub">
+                      Mgr: {approverName.split(' ')[0]}
+                    </span>
                   </div>
                 </article>
               );
