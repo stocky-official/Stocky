@@ -239,6 +239,8 @@ export function BarcodeScannerWidget({
         if (stream) {
           stream.getTracks().forEach((track) => {
             try {
+              video.onabort = null;
+              video.onerror = null;
               track.stop();
             } catch {}
           });
@@ -270,6 +272,32 @@ export function BarcodeScannerWidget({
   const handleBarcodeScannedRef = useRef(handleBarcodeScanned);
   handleBarcodeScannedRef.current = handleBarcodeScanned;
 
+  // Suppress library-internal throw strings from html5-qrcode
+  useEffect(() => {
+    const handleGlobalError = (event: ErrorEvent) => {
+      const msg = typeof event.message === 'string' ? event.message : (event.error?.message || String(event.error || ''));
+      if (msg.includes('RenderedCameraImpl') || msg.includes('video surface onabort') || msg.includes('Cannot stop, scanner')) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+      }
+    };
+    const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
+      const reason = typeof event.reason === 'string' ? event.reason : (event.reason?.message || String(event.reason || ''));
+      if (reason.includes('RenderedCameraImpl') || reason.includes('video surface onabort') || reason.includes('Cannot stop, scanner')) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+      }
+    };
+
+    window.addEventListener('error', handleGlobalError);
+    window.addEventListener('unhandledrejection', handleUnhandledRejection);
+
+    return () => {
+      window.removeEventListener('error', handleGlobalError);
+      window.removeEventListener('unhandledrejection', handleUnhandledRejection);
+    };
+  }, []);
+
   // Start Scanner when modal opens
   useEffect(() => {
     let isMounted = true;
@@ -300,6 +328,26 @@ export function BarcodeScannerWidget({
         return;
       }
       viewportEl.innerHTML = '';
+
+      // Intercept html5-qrcode's throwing onabort and onerror handlers
+      const observer = new MutationObserver(() => {
+        const videos = viewportEl.querySelectorAll('video');
+        videos.forEach((video) => {
+          try {
+            Object.defineProperty(video, 'onabort', {
+              get() { return null; },
+              set() {},
+              configurable: true,
+            });
+            Object.defineProperty(video, 'onerror', {
+              get() { return null; },
+              set() {},
+              configurable: true,
+            });
+          } catch {}
+        });
+      });
+      observer.observe(viewportEl, { childList: true, subtree: true });
 
       try {
         // Initialize Html5Qrcode with full retail barcode support and hardware BarcodeDetector

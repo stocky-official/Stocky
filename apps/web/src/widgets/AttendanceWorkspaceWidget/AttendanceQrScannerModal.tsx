@@ -173,7 +173,18 @@ export function AttendanceQrScannerModal({
       rafIdRef.current = null;
     }
 
-    // 1. Forcefully stop media tracks
+    // 1. Neutralize onabort and onerror on all video elements before stopping tracks
+    try {
+      const videoElements = document.querySelectorAll('#stocky-attendance-qr-scanner-element video');
+      videoElements.forEach((video: any) => {
+        try {
+          video.onabort = null;
+          video.onerror = null;
+        } catch {}
+      });
+    } catch {}
+
+    // 2. Forcefully stop media tracks
     if (activeStreamRef.current) {
       try {
         activeStreamRef.current.getTracks().forEach((track) => {
@@ -185,7 +196,7 @@ export function AttendanceQrScannerModal({
       activeStreamRef.current = null;
     }
 
-    // 2. Stop DOM video streams
+    // 3. Stop DOM video streams
     try {
       const videoElements = document.querySelectorAll('#stocky-attendance-qr-scanner-element video');
       videoElements.forEach((video: any) => {
@@ -201,7 +212,7 @@ export function AttendanceQrScannerModal({
       });
     } catch {}
 
-    // 3. Stop Html5Qrcode safely with try/catch and promise catch
+    // 4. Stop Html5Qrcode safely with try/catch and promise catch
     if (scannerRef.current) {
       const scanner = scannerRef.current;
       scannerRef.current = null;
@@ -216,7 +227,33 @@ export function AttendanceQrScannerModal({
     }
   };
 
-  // 2. Camera QR Scanner Lifecycle
+  // 2. Suppress library-internal throw strings from html5-qrcode
+  useEffect(() => {
+    const handleGlobalError = (event: ErrorEvent) => {
+      const msg = typeof event.message === 'string' ? event.message : (event.error?.message || String(event.error || ''));
+      if (msg.includes('RenderedCameraImpl') || msg.includes('video surface onabort') || msg.includes('Cannot stop, scanner')) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+      }
+    };
+    const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
+      const reason = typeof event.reason === 'string' ? event.reason : (event.reason?.message || String(event.reason || ''));
+      if (reason.includes('RenderedCameraImpl') || reason.includes('video surface onabort') || reason.includes('Cannot stop, scanner')) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+      }
+    };
+
+    window.addEventListener('error', handleGlobalError);
+    window.addEventListener('unhandledrejection', handleUnhandledRejection);
+
+    return () => {
+      window.removeEventListener('error', handleGlobalError);
+      window.removeEventListener('unhandledrejection', handleUnhandledRejection);
+    };
+  }, []);
+
+  // 3. Camera QR Scanner Lifecycle
   useEffect(() => {
     let isMounted = true;
 
@@ -250,6 +287,26 @@ export function AttendanceQrScannerModal({
           return;
         }
         viewportEl.innerHTML = '';
+
+        // Intercept html5-qrcode's throwing onabort and onerror handlers
+        const observer = new MutationObserver(() => {
+          const videos = viewportEl.querySelectorAll('video');
+          videos.forEach((video) => {
+            try {
+              Object.defineProperty(video, 'onabort', {
+                get() { return null; },
+                set() {},
+                configurable: true,
+              });
+              Object.defineProperty(video, 'onerror', {
+                get() { return null; },
+                set() {},
+                configurable: true,
+              });
+            } catch {}
+          });
+        });
+        observer.observe(viewportEl, { childList: true, subtree: true });
 
         const html5QrCode = new Html5Qrcode(containerId, {
           formatsToSupport: [Html5QrcodeSupportedFormats.QR_CODE],
