@@ -65,35 +65,26 @@ export function HomeOperationalHealthWidget({
 
   const handleScroll = () => {
     if (!carouselRef.current) return;
-    const { scrollLeft, clientWidth } = carouselRef.current;
-    const index = Math.round(scrollLeft / (clientWidth * 0.85));
-    if (index >= 0 && index < slides.length && index !== activeSlide) {
-      setActiveSlide(index);
+    const container = carouselRef.current;
+    const children = Array.from(container.children) as HTMLElement[];
+    const containerCenter = container.scrollLeft + container.clientWidth / 2;
+    let closestIndex = 0;
+    let minDistance = Infinity;
+    children.forEach((child, idx) => {
+      const childCenter = child.offsetLeft + child.clientWidth / 2;
+      const distance = Math.abs(containerCenter - childCenter);
+      if (distance < minDistance) {
+        minDistance = distance;
+        closestIndex = idx;
+      }
+    });
+    if (closestIndex !== activeSlide && closestIndex < slides.length) {
+      setActiveSlide(closestIndex);
     }
   };
 
   return (
-    <div className="w-full flex flex-col gap-4">
-      {/* Mobile Slide Jump Pills (Phone only: block lg:hidden) */}
-      <div className="block lg:hidden w-full overflow-x-auto scrollbar-none pb-1">
-        <div className="inline-flex items-center gap-1.5 bg-stocky-bg-widget p-1 rounded-xl border border-stocky-border-subtle">
-          {slides.map((s, idx) => (
-            <button
-              key={s.id}
-              type="button"
-              onClick={() => handleScrollToSlide(idx)}
-              className={`h-7 px-3 rounded-lg text-xs font-medium whitespace-nowrap transition-all cursor-pointer ${
-                activeSlide === idx
-                  ? 'bg-stocky-primary text-white font-semibold shadow-xs'
-                  : 'text-stocky-text-sub hover:text-stocky-text-main'
-              }`}
-            >
-              {s.label}
-            </button>
-          ))}
-        </div>
-      </div>
-
+    <div className="w-full flex flex-col gap-3">
       {/* 1. Mobile Phone View: Side-swiping Carousel with Snap Points (lg:hidden) */}
       <div
         ref={carouselRef}
@@ -101,7 +92,7 @@ export function HomeOperationalHealthWidget({
         className="flex lg:hidden overflow-x-auto snap-x snap-mandatory gap-4 scrollbar-none -mx-4 px-4 sm:-mx-6 sm:px-6 pb-2"
       >
         {/* Slide 1: Map */}
-        <div className="w-[88vw] max-w-[345px] shrink-0 snap-center">
+        <div className="w-[calc(100vw-2rem)] max-w-full shrink-0 snap-center">
           <HomeBranchMapChartWidget
             locations={locations}
             lots={lots}
@@ -113,7 +104,7 @@ export function HomeOperationalHealthWidget({
         </div>
 
         {/* Slide 2: Top Moving Products */}
-        <div className="w-[88vw] max-w-[345px] shrink-0 snap-center">
+        <div className="w-[calc(100vw-2rem)] max-w-full shrink-0 snap-center">
           <HomeTopMovingProductsChartWidget
             products={products}
             lots={lots}
@@ -123,7 +114,7 @@ export function HomeOperationalHealthWidget({
         </div>
 
         {/* Slide 3: Lagging Products */}
-        <div className="w-[88vw] max-w-[345px] shrink-0 snap-center">
+        <div className="w-[calc(100vw-2rem)] max-w-full shrink-0 snap-center">
           <HomeLaggingProductsChartWidget
             products={products}
             lots={lots}
@@ -134,7 +125,7 @@ export function HomeOperationalHealthWidget({
         </div>
 
         {/* Slide 4: Branch Comparative Analysis */}
-        <div className="w-[88vw] max-w-[345px] shrink-0 snap-center">
+        <div className="w-[calc(100vw-2rem)] max-w-full shrink-0 snap-center">
           <HomeBranchesAnalysisChartWidget
             locations={locations}
             lots={lots}
@@ -147,7 +138,7 @@ export function HomeOperationalHealthWidget({
         </div>
 
         {/* Slide 5: Attendance Analysis */}
-        <div className="w-[88vw] max-w-[345px] shrink-0 snap-center">
+        <div className="w-[calc(100vw-2rem)] max-w-full shrink-0 snap-center">
           <HomeTeamAttendanceChartWidget
             shifts={shifts}
             locations={locations}
@@ -156,6 +147,23 @@ export function HomeOperationalHealthWidget({
             onOpenAttendance={onOpenAttendance}
           />
         </div>
+      </div>
+
+      {/* Mobile Swipe Pagination Dots (Phone only: flex lg:hidden) */}
+      <div className="flex lg:hidden justify-center items-center gap-2 pt-1 pb-1">
+        {slides.map((s, idx) => (
+          <button
+            key={s.id}
+            type="button"
+            onClick={() => handleScrollToSlide(idx)}
+            className={`transition-all duration-200 cursor-pointer ${
+              activeSlide === idx
+                ? 'w-6 h-2 rounded-full bg-stocky-primary shadow-xs'
+                : 'w-2 h-2 rounded-full bg-stocky-border-default hover:bg-stocky-text-sub'
+            }`}
+            aria-label={`Go to slide ${idx + 1}: ${s.label}`}
+          />
+        ))}
       </div>
 
       {/* 2. Desktop View: Spacious Multi-Column Structured Dashboard Grid (hidden lg:grid) */}

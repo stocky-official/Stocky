@@ -2,6 +2,7 @@
 
 import React, { useMemo, useState } from 'react';
 import type { AttendanceShift, Location } from '@stocky/types';
+import { FilterIcon, InfoIcon, XIcon } from '@stocky/icons';
 import {
   ResponsiveContainer,
   BarChart,
@@ -12,6 +13,7 @@ import {
   CartesianGrid,
   Legend,
 } from 'recharts';
+import { ChartFilterBottomSheet } from './ChartFilterBottomSheet';
 
 export interface HomeTeamAttendanceChartWidgetProps {
   shifts?: AttendanceShift[];
@@ -32,6 +34,10 @@ export function HomeTeamAttendanceChartWidget({
   const [selectedBranchId, setSelectedBranchId] = useState<string>('all');
   const [selectedPersonId, setSelectedPersonId] = useState<string>('all');
   const [timeframeDays, setTimeframeDays] = useState<number>(7);
+
+  // UI state for bottom sheet filter & info popover
+  const [isFilterSheetOpen, setIsFilterSheetOpen] = useState(false);
+  const [showInfo, setShowInfo] = useState(false);
 
   // Normalize members list
   const memberList = useMemo(() => {
@@ -122,99 +128,64 @@ export function HomeTeamAttendanceChartWidget({
   const overallPct = Math.round(((totalPresent + totalLate) / Math.max(1, totalPresent + totalLate + totalOff)) * 100);
 
   return (
-    <div className="w-full bg-stocky-bg-widget border border-stocky-border-subtle rounded-2xl p-4 sm:p-5 shadow-xs flex flex-col justify-between">
-      {/* 1. Header Toolbar (Clean text, NO icons in headlines) */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-stocky-border-subtle">
-        <div>
-          <h3 className="text-sm sm:text-base font-semibold text-stocky-text-main tracking-tight">
-            Team Attendance Dynamics
-          </h3>
-          <p className="text-[11px] text-stocky-text-sub mt-0.5">
-            Attendance distribution and punctuality over time by branch or individual staff.
-          </p>
-        </div>
-
-        {/* Mode Selector & Timeframe */}
-        <div className="flex flex-wrap items-center gap-2">
-          <div className="inline-flex items-center gap-1 bg-stocky-bg-global p-0.5 rounded-lg border border-stocky-border-subtle">
+    <div className="w-full h-[490px] sm:h-[510px] bg-stocky-bg-widget border border-stocky-border-subtle rounded-2xl p-4 sm:p-5 shadow-xs flex flex-col justify-between">
+      {/* 1. Header Toolbar (Clean text, NO icons in headlines, 'i' info button, filter button) */}
+      <div className="pb-3 border-b border-stocky-border-subtle">
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-1.5 min-w-0">
+            <h3 className="text-sm sm:text-base font-semibold text-stocky-text-main tracking-tight truncate">
+              Team Attendance Dynamics
+            </h3>
             <button
               type="button"
-              onClick={() => setAnalysisMode('branch')}
-              className={`h-6 px-2.5 rounded-md text-[11px] font-semibold transition-colors cursor-pointer ${
-                analysisMode === 'branch'
-                  ? 'bg-stocky-text-main text-white shadow-xs'
-                  : 'text-stocky-text-sub hover:text-stocky-text-main'
-              }`}
+              onClick={() => setShowInfo((v) => !v)}
+              className="w-5 h-5 rounded-full bg-stocky-bg-global hover:bg-stocky-border-subtle text-stocky-text-sub hover:text-stocky-text-main flex items-center justify-center transition-colors cursor-pointer shrink-0"
+              aria-label="Information details"
+              title="Click to view details"
             >
-              By Branch
-            </button>
-            <button
-              type="button"
-              onClick={() => setAnalysisMode('person')}
-              className={`h-6 px-2.5 rounded-md text-[11px] font-semibold transition-colors cursor-pointer ${
-                analysisMode === 'person'
-                  ? 'bg-stocky-text-main text-white shadow-xs'
-                  : 'text-stocky-text-sub hover:text-stocky-text-main'
-              }`}
-            >
-              By Person
+              <InfoIcon size="xs" />
             </button>
           </div>
 
-          <div className="inline-flex items-center gap-1 bg-stocky-bg-global p-0.5 rounded-lg border border-stocky-border-subtle">
-            {[7, 14, 30].map((days) => (
-              <button
-                key={days}
-                type="button"
-                onClick={() => setTimeframeDays(days)}
-                className={`h-6 px-2 rounded-md text-[10px] font-semibold transition-colors cursor-pointer ${
-                  timeframeDays === days
-                    ? 'bg-stocky-primary text-white shadow-xs'
-                    : 'text-stocky-text-sub hover:text-stocky-text-main'
-                }`}
-              >
-                {days}D
-              </button>
-            ))}
-          </div>
+          <button
+            type="button"
+            onClick={() => setIsFilterSheetOpen(true)}
+            className="h-8 px-3 rounded-full border border-stocky-border-subtle bg-stocky-bg-global hover:bg-stocky-border-subtle text-xs font-semibold text-stocky-text-main flex items-center gap-1.5 cursor-pointer shadow-xs transition-colors shrink-0"
+          >
+            <FilterIcon size="xs" />
+            <span>Filter</span>
+            <span className="px-1.5 py-0.5 rounded-full bg-stocky-primary text-white text-[10px] font-bold">
+              {analysisMode === 'branch' ? 'Branch' : 'Person'} • {timeframeDays}D
+            </span>
+          </button>
         </div>
+
+        {/* Subtitle hidden on phone */}
+        <p className="hidden sm:block text-[11px] text-stocky-text-sub mt-0.5">
+          Attendance distribution and punctuality over time by branch or individual staff.
+        </p>
+
+        {showInfo && (
+          <div className="mt-2.5 p-2.5 bg-stocky-bg-global/90 border border-stocky-border-subtle rounded-xl text-xs text-stocky-text-sub flex items-start justify-between gap-2 animate-in fade-in duration-150">
+            <span>
+              Daily breakdown of employee attendance showing on-time check-ins, late arrivals, and approved time off. Filter by specific branch locations or individual staff profiles.
+            </span>
+            <button
+              type="button"
+              onClick={() => setShowInfo(false)}
+              className="text-stocky-text-muted hover:text-stocky-text-main p-0.5"
+            >
+              <XIcon size="xs" />
+            </button>
+          </div>
+        )}
       </div>
 
-      {/* 2. Secondary Context Selector (Branch dropdown vs Person dropdown) */}
-      <div className="flex flex-wrap items-center justify-between gap-3 pt-3">
-        <div className="flex items-center gap-2">
-          {analysisMode === 'branch' ? (
-            <select
-              value={selectedBranchId}
-              onChange={(e) => setSelectedBranchId(e.target.value)}
-              className="h-8 px-2.5 rounded-lg text-xs font-medium bg-stocky-bg-global text-stocky-text-main border border-stocky-border-subtle cursor-pointer focus:outline-none"
-            >
-              <option value="all">All Branches</option>
-              {locations.map((loc) => (
-                <option key={loc.id} value={loc.id}>
-                  {loc.name}
-                </option>
-              ))}
-            </select>
-          ) : (
-            <select
-              value={selectedPersonId}
-              onChange={(e) => setSelectedPersonId(e.target.value)}
-              className="h-8 px-2.5 rounded-lg text-xs font-medium bg-stocky-bg-global text-stocky-text-main border border-stocky-border-subtle cursor-pointer focus:outline-none"
-            >
-              <option value="all">All Team Members</option>
-              {memberList.map((m) => (
-                <option key={m.id} value={m.id}>
-                  {m.name} ({m.role})
-                </option>
-              ))}
-            </select>
-          )}
-
-          <span className="text-[11px] text-stocky-text-sub font-medium">
-            Overall Attendance: <strong className="text-stocky-text-main">{overallPct}%</strong>
-          </span>
-        </div>
+      {/* 2. Sub-metric Status Bar */}
+      <div className="flex items-center justify-between gap-2 pt-2 text-xs">
+        <span className="text-[11px] text-stocky-text-sub font-medium">
+          Overall Attendance: <strong className="text-stocky-text-main">{overallPct}%</strong>
+        </span>
 
         {onOpenAttendance && (
           <button
@@ -228,11 +199,11 @@ export function HomeTeamAttendanceChartWidget({
       </div>
 
       {/* 3. Recharts Stacked BarChart */}
-      <div className="w-full h-64 sm:h-72 my-2">
+      <div className="w-full flex-1 my-3 min-h-[240px]">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart
             data={chartData}
-            margin={{ top: 20, right: 15, left: -10, bottom: 5 }}
+            margin={{ top: 15, right: 15, left: -10, bottom: 5 }}
           >
             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--stocky-border-subtle)" />
             <XAxis
@@ -273,7 +244,7 @@ export function HomeTeamAttendanceChartWidget({
               }}
             />
             <Legend
-              wrapperStyle={{ fontSize: 11, paddingTop: 6 }}
+              wrapperStyle={{ fontSize: 11, paddingTop: 4 }}
               iconSize={8}
             />
             <Bar dataKey="Present" stackId="a" fill="#0E8755" radius={[0, 0, 0, 0]} />
@@ -290,6 +261,106 @@ export function HomeTeamAttendanceChartWidget({
           Total Present: {totalPresent} shifts
         </span>
       </div>
+
+      {/* 5. Sliding Window from the Bottom (Filters Bottom Sheet) */}
+      <ChartFilterBottomSheet
+        isOpen={isFilterSheetOpen}
+        onClose={() => setIsFilterSheetOpen(false)}
+        title="Attendance Filters"
+        onReset={() => {
+          setAnalysisMode('branch');
+          setSelectedBranchId('all');
+          setSelectedPersonId('all');
+          setTimeframeDays(7);
+        }}
+      >
+        <div className="space-y-4">
+          <div>
+            <label className="text-xs font-semibold text-stocky-text-main block mb-2">
+              Breakdown Mode
+            </label>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => setAnalysisMode('branch')}
+                className={`h-10 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                  analysisMode === 'branch'
+                    ? 'bg-stocky-primary text-white shadow-xs'
+                    : 'bg-stocky-bg-global text-stocky-text-sub border border-stocky-border-subtle'
+                }`}
+              >
+                By Branch
+              </button>
+              <button
+                type="button"
+                onClick={() => setAnalysisMode('person')}
+                className={`h-10 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                  analysisMode === 'person'
+                    ? 'bg-stocky-primary text-white shadow-xs'
+                    : 'bg-stocky-bg-global text-stocky-text-sub border border-stocky-border-subtle'
+                }`}
+              >
+                By Person
+              </button>
+            </div>
+          </div>
+
+          <div className="pt-2 border-t border-stocky-border-subtle">
+            <label className="text-xs font-semibold text-stocky-text-main block mb-2">
+              {analysisMode === 'branch' ? 'Select Branch' : 'Select Team Member'}
+            </label>
+            {analysisMode === 'branch' ? (
+              <select
+                value={selectedBranchId}
+                onChange={(e) => setSelectedBranchId(e.target.value)}
+                className="w-full h-10 px-3 rounded-xl text-xs font-medium bg-stocky-bg-global text-stocky-text-main border border-stocky-border-subtle cursor-pointer focus:outline-none"
+              >
+                <option value="all">All Branches</option>
+                {locations.map((loc) => (
+                  <option key={loc.id} value={loc.id}>
+                    {loc.name}
+                  </option>
+                ))}
+              </select>
+            ) : (
+              <select
+                value={selectedPersonId}
+                onChange={(e) => setSelectedPersonId(e.target.value)}
+                className="w-full h-10 px-3 rounded-xl text-xs font-medium bg-stocky-bg-global text-stocky-text-main border border-stocky-border-subtle cursor-pointer focus:outline-none"
+              >
+                <option value="all">All Team Members</option>
+                {memberList.map((m) => (
+                  <option key={m.id} value={m.id}>
+                    {m.name} ({m.role})
+                  </option>
+                ))}
+              </select>
+            )}
+          </div>
+
+          <div className="pt-2 border-t border-stocky-border-subtle">
+            <label className="text-xs font-semibold text-stocky-text-main block mb-2">
+              Timeframe Presets
+            </label>
+            <div className="grid grid-cols-3 gap-2">
+              {[7, 14, 30].map((days) => (
+                <button
+                  key={days}
+                  type="button"
+                  onClick={() => setTimeframeDays(days)}
+                  className={`h-9 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                    timeframeDays === days
+                      ? 'bg-stocky-primary text-white shadow-xs'
+                      : 'bg-stocky-bg-global text-stocky-text-sub border border-stocky-border-subtle'
+                  }`}
+                >
+                  {days} Days
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      </ChartFilterBottomSheet>
     </div>
   );
 }

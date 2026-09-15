@@ -2,6 +2,7 @@
 
 import React, { useMemo, useState } from 'react';
 import type { Location, StockLot, StockMovement, StockTask } from '@stocky/types';
+import { FilterIcon, InfoIcon, XIcon } from '@stocky/icons';
 import {
   ResponsiveContainer,
   BarChart,
@@ -12,6 +13,7 @@ import {
   CartesianGrid,
   Cell,
 } from 'recharts';
+import { ChartFilterBottomSheet } from './ChartFilterBottomSheet';
 
 export type BranchAnalysisMetric = 'units' | 'value' | 'moving' | 'lagging' | 'staff';
 
@@ -36,6 +38,10 @@ export function HomeBranchesAnalysisChartWidget({
 }: HomeBranchesAnalysisChartWidgetProps) {
   const [metric, setMetric] = useState<BranchAnalysisMetric>('units');
   const [timeframe, setTimeframe] = useState<'7D' | '14D' | '30D' | '90D'>('30D');
+
+  // UI state for bottom sheet filter & info popover
+  const [isFilterSheetOpen, setIsFilterSheetOpen] = useState(false);
+  const [showInfo, setShowInfo] = useState(false);
 
   const metricConfig: Record<
     BranchAnalysisMetric,
@@ -126,61 +132,61 @@ export function HomeBranchesAnalysisChartWidget({
   }, [locations, lots, movements, teamMembers, teamAssignments, metric, timeframe]);
 
   return (
-    <div className="w-full bg-stocky-bg-widget border border-stocky-border-subtle rounded-2xl p-4 sm:p-5 shadow-xs flex flex-col justify-between">
-      {/* 1. Header Toolbar (Clean text, NO icons in headlines) */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-stocky-border-subtle">
-        <div>
-          <h3 className="text-sm sm:text-base font-semibold text-stocky-text-main tracking-tight">
-            Branch Comparative Analysis
-          </h3>
-          <p className="text-[11px] text-stocky-text-sub mt-0.5">
-            Cross-branch benchmark by inventory size, capital valuation, turnover velocity, or headcount.
-          </p>
+    <div className="w-full h-[490px] sm:h-[510px] bg-stocky-bg-widget border border-stocky-border-subtle rounded-2xl p-4 sm:p-5 shadow-xs flex flex-col justify-between">
+      {/* 1. Header Toolbar (Clean text, NO icons in headlines, 'i' info button, filter button) */}
+      <div className="pb-3 border-b border-stocky-border-subtle">
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-1.5 min-w-0">
+            <h3 className="text-sm sm:text-base font-semibold text-stocky-text-main tracking-tight truncate">
+              Branch Comparative Analysis
+            </h3>
+            <button
+              type="button"
+              onClick={() => setShowInfo((v) => !v)}
+              className="w-5 h-5 rounded-full bg-stocky-bg-global hover:bg-stocky-border-subtle text-stocky-text-sub hover:text-stocky-text-main flex items-center justify-center transition-colors cursor-pointer shrink-0"
+              aria-label="Information details"
+              title="Click to view details"
+            >
+              <InfoIcon size="xs" />
+            </button>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => setIsFilterSheetOpen(true)}
+            className="h-8 px-3 rounded-full border border-stocky-border-subtle bg-stocky-bg-global hover:bg-stocky-border-subtle text-xs font-semibold text-stocky-text-main flex items-center gap-1.5 cursor-pointer shadow-xs transition-colors shrink-0"
+          >
+            <FilterIcon size="xs" />
+            <span>Filter</span>
+            <span className="px-1.5 py-0.5 rounded-full bg-stocky-primary text-white text-[10px] font-bold">
+              {currentConfig.label.split(' ')[0]}
+            </span>
+          </button>
         </div>
 
-        {/* Timeframe selector */}
-        <div className="inline-flex items-center gap-1 bg-stocky-bg-global p-0.5 rounded-lg border border-stocky-border-subtle self-start sm:self-auto">
-          {(['7D', '14D', '30D', '90D'] as const).map((t) => (
+        {/* Subtitle hidden on phone */}
+        <p className="hidden sm:block text-[11px] text-stocky-text-sub mt-0.5">
+          Cross-branch benchmark by inventory size, capital valuation, turnover velocity, or headcount.
+        </p>
+
+        {showInfo && (
+          <div className="mt-2.5 p-2.5 bg-stocky-bg-global/90 border border-stocky-border-subtle rounded-xl text-xs text-stocky-text-sub flex items-start justify-between gap-2 animate-in fade-in duration-150">
+            <span>
+              Compare operational metrics across retail branches and fulfillment hubs. Filter by inventory units, capital valuation, stock movement turnover, lagging inventory, or active staffing.
+            </span>
             <button
-              key={t}
               type="button"
-              onClick={() => setTimeframe(t)}
-              className={`h-6 px-2 rounded-md text-[10px] font-semibold transition-colors cursor-pointer ${
-                timeframe === t
-                  ? 'bg-stocky-primary text-white shadow-xs'
-                  : 'text-stocky-text-sub hover:text-stocky-text-main'
-              }`}
+              onClick={() => setShowInfo(false)}
+              className="text-stocky-text-muted hover:text-stocky-text-main p-0.5"
             >
-              {t}
+              <XIcon size="xs" />
             </button>
-          ))}
-        </div>
+          </div>
+        )}
       </div>
 
-      {/* 2. Metric Mode Selector Tabs */}
-      <div className="flex flex-wrap items-center gap-1.5 pt-3">
-        {(Object.keys(metricConfig) as BranchAnalysisMetric[]).map((key) => {
-          const cfg = metricConfig[key];
-          const isActive = metric === key;
-          return (
-            <button
-              key={key}
-              type="button"
-              onClick={() => setMetric(key)}
-              className={`h-7 px-3 rounded-full text-xs font-medium transition-all cursor-pointer ${
-                isActive
-                  ? 'bg-stocky-text-main text-white font-semibold shadow-xs'
-                  : 'bg-stocky-bg-global text-stocky-text-sub hover:text-stocky-text-main border border-stocky-border-subtle'
-              }`}
-            >
-              {cfg.label}
-            </button>
-          );
-        })}
-      </div>
-
-      {/* 3. Recharts BarChart */}
-      <div className="w-full h-64 sm:h-72 my-2">
+      {/* 2. Recharts BarChart Visualization */}
+      <div className="w-full flex-1 my-3 min-h-[260px]">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart
             data={chartData}
@@ -260,6 +266,70 @@ export function HomeBranchesAnalysisChartWidget({
           Metric: {currentConfig.label}
         </span>
       </div>
+
+      {/* 5. Sliding Window from the Bottom (Filters Bottom Sheet) */}
+      <ChartFilterBottomSheet
+        isOpen={isFilterSheetOpen}
+        onClose={() => setIsFilterSheetOpen(false)}
+        title="Branch Analysis Filters"
+        onReset={() => {
+          setMetric('units');
+          setTimeframe('30D');
+        }}
+      >
+        <div className="space-y-4">
+          <div>
+            <label className="text-xs font-semibold text-stocky-text-main block mb-2">
+              Comparison Metric
+            </label>
+            <div className="space-y-1.5">
+              {(Object.keys(metricConfig) as BranchAnalysisMetric[]).map((key) => {
+                const cfg = metricConfig[key];
+                const isSelected = metric === key;
+                return (
+                  <button
+                    key={key}
+                    type="button"
+                    onClick={() => setMetric(key)}
+                    className={`w-full h-11 px-3.5 rounded-xl border flex items-center justify-between text-xs font-semibold transition-all cursor-pointer ${
+                      isSelected
+                        ? 'border-stocky-primary bg-stocky-primary/10 text-stocky-primary'
+                        : 'border-stocky-border-subtle bg-stocky-bg-global text-stocky-text-main hover:border-stocky-border-default'
+                    }`}
+                  >
+                    <span>{cfg.label}</span>
+                    <span className="text-[11px] font-normal text-stocky-text-sub">
+                      ({cfg.unitLabel})
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="pt-2 border-t border-stocky-border-subtle">
+            <label className="text-xs font-semibold text-stocky-text-main block mb-2">
+              Timeframe Presets
+            </label>
+            <div className="grid grid-cols-4 gap-2">
+              {(['7D', '14D', '30D', '90D'] as const).map((t) => (
+                <button
+                  key={t}
+                  type="button"
+                  onClick={() => setTimeframe(t)}
+                  className={`h-9 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                    timeframe === t
+                      ? 'bg-stocky-primary text-white shadow-xs'
+                      : 'bg-stocky-bg-global text-stocky-text-sub border border-stocky-border-subtle'
+                  }`}
+                >
+                  {t}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      </ChartFilterBottomSheet>
     </div>
   );
 }

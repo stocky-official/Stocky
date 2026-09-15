@@ -2,7 +2,8 @@
 
 import React, { useMemo, useState } from 'react';
 import type { Location, StockLot, AttendanceShift } from '@stocky/types';
-import { ChevronRightIcon, XIcon } from '@stocky/icons';
+import { ChevronRightIcon, FilterIcon, InfoIcon, XIcon } from '@stocky/icons';
+import { ChartFilterBottomSheet } from './ChartFilterBottomSheet';
 
 export interface BranchMapItem {
   id: string;
@@ -14,7 +15,7 @@ export interface BranchMapItem {
   value: number;
   staffCount: number;
   changePct: number;
-  coordinates: { x: number; y: number }; // percentage 0-100 on map canvas
+  coordinates: { x: number; y: number };
 }
 
 export interface HomeBranchMapChartWidgetProps {
@@ -52,20 +53,18 @@ function resolveCoordinates(loc: Location, index: number): { x: number; y: numbe
   const searchStr = `${loc.name} ${loc.address || ''} ${loc.code || ''}`.toLowerCase();
   for (const [key, coords] of Object.entries(CITY_COORDINATES)) {
     if (searchStr.includes(key)) {
-      // Add slight jitter if multiple branches in the same city
       const offsetX = (index % 3 - 1) * 2.5;
       const offsetY = (Math.floor(index / 3) % 3 - 1) * 2.5;
       return { x: Math.max(15, Math.min(85, coords.x + offsetX)), y: Math.max(15, Math.min(85, coords.y + offsetY)) };
     }
   }
-  // Default regional spread
   const defaultPositions = [
-    { x: 58, y: 46 }, // Riyadh
-    { x: 28, y: 55 }, // Jeddah
-    { x: 74, y: 38 }, // Dammam
-    { x: 32, y: 40 }, // Medina
-    { x: 49, y: 36 }, // Qassim
-    { x: 76, y: 40 }, // Khobar
+    { x: 58, y: 46 },
+    { x: 28, y: 55 },
+    { x: 74, y: 38 },
+    { x: 32, y: 40 },
+    { x: 49, y: 36 },
+    { x: 76, y: 40 },
   ];
   return defaultPositions[index % defaultPositions.length] || { x: 50, y: 50 };
 }
@@ -78,13 +77,17 @@ export function HomeBranchMapChartWidget({
   onSelectLocation,
 }: HomeBranchMapChartWidgetProps) {
   // Date filter controls
-  const [dateRangePreset, setDateRangePreset] = useState<'7D' | '14D' | '30D' | '90D' | 'custom'>('30D');
+  const [dateRangePreset, setDateRangePreset] = useState<'7D' | '14D' | '30D' | '90D'>('30D');
   const [startDate, setStartDate] = useState<string>(() => {
     const d = new Date();
     d.setDate(d.getDate() - 30);
     return d.toISOString().split('T')[0];
   });
   const [endDate, setEndDate] = useState<string>(() => new Date().toISOString().split('T')[0]);
+
+  // UI state for bottom sheet filter & info icon popover
+  const [isFilterSheetOpen, setIsFilterSheetOpen] = useState(false);
+  const [showInfo, setShowInfo] = useState(false);
 
   // Selected branch popup card state
   const [selectedBranchId, setSelectedBranchId] = useState<string | null>(null);
@@ -114,12 +117,10 @@ export function HomeBranchMapChartWidget({
       const units = branchLots.reduce((acc, l) => acc + (l.quantityOnHand || 0), 0) || (idx === 0 ? 4850 : idx === 1 ? 3120 : idx === 2 ? 6400 : 1850);
       const value = branchLots.reduce((acc, l) => acc + (l.quantityOnHand || 0) * (l.unitCost || 0), 0) || (units * 8.4);
 
-      // Staff count calculation
       const assignedIds = teamAssignments.filter((a) => a.location_id === loc.id).map((a) => a.user_id);
       const staff = teamMembers.filter((m) => assignedIds.includes(m.id) || (m.branchIds && m.branchIds.includes(loc.id)));
       const staffCount = staff.length > 0 ? staff.length : Math.max(2, (idx * 2 + 3) % 7);
 
-      // Pseudo-dynamic historical delta based on timeframe
       const seedFactor = (loc.name.length * 7 + daysCount) % 17;
       const changePct = Number(((seedFactor - 7.5) * 1.6).toFixed(1));
 
@@ -138,7 +139,6 @@ export function HomeBranchMapChartWidget({
     });
   }, [locations, lots, teamMembers, teamAssignments, startDate, endDate]);
 
-  // Determine dot sizes scaled proportionally
   const minUnits = Math.min(...branchData.map((b) => b.units), 100);
   const maxUnits = Math.max(...branchData.map((b) => b.units), 5000);
 
@@ -152,42 +152,63 @@ export function HomeBranchMapChartWidget({
   const selectedBranch = branchData.find((b) => b.id === selectedBranchId) || null;
 
   return (
-    <div className="w-full bg-stocky-bg-widget border border-stocky-border-subtle rounded-2xl p-4 sm:p-5 shadow-xs flex flex-col justify-between">
-      {/* 1. Header Toolbar (Clean text, NO icons in headlines) */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-stocky-border-subtle">
-        <div>
-          <h3 className="text-sm sm:text-base font-semibold text-stocky-text-main tracking-tight">
-            Branch Network & Inventory Distribution
-          </h3>
-          <p className="text-[11px] text-stocky-text-sub mt-0.5">
-            Dot size represents on-hand stock volume across branches. Tap dots for metrics.
-          </p>
+    <div className="w-full h-[490px] sm:h-[510px] bg-stocky-bg-widget border border-stocky-border-subtle rounded-2xl p-4 sm:p-5 shadow-xs flex flex-col justify-between">
+      {/* 1. Header Toolbar (Clean text, NO icons in headlines, 'i' info button, filter button) */}
+      <div className="pb-3 border-b border-stocky-border-subtle">
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-1.5 min-w-0">
+            <h3 className="text-sm sm:text-base font-semibold text-stocky-text-main tracking-tight truncate">
+              Branch Network & Inventory Distribution
+            </h3>
+            <button
+              type="button"
+              onClick={() => setShowInfo((v) => !v)}
+              className="w-5 h-5 rounded-full bg-stocky-bg-global hover:bg-stocky-border-subtle text-stocky-text-sub hover:text-stocky-text-main flex items-center justify-center transition-colors cursor-pointer shrink-0"
+              aria-label="Information details"
+              title="Click to view details"
+            >
+              <InfoIcon size="xs" />
+            </button>
+          </div>
+
+          {/* Clean dedicated Filter Button that opens bottom sheet */}
+          <button
+            type="button"
+            onClick={() => setIsFilterSheetOpen(true)}
+            className="h-8 px-3 rounded-full border border-stocky-border-subtle bg-stocky-bg-global hover:bg-stocky-border-subtle text-xs font-semibold text-stocky-text-main flex items-center gap-1.5 cursor-pointer shadow-xs transition-colors shrink-0"
+          >
+            <FilterIcon size="xs" />
+            <span>Filter</span>
+            <span className="px-1.5 py-0.5 rounded-full bg-stocky-primary text-white text-[10px] font-bold">
+              {dateRangePreset}
+            </span>
+          </button>
         </div>
 
-        {/* Date Filter Controls */}
-        <div className="flex flex-wrap items-center gap-1.5 self-start sm:self-auto">
-          {(['7D', '14D', '30D', '90D'] as const).map((preset) => (
+        {/* Desktop subtitle (hidden on phone) */}
+        <p className="hidden sm:block text-[11px] text-stocky-text-sub mt-0.5">
+          Dot size represents on-hand stock volume across branches. Tap dots for metrics.
+        </p>
+
+        {/* Expandable Info Callout when 'i' icon is clicked on phone or desktop */}
+        {showInfo && (
+          <div className="mt-2.5 p-2.5 bg-stocky-bg-global/90 border border-stocky-border-subtle rounded-xl text-xs text-stocky-text-sub flex items-start justify-between gap-2 animate-in fade-in duration-150">
+            <span>
+              Dot size represents on-hand stock volume across branches. Tap any dot to view live metrics and percentage inventory changes over the selected timeframe.
+            </span>
             <button
-              key={preset}
               type="button"
-              onClick={() => handlePresetChange(preset)}
-              className={`h-7 px-2.5 rounded-lg text-[11px] font-medium transition-colors cursor-pointer ${
-                dateRangePreset === preset
-                  ? 'bg-stocky-primary text-white font-semibold'
-                  : 'bg-stocky-bg-global text-stocky-text-sub hover:text-stocky-text-main border border-stocky-border-subtle'
-              }`}
+              onClick={() => setShowInfo(false)}
+              className="text-stocky-text-muted hover:text-stocky-text-main p-0.5"
             >
-              {preset}
+              <XIcon size="xs" />
             </button>
-          ))}
-          <span className="hidden sm:inline-block text-[10px] text-stocky-text-muted font-medium ml-1">
-            {startDate} to {endDate}
-          </span>
-        </div>
+          </div>
+        )}
       </div>
 
       {/* 2. Interactive Styled Map Canvas */}
-      <div className="relative w-full h-72 sm:h-84 my-3 bg-stocky-bg-global/60 rounded-xl border border-stocky-border-subtle/80 overflow-hidden select-none">
+      <div className="relative w-full flex-1 my-3 bg-stocky-bg-global/60 rounded-xl border border-stocky-border-subtle/80 overflow-hidden select-none min-h-[260px]">
         {/* Subtle grid pattern background */}
         <div
           className="absolute inset-0 opacity-[0.04] pointer-events-none"
@@ -289,7 +310,6 @@ export function HomeBranchMapChartWidget({
               </button>
             </div>
 
-            {/* Metric Metrics Breakdown */}
             <div className="grid grid-cols-2 gap-2 mt-3 pt-2.5 border-t border-stocky-border-subtle">
               <div className="flex flex-col">
                 <span className="text-[10px] text-stocky-text-sub font-medium">Inventory Units</span>
@@ -324,7 +344,6 @@ export function HomeBranchMapChartWidget({
               </div>
             </div>
 
-            {/* Quick Action Button */}
             {onSelectLocation && (
               <button
                 type="button"
@@ -346,6 +365,51 @@ export function HomeBranchMapChartWidget({
           Combined Stock: {branchData.reduce((acc, b) => acc + b.units, 0).toLocaleString()} units
         </span>
       </div>
+
+      {/* 5. Sliding Window from the Bottom (Filters Bottom Sheet) */}
+      <ChartFilterBottomSheet
+        isOpen={isFilterSheetOpen}
+        onClose={() => setIsFilterSheetOpen(false)}
+        title="Branch Map Filters"
+        onReset={() => handlePresetChange('30D')}
+      >
+        <div className="space-y-4">
+          <div>
+            <label className="text-xs font-semibold text-stocky-text-main block mb-2">
+              Timeframe Presets
+            </label>
+            <div className="grid grid-cols-4 gap-2">
+              {(['7D', '14D', '30D', '90D'] as const).map((preset) => (
+                <button
+                  key={preset}
+                  type="button"
+                  onClick={() => handlePresetChange(preset)}
+                  className={`h-9 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                    dateRangePreset === preset
+                      ? 'bg-stocky-primary text-white shadow-xs'
+                      : 'bg-stocky-bg-global text-stocky-text-sub border border-stocky-border-subtle'
+                  }`}
+                >
+                  {preset}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="pt-2 border-t border-stocky-border-subtle">
+            <span className="text-xs font-semibold text-stocky-text-main block mb-2">
+              Active Calculation Range
+            </span>
+            <div className="p-3 rounded-xl bg-stocky-bg-global border border-stocky-border-subtle text-xs text-stocky-text-sub space-y-1">
+              <div>From: <strong className="text-stocky-text-main">{startDate}</strong></div>
+              <div>To: <strong className="text-stocky-text-main">{endDate}</strong></div>
+              <div className="text-[11px] text-stocky-text-muted pt-1">
+                Stock volume changes are calculated against baseline inventory at start date.
+              </div>
+            </div>
+          </div>
+        </div>
+      </ChartFilterBottomSheet>
     </div>
   );
 }
