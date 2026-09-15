@@ -20,8 +20,9 @@ import {
   XIcon,
 } from '@stocky/icons';
 import type { AttendanceShift, InventoryTransfer, Location, Product, StockLot } from '@stocky/types';
-import { SideDrawer } from '@/components/ui/SideDrawer';
+import { SideDrawer, BottomSheet } from '@/components/ui';
 import { UserAvatar } from '@/components/ui/UserAvatar';
+import { StandardToolbarWidget } from '../StandardToolbarWidget/StandardToolbarWidget';
 import { supabase } from '@/lib/supabase/client';
 
 export interface LocationMember {
@@ -497,275 +498,269 @@ export function LocationsDirectoryWidget({
     URL.revokeObjectURL(url);
   };
 
+  const locationFilterContent = (
+    <div className="space-y-4">
+      {/* Segmented Location Type Toggle */}
+      <div className="space-y-1.5">
+        <span className="text-[10px] font-bold uppercase tracking-wider text-stocky-text-sub">Location Type</span>
+        <div className="grid grid-cols-3 gap-1.5 p-1 bg-stocky-bg-global rounded-xl border border-stocky-border-subtle" role="tablist">
+          <button
+            type="button"
+            onClick={() => {
+              setFilterType('all');
+              setQuickTypeFilter('all');
+            }}
+            className={`h-8 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+              filterType === 'all'
+                ? 'bg-white text-stocky-text-main shadow-xs'
+                : 'text-stocky-text-sub hover:text-stocky-text-main'
+            }`}
+          >
+            All ({allLocationStats.length})
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setFilterType('branch');
+              setQuickTypeFilter('branch');
+            }}
+            className={`h-8 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+              filterType === 'branch'
+                ? 'bg-white text-stocky-text-main shadow-xs'
+                : 'text-stocky-text-sub hover:text-stocky-text-main'
+            }`}
+          >
+            Branches ({allLocationStats.filter((s) => s.location.type === 'branch').length})
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setFilterType('warehouse');
+              setQuickTypeFilter('warehouse');
+            }}
+            className={`h-8 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+              filterType === 'warehouse'
+                ? 'bg-white text-stocky-text-main shadow-xs'
+                : 'text-stocky-text-sub hover:text-stocky-text-main'
+            }`}
+          >
+            Warehouses ({allLocationStats.filter((s) => s.location.type === 'warehouse').length})
+          </button>
+        </div>
+      </div>
+
+      {/* Search in Fields */}
+      <div className="space-y-1.5 border-t border-stocky-border-subtle pt-3">
+        <div className="flex items-center justify-between">
+          <span className="text-[10px] font-bold uppercase tracking-wider text-stocky-text-sub">Search In Fields</span>
+          <button
+            type="button"
+            onClick={() => setSelectedColumns({ name: true, address: true, manager: true, phone: true })}
+            className="text-[10px] text-stocky-text-sub hover:text-stocky-primary cursor-pointer font-medium"
+          >
+            Select all
+          </button>
+        </div>
+        <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-4">
+          <label className="flex items-center gap-1.5 text-xs text-stocky-text-main cursor-pointer hover:bg-stocky-bg-global rounded px-1.5 py-1">
+            <input
+              type="checkbox"
+              checked={selectedColumns.name}
+              onChange={(e) => setSelectedColumns((prev) => ({ ...prev, name: e.target.checked }))}
+              className="accent-stocky-primary rounded"
+            />
+            <span className="truncate">Name</span>
+          </label>
+          <label className="flex items-center gap-1.5 text-xs text-stocky-text-main cursor-pointer hover:bg-stocky-bg-global rounded px-1.5 py-1">
+            <input
+              type="checkbox"
+              checked={selectedColumns.address}
+              onChange={(e) => setSelectedColumns((prev) => ({ ...prev, address: e.target.checked }))}
+              className="accent-stocky-primary rounded"
+            />
+            <span className="truncate">Address</span>
+          </label>
+          <label className="flex items-center gap-1.5 text-xs text-stocky-text-main cursor-pointer hover:bg-stocky-bg-global rounded px-1.5 py-1">
+            <input
+              type="checkbox"
+              checked={selectedColumns.manager}
+              onChange={(e) => setSelectedColumns((prev) => ({ ...prev, manager: e.target.checked }))}
+              className="accent-stocky-primary rounded"
+            />
+            <span className="truncate">Manager</span>
+          </label>
+          <label className="flex items-center gap-1.5 text-xs text-stocky-text-main cursor-pointer hover:bg-stocky-bg-global rounded px-1.5 py-1">
+            <input
+              type="checkbox"
+              checked={selectedColumns.phone}
+              onChange={(e) => setSelectedColumns((prev) => ({ ...prev, phone: e.target.checked }))}
+              className="accent-stocky-primary rounded"
+            />
+            <span className="truncate">Phone</span>
+          </label>
+        </div>
+      </div>
+
+      {/* Dropdown Filters */}
+      <div className="space-y-2 border-t border-stocky-border-subtle pt-3">
+        <span className="text-[10px] font-bold uppercase tracking-wider text-stocky-text-sub">Filter By Attributes</span>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+          <label className="block text-xs font-medium text-stocky-text-main">
+            Branch Manager
+            <select
+              value={filterManagerStatus}
+              onChange={(e) => setFilterManagerStatus(e.target.value as any)}
+              className="mt-1 h-8 w-full rounded-lg border border-stocky-border-subtle bg-stocky-bg-global px-2 text-xs text-stocky-text-main focus:border-stocky-primary focus:outline-none"
+            >
+              <option value="all">All manager statuses</option>
+              <option value="assigned">Manager assigned</option>
+              <option value="unassigned">No manager assigned</option>
+            </select>
+          </label>
+
+          <label className="block text-xs font-medium text-stocky-text-main">
+            Staffing Level
+            <select
+              value={filterStaffing}
+              onChange={(e) => setFilterStaffing(e.target.value as any)}
+              className="mt-1 h-8 w-full rounded-lg border border-stocky-border-subtle bg-stocky-bg-global px-2 text-xs text-stocky-text-main focus:border-stocky-primary focus:outline-none"
+            >
+              <option value="all">Any staff count</option>
+              <option value="has_staff">Has staff members</option>
+              <option value="no_staff">No staff assigned</option>
+            </select>
+          </label>
+
+          <label className="block text-xs font-medium text-stocky-text-main">
+            Operational Health
+            <select
+              value={filterHealth}
+              onChange={(e) => setFilterHealth(e.target.value as any)}
+              className="mt-1 h-8 w-full rounded-lg border border-stocky-border-subtle bg-stocky-bg-global px-2 text-xs text-stocky-text-main focus:border-stocky-primary focus:outline-none"
+            >
+              <option value="all">All operational statuses</option>
+              <option value="expiring">Has expiry issues</option>
+              <option value="low_stock">Has low stock</option>
+              <option value="healthy">Healthy stock</option>
+            </select>
+          </label>
+        </div>
+      </div>
+    </div>
+  );
+
   return (
     <div className="stocky-locations-workspace flex flex-col gap-6">
       {/* Unified Workspace Card */}
       <div className="stocky-stock-unified-card rounded-2xl bg-white border border-stocky-border-subtle shadow-xs flex flex-col relative z-20 overflow-visible">
         {/* Integrated Toolbar Header */}
         <div className="p-3 sm:p-3.5 border-b border-stocky-border-subtle relative z-30">
-          <div className="stocky-stock-table-toolbar stocky-locations-toolbar flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            {/* Split Search Field */}
-            <div className="relative min-w-0 flex-1" ref={filterPanelRef}>
-              <div className="stocky-split-search-field">
-                <div className="stocky-split-search-field__input-wrap">
-                  <SearchIcon size="xs" className="pointer-events-none text-stocky-text-sub shrink-0" />
-                  <input
-                    type="text"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="Search branches, addresses, managers, phone..."
-                    aria-label="Search locations"
-                    className="stocky-split-search-field__input"
-                  />
-                  {searchQuery && (
-                    <button
-                      type="button"
-                      onClick={() => setSearchQuery('')}
-                      className="text-stocky-text-sub hover:text-stocky-text-main cursor-pointer shrink-0"
-                      aria-label="Clear location search"
-                    >
-                      <XIcon size="xs" />
-                    </button>
-                  )}
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setIsFilterPanelOpen((open) => !open)}
-                  aria-label="Filter locations"
-                  aria-expanded={isFilterPanelOpen}
-                  className={`stocky-split-search-field__filter-btn ${isFilterPanelOpen || activeFilterCount > 0 ? 'stocky-split-search-field__filter-btn--active' : ''}`}
-                  title="Filter by columns"
-                >
-                  <FilterIcon size="xs" />
+          <StandardToolbarWidget
+            searchQuery={searchQuery}
+            onSearchChange={setSearchQuery}
+            searchPlaceholder="Search branches, addresses, managers, phone..."
+            activeFilterCount={activeFilterCount}
+            isFilterOpen={isFilterPanelOpen}
+            onToggleFilter={() => setIsFilterPanelOpen((open) => !open)}
+            primaryAction={
+              canManage
+                ? {
+                    label: 'Add location',
+                    shortLabel: 'Add',
+                    icon: <PlusIcon size="xs" />,
+                    onClick: openCreateDrawer,
+                    title: 'Add new location',
+                  }
+                : undefined
+            }
+            moreActions={[
+              {
+                label: 'Export locations',
+                icon: <CloudDownloadIcon size="xs" />,
+                onClick: exportLocationsCsv,
+                description: 'Download CSV directory report',
+              },
+            ]}
+          />
+
+          {/* Floating Column Filter Panel (Desktop) */}
+          {isFilterPanelOpen && (
+            <div
+              ref={filterPanelRef}
+              className="hidden sm:flex stocky-column-filter-panel absolute top-full left-3 sm:left-3.5 mt-1 z-40"
+              role="dialog"
+              aria-label="Location column filters"
+            >
+              {/* Sticky Header */}
+              <div className="sticky top-0 z-10 flex shrink-0 items-center justify-between border-b border-stocky-border-subtle bg-white px-4 py-2.5">
+                <div className="flex items-center gap-2">
+                  <FilterIcon size="xs" className="text-stocky-primary" />
+                  <h3 className="text-xs font-semibold text-stocky-text-main">Location Filters</h3>
                   {activeFilterCount > 0 && (
-                    <span className="stocky-split-search-field__badge">{activeFilterCount}</span>
-                  )}
-                </button>
-              </div>
-
-              {/* Floating Column Filter Panel (Desktop) */}
-              {isFilterPanelOpen && (
-                <div ref={filterPanelRef} className="hidden sm:flex stocky-column-filter-panel" role="dialog" aria-label="Location column filters">
-                  {/* Sticky Header */}
-                  <div className="sticky top-0 z-10 flex shrink-0 items-center justify-between border-b border-stocky-border-subtle bg-white px-4 py-2.5">
-                    <div className="flex items-center gap-2">
-                      <FilterIcon size="xs" className="text-stocky-primary" />
-                      <h3 className="text-xs font-semibold text-stocky-text-main">Location Filters</h3>
-                      {activeFilterCount > 0 && (
-                        <span className="rounded-full bg-stocky-primary/10 px-2 py-0.5 text-[10px] font-semibold text-stocky-primary">
-                          {activeFilterCount} active
-                        </span>
-                      )}
-                    </div>
-                    {activeFilterCount > 0 && (
-                      <button
-                        type="button"
-                        onClick={resetFilters}
-                        className="text-[11px] font-medium text-stocky-primary hover:underline cursor-pointer"
-                      >
-                        Reset all
-                      </button>
-                    )}
-                  </div>
-
-                  <div className="stocky-column-filter-panel__body space-y-3">
-                    {/* Search in Fields */}
-                    <div className="space-y-1.5">
-                      <div className="flex items-center justify-between">
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-stocky-text-sub">Search In Fields</span>
-                        <button
-                          type="button"
-                          onClick={() => setSelectedColumns({ name: true, address: true, manager: true, phone: true })}
-                          className="text-[10px] text-stocky-text-sub hover:text-stocky-primary cursor-pointer"
-                        >
-                          Select all
-                        </button>
-                      </div>
-                      <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-4">
-                        <label className="flex items-center gap-1.5 text-xs text-stocky-text-main cursor-pointer hover:bg-stocky-bg-global rounded px-1.5 py-1">
-                          <input
-                            type="checkbox"
-                            checked={selectedColumns.name}
-                            onChange={(e) => setSelectedColumns((prev) => ({ ...prev, name: e.target.checked }))}
-                            className="accent-stocky-primary rounded"
-                          />
-                          <span className="truncate">Name</span>
-                        </label>
-                        <label className="flex items-center gap-1.5 text-xs text-stocky-text-main cursor-pointer hover:bg-stocky-bg-global rounded px-1.5 py-1">
-                          <input
-                            type="checkbox"
-                            checked={selectedColumns.address}
-                            onChange={(e) => setSelectedColumns((prev) => ({ ...prev, address: e.target.checked }))}
-                            className="accent-stocky-primary rounded"
-                          />
-                          <span className="truncate">Address</span>
-                        </label>
-                        <label className="flex items-center gap-1.5 text-xs text-stocky-text-main cursor-pointer hover:bg-stocky-bg-global rounded px-1.5 py-1">
-                          <input
-                            type="checkbox"
-                            checked={selectedColumns.manager}
-                            onChange={(e) => setSelectedColumns((prev) => ({ ...prev, manager: e.target.checked }))}
-                            className="accent-stocky-primary rounded"
-                          />
-                          <span className="truncate">Manager</span>
-                        </label>
-                        <label className="flex items-center gap-1.5 text-xs text-stocky-text-main cursor-pointer hover:bg-stocky-bg-global rounded px-1.5 py-1">
-                          <input
-                            type="checkbox"
-                            checked={selectedColumns.phone}
-                            onChange={(e) => setSelectedColumns((prev) => ({ ...prev, phone: e.target.checked }))}
-                            className="accent-stocky-primary rounded"
-                          />
-                          <span className="truncate">Phone</span>
-                        </label>
-                      </div>
-                    </div>
-
-                    {/* Dropdown Filters */}
-                    <div className="space-y-2 border-t border-stocky-border-subtle pt-2.5">
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-stocky-text-sub">Filter By Attributes</span>
-
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                        <label className="block text-xs font-medium text-stocky-text-main">
-                          Location Type
-                          <select
-                            value={filterType}
-                            onChange={(e) => setFilterType(e.target.value as any)}
-                            className="mt-1 h-8 w-full rounded-lg border border-stocky-border-subtle bg-stocky-bg-global px-2 text-xs text-stocky-text-main focus:border-stocky-primary focus:outline-none"
-                          >
-                            <option value="all">All Types</option>
-                            <option value="branch">Branches only</option>
-                            <option value="warehouse">Warehouses only</option>
-                          </select>
-                        </label>
-
-                        <label className="block text-xs font-medium text-stocky-text-main">
-                          Branch Manager
-                          <select
-                            value={filterManagerStatus}
-                            onChange={(e) => setFilterManagerStatus(e.target.value as any)}
-                            className="mt-1 h-8 w-full rounded-lg border border-stocky-border-subtle bg-stocky-bg-global px-2 text-xs text-stocky-text-main focus:border-stocky-primary focus:outline-none"
-                          >
-                            <option value="all">All manager statuses</option>
-                            <option value="assigned">Manager assigned</option>
-                            <option value="unassigned">No manager assigned</option>
-                          </select>
-                        </label>
-
-                        <label className="block text-xs font-medium text-stocky-text-main">
-                          Staffing Level
-                          <select
-                            value={filterStaffing}
-                            onChange={(e) => setFilterStaffing(e.target.value as any)}
-                            className="mt-1 h-8 w-full rounded-lg border border-stocky-border-subtle bg-stocky-bg-global px-2 text-xs text-stocky-text-main focus:border-stocky-primary focus:outline-none"
-                          >
-                            <option value="all">Any staff count</option>
-                            <option value="has_staff">Has staff members</option>
-                            <option value="no_staff">No staff assigned</option>
-                          </select>
-                        </label>
-
-                        <label className="block text-xs font-medium text-stocky-text-main">
-                          Operational Health
-                          <select
-                            value={filterHealth}
-                            onChange={(e) => setFilterHealth(e.target.value as any)}
-                            className="mt-1 h-8 w-full rounded-lg border border-stocky-border-subtle bg-stocky-bg-global px-2 text-xs text-stocky-text-main focus:border-stocky-primary focus:outline-none"
-                          >
-                            <option value="all">All operational statuses</option>
-                            <option value="expiring">Has expiry issues</option>
-                            <option value="low_stock">Has low stock</option>
-                            <option value="healthy">Healthy stock</option>
-                          </select>
-                        </label>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Sticky Footer */}
-                  <div className="sticky bottom-0 z-10 flex shrink-0 items-center justify-between border-t border-stocky-border-subtle bg-stocky-bg-global px-4 py-2">
-                    <span className="text-[11px] font-medium text-stocky-text-sub">
-                      {filteredStats.length} location{filteredStats.length === 1 ? '' : 's'} matching
+                    <span className="rounded-full bg-stocky-primary/10 px-2 py-0.5 text-[10px] font-semibold text-stocky-primary">
+                      {activeFilterCount} active
                     </span>
-                    <button
-                      type="button"
-                      onClick={() => setIsFilterPanelOpen(false)}
-                      className="h-7 rounded-full bg-stocky-primary px-3 text-xs font-medium text-white hover:bg-stocky-primary-hover cursor-pointer"
-                    >
-                      Done
-                    </button>
-                  </div>
+                  )}
                 </div>
-              )}
-            </div>
-
-            {/* Quick View Filter Buttons & Actions */}
-            <div className="stocky-stock-table-toolbar__actions flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full">
-              {/* Quick type filter buttons */}
-              <div className="grid grid-cols-3 gap-1.5 w-full sm:flex sm:items-center sm:gap-1.5 sm:w-auto" role="tablist">
-                <button
-                  type="button"
-                  role="tab"
-                  aria-selected={quickTypeFilter === 'all'}
-                  onClick={() => setQuickTypeFilter('all')}
-                  className={`stocky-table-toolbar-button w-full sm:w-auto h-10 px-2 sm:px-4 rounded-full text-xs font-medium inline-flex items-center justify-center whitespace-nowrap cursor-pointer transition-colors ${
-                    quickTypeFilter === 'all'
-                      ? 'stocky-table-toolbar-button--active border-stocky-primary bg-stocky-primary/10 text-stocky-primary font-semibold'
-                      : 'border border-stocky-border-subtle bg-white text-stocky-text-main hover:border-stocky-primary hover:text-stocky-primary'
-                  }`}
-                >
-                  All ({allLocationStats.length})
-                </button>
-                <button
-                  type="button"
-                  role="tab"
-                  aria-selected={quickTypeFilter === 'branch'}
-                  onClick={() => setQuickTypeFilter('branch')}
-                  className={`stocky-table-toolbar-button w-full sm:w-auto h-10 px-2 sm:px-4 rounded-full text-xs font-medium inline-flex items-center justify-center whitespace-nowrap cursor-pointer transition-colors ${
-                    quickTypeFilter === 'branch'
-                      ? 'stocky-table-toolbar-button--active border-stocky-primary bg-stocky-primary/10 text-stocky-primary font-semibold'
-                      : 'border border-stocky-border-subtle bg-white text-stocky-text-main hover:border-stocky-primary hover:text-stocky-primary'
-                  }`}
-                >
-                  Branches ({allLocationStats.filter((s) => s.location.type === 'branch').length})
-                </button>
-                <button
-                  type="button"
-                  role="tab"
-                  aria-selected={quickTypeFilter === 'warehouse'}
-                  onClick={() => setQuickTypeFilter('warehouse')}
-                  className={`stocky-table-toolbar-button w-full sm:w-auto h-10 px-2 sm:px-4 rounded-full text-xs font-medium inline-flex items-center justify-center whitespace-nowrap cursor-pointer transition-colors ${
-                    quickTypeFilter === 'warehouse'
-                      ? 'stocky-table-toolbar-button--active border-stocky-primary bg-stocky-primary/10 text-stocky-primary font-semibold'
-                      : 'border border-stocky-border-subtle bg-white text-stocky-text-main hover:border-stocky-primary hover:text-stocky-primary'
-                  }`}
-                >
-                  Warehouses ({allLocationStats.filter((s) => s.location.type === 'warehouse').length})
-                </button>
-              </div>
-
-              {/* Actions row extending full width on mobile */}
-              <div className="flex items-center gap-2 w-full sm:w-auto sm:ml-auto">
-                <button
-                  type="button"
-                  onClick={exportLocationsCsv}
-                  className="stocky-table-toolbar-button flex-1 sm:flex-initial h-10 px-4 rounded-full border border-stocky-border-subtle bg-white text-xs font-medium text-stocky-text-main hover:border-stocky-primary hover:text-stocky-primary inline-flex items-center justify-center gap-1.5 cursor-pointer transition-colors"
-                  title="Export locations report"
-                >
-                  <CloudDownloadIcon size="xs" /> <span>Export</span>
-                </button>
-                {canManage && (
+                {activeFilterCount > 0 && (
                   <button
                     type="button"
-                    onClick={openCreateDrawer}
-                    className="stocky-table-toolbar-button stocky-table-toolbar-button--primary flex-1 sm:flex-initial h-10 px-4 rounded-full text-xs font-semibold inline-flex items-center justify-center gap-1.5 whitespace-nowrap cursor-pointer"
+                    onClick={resetFilters}
+                    className="text-[11px] font-medium text-stocky-primary hover:underline cursor-pointer"
                   >
-                    <PlusIcon size="xs" /> <span><span className="sm:hidden">Add</span><span className="hidden sm:inline">Add location</span></span>
+                    Reset all
                   </button>
                 )}
               </div>
+
+              <div className="stocky-column-filter-panel__body p-4">
+                {locationFilterContent}
+              </div>
+
+              {/* Sticky Footer */}
+              <div className="sticky bottom-0 z-10 flex shrink-0 items-center justify-between border-t border-stocky-border-subtle bg-stocky-bg-global px-4 py-2">
+                <span className="text-[11px] font-medium text-stocky-text-sub">
+                  {filteredStats.length} location{filteredStats.length === 1 ? '' : 's'} matching
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setIsFilterPanelOpen(false)}
+                  className="h-7 rounded-full bg-stocky-primary px-3 text-xs font-medium text-white hover:bg-stocky-primary-hover cursor-pointer"
+                >
+                  Done
+                </button>
+              </div>
             </div>
-          </div>
+          )}
+        </div>
+
+        {/* Mobile Filter Bottom Sheet */}
+        <div className="sm:hidden">
+          <BottomSheet
+            isOpen={isFilterPanelOpen}
+            onClose={() => setIsFilterPanelOpen(false)}
+            title="Location Filters"
+            activeCount={activeFilterCount}
+            onReset={activeFilterCount > 0 ? resetFilters : undefined}
+            footer={
+              <div className="flex items-center justify-between w-full">
+                <span className="text-xs text-stocky-text-sub">
+                  {filteredStats.length} location{filteredStats.length === 1 ? '' : 's'} matching
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setIsFilterPanelOpen(false)}
+                  className="h-9 px-5 rounded-full bg-stocky-primary text-white text-xs font-semibold cursor-pointer"
+                >
+                  Apply filters
+                </button>
+              </div>
+            }
+          >
+            <div className="p-1">
+              {locationFilterContent}
+            </div>
+          </BottomSheet>
         </div>
 
         {/* Integrated Data View (Horizontal Cards) */}
@@ -1433,183 +1428,7 @@ export function LocationsDirectoryWidget({
         </div>
       </SideDrawer>
 
-      {/* Mobile Location Filter Drawer */}
-      <SideDrawer
-        isOpen={isFilterPanelOpen}
-        onClose={() => setIsFilterPanelOpen(false)}
-        ariaLabel="Filter locations"
-        panelClassName="sm:hidden flex flex-col"
-      >
-        <div className="flex h-full flex-col min-h-0 bg-white">
-          {/* Header */}
-          <div className="flex items-center justify-between px-5 py-4 border-b border-stocky-border-subtle bg-white shrink-0">
-            <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-lg bg-stocky-primary/10 text-stocky-primary flex items-center justify-center shrink-0">
-                <FilterIcon size="xs" />
-              </div>
-              <div>
-                <div className="flex items-center gap-2">
-                  <h2 className="text-sm font-semibold text-stocky-text-main">Location Filters</h2>
-                  {activeFilterCount > 0 && (
-                    <span className="rounded-full bg-stocky-primary px-2 py-0.5 text-[10px] font-semibold text-white">
-                      {activeFilterCount} active
-                    </span>
-                  )}
-                </div>
-                <p className="text-xs text-stocky-text-sub mt-0.5">Filter by attributes and search fields</p>
-              </div>
-            </div>
-            <button
-              type="button"
-              onClick={() => setIsFilterPanelOpen(false)}
-              aria-label="Close location filters"
-              className="w-8 h-8 rounded-full flex items-center justify-center text-stocky-text-sub hover:text-stocky-text-main hover:bg-stocky-bg-global transition-colors cursor-pointer"
-            >
-              <XIcon size="xs" />
-            </button>
-          </div>
 
-          {/* Body */}
-          <div className="flex-1 min-h-0 overflow-y-auto p-5 space-y-5">
-            {/* Search in Fields */}
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold text-stocky-text-main">Search In Fields</span>
-                <button
-                  type="button"
-                  onClick={() => setSelectedColumns({ name: true, address: true, manager: true, phone: true })}
-                  className="text-[11px] text-stocky-text-sub hover:text-stocky-primary cursor-pointer"
-                >
-                  Select all
-                </button>
-              </div>
-              <div className="grid grid-cols-2 gap-2">
-                <label className="flex items-center gap-2 text-xs text-stocky-text-main cursor-pointer p-2 rounded-xl border border-stocky-border-subtle bg-white">
-                  <input
-                    type="checkbox"
-                    checked={selectedColumns.name}
-                    onChange={(e) => setSelectedColumns((prev) => ({ ...prev, name: e.target.checked }))}
-                    className="accent-stocky-primary rounded"
-                  />
-                  <span className="truncate">Name</span>
-                </label>
-                <label className="flex items-center gap-2 text-xs text-stocky-text-main cursor-pointer p-2 rounded-xl border border-stocky-border-subtle bg-white">
-                  <input
-                    type="checkbox"
-                    checked={selectedColumns.address}
-                    onChange={(e) => setSelectedColumns((prev) => ({ ...prev, address: e.target.checked }))}
-                    className="accent-stocky-primary rounded"
-                  />
-                  <span className="truncate">Address</span>
-                </label>
-                <label className="flex items-center gap-2 text-xs text-stocky-text-main cursor-pointer p-2 rounded-xl border border-stocky-border-subtle bg-white">
-                  <input
-                    type="checkbox"
-                    checked={selectedColumns.manager}
-                    onChange={(e) => setSelectedColumns((prev) => ({ ...prev, manager: e.target.checked }))}
-                    className="accent-stocky-primary rounded"
-                  />
-                  <span className="truncate">Manager</span>
-                </label>
-                <label className="flex items-center gap-2 text-xs text-stocky-text-main cursor-pointer p-2 rounded-xl border border-stocky-border-subtle bg-white">
-                  <input
-                    type="checkbox"
-                    checked={selectedColumns.phone}
-                    onChange={(e) => setSelectedColumns((prev) => ({ ...prev, phone: e.target.checked }))}
-                    className="accent-stocky-primary rounded"
-                  />
-                  <span className="truncate">Phone</span>
-                </label>
-              </div>
-            </div>
-
-            {/* Dropdown Filters */}
-            <div className="space-y-3 pt-3 border-t border-stocky-border-subtle">
-              <span className="text-xs font-semibold text-stocky-text-main">Filter By Attributes</span>
-
-              <div className="space-y-3">
-                <label className="block text-xs font-medium text-stocky-text-main">
-                  Location Type
-                  <select
-                    value={filterType}
-                    onChange={(e) => setFilterType(e.target.value as any)}
-                    className="mt-1 h-10 w-full rounded-xl border border-stocky-border-subtle bg-white px-3 text-xs text-stocky-text-main focus:border-stocky-primary focus:outline-none"
-                  >
-                    <option value="all">All Types</option>
-                    <option value="branch">Branches only</option>
-                    <option value="warehouse">Warehouses only</option>
-                  </select>
-                </label>
-
-                <label className="block text-xs font-medium text-stocky-text-main">
-                  Branch Manager
-                  <select
-                    value={filterManagerStatus}
-                    onChange={(e) => setFilterManagerStatus(e.target.value as any)}
-                    className="mt-1 h-10 w-full rounded-xl border border-stocky-border-subtle bg-white px-3 text-xs text-stocky-text-main focus:border-stocky-primary focus:outline-none"
-                  >
-                    <option value="all">All manager statuses</option>
-                    <option value="assigned">Manager assigned</option>
-                    <option value="unassigned">No manager assigned</option>
-                  </select>
-                </label>
-
-                <label className="block text-xs font-medium text-stocky-text-main">
-                  Staffing Level
-                  <select
-                    value={filterStaffing}
-                    onChange={(e) => setFilterStaffing(e.target.value as any)}
-                    className="mt-1 h-10 w-full rounded-xl border border-stocky-border-subtle bg-white px-3 text-xs text-stocky-text-main focus:border-stocky-primary focus:outline-none"
-                  >
-                    <option value="all">Any staff count</option>
-                    <option value="has_staff">Has staff members</option>
-                    <option value="no_staff">No staff assigned</option>
-                  </select>
-                </label>
-
-                <label className="block text-xs font-medium text-stocky-text-main">
-                  Operational Health
-                  <select
-                    value={filterHealth}
-                    onChange={(e) => setFilterHealth(e.target.value as any)}
-                    className="mt-1 h-10 w-full rounded-xl border border-stocky-border-subtle bg-white px-3 text-xs text-stocky-text-main focus:border-stocky-primary focus:outline-none"
-                  >
-                    <option value="all">All operational statuses</option>
-                    <option value="expiring">Has expiry issues</option>
-                    <option value="low_stock">Has low stock</option>
-                    <option value="healthy">Healthy stock</option>
-                  </select>
-                </label>
-              </div>
-            </div>
-          </div>
-
-          {/* Footer */}
-          <div className="px-5 py-3.5 border-t border-stocky-border-subtle bg-white flex items-center justify-between shrink-0">
-            <span className="text-xs text-stocky-text-sub">
-              Showing <strong className="font-semibold text-stocky-text-main">{filteredStats.length}</strong> locations
-            </span>
-            <div className="flex items-center gap-2">
-              {activeFilterCount > 0 && (
-                <button
-                  type="button"
-                  onClick={resetFilters}
-                  className="h-8 px-3 rounded-full text-xs font-medium text-stocky-text-sub hover:text-red-600 hover:bg-red-50 transition-colors cursor-pointer"
-                >
-                  Reset
-                </button>
-              )}
-              <button
-                type="button"
-                onClick={() => setIsFilterPanelOpen(false)}
-                className="h-8 px-5 rounded-full bg-stocky-text-main text-white text-xs font-semibold hover:opacity-90 transition-opacity cursor-pointer shadow-sm"
-              >
-                Done
-              </button>
-            </div>
-          </div>
-        </div>
-      </SideDrawer>
 
       {/* Attendance QR Poster Drawer */}
       <SideDrawer

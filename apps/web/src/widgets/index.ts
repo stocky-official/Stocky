@@ -52,4 +52,5 @@ export * from './PlatformWorkspaceSkeleton/PlatformWorkspaceSkeleton';
 export * from './SupplierResupplyModalWidget/SupplierResupplyModalWidget';
 export * from './InventoryToolbarWidget/InventoryToolbarWidget';
 export * from './AttendanceWorkspaceWidget';
+export * from './StandardToolbarWidget/StandardToolbarWidget';
 

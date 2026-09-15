@@ -1,7 +1,9 @@
 'use client';
 
 import React from 'react';
-import { ArrowDownIcon, CloudUploadIcon, FilterIcon, PlusIcon, SearchIcon, XIcon } from '@stocky/icons';
+import { ArrowDownIcon, CloudUploadIcon, PlusIcon } from '@stocky/icons';
+import { StandardToolbarWidget } from '../StandardToolbarWidget/StandardToolbarWidget';
+import type { ActionItem } from '@/components/ui/ActionsBottomSheet';
 
 export interface SuppliersToolbarWidgetProps {
   searchQuery: string;
@@ -16,6 +18,11 @@ export interface SuppliersToolbarWidgetProps {
   onAddSupplier: () => void;
 }
 
+/**
+ * Standardized toolbar component for Suppliers workspace.
+ * Uses StandardToolbarWidget for uniform 40px single-row geometry,
+ * split search with filter icon, primary + action, and ••• actions drawer.
+ */
 export function SuppliersToolbarWidget({
   searchQuery,
   onSearchChange,
@@ -28,90 +35,47 @@ export function SuppliersToolbarWidget({
   onExport,
   onAddSupplier,
 }: SuppliersToolbarWidgetProps) {
+  const moreActions: ActionItem[] = [
+    ...(canImport && onImport
+      ? [
+          {
+            id: 'import',
+            label: 'Import',
+            description: 'Upload CSV file with supplier contacts and details',
+            icon: <CloudUploadIcon size="xs" />,
+            onClick: onImport,
+          },
+        ]
+      : []),
+    {
+      id: 'export',
+      label: 'Export',
+      description: 'Download supplier directory to Excel spreadsheet',
+      icon: <ArrowDownIcon size="xs" />,
+      onClick: onExport,
+    },
+  ];
+
   return (
-    <div className="stocky-stock-table-toolbar relative">
-      {/* Search Input Group */}
-      <div className="stocky-stock-table-toolbar__search-group flex items-center gap-2 min-w-0 flex-1">
-        <div className="relative min-w-0 flex-1">
-          <SearchIcon
-            size="xs"
-            className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-stocky-text-sub"
-          />
-          <input
-            value={searchQuery}
-            onChange={(e) => onSearchChange(e.target.value)}
-            placeholder="Search suppliers, addresses, products, or contacts..."
-            className="w-full h-10 rounded-full border border-stocky-border-subtle bg-stocky-bg-widget pl-9 pr-16 text-xs text-stocky-text-main placeholder:text-stocky-text-sub focus:border-stocky-primary focus:outline-none transition-colors"
-          />
-          {searchQuery ? (
-            <button
-              type="button"
-              onClick={() => onSearchChange('')}
-              className="absolute right-9 top-1/2 -translate-y-1/2 text-stocky-text-sub hover:text-stocky-text-main transition-colors cursor-pointer"
-              aria-label="Clear search"
-            >
-              <XIcon size="xs" />
-            </button>
-          ) : null}
-
-          {/* Filter Popover Button */}
-          <button
-            type="button"
-            onClick={onToggleFilterPanel}
-            aria-label="Filter suppliers"
-            aria-expanded={filterPanelOpen}
-            className={`absolute right-1.5 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full flex items-center justify-center transition-colors cursor-pointer ${
-              filterPanelOpen || activeFilterCount > 0
-                ? 'bg-stocky-primary text-white hover:bg-stocky-primary-hover'
-                : 'text-stocky-text-sub hover:bg-stocky-bg-hover hover:text-stocky-text-main'
-            }`}
-            title="Filter by column"
-          >
-            <FilterIcon size="xs" />
-            {activeFilterCount > 0 && !filterPanelOpen && (
-              <span className="absolute -top-1 -right-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-stocky-primary px-1 text-[9px] font-bold text-white ring-2 ring-white">
-                {activeFilterCount}
-              </span>
-            )}
-          </button>
-        </div>
-      </div>
-
-      {/* Actions */}
-      <div className="stocky-stock-table-toolbar__actions flex items-center gap-2 w-full sm:w-auto">
-        {canImport && onImport && (
-          <button
-            type="button"
-            onClick={onImport}
-            className="stocky-table-toolbar-button h-10 px-3 sm:px-4 rounded-full text-xs font-medium inline-flex items-center justify-center gap-1.5 whitespace-nowrap cursor-pointer transition-colors border border-stocky-border-subtle bg-white text-stocky-text-main hover:border-stocky-primary hover:text-stocky-primary"
-            title="Import suppliers from CSV"
-          >
-            <CloudUploadIcon size="xs" />
-            <span>Import</span>
-          </button>
-        )}
-
-        <button
-          type="button"
-          onClick={onExport}
-          className="stocky-table-toolbar-button h-10 px-3 sm:px-4 rounded-full text-xs font-medium inline-flex items-center justify-center gap-1.5 whitespace-nowrap cursor-pointer transition-colors border border-stocky-border-subtle bg-white text-stocky-text-main hover:border-stocky-primary hover:text-stocky-primary"
-          title="Export suppliers to Excel"
-        >
-          <ArrowDownIcon size="xs" />
-          <span>Export</span>
-        </button>
-
-        {canManageSuppliers && (
-          <button
-            type="button"
-            onClick={onAddSupplier}
-            className="stocky-table-toolbar-button stocky-table-toolbar-button--primary h-10 px-3 sm:px-4 rounded-full text-xs font-semibold inline-flex items-center justify-center gap-1.5 whitespace-nowrap cursor-pointer"
-          >
-            <PlusIcon size="xs" />
-            <span><span className="sm:hidden">Add</span><span className="hidden sm:inline">Add supplier</span></span>
-          </button>
-        )}
-      </div>
-    </div>
+    <StandardToolbarWidget
+      searchQuery={searchQuery}
+      onSearchChange={onSearchChange}
+      searchPlaceholder="Search suppliers, addresses, products..."
+      isFilterOpen={filterPanelOpen}
+      onToggleFilter={onToggleFilterPanel}
+      activeFilterCount={activeFilterCount}
+      primaryAction={
+        canManageSuppliers
+          ? {
+              label: 'Add supplier',
+              icon: <PlusIcon size="xs" />,
+              onClick: onAddSupplier,
+              title: 'Add new supplier',
+            }
+          : undefined
+      }
+      moreActions={moreActions}
+      moreActionsTitle="Supplier Actions"
+    />
   );
 }

@@ -17,7 +17,7 @@ import {
   XIcon,
 } from '@stocky/icons';
 import type { CompanyUserRole, CreateStockTaskCommand, Location, Product, StockLot, StockTask, StockTaskItem, StockTaskType, Supplier } from '@stocky/types';
-import { SideDrawer } from '@/components/ui/SideDrawer';
+import { SideDrawer, BottomSheet } from '@/components/ui';
 import { AnimatePresence, motion } from 'framer-motion';
 import { InventoryTableWidget, type InventoryTableRow } from '../InventoryTableWidget/InventoryTableWidget';
 import { StockTaskAssignmentWidget } from '../StockTaskAssignmentWidget/StockTaskAssignmentWidget';
@@ -590,6 +590,7 @@ export function InventoryWorkspaceWidget({
       filterPanelOpen={isFilterPanelOpen}
       onToggleFilterPanel={() => setIsFilterPanelOpen((open) => !open)}
       isFilterActive={activeFilterCount > 0}
+      activeFilterCount={activeFilterCount}
       canImport={canImport}
       onImport={() => setImportOpen(true)}
       onExport={onExport}
@@ -717,17 +718,19 @@ export function InventoryWorkspaceWidget({
           )}
         </div>
       </div>
-      {/* Mobile Filter Drawer */}
-      <SideDrawer
-        isOpen={isFilterPanelOpen}
-        onClose={() => setIsFilterPanelOpen(false)}
-        ariaLabel="Filter inventory"
-        panelClassName="sm:hidden"
-      >
-        <div className="flex h-full flex-col min-h-0 bg-white">
-          {filterPanelElement(true)}
-        </div>
-      </SideDrawer>
+      {/* Mobile Filter Bottom Sheet Drawer */}
+      <div className="sm:hidden">
+        <BottomSheet
+          isOpen={isFilterPanelOpen}
+          onClose={() => setIsFilterPanelOpen(false)}
+          title="Inventory Filters"
+          subtitle={`Showing ${rows.length} of ${products.length} items`}
+        >
+          <div className="flex h-full flex-col min-h-0 bg-white">
+            {filterPanelElement(true)}
+          </div>
+        </BottomSheet>
+      </div>
 
       {renderLotsDrawer()}
       {onCreateTask && <StockTaskAssignmentWidget isOpen={taskAssignmentOpen} taskType={taskType} selectedProductIds={selectedProductIds} products={products} locations={locations} members={members} assignments={assignments} selectedLocationId={selectedLocationId} userRole={userRole} onClose={() => setTaskAssignmentOpen(false)} onCreate={onCreateTask} />}

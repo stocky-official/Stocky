@@ -21,6 +21,7 @@ import { TaskRunnerDrawerWidget } from './TaskRunnerDrawerWidget';
 import { TaskReviewDrawerWidget } from './TaskReviewDrawerWidget';
 import { TaskDetailsDrawerWidget } from './TaskDetailsDrawerWidget';
 import { TaskAssignmentDrawerWidget } from './TaskAssignmentDrawerWidget';
+import { BottomSheet } from '@/components/ui';
 import { useOptionalPlatform } from '@/views/platform/PlatformContext';
 
 export interface TasksWorkspaceWidgetProps {
@@ -359,9 +360,9 @@ export function TasksWorkspaceWidget({
             onAssignTask={() => setAssignDrawerOpen(true)}
           />
 
-          {/* Floating Hovering Filter Panel */}
+          {/* Floating Hovering Filter Panel (Desktop) */}
           {filterPanelOpen && (
-            <div className="absolute top-[calc(100%+8px)] inset-x-3 sm:inset-x-3.5 z-50">
+            <div className="hidden sm:block absolute top-[calc(100%+8px)] inset-x-3 sm:inset-x-3.5 z-50">
               <TasksFilterPanelWidget
                 isOpen={filterPanelOpen}
                 onClose={() => setFilterPanelOpen(false)}
@@ -375,6 +376,28 @@ export function TasksWorkspaceWidget({
               />
             </div>
           )}
+        </div>
+
+        {/* Mobile Filter Bottom Sheet Drawer */}
+        <div className="sm:hidden">
+          <BottomSheet
+            isOpen={filterPanelOpen}
+            onClose={() => setFilterPanelOpen(false)}
+            title="Task Filters"
+            subtitle={`Showing ${filteredTasks.length} of ${sortedTasks.length} tasks`}
+          >
+            <TasksFilterPanelWidget
+              isOpen={filterPanelOpen}
+              onClose={() => setFilterPanelOpen(false)}
+              filters={filters}
+              onFilterChange={setFilters}
+              onResetFilters={() => setFilters(DEFAULT_FILTERS)}
+              matchingCount={filteredTasks.length}
+              totalCount={sortedTasks.length}
+              locations={locations}
+              members={members}
+            />
+          </BottomSheet>
         </div>
 
         {/* Data View */}

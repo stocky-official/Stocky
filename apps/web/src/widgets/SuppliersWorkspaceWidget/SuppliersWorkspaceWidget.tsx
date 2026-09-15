@@ -11,7 +11,7 @@ import type {
   SupplierRequest,
 } from '@stocky/types';
 import { CheckIcon, FilterIcon, TruckIcon, WarehouseIcon, XIcon } from '@stocky/icons';
-import { SideDrawer } from '@/components/ui/SideDrawer';
+import { SideDrawer, BottomSheet } from '@/components/ui';
 import { exportSuppliersToExcel } from '@/lib/excel/export';
 import { SupplierContactsDrawerWidget, type SupplierContactInput } from '../SupplierContactsDrawerWidget/SupplierContactsDrawerWidget';
 import { SuppliersToolbarWidget } from './SuppliersToolbarWidget';
@@ -447,17 +447,19 @@ export function SuppliersWorkspaceWidget({
         </div>
       </div>
 
-      {/* Mobile Suppliers Filter Drawer */}
-      <SideDrawer
-        isOpen={isFilterPanelOpen}
-        onClose={() => setIsFilterPanelOpen(false)}
-        ariaLabel="Filter suppliers"
-        panelClassName="sm:hidden flex flex-col"
-      >
-        <div className="flex h-full flex-col min-h-0 bg-white">
-          {supplierFilterPanelElement(true)}
-        </div>
-      </SideDrawer>
+      {/* Mobile Suppliers Filter Bottom Sheet Drawer */}
+      <div className="sm:hidden">
+        <BottomSheet
+          isOpen={isFilterPanelOpen}
+          onClose={() => setIsFilterPanelOpen(false)}
+          title="Supplier Filters"
+          subtitle={`Showing ${filteredSuppliers.length} of ${suppliers.length} suppliers`}
+        >
+          <div className="flex h-full flex-col min-h-0 bg-white">
+            {supplierFilterPanelElement(true)}
+          </div>
+        </BottomSheet>
+      </div>
 
       {/* Requests Filter Drawer */}
       <SideDrawer
