@@ -139,6 +139,12 @@ export function getPlatformNavigation(
 }
 
 export function getActivePlatformGroup(groups: PlatformNavGroup[], activeTab: string) {
-  return groups.find((group) => group.items.some((item) => item.id === activeTab));
+  const normalizedId =
+    activeTab === 'inventory'
+      ? 'stock'
+      : activeTab === 'timesheets'
+      ? 'attendance'
+      : activeTab;
+  return groups.find((group) => group.items.some((item) => item.id === normalizedId || item.id === activeTab));
 }
 

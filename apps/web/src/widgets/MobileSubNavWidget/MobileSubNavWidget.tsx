@@ -48,7 +48,6 @@ export function MobileSubNavWidget({
   presentCount,
 }: MobileSubNavWidgetProps) {
   const groups = useMemo(() => getPlatformNavigation(userRole, '/platform', permissions), [userRole, permissions]);
-  const activeGroup = getActivePlatformGroup(groups, activeTab);
   const activePillRef = useRef<HTMLButtonElement | null>(null);
 
   const resolvedActiveId = useMemo(() => {
@@ -67,6 +66,14 @@ export function MobileSubNavWidget({
     }
     return activeTab;
   }, [activeTab, supplierTab, taskTab, attendanceTab]);
+
+  const activeGroup = useMemo(() => {
+    return (
+      getActivePlatformGroup(groups, resolvedActiveId) ||
+      getActivePlatformGroup(groups, activeTab || 'stock') ||
+      getActivePlatformGroup(groups, 'stock')
+    );
+  }, [groups, resolvedActiveId, activeTab]);
 
   useEffect(() => {
     if (activePillRef.current && typeof window !== 'undefined') {
@@ -121,11 +128,11 @@ export function MobileSubNavWidget({
   return (
     <nav
       aria-label={`${activeGroup.label} navigation`}
-      className={`stocky-mobile-subnav md:hidden w-full max-w-full overflow-x-clip shrink-0 select-none z-30 transition-all duration-300 ease-out ${
+      className={`stocky-mobile-subnav md:hidden w-full h-11 flex items-center max-w-full overflow-x-clip shrink-0 select-none z-30 transition-all duration-300 ease-out ${
         hidden ? 'stocky-mobile-subnav--hidden' : ''
       } ${className}`.trim()}
     >
-      <div className="stocky-mobile-pill-rail flex items-center gap-1.5 overflow-x-auto max-w-full px-3 py-1.5">
+      <div className="stocky-mobile-pill-rail flex items-center gap-1.5 overflow-x-auto w-full h-full px-3 py-0">
         <div className="flex items-center gap-2 shrink-0 pr-1">
           <span className="text-xs font-bold text-stocky-text-main">{groupTitle}</span>
           {activeGroup.items.length > 0 && (

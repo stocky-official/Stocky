@@ -1743,6 +1743,9 @@ textarea::placeholder {
   scrollbar-width: none;
   -ms-overflow-style: none;
   -webkit-overflow-scrolling: touch;
+  display: flex;
+  align-items: center;
+  height: 100%;
 }
 .stocky-mobile-pill-rail::-webkit-scrollbar {
   display: none;
@@ -2168,7 +2171,9 @@ textarea::placeholder {
     scrollbar-width: none;
     -webkit-overflow-scrolling: touch;
     flex-wrap: nowrap;
-    padding-bottom: 0.25rem;
+    padding-top: 0;
+    padding-bottom: 0;
+    height: 100%;
     width: 100%;
   }
   .stocky-mobile-pill-rail::-webkit-scrollbar { display: none; }

@@ -138,35 +138,24 @@ function PlatformShell({ children }: { children?: React.ReactNode }) {
           userAvatarUrl={platform.userAvatarUrl}
           companyName={platform.company?.name}
           companyLogoUrl={platform.company?.logo_url}
-          searchValue={platform.globalSearchQuery}
           hidden={!isChromeVisible}
-          onSearch={(query) => {
-            platform.setGlobalSearchQuery(query);
-            if (query.trim()) platform.navigateToTab('stock');
-          }}
           onSettingsClick={() => platform.navigateToTab('settings')}
           onNavigateToTab={platform.navigateToTab}
           onNotificationsClick={() => platform.openNotifications()}
           isNotificationsOpen={platform.notificationsOpen}
           notificationCount={platform.notificationItems.length}
           activeTab={platform.activeTab}
+          permissions={platform.userPermissions}
+          supplierTab={platform.supplierTab}
+          onSupplierTabChange={platform.setSupplierTab}
+          taskTab={platform.taskTab}
+          onTaskTabChange={platform.setTaskTab}
+          attendanceTab={platform.attendanceTab}
+          onAttendanceTabChange={platform.setAttendanceTab}
+          tasksCount={ongoingTasksCount}
+          presentCount={presentTodayCount}
         />
       )}
-      <MobileSubNavWidget
-        activeTab={platform.activeTab}
-        userRole={platform.userRole}
-        permissions={platform.userPermissions}
-        hidden={!isChromeVisible}
-        onTabChange={platform.navigateToTab}
-        supplierTab={platform.supplierTab}
-        onSupplierTabChange={platform.setSupplierTab}
-        taskTab={platform.taskTab}
-        onTaskTabChange={platform.setTaskTab}
-        attendanceTab={platform.attendanceTab}
-        onAttendanceTabChange={platform.setAttendanceTab}
-        tasksCount={ongoingTasksCount}
-        presentCount={presentTodayCount}
-      />
       <div className="stocky-platform-body flex flex-1 min-h-0 min-w-0">
         <SidebarNavWidget
           activeTab={platform.activeTab}
