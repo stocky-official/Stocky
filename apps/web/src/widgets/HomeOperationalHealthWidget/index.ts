@@ -4,4 +4,5 @@ export * from './HomeTopMovingProductsChartWidget';
 export * from './HomeLaggingProductsChartWidget';
 export * from './HomeBranchesAnalysisChartWidget';
 export * from './HomeTeamAttendanceChartWidget';
+export * from './HomeDesktopAnalyticsWidget';
 export * from './ChartFilterBottomSheet';

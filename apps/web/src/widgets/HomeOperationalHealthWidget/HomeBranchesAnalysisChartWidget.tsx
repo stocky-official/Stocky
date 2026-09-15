@@ -42,6 +42,7 @@ export function HomeBranchesAnalysisChartWidget({
   // UI state for bottom sheet filter & info popover
   const [isFilterSheetOpen, setIsFilterSheetOpen] = useState(false);
   const [showInfo, setShowInfo] = useState(false);
+  const [viewMode, setViewMode] = useState<'chart' | 'table'>('chart');
 
   const metricConfig: Record<
     BranchAnalysisMetric,
@@ -151,17 +152,46 @@ export function HomeBranchesAnalysisChartWidget({
             </button>
           </div>
 
-          <button
-            type="button"
-            onClick={() => setIsFilterSheetOpen(true)}
-            className="h-8 px-3 rounded-full border border-stocky-border-subtle bg-stocky-bg-global hover:bg-stocky-border-subtle text-xs font-semibold text-stocky-text-main flex items-center gap-1.5 cursor-pointer shadow-xs transition-colors shrink-0"
-          >
-            <FilterIcon size="xs" />
-            <span>Filter</span>
-            <span className="px-1.5 py-0.5 rounded-full bg-stocky-primary text-white text-[10px] font-bold">
-              {currentConfig.label.split(' ')[0]}
-            </span>
-          </button>
+          <div className="flex items-center gap-2 shrink-0">
+            {/* Desktop Visual / Data Table Toggle */}
+            <div className="hidden sm:inline-flex items-center p-0.5 rounded-lg bg-stocky-bg-global border border-stocky-border-subtle">
+              <button
+                type="button"
+                onClick={() => setViewMode('chart')}
+                className={`px-2.5 py-1 rounded-md text-[11px] font-semibold transition-all cursor-pointer ${
+                  viewMode === 'chart'
+                    ? 'bg-stocky-bg-widget text-stocky-text-main shadow-xs'
+                    : 'text-stocky-text-sub hover:text-stocky-text-main'
+                }`}
+              >
+                Chart
+              </button>
+              <button
+                type="button"
+                data-toggle-mode="table"
+                onClick={() => setViewMode('table')}
+                className={`px-2.5 py-1 rounded-md text-[11px] font-semibold transition-all cursor-pointer ${
+                  viewMode === 'table'
+                    ? 'bg-stocky-bg-widget text-stocky-text-main shadow-xs'
+                    : 'text-stocky-text-sub hover:text-stocky-text-main'
+                }`}
+              >
+                Data Table
+              </button>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setIsFilterSheetOpen(true)}
+              className="h-8 px-3 rounded-full border border-stocky-border-subtle bg-stocky-bg-global hover:bg-stocky-border-subtle text-xs font-semibold text-stocky-text-main flex items-center gap-1.5 cursor-pointer shadow-xs transition-colors"
+            >
+              <FilterIcon size="xs" />
+              <span>Filter</span>
+              <span className="px-1.5 py-0.5 rounded-full bg-stocky-primary text-white text-[10px] font-bold">
+                {currentConfig.label.split(' ')[0]}
+              </span>
+            </button>
+          </div>
         </div>
 
         {/* Subtitle hidden on phone */}
@@ -185,79 +215,110 @@ export function HomeBranchesAnalysisChartWidget({
         )}
       </div>
 
-      {/* 2. Recharts BarChart Visualization */}
-      <div className="w-full flex-1 my-3 min-h-[260px]">
-        <ResponsiveContainer width="100%" height="100%">
-          <BarChart
-            data={chartData}
-            margin={{ top: 20, right: 15, left: 0, bottom: 20 }}
-          >
-            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--stocky-border-subtle)" />
-            <XAxis
-              dataKey="shortName"
-              tick={{ fontSize: 11, fill: 'var(--stocky-text-main)', fontWeight: 500 }}
-              axisLine={{ stroke: 'var(--stocky-border-subtle)' }}
-              tickLine={false}
-            />
-            <YAxis
-              tick={{ fontSize: 10, fill: 'var(--stocky-text-muted)' }}
-              axisLine={{ stroke: 'var(--stocky-border-subtle)' }}
-              tickLine={false}
-              tickFormatter={(v) =>
-                metric === 'value'
-                  ? `$${v >= 1000 ? `${(v / 1000).toFixed(0)}k` : v}`
-                  : v >= 1000
-                  ? `${(v / 1000).toFixed(1)}k`
-                  : `${v}`
-              }
-            />
-            <Tooltip
-              content={({ active, payload }) => {
-                if (!active || !payload || !payload.length) return null;
-                const data = payload[0].payload;
-                return (
-                  <div className="bg-stocky-bg-widget border border-stocky-border-default rounded-xl p-2.5 shadow-md text-xs">
-                    <span className="font-bold text-stocky-text-main block">{data.name}</span>
-                    <span className="text-[10px] text-stocky-text-sub block mb-1.5 uppercase font-medium">
-                      {data.type}
-                    </span>
-                    <div className="space-y-1 text-[11px]">
-                      <div className="text-stocky-primary font-bold">
-                        {currentConfig.label}: {currentConfig.formatter(data.metricValue)}
-                      </div>
-                      <div className="text-stocky-text-sub">
-                        Total Stock: <span className="font-medium text-stocky-text-main">{data.units.toLocaleString()} units</span>
-                      </div>
-                      <div className="text-stocky-text-sub">
-                        Valuation: <span className="font-medium text-stocky-text-main">${(data.value / 1000).toFixed(1)}k</span>
-                      </div>
-                      <div className="text-stocky-text-sub">
-                        Staff Headcount: <span className="font-medium text-stocky-text-main">{data.staffCount} members</span>
+      {/* 2. Visual Chart OR Data Table View */}
+      {viewMode === 'chart' ? (
+        <div className="w-full flex-1 my-3 min-h-[260px]">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart
+              data={chartData}
+              margin={{ top: 20, right: 15, left: 0, bottom: 20 }}
+            >
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--stocky-border-subtle)" />
+              <XAxis
+                dataKey="shortName"
+                tick={{ fontSize: 11, fill: 'var(--stocky-text-main)', fontWeight: 500 }}
+                axisLine={{ stroke: 'var(--stocky-border-subtle)' }}
+                tickLine={false}
+              />
+              <YAxis
+                tick={{ fontSize: 10, fill: 'var(--stocky-text-muted)' }}
+                axisLine={{ stroke: 'var(--stocky-border-subtle)' }}
+                tickLine={false}
+                tickFormatter={(v) =>
+                  metric === 'value'
+                    ? `$${v >= 1000 ? `${(v / 1000).toFixed(0)}k` : v}`
+                    : v >= 1000
+                    ? `${(v / 1000).toFixed(1)}k`
+                    : `${v}`
+                }
+              />
+              <Tooltip
+                content={({ active, payload }) => {
+                  if (!active || !payload || !payload.length) return null;
+                  const data = payload[0].payload;
+                  return (
+                    <div className="bg-stocky-bg-widget border border-stocky-border-default rounded-xl p-2.5 shadow-md text-xs">
+                      <span className="font-bold text-stocky-text-main block">{data.name}</span>
+                      <span className="text-[10px] text-stocky-text-sub block mb-1.5 uppercase font-medium">
+                        {data.type}
+                      </span>
+                      <div className="space-y-1 text-[11px]">
+                        <div className="text-stocky-primary font-bold">
+                          {currentConfig.label}: {currentConfig.formatter(data.metricValue)}
+                        </div>
+                        <div className="text-stocky-text-sub">
+                          Total Stock: <span className="font-medium text-stocky-text-main">{data.units.toLocaleString()} units</span>
+                        </div>
+                        <div className="text-stocky-text-sub">
+                          Valuation: <span className="font-medium text-stocky-text-main">${(data.value / 1000).toFixed(1)}k</span>
+                        </div>
+                        <div className="text-stocky-text-sub">
+                          Staff Headcount: <span className="font-medium text-stocky-text-main">{data.staffCount} members</span>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                );
-              }}
-            />
-            <Bar
-              dataKey="metricValue"
-              radius={[6, 6, 0, 0]}
-              cursor="pointer"
-              onClick={(entry: any) => {
-                if (entry?.id && onSelectLocation) onSelectLocation(String(entry.id));
-              }}
-            >
-              {chartData.map((_, index) => (
-                <Cell
-                  key={`cell-bar-${index}`}
-                  fill={currentConfig.color}
-                  opacity={0.88 + index * 0.03}
-                />
+                  );
+                }}
+              />
+              <Bar
+                dataKey="metricValue"
+                radius={[6, 6, 0, 0]}
+                cursor="pointer"
+                onClick={(entry: any) => {
+                  if (entry?.id && onSelectLocation) onSelectLocation(String(entry.id));
+                }}
+              >
+                {chartData.map((_, index) => (
+                  <Cell
+                    key={`cell-bar-${index}`}
+                    fill={currentConfig.color}
+                    opacity={0.88 + index * 0.03}
+                  />
+                ))}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      ) : (
+        <div className="w-full flex-1 my-3 min-h-[260px] overflow-y-auto rounded-xl border border-stocky-border-subtle">
+          <table className="w-full text-left text-xs border-collapse">
+            <thead className="bg-stocky-bg-global sticky top-0 border-b border-stocky-border-subtle text-[11px] font-semibold text-stocky-text-sub">
+              <tr>
+                <th className="py-2.5 px-3">Location</th>
+                <th className="py-2.5 px-3">Type</th>
+                <th className="py-2.5 px-3 text-right">Units</th>
+                <th className="py-2.5 px-3 text-right">Valuation</th>
+                <th className="py-2.5 px-3 text-right">Staff</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-stocky-border-subtle/50 text-stocky-text-main">
+              {chartData.map((item) => (
+                <tr
+                  key={item.id}
+                  onClick={() => onSelectLocation && onSelectLocation(item.id)}
+                  className="hover:bg-stocky-bg-hover transition-colors cursor-pointer"
+                >
+                  <td className="py-2.5 px-3 font-medium text-stocky-text-main">{item.name}</td>
+                  <td className="py-2.5 px-3 text-stocky-text-sub text-[11px] uppercase">{item.type}</td>
+                  <td className="py-2.5 px-3 text-right font-medium">{item.units.toLocaleString()}</td>
+                  <td className="py-2.5 px-3 text-right font-bold text-stocky-primary">${(item.value / 1000).toFixed(1)}k</td>
+                  <td className="py-2.5 px-3 text-right text-stocky-text-sub">{item.staffCount}</td>
+                </tr>
               ))}
-            </Bar>
-          </BarChart>
-        </ResponsiveContainer>
-      </div>
+            </tbody>
+          </table>
+        </div>
+      )}
 
       {/* 4. Footer Summary */}
       <div className="flex items-center justify-between text-[11px] text-stocky-text-sub pt-2 border-t border-stocky-border-subtle font-medium">

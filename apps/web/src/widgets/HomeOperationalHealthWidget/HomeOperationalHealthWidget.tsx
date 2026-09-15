@@ -7,6 +7,7 @@ import { HomeTopMovingProductsChartWidget } from './HomeTopMovingProductsChartWi
 import { HomeLaggingProductsChartWidget } from './HomeLaggingProductsChartWidget';
 import { HomeBranchesAnalysisChartWidget } from './HomeBranchesAnalysisChartWidget';
 import { HomeTeamAttendanceChartWidget } from './HomeTeamAttendanceChartWidget';
+import { HomeDesktopAnalyticsWidget } from './HomeDesktopAnalyticsWidget';
 
 export interface HomeOperationalHealthWidgetProps {
   locations?: Location[];
@@ -166,62 +167,22 @@ export function HomeOperationalHealthWidget({
         ))}
       </div>
 
-      {/* 2. Desktop View: Spacious Multi-Column Structured Dashboard Grid (hidden lg:grid) */}
-      <div className="hidden lg:grid grid-cols-12 gap-5 sm:gap-6 w-full items-start">
-        {/* Row 1: Branches Map (7 cols) + Branch Comparative Analysis (5 cols) */}
-        <div className="col-span-7 flex flex-col">
-          <HomeBranchMapChartWidget
-            locations={locations}
-            lots={lots}
-            teamMembers={teamMembers}
-            teamAssignments={teamAssignments}
-            shifts={shifts}
-            onSelectLocation={onOpenStock}
-          />
-        </div>
-
-        <div className="col-span-5 flex flex-col">
-          <HomeBranchesAnalysisChartWidget
-            locations={locations}
-            lots={lots}
-            movements={movements}
-            tasks={tasks}
-            teamMembers={teamMembers}
-            teamAssignments={teamAssignments}
-            onSelectLocation={onOpenStock}
-          />
-        </div>
-
-        {/* Row 2: Top Moving Products (6 cols) + Lagging Products (6 cols) */}
-        <div className="col-span-6 flex flex-col">
-          <HomeTopMovingProductsChartWidget
-            products={products}
-            lots={lots}
-            movements={movements}
-            onOpenProduct={onOpenProduct}
-          />
-        </div>
-
-        <div className="col-span-6 flex flex-col">
-          <HomeLaggingProductsChartWidget
-            products={products}
-            lots={lots}
-            tasks={tasks}
-            taskItems={taskItems}
-            onOpenProduct={onOpenProduct}
-          />
-        </div>
-
-        {/* Row 3: Team Attendance Dynamics (Full 12 cols) */}
-        <div className="col-span-12 flex flex-col">
-          <HomeTeamAttendanceChartWidget
-            shifts={shifts}
-            locations={locations}
-            teamMembers={teamMembers}
-            teamAssignments={teamAssignments}
-            onOpenAttendance={onOpenAttendance}
-          />
-        </div>
+      {/* 2. Desktop View: Enterprise MECE Analytical Workspace (hidden lg:block) */}
+      <div className="hidden lg:block w-full">
+        <HomeDesktopAnalyticsWidget
+          locations={locations}
+          products={products}
+          lots={lots}
+          movements={movements}
+          tasks={tasks}
+          taskItems={taskItems}
+          shifts={shifts}
+          teamMembers={teamMembers}
+          teamAssignments={teamAssignments}
+          onOpenStock={onOpenStock}
+          onOpenProduct={onOpenProduct}
+          onOpenAttendance={onOpenAttendance}
+        />
       </div>
     </div>
   );

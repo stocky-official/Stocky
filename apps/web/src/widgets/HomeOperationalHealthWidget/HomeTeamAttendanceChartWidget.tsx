@@ -38,6 +38,7 @@ export function HomeTeamAttendanceChartWidget({
   // UI state for bottom sheet filter & info popover
   const [isFilterSheetOpen, setIsFilterSheetOpen] = useState(false);
   const [showInfo, setShowInfo] = useState(false);
+  const [viewMode, setViewMode] = useState<'chart' | 'table'>('chart');
 
   // Normalize members list
   const memberList = useMemo(() => {
@@ -147,17 +148,46 @@ export function HomeTeamAttendanceChartWidget({
             </button>
           </div>
 
-          <button
-            type="button"
-            onClick={() => setIsFilterSheetOpen(true)}
-            className="h-8 px-3 rounded-full border border-stocky-border-subtle bg-stocky-bg-global hover:bg-stocky-border-subtle text-xs font-semibold text-stocky-text-main flex items-center gap-1.5 cursor-pointer shadow-xs transition-colors shrink-0"
-          >
-            <FilterIcon size="xs" />
-            <span>Filter</span>
-            <span className="px-1.5 py-0.5 rounded-full bg-stocky-primary text-white text-[10px] font-bold">
-              {analysisMode === 'branch' ? 'Branch' : 'Person'} • {timeframeDays}D
-            </span>
-          </button>
+          <div className="flex items-center gap-2 shrink-0">
+            {/* Desktop Visual / Data Table Toggle */}
+            <div className="hidden sm:inline-flex items-center p-0.5 rounded-lg bg-stocky-bg-global border border-stocky-border-subtle">
+              <button
+                type="button"
+                onClick={() => setViewMode('chart')}
+                className={`px-2.5 py-1 rounded-md text-[11px] font-semibold transition-all cursor-pointer ${
+                  viewMode === 'chart'
+                    ? 'bg-stocky-bg-widget text-stocky-text-main shadow-xs'
+                    : 'text-stocky-text-sub hover:text-stocky-text-main'
+                }`}
+              >
+                Chart
+              </button>
+              <button
+                type="button"
+                data-toggle-mode="table"
+                onClick={() => setViewMode('table')}
+                className={`px-2.5 py-1 rounded-md text-[11px] font-semibold transition-all cursor-pointer ${
+                  viewMode === 'table'
+                    ? 'bg-stocky-bg-widget text-stocky-text-main shadow-xs'
+                    : 'text-stocky-text-sub hover:text-stocky-text-main'
+                }`}
+              >
+                Data Table
+              </button>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setIsFilterSheetOpen(true)}
+              className="h-8 px-3 rounded-full border border-stocky-border-subtle bg-stocky-bg-global hover:bg-stocky-border-subtle text-xs font-semibold text-stocky-text-main flex items-center gap-1.5 cursor-pointer shadow-xs transition-colors shrink-0"
+            >
+              <FilterIcon size="xs" />
+              <span>Filter</span>
+              <span className="px-1.5 py-0.5 rounded-full bg-stocky-primary text-white text-[10px] font-bold">
+                {analysisMode === 'branch' ? 'Branch' : 'Person'} • {timeframeDays}D
+              </span>
+            </button>
+          </div>
         </div>
 
         {/* Subtitle hidden on phone */}
@@ -198,61 +228,103 @@ export function HomeTeamAttendanceChartWidget({
         )}
       </div>
 
-      {/* 3. Recharts Stacked BarChart */}
-      <div className="w-full flex-1 my-3 min-h-[240px]">
-        <ResponsiveContainer width="100%" height="100%">
-          <BarChart
-            data={chartData}
-            margin={{ top: 15, right: 15, left: -10, bottom: 5 }}
-          >
-            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--stocky-border-subtle)" />
-            <XAxis
-              dataKey="label"
-              tick={{ fontSize: 10, fill: 'var(--stocky-text-main)', fontWeight: 500 }}
-              axisLine={{ stroke: 'var(--stocky-border-subtle)' }}
-              tickLine={false}
-            />
-            <YAxis
-              tick={{ fontSize: 10, fill: 'var(--stocky-text-muted)' }}
-              axisLine={{ stroke: 'var(--stocky-border-subtle)' }}
-              tickLine={false}
-              allowDecimals={false}
-            />
-            <Tooltip
-              content={({ active, payload, label }) => {
-                if (!active || !payload || !payload.length) return null;
-                const data = payload[0].payload;
-                return (
-                  <div className="bg-stocky-bg-widget border border-stocky-border-default rounded-xl p-2.5 shadow-md text-xs">
-                    <span className="font-bold text-stocky-text-main block">{label}</span>
-                    <div className="space-y-1 mt-1 text-[11px]">
-                      <div className="text-emerald-600 font-medium">
-                        Present on Duty: {data.Present}
-                      </div>
-                      <div className="text-amber-600 font-medium">
-                        Late Arrival: {data.Late}
-                      </div>
-                      <div className="text-stocky-text-muted font-medium">
-                        Off / Leave: {data['Off / Leave']}
-                      </div>
-                      <div className="text-stocky-text-main font-semibold pt-1 border-t border-stocky-border-subtle">
-                        Total Hours Logged: {data.hoursLogged} hrs
+      {/* 3. Recharts Stacked BarChart OR Tabular Data Matrix */}
+      {viewMode === 'chart' ? (
+        <div className="w-full flex-1 my-3 min-h-[260px]">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart
+              data={chartData}
+              margin={{ top: 15, right: 15, left: -10, bottom: 5 }}
+            >
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--stocky-border-subtle)" />
+              <XAxis
+                dataKey="label"
+                tick={{ fontSize: 10, fill: 'var(--stocky-text-main)', fontWeight: 500 }}
+                axisLine={{ stroke: 'var(--stocky-border-subtle)' }}
+                tickLine={false}
+              />
+              <YAxis
+                tick={{ fontSize: 10, fill: 'var(--stocky-text-muted)' }}
+                axisLine={{ stroke: 'var(--stocky-border-subtle)' }}
+                tickLine={false}
+                allowDecimals={false}
+              />
+              <Tooltip
+                content={({ active, payload, label }) => {
+                  if (!active || !payload || !payload.length) return null;
+                  const data = payload[0].payload;
+                  return (
+                    <div className="bg-stocky-bg-widget border border-stocky-border-default rounded-xl p-2.5 shadow-md text-xs">
+                      <span className="font-bold text-stocky-text-main block">{label}</span>
+                      <div className="space-y-1 mt-1 text-[11px]">
+                        <div className="text-emerald-600 font-medium">
+                          Present on Duty: {data.Present}
+                        </div>
+                        <div className="text-amber-600 font-medium">
+                          Late Arrival: {data.Late}
+                        </div>
+                        <div className="text-stocky-text-muted font-medium">
+                          Off / Leave: {data['Off / Leave']}
+                        </div>
+                        <div className="text-stocky-text-main font-semibold pt-1 border-t border-stocky-border-subtle">
+                          Total Hours Logged: {data.hoursLogged} hrs
+                        </div>
                       </div>
                     </div>
-                  </div>
+                  );
+                }}
+              />
+              <Legend
+                wrapperStyle={{ fontSize: 11, paddingTop: 4 }}
+                iconSize={8}
+              />
+              <Bar dataKey="Present" stackId="a" fill="#0E8755" radius={[0, 0, 0, 0]} />
+              <Bar dataKey="Late" stackId="a" fill="#D97706" radius={[0, 0, 0, 0]} />
+              <Bar dataKey="Off / Leave" stackId="a" fill="#94A3B8" radius={[4, 4, 0, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      ) : (
+        <div className="w-full flex-1 my-3 min-h-[260px] overflow-y-auto rounded-xl border border-stocky-border-subtle">
+          <table className="w-full text-left text-xs border-collapse">
+            <thead className="bg-stocky-bg-global sticky top-0 border-b border-stocky-border-subtle text-[11px] font-semibold text-stocky-text-sub">
+              <tr>
+                <th className="py-2.5 px-3">Date / Day</th>
+                <th className="py-2.5 px-3 text-center">Present</th>
+                <th className="py-2.5 px-3 text-center">Late</th>
+                <th className="py-2.5 px-3 text-center">Off / Leave</th>
+                <th className="py-2.5 px-3 text-right">Hours</th>
+                <th className="py-2.5 px-3 text-right">Turnout</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-stocky-border-subtle font-mono text-[11px]">
+              {chartData.map((row) => {
+                const total = row.Present + row.Late + row['Off / Leave'];
+                const turnout = total > 0 ? Math.round(((row.Present + row.Late) / total) * 100) : 0;
+                return (
+                  <tr key={row.date} className="hover:bg-stocky-bg-global/50 transition-colors">
+                    <td className="py-2 px-3 font-sans font-medium text-stocky-text-main">
+                      {row.label}
+                      <span className="block text-[10px] text-stocky-text-sub font-mono">{row.date}</span>
+                    </td>
+                    <td className="py-2 px-3 text-center text-emerald-600 font-semibold">{row.Present}</td>
+                    <td className="py-2 px-3 text-center text-amber-600 font-semibold">{row.Late}</td>
+                    <td className="py-2 px-3 text-center text-stocky-text-muted">{row['Off / Leave']}</td>
+                    <td className="py-2 px-3 text-right font-medium text-stocky-text-main">{row.hoursLogged}h</td>
+                    <td className="py-2 px-3 text-right">
+                      <span className={`px-1.5 py-0.5 rounded text-[10px] font-semibold ${
+                        turnout >= 80 ? 'bg-emerald-50 text-emerald-700' : turnout >= 60 ? 'bg-amber-50 text-amber-700' : 'bg-rose-50 text-rose-700'
+                      }`}>
+                        {turnout}%
+                      </span>
+                    </td>
+                  </tr>
                 );
-              }}
-            />
-            <Legend
-              wrapperStyle={{ fontSize: 11, paddingTop: 4 }}
-              iconSize={8}
-            />
-            <Bar dataKey="Present" stackId="a" fill="#0E8755" radius={[0, 0, 0, 0]} />
-            <Bar dataKey="Late" stackId="a" fill="#D97706" radius={[0, 0, 0, 0]} />
-            <Bar dataKey="Off / Leave" stackId="a" fill="#94A3B8" radius={[4, 4, 0, 0]} />
-          </BarChart>
-        </ResponsiveContainer>
-      </div>
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
 
       {/* 4. Footer Summary */}
       <div className="flex items-center justify-between text-[11px] text-stocky-text-sub pt-2 border-t border-stocky-border-subtle font-medium">
