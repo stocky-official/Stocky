@@ -4,12 +4,12 @@ import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 // ============================================================================
-// 1. BASE SKELETON PRIMITIVE
+// 1. BASE SKELETON PRIMITIVE (Calm, Modern, GPU-Accelerated Shimmer)
 // ============================================================================
 
 export interface SkeletonProps extends React.HTMLAttributes<HTMLDivElement> {
   variant?: 'text' | 'circular' | 'rounded' | 'rectangular';
-  animation?: 'shimmer' | 'shimmer-subtle' | 'glow' | 'none';
+  animation?: 'shimmer' | 'shimmer-subtle' | 'none';
   width?: string | number;
   height?: string | number;
   className?: string;
@@ -34,8 +34,7 @@ export function Skeleton({
   const animationStyles = {
     shimmer: 'stocky-skeleton-shimmer',
     'shimmer-subtle': 'stocky-skeleton-shimmer-subtle',
-    glow: 'stocky-skeleton-glow stocky-skeleton-shimmer',
-    none: 'bg-stocky-border-subtle/70',
+    none: 'bg-stone-200/70',
   }[animation];
 
   const inlineStyles: React.CSSProperties = {
@@ -55,7 +54,7 @@ export function Skeleton({
 }
 
 // ============================================================================
-// 2. SKELETON TOOLBAR (Unified Search + Action Buttons + Queue Rail)
+// 2. SKELETON TOOLBAR (Responsive: Mobile Split Search vs Desktop Full Toolbar)
 // ============================================================================
 
 export interface SkeletonToolbarProps {
@@ -72,18 +71,27 @@ export function SkeletonToolbar({
   className = '',
 }: SkeletonToolbarProps) {
   return (
-    <div className={`flex flex-col gap-3 w-full ${className}`}>
-      {/* Top Search and Actions Row */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-        {/* Search Bar with integrated filter / scan placeholder */}
-        <div className="flex-1 max-w-full sm:max-w-md h-10 rounded-full bg-white border border-stocky-border-subtle shadow-2xs flex items-center px-3.5 gap-2.5">
+    <div className={`flex flex-col gap-2.5 sm:gap-3 w-full ${className}`}>
+      {/* Mobile Toolbar (<sm): Split search bar + circular filter button */}
+      <div className="flex sm:hidden items-center gap-2 w-full">
+        <div className="flex-1 h-10 rounded-full bg-white border border-stocky-border-subtle shadow-2xs flex items-center px-3.5 gap-2.5">
+          <Skeleton variant="circular" width={16} height={16} animation="shimmer-subtle" />
+          <Skeleton variant="text" width={110} animation="shimmer-subtle" />
+        </div>
+        <div className="w-10 h-10 rounded-full bg-white border border-stocky-border-subtle shadow-2xs flex items-center justify-center shrink-0">
+          <Skeleton variant="circular" width={18} height={18} animation="shimmer-subtle" />
+        </div>
+      </div>
+
+      {/* Desktop Toolbar (sm+): Search input + action buttons */}
+      <div className="hidden sm:flex items-center justify-between gap-3">
+        <div className="flex-1 max-w-md h-10 rounded-full bg-white border border-stocky-border-subtle shadow-2xs flex items-center px-3.5 gap-2.5">
           <Skeleton variant="circular" width={16} height={16} animation="shimmer-subtle" />
           <Skeleton variant="text" width={140} animation="shimmer-subtle" />
           <div className="w-px h-4 bg-stocky-border-subtle ml-auto shrink-0" />
           <Skeleton variant="rounded" width={20} height={20} className="rounded-md" />
         </div>
 
-        {/* Action buttons (e.g. Filter trigger, Export, + Primary action) */}
         <div className="flex items-center gap-2 shrink-0">
           {Array.from({ length: actionButtonsCount }).map((_, idx) => (
             <Skeleton
@@ -91,13 +99,13 @@ export function SkeletonToolbar({
               variant="rounded"
               height={38}
               width={idx === actionButtonsCount - 1 ? 110 : 85}
-              className={`rounded-full ${idx === actionButtonsCount - 1 ? 'stocky-skeleton-glow shadow-sm' : ''}`}
+              className="rounded-full shadow-xs"
             />
           ))}
         </div>
       </div>
 
-      {/* Horizontal Queue Pill Rail */}
+      {/* Horizontal Queue Pill Rail (Responsive scroll rail) */}
       {hasQueueTabs && queueTabs.length > 0 && (
         <div className="stocky-mobile-pill-rail flex items-center gap-2 overflow-x-auto pb-1 pt-0.5 scrollbar-none">
           {queueTabs.map((tab, idx) => (
@@ -105,7 +113,7 @@ export function SkeletonToolbar({
               key={tab || idx}
               variant="rounded"
               height={32}
-              width={idx === 0 ? 80 : 96}
+              width={idx === 0 ? 84 : 96}
               animation={idx === 0 ? 'shimmer' : 'shimmer-subtle'}
               className={`rounded-full shrink-0 ${idx === 0 ? 'shadow-2xs' : 'opacity-75'}`}
             />
@@ -132,14 +140,14 @@ export function SkeletonCard({
   if (variant === 'metric') {
     return (
       <div
-        className={`bg-white border border-stocky-border-subtle rounded-2xl p-4 shadow-card flex flex-col gap-3 stocky-skeleton-glow ${className}`}
+        className={`bg-white border border-stocky-border-subtle rounded-2xl p-4 shadow-card flex flex-col gap-3 ${className}`}
       >
         <div className="flex items-center justify-between">
           <Skeleton variant="text" width={96} animation="shimmer-subtle" />
           <Skeleton variant="rounded" width={28} height={28} className="rounded-lg" />
         </div>
-        <Skeleton variant="rounded" width={80} height={32} className="rounded-xl" />
-        <Skeleton variant="text" width={140} animation="shimmer-subtle" />
+        <Skeleton variant="rounded" width={80} height={30} className="rounded-xl" />
+        <Skeleton variant="text" width={130} animation="shimmer-subtle" />
       </div>
     );
   }
@@ -147,9 +155,9 @@ export function SkeletonCard({
   if (variant === 'location') {
     return (
       <div
-        className={`bg-white border border-stocky-border-subtle rounded-2xl overflow-hidden shadow-card flex flex-col stocky-skeleton-glow ${className}`}
+        className={`bg-white border border-stocky-border-subtle rounded-2xl overflow-hidden shadow-card flex flex-col ${className}`}
       >
-        {/* Image / Banner placeholder */}
+        {/* Banner placeholder */}
         <div className="h-32 w-full bg-stocky-bg-global/50 relative">
           <Skeleton variant="rectangular" className="w-full h-full" animation="shimmer-subtle" />
           <div className="absolute top-3 right-3">
@@ -158,11 +166,9 @@ export function SkeletonCard({
         </div>
         {/* Content body */}
         <div className="p-4 flex flex-col gap-3 flex-1">
-          <div className="flex items-center justify-between">
-            <div className="flex flex-col gap-1.5 flex-1 min-w-0">
-              <Skeleton variant="text" width={130} height={18} />
-              <Skeleton variant="text" width={100} animation="shimmer-subtle" />
-            </div>
+          <div className="flex flex-col gap-1.5 min-w-0">
+            <Skeleton variant="text" width={130} height={18} />
+            <Skeleton variant="text" width={100} animation="shimmer-subtle" />
           </div>
           <div className="grid grid-cols-2 gap-2 pt-2 border-t border-stocky-border-subtle/70">
             <Skeleton variant="text" width={70} animation="shimmer-subtle" />
@@ -180,10 +186,10 @@ export function SkeletonCard({
   if (variant === 'item') {
     return (
       <div
-        className={`bg-white border border-stocky-border-subtle rounded-2xl p-4 shadow-2xs flex items-center justify-between gap-3 stocky-skeleton-glow ${className}`}
+        className={`bg-white border border-stocky-border-subtle rounded-2xl p-3.5 shadow-2xs flex items-center justify-between gap-3 ${className}`}
       >
         <div className="flex items-center gap-3 min-w-0 flex-1">
-          <Skeleton variant="rounded" width={40} height={40} className="rounded-xl shrink-0" />
+          <Skeleton variant="rounded" width={44} height={44} className="rounded-xl shrink-0" />
           <div className="flex flex-col gap-1.5 min-w-0 flex-1">
             <Skeleton variant="text" width={140} />
             <Skeleton variant="text" width={90} animation="shimmer-subtle" />
@@ -197,7 +203,7 @@ export function SkeletonCard({
   // Default container card
   return (
     <div
-      className={`bg-white border border-stocky-border-subtle rounded-2xl p-5 shadow-card flex flex-col gap-4 stocky-skeleton-glow ${className}`}
+      className={`bg-white border border-stocky-border-subtle rounded-2xl p-5 shadow-card flex flex-col gap-4 ${className}`}
     >
       <div className="flex items-center justify-between pb-3 border-b border-stocky-border-subtle/70">
         <Skeleton variant="text" width={140} height={18} />
@@ -213,7 +219,7 @@ export function SkeletonCard({
 }
 
 // ============================================================================
-// 4. SKELETON TABLE (Unified Table + Mobile Cards Fallback)
+// 4. SKELETON TABLE (Desktop Multi-Column Table vs Mobile Calm Uniform Cards)
 // ============================================================================
 
 export interface SkeletonTableProps {
@@ -231,7 +237,7 @@ export function SkeletonTable({
 }: SkeletonTableProps) {
   return (
     <div className={`w-full ${className}`}>
-      {/* Desktop Multi-column Table */}
+      {/* Desktop Multi-column Table (hidden on mobile) */}
       <div className="hidden md:block bg-white border border-stocky-border-subtle rounded-2xl shadow-card overflow-hidden">
         <table className="w-full text-left text-xs border-collapse">
           <thead>
@@ -256,7 +262,7 @@ export function SkeletonTable({
                       <Skeleton variant="rounded" width={16} height={16} className="rounded" animation="shimmer-subtle" />
                     ) : colIdx === 1 ? (
                       <div className="flex items-center gap-2.5">
-                        <Skeleton variant="rounded" width={32} height={32} className="rounded-lg shrink-0" />
+                        <Skeleton variant="rounded" width={34} height={34} className="rounded-lg shrink-0" />
                         <div className="flex flex-col gap-1.5 min-w-0">
                           <Skeleton variant="text" width={Math.max(90, ((rowIdx + colIdx) % 3) * 25 + 95)} />
                           <Skeleton variant="text" width={60} animation="shimmer-subtle" />
@@ -277,27 +283,34 @@ export function SkeletonTable({
         </table>
       </div>
 
-      {/* Mobile Card Presentation Fallback */}
+      {/* Mobile Calm Uniform Cards Fallback (md:hidden) */}
       {hasMobileCards && (
-        <div className="md:hidden flex flex-col gap-3">
-          {Array.from({ length: Math.min(rowsCount, 5) }).map((_, idx) => (
+        <div className="md:hidden flex flex-col gap-2.5">
+          {Array.from({ length: Math.min(rowsCount, 6) }).map((_, idx) => (
             <div
               key={idx}
-              className="bg-white border border-stocky-border-subtle rounded-2xl p-4 shadow-2xs flex flex-col gap-3 stocky-skeleton-glow"
+              className="bg-white border border-stocky-border-subtle rounded-2xl p-3.5 shadow-2xs flex flex-col gap-2.5"
             >
+              {/* Top Row: Thumbnail (44x44) + Title & Subtitle + Status Pill */}
               <div className="flex items-start justify-between gap-3">
-                <div className="flex items-center gap-2.5 flex-1 min-w-0">
-                  <Skeleton variant="rounded" width={36} height={36} className="rounded-lg shrink-0" />
+                <div className="flex items-center gap-3 flex-1 min-w-0">
+                  <Skeleton variant="rounded" width={44} height={44} className="rounded-xl shrink-0" />
                   <div className="flex flex-col gap-1.5 flex-1 min-w-0">
-                    <Skeleton variant="text" width={140} />
-                    <Skeleton variant="text" width={80} animation="shimmer-subtle" />
+                    <Skeleton variant="text" width={140} height={15} />
+                    <Skeleton variant="text" width={90} animation="shimmer-subtle" />
                   </div>
                 </div>
                 <Skeleton variant="rounded" width={68} height={22} className="rounded-full shrink-0" />
               </div>
-              <div className="flex items-center justify-between pt-2 border-t border-stocky-border-subtle/70">
-                <Skeleton variant="text" width={90} animation="shimmer-subtle" />
-                <Skeleton variant="rounded" width={64} height={26} className="rounded-full" />
+
+              {/* Bottom Row: 2 Key Value Indicators + Details Arrow */}
+              <div className="flex items-center justify-between pt-2 border-t border-stocky-border-subtle/70 text-xs">
+                <div className="flex items-center gap-3">
+                  <Skeleton variant="text" width={64} animation="shimmer-subtle" />
+                  <span className="text-stone-300">·</span>
+                  <Skeleton variant="text" width={56} animation="shimmer-subtle" />
+                </div>
+                <Skeleton variant="circular" width={20} height={20} animation="shimmer-subtle" />
               </div>
             </div>
           ))}
@@ -323,12 +336,12 @@ export function SkeletonCalendar({
   const weekdays = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
 
   return (
-    <div className={`flex flex-col gap-6 w-full ${className}`}>
+    <div className={`flex flex-col gap-5 w-full ${className}`}>
       {/* Month Calendar Card */}
-      <div className="bg-white border border-stocky-border-subtle rounded-2xl p-4 sm:p-5 shadow-card flex flex-col gap-4 stocky-skeleton-glow">
+      <div className="bg-white border border-stocky-border-subtle rounded-2xl p-4 sm:p-5 shadow-card flex flex-col gap-4">
         {/* Month Header Navigation */}
         <div className="flex items-center justify-between">
-          <Skeleton variant="text" width={150} height={22} />
+          <Skeleton variant="text" width={140} height={22} />
           <div className="flex items-center gap-2">
             <Skeleton variant="rounded" width={56} height={30} className="rounded-full" />
             <Skeleton variant="circular" width={30} height={30} />
@@ -366,9 +379,9 @@ export function SkeletonCalendar({
                 />
                 {hasEvents && (
                   <div className="flex items-center gap-1 mt-1">
-                    <div className="w-1.5 h-1.5 rounded-full stocky-skeleton-badge-healthy" />
+                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
                     {idx % 2 === 0 && (
-                      <div className="w-1.5 h-1.5 rounded-full stocky-skeleton-badge-warning" />
+                      <div className="w-1.5 h-1.5 rounded-full bg-amber-400" />
                     )}
                   </div>
                 )}
@@ -389,11 +402,11 @@ export function SkeletonCalendar({
         </div>
 
         {/* Agenda Cards with Left Color Accents */}
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-2.5">
           {Array.from({ length: selectedDayShiftsCount }).map((_, idx) => (
             <div
               key={idx}
-              className="bg-white border border-stocky-border-subtle rounded-2xl p-4 shadow-2xs flex items-center justify-between gap-4 border-l-4 border-l-stocky-status-success-fg stocky-skeleton-glow"
+              className="bg-white border border-stocky-border-subtle rounded-2xl p-4 shadow-2xs flex items-center justify-between gap-4 border-l-4 border-l-stocky-primary"
             >
               <div className="flex items-center gap-3 min-w-0 flex-1">
                 <Skeleton variant="circular" width={38} height={38} />
@@ -415,7 +428,48 @@ export function SkeletonCalendar({
 }
 
 // ============================================================================
-// 6. HYDRATION FADE WRAPPER (Smooth Cross-fade with Framer Motion)
+// 6. SKELETON SIDEBAR (Desktop Fixed Rail Shell for Standalone Loading)
+// ============================================================================
+
+export function SkeletonSidebar({ className = '' }: { className?: string }) {
+  return (
+    <aside
+      className={`hidden md:flex flex-col justify-between h-full bg-white border-r border-stocky-border-subtle p-2.5 shrink-0 w-[var(--stocky-sidebar-rail-width,4.5rem)] z-20 select-none ${className}`}
+      aria-hidden="true"
+    >
+      <div className="flex flex-col items-center gap-5 w-full">
+        {/* Brand mark placeholder */}
+        <div className="pt-1">
+          <Skeleton variant="rounded" width={36} height={36} className="rounded-xl" />
+        </div>
+        {/* Search button placeholder */}
+        <Skeleton variant="rounded" width={36} height={36} className="rounded-xl" animation="shimmer-subtle" />
+        {/* Nav Items placeholders */}
+        <div className="flex flex-col items-center gap-2.5 w-full pt-1">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <Skeleton
+              key={i}
+              variant="rounded"
+              width={38}
+              height={38}
+              className={`rounded-xl ${i === 0 ? 'bg-stocky-primary/10' : ''}`}
+              animation={i === 0 ? 'shimmer' : 'shimmer-subtle'}
+            />
+          ))}
+        </div>
+      </div>
+
+      {/* Footer notifications + account avatar */}
+      <div className="flex flex-col items-center gap-3 pb-2 w-full pt-3 border-t border-stocky-border-subtle/70">
+        <Skeleton variant="circular" width={32} height={32} animation="shimmer-subtle" />
+        <Skeleton variant="circular" width={36} height={36} />
+      </div>
+    </aside>
+  );
+}
+
+// ============================================================================
+// 7. HYDRATION FADE WRAPPER (Smooth Cross-fade with Framer Motion)
 // ============================================================================
 
 export interface HydrationFadeWrapperProps {
@@ -463,3 +517,4 @@ export function HydrationFadeWrapper({
 }
 
 export default Skeleton;
+

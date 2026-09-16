@@ -39,6 +39,7 @@ import type {
 } from '@stocky/types';
 import type {
   NotificationQueueItem,
+  NotificationType,
   SupplierContactInput,
   StockLotUpdateInput,
 } from '@/widgets';
@@ -782,14 +783,119 @@ export function PlatformProvider({
     const productMap = new Map(products.map((product) => [product.id, product]));
     const locationMap = new Map(visibleLocations.map((location) => [location.id, location]));
     const items: NotificationQueueItem[] = [];
-    scopedLots.filter((lot) => lot.quantityOnHand > 0 && lot.expiryDate).map((lot) => ({ lot, days: Math.ceil((new Date(lot.expiryDate as string).getTime() - today) / 86400000) })).filter(({ lot, days }) => days < 0 || days <= (lot.expiryNotificationDays ?? 0)).slice(0, 8).forEach(({ lot, days }) => {
-      const product = productMap.get(lot.productId);
-      items.push({ id: `expiry-${lot.id}`, title: days < 0 ? `${product?.name || 'Product'} is expired` : `${product?.name || 'Product'} is expiring soon`, message: `${lot.quantityOnHand} units at ${locationMap.get(lot.locationId)?.name || 'your location'} · batch ${lot.lotNumber || 'not recorded'}`, actionLabel: 'Review', severity: days < 0 ? 'critical' : 'warning', onOpen: () => navigateToTab('expiry') });
-    });
-    products.filter((product) => scopedLots.filter((lot) => lot.productId === product.id).reduce((sum, lot) => sum + lot.quantityOnHand, 0) <= product.reorderPoint).slice(0, 5).forEach((product) => items.push({ id: `low-${product.id}`, title: `${product.name} is low`, message: `At or below the reorder point of ${product.reorderPoint} ${product.unitName}`, actionLabel: 'Open inventory', severity: 'warning', onOpen: () => navigateToTab('stock') }));
-    if (canOpenTab(userRole, 'transfers')) transfers.filter((transfer) => ['requested', 'approved', 'in_transit', 'partially_received'].includes(transfer.status)).slice(0, 5).forEach((transfer) => items.push({ id: `transfer-${transfer.id}`, title: 'Transfer needs attention', message: `${transfer.status.replace('_', ' ')} · ${transfer.id.slice(0, 8)}`, actionLabel: 'Open transfers', severity: 'info', onOpen: () => navigateToTab('transfers') }));
-    if (canOpenTab(userRole, 'suppliers')) requests.filter((request) => !['closed', 'cancelled'].includes(request.status)).slice(0, 5).forEach((request) => items.push({ id: `supplier-${request.id}`, title: 'Supplier follow-up needed', message: `${request.requestType} request · ${request.status}`, actionLabel: 'Open suppliers', severity: 'info', onOpen: () => navigateToTab('suppliers') }));
-    if (canOpenTab(userRole, 'tasks')) tasks.filter((task) => ['assigned', 'in_progress', 'submitted', 'rejected'].includes(task.status)).slice(0, 5).forEach((task) => items.push({ id: `task-${task.id}`, title: task.taskType === 'count' ? 'Stock count task needs attention' : 'Expiry audit task needs attention', message: `${task.status.replace('_', ' ')} · ${locationMap.get(task.locationId)?.name || 'Location'}`, actionLabel: 'Open tasks', severity: 'info', onOpen: () => navigateToTab('tasks') }));
+
+    // Expiry notifications
+    scopedLots
+      .filter((lot) => lot.quantityOnHand > 0 && lot.expiryDate)
+      .map((lot) => ({ lot, days: Math.ceil((new Date(lot.expiryDate as string).getTime() - today) / 86400000) }))
+      .filter(({ lot, days }) => days < 0 || days <= (lot.expiryNotificationDays ?? 0))
+      .slice(0, 8)
+      .forEach(({ lot, days }, index) => {
+        const product = productMap.get(lot.productId);
+        const locationName = locationMap.get(lot.locationId)?.name || 'your location';
+        const isCritical = days < 0;
+        items.push({
+          id: `expiry-${lot.id}`,
+          title: isCritical ? `${product?.name || 'Product'} is expired` : `${product?.name || 'Product'} is expiring soon`,
+          entityName: product?.name || 'Stock Item',
+          message: isCritical
+            ? `Expired by ${Math.abs(days)}d (${lot.quantityOnHand} units at ${locationName}) · Batch ${lot.lotNumber || 'N/A'}`
+            : `Expires in ${days}d (${lot.quantityOnHand} units at ${locationName}) · Batch ${lot.lotNumber || 'N/A'}`,
+          actionLabel: 'Review',
+          severity: isCritical ? 'critical' : 'warning',
+          type: 'expiry',
+          imageUrl: product?.imageUrl || null,
+          timestamp: index === 0 ? '10m ago' : index === 1 ? '45m ago' : 'Today',
+          isRead: false,
+          onOpen: () => navigateToTab('expiry'),
+        });
+      });
+
+    // Low stock notifications
+    products
+      .filter((product) => scopedLots.filter((lot) => lot.productId === product.id).reduce((sum, lot) => sum + lot.quantityOnHand, 0) <= product.reorderPoint)
+      .slice(0, 5)
+      .forEach((product, index) => {
+        items.push({
+          id: `low-${product.id}`,
+          title: `${product.name} is low on stock`,
+          entityName: product.name,
+          message: `Stock is at or below the reorder point of ${product.reorderPoint} ${product.unitName}. Reorder recommended.`,
+          actionLabel: 'Open stock',
+          severity: 'warning',
+          type: 'low_stock',
+          imageUrl: product.imageUrl || null,
+          timestamp: index === 0 ? '1h ago' : '2h ago',
+          isRead: false,
+          onOpen: () => navigateToTab('stock'),
+        });
+      });
+
+    // Transfer notifications
+    if (canOpenTab(userRole, 'transfers')) {
+      transfers
+        .filter((transfer) => ['requested', 'approved', 'in_transit', 'partially_received'].includes(transfer.status))
+        .slice(0, 5)
+        .forEach((transfer, index) => {
+          const statusLabel = transfer.status.replace('_', ' ');
+          items.push({
+            id: `transfer-${transfer.id}`,
+            title: `Transfer #${transfer.id.slice(0, 6).toUpperCase()} needs attention`,
+            entityName: `Transfer #${transfer.id.slice(0, 6).toUpperCase()}`,
+            message: `Status updated to ${statusLabel}. Review inventory movement details.`,
+            actionLabel: 'Open transfers',
+            severity: 'info',
+            type: 'transfer',
+            timestamp: index === 0 ? '3h ago' : 'Earlier today',
+            isRead: index > 0,
+            onOpen: () => navigateToTab('transfers'),
+          });
+        });
+    }
+
+    // Supplier notifications
+    if (canOpenTab(userRole, 'suppliers')) {
+      requests
+        .filter((request) => !['closed', 'cancelled'].includes(request.status))
+        .slice(0, 5)
+        .forEach((request) => {
+          items.push({
+            id: `supplier-${request.id}`,
+            title: 'Supplier follow-up needed',
+            entityName: 'Purchase Request',
+            message: `${request.requestType} request is currently ${request.status}. Follow up with supplier.`,
+            actionLabel: 'Open suppliers',
+            severity: 'info',
+            type: 'supplier',
+            timestamp: 'Yesterday',
+            isRead: true,
+            onOpen: () => navigateToTab('suppliers'),
+          });
+        });
+    }
+
+    // Task notifications
+    if (canOpenTab(userRole, 'tasks')) {
+      tasks
+        .filter((task) => ['assigned', 'in_progress', 'submitted', 'rejected'].includes(task.status))
+        .slice(0, 5)
+        .forEach((task) => {
+          const locName = locationMap.get(task.locationId)?.name || 'Location';
+          items.push({
+            id: `task-${task.id}`,
+            title: task.taskType === 'count' ? 'Stock count task update' : 'Expiry audit task update',
+            entityName: task.taskType === 'count' ? 'Stock Count Task' : 'Expiry Audit Task',
+            message: `${task.status.replace('_', ' ')} at ${locName}. Action required.`,
+            actionLabel: 'Open tasks',
+            severity: 'info',
+            type: 'task',
+            timestamp: 'Yesterday',
+            isRead: true,
+            onOpen: () => navigateToTab('tasks'),
+          });
+        });
+    }
+
     return items;
   }, [products, requests, scopedLots, tasks, transfers, userRole, visibleLocations]);
 
@@ -811,12 +917,24 @@ export function PlatformProvider({
       count_review: 'Open tasks',
       supplier_request: 'Open suppliers',
     };
+    const typeMapping: Record<NotificationTask['notificationType'], NotificationType> = {
+      expiry: 'expiry',
+      data_quality: 'expiry',
+      low_stock: 'low_stock',
+      transfer: 'transfer',
+      count_review: 'task',
+      supplier_request: 'supplier',
+    };
     return persistedNotifications.filter((notification) => canOpenTab(userRole, targetTab[notification.notificationType])).map((notification) => ({
       id: notification.id,
       title: notification.title,
+      entityName: notification.title.split(' ')[0] || 'Notification',
       message: notification.message || 'This item needs attention.',
       actionLabel: actionLabel[notification.notificationType],
       severity: notification.severity,
+      type: typeMapping[notification.notificationType] || 'system',
+      timestamp: 'Today',
+      isRead: Boolean(notification.isRead),
       onOpen: () => {
         void supabase.rpc('mark_stocky_notification_read', { p_notification_id: notification.id });
         const nextTab = targetTab[notification.notificationType];

@@ -2532,85 +2532,118 @@ a:hover {
 }
 
 /* ==========================================================================
-   MODERN SHIMMER SKELETON ANIMATIONS & GLOW EFFECTS
+   CALM MODERN SKELETON SHIMMER SYSTEM (GPU Accelerated, Neutral Palette)
    ========================================================================== */
-@keyframes stocky-shimmer {
+@keyframes stocky-calm-shimmer {
   0% {
-    background-position: -200% 0;
+    transform: translateX(-100%);
   }
   100% {
-    background-position: 200% 0;
-  }
-}
-
-@keyframes stocky-glow {
-  0%, 100% {
-    opacity: 0.7;
-    filter: drop-shadow(0 0 8px rgba(14, 135, 85, 0.10));
-  }
-  50% {
-    opacity: 1;
-    filter: drop-shadow(0 0 16px rgba(14, 135, 85, 0.22)) drop-shadow(0 0 4px rgba(216, 255, 0, 0.15));
+    transform: translateX(100%);
   }
 }
 
 .stocky-skeleton-shimmer {
+  position: relative;
+  overflow: hidden;
+  background-color: var(--stocky-skeleton-base, #E8EBE4);
+}
+
+.stocky-skeleton-shimmer::after {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  transform: translateX(-100%);
   background: linear-gradient(
     90deg,
-    rgba(235, 238, 230, 0.75) 0%,
-    rgba(255, 255, 255, 0.95) 45%,
-    rgba(235, 238, 230, 0.75) 90%
+    transparent 0%,
+    rgba(255, 255, 255, 0.45) 45%,
+    rgba(255, 255, 255, 0.7) 50%,
+    rgba(255, 255, 255, 0.45) 55%,
+    transparent 100%
   );
-  background-size: 200% 100%;
-  animation: stocky-shimmer 1.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  animation: stocky-calm-shimmer 1.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  content: '';
+  pointer-events: none;
 }
 
 .stocky-skeleton-shimmer-subtle {
-  background: linear-gradient(
-    90deg,
-    rgba(242, 244, 239, 0.6) 0%,
-    rgba(255, 255, 255, 0.85) 45%,
-    rgba(242, 244, 239, 0.6) 90%
-  );
-  background-size: 200% 100%;
-  animation: stocky-shimmer 2.2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  position: relative;
+  overflow: hidden;
+  background-color: var(--stocky-skeleton-base-subtle, #EFF2EC);
 }
 
+.stocky-skeleton-shimmer-subtle::after {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.35) 45%,
+    rgba(255, 255, 255, 0.55) 50%,
+    rgba(255, 255, 255, 0.35) 55%,
+    transparent 100%
+  );
+  animation: stocky-calm-shimmer 2.2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  content: '';
+  pointer-events: none;
+}
+
+/* Neutralized glow: clean, non-distracting subtle shadow */
 .stocky-skeleton-glow {
-  animation: stocky-glow 2.5s ease-in-out infinite alternate;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.03);
 }
 
+/* Calm, muted status indicator badges for skeletons */
 .stocky-skeleton-badge-healthy {
-  background: linear-gradient(
-    90deg,
-    rgba(209, 250, 229, 0.6) 0%,
-    rgba(236, 253, 245, 0.95) 45%,
-    rgba(209, 250, 229, 0.6) 90%
-  );
-  background-size: 200% 100%;
-  animation: stocky-shimmer 1.9s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  background-color: rgba(220, 252, 231, 0.7);
+  position: relative;
+  overflow: hidden;
+}
+
+.stocky-skeleton-badge-healthy::after {
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.6) 50%, transparent 100%);
+  animation: stocky-calm-shimmer 2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  content: '';
 }
 
 .stocky-skeleton-badge-warning {
-  background: linear-gradient(
-    90deg,
-    rgba(254, 243, 199, 0.6) 0%,
-    rgba(255, 251, 235, 0.95) 45%,
-    rgba(254, 243, 199, 0.6) 90%
-  );
-  background-size: 200% 100%;
-  animation: stocky-shimmer 1.9s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  background-color: rgba(254, 243, 199, 0.7);
+  position: relative;
+  overflow: hidden;
+}
+
+.stocky-skeleton-badge-warning::after {
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.6) 50%, transparent 100%);
+  animation: stocky-calm-shimmer 2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  content: '';
 }
 
 .stocky-skeleton-badge-critical {
-  background: linear-gradient(
-    90deg,
-    rgba(254, 226, 226, 0.6) 0%,
-    rgba(254, 242, 242, 0.95) 45%,
-    rgba(254, 226, 226, 0.6) 90%
-  );
-  background-size: 200% 100%;
-  animation: stocky-shimmer 1.9s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  background-color: rgba(254, 226, 226, 0.7);
+  position: relative;
+  overflow: hidden;
+}
+
+.stocky-skeleton-badge-critical::after {
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.6) 50%, transparent 100%);
+  animation: stocky-calm-shimmer 2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  content: '';
 }
 
 /* ==========================================================================

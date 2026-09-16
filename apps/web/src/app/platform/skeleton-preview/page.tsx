@@ -11,13 +11,17 @@ export default function SkeletonPreviewPage() {
   const [variant, setVariant] = useState<PlatformSkeletonVariant>(variantParam);
   const [isLoading, setIsLoading] = useState(true);
 
+  React.useEffect(() => {
+    if (variantParam) setVariant(variantParam);
+  }, [variantParam]);
+
   return (
     <div className="p-4 sm:p-6 max-w-[var(--stocky-page-max-width)] mx-auto">
       {/* Dev Switcher Bar */}
       <div className="mb-6 p-3 bg-white border border-stocky-border-subtle rounded-2xl shadow-2xs flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2 flex-wrap">
           <span className="text-xs font-semibold uppercase text-stocky-text-sub">Variant:</span>
-          {(['dashboard', 'inventory', 'attendance', 'calendar', 'transfers', 'suppliers', 'locations', 'team', 'tasks'] as PlatformSkeletonVariant[]).map((v) => (
+          {(['dashboard', 'inventory', 'attendance', 'calendar', 'transfers', 'suppliers', 'locations', 'team', 'tasks', 'notifications'] as PlatformSkeletonVariant[]).map((v) => (
             <button
               key={v}
               data-variant={v}
