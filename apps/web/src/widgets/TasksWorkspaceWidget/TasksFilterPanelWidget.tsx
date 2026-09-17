@@ -21,6 +21,8 @@ export interface TasksFilterPanelWidgetProps {
   totalCount: number;
   locations: Location[];
   members: Array<{ id: string; email: string; full_name?: string | null }>;
+  className?: string;
+  isMobile?: boolean;
 }
 
 export function TasksFilterPanelWidget({
@@ -33,6 +35,8 @@ export function TasksFilterPanelWidget({
   totalCount,
   locations,
   members,
+  className,
+  isMobile = false,
 }: TasksFilterPanelWidgetProps) {
   const panelRef = useRef<HTMLDivElement>(null);
 
@@ -65,27 +69,34 @@ export function TasksFilterPanelWidget({
   return (
     <div
       ref={panelRef}
-      className="stocky-filter-panel rounded-2xl border border-stocky-border-subtle bg-white p-4 shadow-xl sm:p-5"
+      className={
+        className ||
+        (isMobile
+          ? "flex flex-col min-h-0 bg-white"
+          : "stocky-filter-panel rounded-2xl border border-stocky-border-subtle bg-white p-4 shadow-bevel-float sm:p-5")
+      }
     >
-      {/* Header */}
-      <div className="flex items-center justify-between border-b border-stocky-border-subtle pb-3">
-        <div className="flex items-center gap-2">
-          <span className="text-xs font-semibold uppercase tracking-wider text-stocky-text-sub">
-            Filter Tasks
-          </span>
-          <span className="rounded-full bg-stocky-bg-global px-2 py-0.5 text-[11px] font-medium text-stocky-text-main">
-            {matchingCount} of {totalCount} matching
-          </span>
+      {/* Header (Desktop only) */}
+      {!isMobile && (
+        <div className="flex items-center justify-between border-b border-stocky-border-subtle pb-3">
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-semibold uppercase tracking-wider text-stocky-text-sub">
+              Filter Tasks
+            </span>
+            <span className="rounded-full bg-stocky-bg-global px-2 py-0.5 text-[11px] font-medium text-stocky-text-main">
+              {matchingCount} of {totalCount} matching
+            </span>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="flex h-7 w-7 items-center justify-center rounded-full text-stocky-text-sub hover:bg-stocky-bg-global hover:text-stocky-text-main transition-colors cursor-pointer"
+            aria-label="Close filters"
+          >
+            <XIcon size="xs" />
+          </button>
         </div>
-        <button
-          type="button"
-          onClick={onClose}
-          className="flex h-7 w-7 items-center justify-center rounded-full text-stocky-text-sub hover:bg-stocky-bg-global hover:text-stocky-text-main transition-colors cursor-pointer"
-          aria-label="Close filters"
-        >
-          <XIcon size="xs" />
-        </button>
-      </div>
+      )}
 
       {/* Filter Options Grid */}
       <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">

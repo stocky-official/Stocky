@@ -17,6 +17,7 @@ export interface BottomSheetProps {
   zIndex?: number;
   className?: string;
   panelClassName?: string;
+  mobileOnly?: boolean;
 }
 
 /**
@@ -36,15 +37,27 @@ export function BottomSheet({
   zIndex = 50,
   className = '',
   panelClassName = '',
+  mobileOnly = false,
 }: BottomSheetProps) {
   const [mounted, setMounted] = useState(false);
+  const [isDesktop, setIsDesktop] = useState(false);
 
   useEffect(() => {
     setMounted(true);
+    const checkViewport = () => {
+      setIsDesktop(window.innerWidth >= 640);
+    };
+    checkViewport();
+    window.addEventListener('resize', checkViewport);
+    return () => window.removeEventListener('resize', checkViewport);
   }, []);
+
+  const isActuallyMobileOnly = mobileOnly || className.includes('sm:hidden');
 
   useEffect(() => {
     if (!isOpen) return;
+    if (isActuallyMobileOnly && isDesktop) return;
+
     const prevOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
 
@@ -57,15 +70,18 @@ export function BottomSheet({
       document.body.style.overflow = prevOverflow;
       window.removeEventListener('keydown', handleKey);
     };
-  }, [isOpen, onClose]);
+  }, [isOpen, onClose, isActuallyMobileOnly, isDesktop]);
 
   if (!mounted || typeof document === 'undefined') return null;
+  if (isActuallyMobileOnly && isDesktop) return null;
 
   return createPortal(
     <AnimatePresence>
       {isOpen && (
         <div
-          className={`fixed inset-0 flex items-end sm:items-center justify-center ${className}`}
+          className={`fixed inset-0 flex items-end justify-center ${
+            isActuallyMobileOnly ? 'sm:!hidden' : 'sm:items-center'
+          } ${className}`}
           style={{ zIndex }}
           role="dialog"
           aria-modal="true"

@@ -442,6 +442,7 @@ export function TeamWorkspaceWidget({
         {/* Mobile Filter Bottom Sheet */}
         <div className="sm:hidden">
           <BottomSheet
+            mobileOnly
             isOpen={isFilterPanelOpen}
             onClose={() => setIsFilterPanelOpen(false)}
             title="Team Filters"

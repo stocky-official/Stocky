@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import type {
   CompanyUserRole,
   Location,
@@ -11,7 +12,7 @@ import type {
   SupplierRequest,
 } from '@stocky/types';
 import { CheckIcon, FilterIcon, TruckIcon, WarehouseIcon, XIcon } from '@stocky/icons';
-import { SideDrawer, BottomSheet } from '@/components/ui';
+import { BottomSheet } from '@/components/ui';
 import { exportSuppliersToExcel } from '@/lib/excel/export';
 import { SupplierContactsDrawerWidget, type SupplierContactInput } from '../SupplierContactsDrawerWidget/SupplierContactsDrawerWidget';
 import { SuppliersToolbarWidget } from './SuppliersToolbarWidget';
@@ -275,6 +276,29 @@ export function SuppliersWorkspaceWidget({
     setRequestLocationFilter('all');
   };
 
+  const requestFilterPanelRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (!isRequestFilterDrawerOpen) return;
+    const handleClickOutside = (e: MouseEvent) => {
+      if (
+        requestFilterPanelRef.current &&
+        !requestFilterPanelRef.current.contains(e.target as Node)
+      ) {
+        setIsRequestFilterDrawerOpen(false);
+      }
+    };
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setIsRequestFilterDrawerOpen(false);
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isRequestFilterDrawerOpen]);
+
   // Filtered Requests
   const filteredRequests = useMemo(() => {
     const query = requestSearchQuery.trim().toLowerCase();
@@ -349,6 +373,181 @@ export function SuppliersWorkspaceWidget({
     />
   );
 
+  const requestFilterPanelElement = (isMobile = false) => (
+    <motion.div
+      initial={isMobile ? undefined : { opacity: 0, y: -6, scale: 0.99 }}
+      animate={isMobile ? undefined : { opacity: 1, y: 0, scale: 1 }}
+      exit={isMobile ? undefined : { opacity: 0, y: -6, scale: 0.99 }}
+      transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+      role="dialog"
+      aria-label="Request filters"
+      className={
+        isMobile
+          ? "flex flex-col min-h-0 bg-white"
+          : "w-full rounded-2xl bg-white border border-stocky-border-subtle shadow-bevel-float overflow-hidden flex flex-col z-50 text-left select-none"
+      }
+    >
+      {!isMobile && (
+        <div className="flex items-center justify-between px-5 py-3.5 border-b border-stocky-border-subtle bg-white shrink-0">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-lg bg-stocky-primary/10 text-stocky-primary flex items-center justify-center shrink-0">
+              <FilterIcon size="xs" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h2 className="text-sm font-semibold text-stocky-text-main">Filter Requests</h2>
+                {activeRequestFilterCount > 0 && (
+                  <span className="rounded-full bg-stocky-primary px-2 py-0.5 text-[10px] font-semibold text-white">
+                    {activeRequestFilterCount} active
+                  </span>
+                )}
+              </div>
+              <p className="text-xs text-stocky-text-sub mt-0.5">Filter by request status, supplier, and destination</p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => setIsRequestFilterDrawerOpen(false)}
+            aria-label="Close request filters"
+            className="w-8 h-8 rounded-full flex items-center justify-center text-stocky-text-sub hover:text-stocky-text-main hover:bg-stocky-bg-global transition-colors cursor-pointer"
+          >
+            <XIcon size="xs" />
+          </button>
+        </div>
+      )}
+
+      <div className="flex-1 min-h-0 overflow-y-auto p-5 space-y-6">
+        <div>
+          <div className="flex items-center justify-between mb-2.5">
+            <label className="text-xs font-semibold text-stocky-text-main">Request Status</label>
+            {requestStatusFilter !== 'all' && (
+              <button
+                type="button"
+                onClick={() => setRequestStatusFilter('all')}
+                className="text-[11px] text-stocky-text-sub hover:text-red-500 cursor-pointer"
+              >
+                Clear
+              </button>
+            )}
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {(
+              [
+                { id: 'all', label: 'All requests' },
+                { id: 'open', label: 'Open' },
+                { id: 'contacted', label: 'Contacted' },
+                { id: 'ordered', label: 'Ordered' },
+                { id: 'received', label: 'Received' },
+                { id: 'closed', label: 'Closed' },
+              ] as const
+            ).map((st) => {
+              const isChecked = requestStatusFilter === st.id;
+              return (
+                <button
+                  key={st.id}
+                  type="button"
+                  onClick={() => setRequestStatusFilter(st.id)}
+                  className={`h-8 px-3 rounded-xl text-xs font-medium border transition-colors cursor-pointer flex items-center gap-1.5 ${
+                    isChecked
+                      ? 'bg-stocky-primary/10 border-stocky-primary/40 text-stocky-primary font-semibold'
+                      : 'bg-white border-stocky-border-subtle text-stocky-text-sub hover:text-stocky-text-main'
+                  }`}
+                >
+                  {isChecked && <CheckIcon size="xs" />}
+                  {st.label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        <div>
+          <div className="flex items-center justify-between mb-2">
+            <label className="text-xs font-semibold text-stocky-text-main flex items-center gap-1.5">
+              <TruckIcon size="xs" className="text-stocky-primary" />
+              Supplier
+            </label>
+            {requestSupplierFilter !== 'all' && (
+              <button
+                type="button"
+                onClick={() => setRequestSupplierFilter('all')}
+                className="text-[11px] text-stocky-text-sub hover:text-red-500 cursor-pointer"
+              >
+                Clear
+              </button>
+            )}
+          </div>
+          <select
+            value={requestSupplierFilter}
+            onChange={(e) => setRequestSupplierFilter(e.target.value)}
+            className="w-full h-10 px-3 rounded-xl bg-white border border-stocky-border-subtle text-xs text-stocky-text-main focus:border-stocky-primary focus:outline-none cursor-pointer"
+          >
+            <option value="all">All suppliers</option>
+            {suppliers.map((s) => (
+              <option key={s.id} value={s.id}>
+                {s.name}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div>
+          <div className="flex items-center justify-between mb-2">
+            <label className="text-xs font-semibold text-stocky-text-main flex items-center gap-1.5">
+              <WarehouseIcon size="xs" className="text-stocky-primary" />
+              Destination Location
+            </label>
+            {requestLocationFilter !== 'all' && (
+              <button
+                type="button"
+                onClick={() => setRequestLocationFilter('all')}
+                className="text-[11px] text-stocky-text-sub hover:text-red-500 cursor-pointer"
+              >
+                Clear
+              </button>
+            )}
+          </div>
+          <select
+            value={requestLocationFilter}
+            onChange={(e) => setRequestLocationFilter(e.target.value)}
+            className="w-full h-10 px-3 rounded-xl bg-white border border-stocky-border-subtle text-xs text-stocky-text-main focus:border-stocky-primary focus:outline-none cursor-pointer"
+          >
+            <option value="all">All locations</option>
+            {locations.map((loc) => (
+              <option key={loc.id} value={loc.id}>
+                {loc.name}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
+
+      <div className="px-5 py-3.5 border-t border-stocky-border-subtle bg-white flex items-center justify-between shrink-0">
+        <span className="text-xs text-stocky-text-sub">
+          Showing <strong className="font-semibold text-stocky-text-main">{filteredRequests.length}</strong> requests
+        </span>
+        <div className="flex items-center gap-2">
+          {activeRequestFilterCount > 0 && (
+            <button
+              type="button"
+              onClick={handleResetRequestFilters}
+              className="h-8 px-3 rounded-full text-xs font-medium text-stocky-text-sub hover:text-red-600 hover:bg-red-50 transition-colors cursor-pointer"
+            >
+              Reset
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={() => setIsRequestFilterDrawerOpen(false)}
+            className="h-8 px-5 rounded-full bg-stocky-text-main text-white text-xs font-semibold hover:opacity-90 transition-opacity cursor-pointer shadow-sm"
+          >
+            Done
+          </button>
+        </div>
+      </div>
+    </motion.div>
+  );
+
   return (
     <div className="stocky-suppliers-workspace flex flex-col gap-4">
       <input ref={fileInputRef} type="file" accept=".csv" onChange={handleFileChange} className="hidden" aria-hidden="true" />
@@ -381,26 +580,40 @@ export function SuppliersWorkspaceWidget({
               </div>
             </>
           ) : (
-            <SupplierRequestsToolbarWidget
-              searchQuery={requestSearchQuery}
-              onSearchChange={(val) => {
-                setRequestSearchQuery(val);
-                setRequestsPage(0);
-              }}
-              statusFilter={requestStatusFilter}
-              onStatusFilterChange={(status) => {
-                setRequestStatusFilter(status);
-                setRequestsPage(0);
-              }}
-              onCreateRequest={() => {
-                setRequestInitialSupplierId(undefined);
-                setIsCreateRequestOpen(true);
-              }}
-              filterPanelOpen={isRequestFilterDrawerOpen}
-              onToggleFilterPanel={() => setIsRequestFilterDrawerOpen((prev) => !prev)}
-              isFilterActive={activeRequestFilterCount > 0}
-              activeFilterCount={activeRequestFilterCount}
-            />
+            <>
+              <SupplierRequestsToolbarWidget
+                searchQuery={requestSearchQuery}
+                onSearchChange={(val) => {
+                  setRequestSearchQuery(val);
+                  setRequestsPage(0);
+                }}
+                statusFilter={requestStatusFilter}
+                onStatusFilterChange={(status) => {
+                  setRequestStatusFilter(status);
+                  setRequestsPage(0);
+                }}
+                onCreateRequest={() => {
+                  setRequestInitialSupplierId(undefined);
+                  setIsCreateRequestOpen(true);
+                }}
+                filterPanelOpen={isRequestFilterDrawerOpen}
+                onToggleFilterPanel={() => setIsRequestFilterDrawerOpen((prev) => !prev)}
+                isFilterActive={activeRequestFilterCount > 0}
+                activeFilterCount={activeRequestFilterCount}
+              />
+
+              {/* Floating Request Filter Panel (Desktop) */}
+              <AnimatePresence>
+                {isRequestFilterDrawerOpen && (
+                  <div
+                    ref={requestFilterPanelRef}
+                    className="hidden sm:block absolute top-[calc(100%+8px)] inset-x-3 sm:inset-x-3.5 z-50"
+                  >
+                    {requestFilterPanelElement(false)}
+                  </div>
+                )}
+              </AnimatePresence>
+            </>
           )}
         </div>
 
@@ -450,6 +663,7 @@ export function SuppliersWorkspaceWidget({
       {/* Mobile Suppliers Filter Bottom Sheet Drawer */}
       <div className="sm:hidden">
         <BottomSheet
+          mobileOnly
           isOpen={isFilterPanelOpen}
           onClose={() => setIsFilterPanelOpen(false)}
           title="Supplier Filters"
@@ -461,172 +675,18 @@ export function SuppliersWorkspaceWidget({
         </BottomSheet>
       </div>
 
-      {/* Requests Filter Drawer */}
-      <SideDrawer
-        isOpen={isRequestFilterDrawerOpen}
-        onClose={() => setIsRequestFilterDrawerOpen(false)}
-        ariaLabel="Filter requests"
-        panelClassName="flex flex-col"
-      >
-        <div className="flex h-full flex-col min-h-0 bg-white">
-          <div className="flex items-center justify-between px-5 py-4 border-b border-stocky-border-subtle bg-white shrink-0">
-            <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-lg bg-stocky-primary/10 text-stocky-primary flex items-center justify-center shrink-0">
-                <FilterIcon size="xs" />
-              </div>
-              <div>
-                <div className="flex items-center gap-2">
-                  <h2 className="text-sm font-semibold text-stocky-text-main">Filter Requests</h2>
-                  {activeRequestFilterCount > 0 && (
-                    <span className="rounded-full bg-stocky-primary px-2 py-0.5 text-[10px] font-semibold text-white">
-                      {activeRequestFilterCount} active
-                    </span>
-                  )}
-                </div>
-                <p className="text-xs text-stocky-text-sub mt-0.5">Filter by request status, supplier, and destination</p>
-              </div>
-            </div>
-            <button
-              type="button"
-              onClick={() => setIsRequestFilterDrawerOpen(false)}
-              aria-label="Close request filters"
-              className="w-8 h-8 rounded-full flex items-center justify-center text-stocky-text-sub hover:text-stocky-text-main hover:bg-stocky-bg-global transition-colors cursor-pointer"
-            >
-              <XIcon size="xs" />
-            </button>
-          </div>
-
-          <div className="flex-1 min-h-0 overflow-y-auto p-5 space-y-6">
-            <div>
-              <div className="flex items-center justify-between mb-2.5">
-                <label className="text-xs font-semibold text-stocky-text-main">Request Status</label>
-                {requestStatusFilter !== 'all' && (
-                  <button
-                    type="button"
-                    onClick={() => setRequestStatusFilter('all')}
-                    className="text-[11px] text-stocky-text-sub hover:text-red-500 cursor-pointer"
-                  >
-                    Clear
-                  </button>
-                )}
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {(
-                  [
-                    { id: 'all', label: 'All requests' },
-                    { id: 'open', label: 'Open' },
-                    { id: 'contacted', label: 'Contacted' },
-                    { id: 'ordered', label: 'Ordered' },
-                    { id: 'received', label: 'Received' },
-                    { id: 'closed', label: 'Closed' },
-                  ] as const
-                ).map((st) => {
-                  const isChecked = requestStatusFilter === st.id;
-                  return (
-                    <button
-                      key={st.id}
-                      type="button"
-                      onClick={() => setRequestStatusFilter(st.id)}
-                      className={`h-8 px-3 rounded-xl text-xs font-medium border transition-colors cursor-pointer flex items-center gap-1.5 ${
-                        isChecked
-                          ? 'bg-stocky-primary/10 border-stocky-primary/40 text-stocky-primary font-semibold'
-                          : 'bg-white border-stocky-border-subtle text-stocky-text-sub hover:text-stocky-text-main'
-                      }`}
-                    >
-                      {isChecked && <CheckIcon size="xs" />}
-                      {st.label}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <label className="text-xs font-semibold text-stocky-text-main flex items-center gap-1.5">
-                  <TruckIcon size="xs" className="text-stocky-primary" />
-                  Supplier
-                </label>
-                {requestSupplierFilter !== 'all' && (
-                  <button
-                    type="button"
-                    onClick={() => setRequestSupplierFilter('all')}
-                    className="text-[11px] text-stocky-text-sub hover:text-red-500 cursor-pointer"
-                  >
-                    Clear
-                  </button>
-                )}
-              </div>
-              <select
-                value={requestSupplierFilter}
-                onChange={(e) => setRequestSupplierFilter(e.target.value)}
-                className="w-full h-10 px-3 rounded-xl bg-white border border-stocky-border-subtle text-xs text-stocky-text-main focus:border-stocky-primary focus:outline-none"
-              >
-                <option value="all">All suppliers</option>
-                {suppliers.map((s) => (
-                  <option key={s.id} value={s.id}>
-                    {s.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <label className="text-xs font-semibold text-stocky-text-main flex items-center gap-1.5">
-                  <WarehouseIcon size="xs" className="text-stocky-primary" />
-                  Destination Location
-                </label>
-                {requestLocationFilter !== 'all' && (
-                  <button
-                    type="button"
-                    onClick={() => setRequestLocationFilter('all')}
-                    className="text-[11px] text-stocky-text-sub hover:text-red-500 cursor-pointer"
-                  >
-                    Clear
-                  </button>
-                )}
-              </div>
-              <select
-                value={requestLocationFilter}
-                onChange={(e) => setRequestLocationFilter(e.target.value)}
-                className="w-full h-10 px-3 rounded-xl bg-white border border-stocky-border-subtle text-xs text-stocky-text-main focus:border-stocky-primary focus:outline-none"
-              >
-                <option value="all">All locations</option>
-                {locations.map((loc) => (
-                  <option key={loc.id} value={loc.id}>
-                    {loc.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-
-          <div className="px-5 py-3.5 border-t border-stocky-border-subtle bg-white flex items-center justify-between shrink-0">
-            <span className="text-xs text-stocky-text-sub">
-              Showing <strong className="font-semibold text-stocky-text-main">{filteredRequests.length}</strong> requests
-            </span>
-            <div className="flex items-center gap-2">
-              {activeRequestFilterCount > 0 && (
-                <button
-                  type="button"
-                  onClick={handleResetRequestFilters}
-                  className="h-8 px-3 rounded-full text-xs font-medium text-stocky-text-sub hover:text-red-600 hover:bg-red-50 transition-colors cursor-pointer"
-                >
-                  Reset
-                </button>
-              )}
-              <button
-                type="button"
-                onClick={() => setIsRequestFilterDrawerOpen(false)}
-                className="h-8 px-5 rounded-full bg-stocky-text-main text-white text-xs font-semibold hover:opacity-90 transition-opacity cursor-pointer shadow-sm"
-              >
-                Done
-              </button>
-            </div>
-          </div>
-        </div>
-      </SideDrawer>
+      {/* Mobile Requests Filter Bottom Sheet Drawer */}
+      <div className="sm:hidden">
+        <BottomSheet
+          mobileOnly
+          isOpen={isRequestFilterDrawerOpen}
+          onClose={() => setIsRequestFilterDrawerOpen(false)}
+          title="Filter Requests"
+          subtitle={`Showing ${filteredRequests.length} of ${requests.length} requests`}
+        >
+          {requestFilterPanelElement(true)}
+        </BottomSheet>
+      </div>
 
       {/* Side Drawers */}
       <SupplierCreateDrawerWidget

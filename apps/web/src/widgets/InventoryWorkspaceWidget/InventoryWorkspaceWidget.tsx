@@ -731,6 +731,7 @@ export function InventoryWorkspaceWidget({
       {/* Mobile Filter Bottom Sheet Drawer */}
       <div className="sm:hidden">
         <BottomSheet
+          mobileOnly
           isOpen={isFilterPanelOpen}
           onClose={() => setIsFilterPanelOpen(false)}
           title="Inventory Filters"

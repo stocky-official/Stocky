@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { AnimatePresence } from 'framer-motion';
 import type {
   CompanyUserRole,
   CreateStockTaskCommand,
@@ -360,27 +361,30 @@ export function TasksWorkspaceWidget({
             onAssignTask={() => setAssignDrawerOpen(true)}
           />
 
-          {/* Floating Hovering Filter Panel (Desktop) */}
-          {filterPanelOpen && (
-            <div className="hidden sm:block absolute top-[calc(100%+8px)] inset-x-3 sm:inset-x-3.5 z-50">
-              <TasksFilterPanelWidget
-                isOpen={filterPanelOpen}
-                onClose={() => setFilterPanelOpen(false)}
-                filters={filters}
-                onFilterChange={setFilters}
-                onResetFilters={() => setFilters(DEFAULT_FILTERS)}
-                matchingCount={filteredTasks.length}
-                totalCount={sortedTasks.length}
-                locations={locations}
-                members={members}
-              />
-            </div>
-          )}
+          {/* Floating Filter Panel (Desktop) */}
+          <AnimatePresence>
+            {filterPanelOpen && (
+              <div className="hidden sm:block absolute top-[calc(100%+8px)] inset-x-3 sm:inset-x-3.5 z-50">
+                <TasksFilterPanelWidget
+                  isOpen={filterPanelOpen}
+                  onClose={() => setFilterPanelOpen(false)}
+                  filters={filters}
+                  onFilterChange={setFilters}
+                  onResetFilters={() => setFilters(DEFAULT_FILTERS)}
+                  matchingCount={filteredTasks.length}
+                  totalCount={sortedTasks.length}
+                  locations={locations}
+                  members={members}
+                />
+              </div>
+            )}
+          </AnimatePresence>
         </div>
 
         {/* Mobile Filter Bottom Sheet Drawer */}
         <div className="sm:hidden">
           <BottomSheet
+            mobileOnly
             isOpen={filterPanelOpen}
             onClose={() => setFilterPanelOpen(false)}
             title="Task Filters"
@@ -396,6 +400,7 @@ export function TasksWorkspaceWidget({
               totalCount={sortedTasks.length}
               locations={locations}
               members={members}
+              isMobile
             />
           </BottomSheet>
         </div>

@@ -737,6 +737,7 @@ export function LocationsDirectoryWidget({
         {/* Mobile Filter Bottom Sheet */}
         <div className="sm:hidden">
           <BottomSheet
+            mobileOnly
             isOpen={isFilterPanelOpen}
             onClose={() => setIsFilterPanelOpen(false)}
             title="Location Filters"
