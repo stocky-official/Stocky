@@ -24,6 +24,7 @@ import { SideDrawer, BottomSheet } from '@/components/ui';
 import { UserAvatar } from '@/components/ui/UserAvatar';
 import { StandardToolbarWidget } from '../StandardToolbarWidget/StandardToolbarWidget';
 import { supabase } from '@/lib/supabase/client';
+import { useTranslation } from '@/lib/i18n';
 
 export interface LocationMember {
   id: string;
@@ -79,6 +80,7 @@ export function LocationsDirectoryWidget({
   onAssignLocation,
   onUnassignLocation,
 }: LocationsDirectoryWidgetProps) {
+  const { t } = useTranslation();
   // Members fallback loading if not passed from platform context
   const [loadedMembers, setLoadedMembers] = useState<LocationMember[]>([]);
   const [loadedAssignments, setLoadedAssignments] = useState<LocationAssignment[]>([]);
@@ -140,11 +142,11 @@ export function LocationsDirectoryWidget({
   const handleImageUpload = async (file: File) => {
     if (!file) return;
     if (!file.type.startsWith('image/')) {
-      setUploadError('Please select an image file (PNG, JPG, JPEG, WEBP, GIF).');
+      setUploadError(t('locations.invalidImageFormat'));
       return;
     }
     if (file.size > 5 * 1024 * 1024) {
-      setUploadError('Image size must be 5MB or less.');
+      setUploadError(t('locations.imageTooLarge'));
       return;
     }
 
@@ -203,7 +205,7 @@ export function LocationsDirectoryWidget({
       }
     } catch (err: any) {
       console.error('Failed to upload location image:', err);
-      setUploadError(err?.message || 'Failed to upload image to private storage.');
+      setUploadError(err?.message || t('locations.uploadFailed'));
     } finally {
       setUploadingImage(false);
     }
@@ -446,7 +448,7 @@ export function LocationsDirectoryWidget({
       }
       closeDrawer();
     } catch (err: any) {
-      alert(err?.message || 'Failed to save location.');
+      alert(err?.message || t('locations.saveFailed'));
     } finally {
       setDrawerSaving(false);
     }
@@ -502,7 +504,7 @@ export function LocationsDirectoryWidget({
     <div className="space-y-4">
       {/* Segmented Location Type Toggle */}
       <div className="space-y-1.5">
-        <span className="text-[10px] font-bold uppercase tracking-wider text-stocky-text-sub">Location Type</span>
+        <span className="text-[10px] font-bold uppercase tracking-wider text-stocky-text-sub">{t('locations.locationType')}</span>
         <div className="grid grid-cols-3 gap-1.5 p-1 bg-stocky-bg-global rounded-xl border border-stocky-border-subtle" role="tablist">
           <button
             type="button"
@@ -516,7 +518,7 @@ export function LocationsDirectoryWidget({
                 : 'text-stocky-text-sub hover:text-stocky-text-main'
             }`}
           >
-            All ({allLocationStats.length})
+            {t('locations.allTypeCount', { count: allLocationStats.length })}
           </button>
           <button
             type="button"
@@ -530,7 +532,7 @@ export function LocationsDirectoryWidget({
                 : 'text-stocky-text-sub hover:text-stocky-text-main'
             }`}
           >
-            Branches ({allLocationStats.filter((s) => s.location.type === 'branch').length})
+            {t('locations.branchesTypeCount', { count: allLocationStats.filter((s) => s.location.type === 'branch').length })}
           </button>
           <button
             type="button"
@@ -544,7 +546,7 @@ export function LocationsDirectoryWidget({
                 : 'text-stocky-text-sub hover:text-stocky-text-main'
             }`}
           >
-            Warehouses ({allLocationStats.filter((s) => s.location.type === 'warehouse').length})
+            {t('locations.warehousesTypeCount', { count: allLocationStats.filter((s) => s.location.type === 'warehouse').length })}
           </button>
         </div>
       </div>
@@ -552,13 +554,13 @@ export function LocationsDirectoryWidget({
       {/* Search in Fields */}
       <div className="space-y-1.5 border-t border-stocky-border-subtle pt-3">
         <div className="flex items-center justify-between">
-          <span className="text-[10px] font-bold uppercase tracking-wider text-stocky-text-sub">Search In Fields</span>
+          <span className="text-[10px] font-bold uppercase tracking-wider text-stocky-text-sub">{t('locations.searchInFields')}</span>
           <button
             type="button"
             onClick={() => setSelectedColumns({ name: true, address: true, manager: true, phone: true })}
             className="text-[10px] text-stocky-text-sub hover:text-stocky-primary cursor-pointer font-medium"
           >
-            Select all
+            {t('locations.selectAll')}
           </button>
         </div>
         <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-4">
@@ -569,7 +571,7 @@ export function LocationsDirectoryWidget({
               onChange={(e) => setSelectedColumns((prev) => ({ ...prev, name: e.target.checked }))}
               className="accent-stocky-primary rounded"
             />
-            <span className="truncate">Name</span>
+            <span className="truncate">{t('locations.colName')}</span>
           </label>
           <label className="flex items-center gap-1.5 text-xs text-stocky-text-main cursor-pointer hover:bg-stocky-bg-global rounded px-1.5 py-1">
             <input
@@ -578,7 +580,7 @@ export function LocationsDirectoryWidget({
               onChange={(e) => setSelectedColumns((prev) => ({ ...prev, address: e.target.checked }))}
               className="accent-stocky-primary rounded"
             />
-            <span className="truncate">Address</span>
+            <span className="truncate">{t('locations.colAddress')}</span>
           </label>
           <label className="flex items-center gap-1.5 text-xs text-stocky-text-main cursor-pointer hover:bg-stocky-bg-global rounded px-1.5 py-1">
             <input
@@ -587,7 +589,7 @@ export function LocationsDirectoryWidget({
               onChange={(e) => setSelectedColumns((prev) => ({ ...prev, manager: e.target.checked }))}
               className="accent-stocky-primary rounded"
             />
-            <span className="truncate">Manager</span>
+            <span className="truncate">{t('locations.colManager')}</span>
           </label>
           <label className="flex items-center gap-1.5 text-xs text-stocky-text-main cursor-pointer hover:bg-stocky-bg-global rounded px-1.5 py-1">
             <input
@@ -596,52 +598,52 @@ export function LocationsDirectoryWidget({
               onChange={(e) => setSelectedColumns((prev) => ({ ...prev, phone: e.target.checked }))}
               className="accent-stocky-primary rounded"
             />
-            <span className="truncate">Phone</span>
+            <span className="truncate">{t('locations.colPhone')}</span>
           </label>
         </div>
       </div>
 
       {/* Dropdown Filters */}
       <div className="space-y-2 border-t border-stocky-border-subtle pt-3">
-        <span className="text-[10px] font-bold uppercase tracking-wider text-stocky-text-sub">Filter By Attributes</span>
+        <span className="text-[10px] font-bold uppercase tracking-wider text-stocky-text-sub">{t('locations.filterByAttributes')}</span>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
           <label className="block text-xs font-medium text-stocky-text-main">
-            Branch Manager
+            {t('locations.branchManager')}
             <select
               value={filterManagerStatus}
               onChange={(e) => setFilterManagerStatus(e.target.value as any)}
               className="mt-1 h-8 w-full rounded-lg border border-stocky-border-subtle bg-stocky-bg-global px-2 text-xs text-stocky-text-main focus:border-stocky-primary focus:outline-none"
             >
-              <option value="all">All manager statuses</option>
-              <option value="assigned">Manager assigned</option>
-              <option value="unassigned">No manager assigned</option>
+              <option value="all">{t('locations.allManagerStatuses')}</option>
+              <option value="assigned">{t('locations.managerAssigned')}</option>
+              <option value="unassigned">{t('locations.noManagerAssigned')}</option>
             </select>
           </label>
 
           <label className="block text-xs font-medium text-stocky-text-main">
-            Staffing Level
+            {t('locations.staffingLevel')}
             <select
               value={filterStaffing}
               onChange={(e) => setFilterStaffing(e.target.value as any)}
               className="mt-1 h-8 w-full rounded-lg border border-stocky-border-subtle bg-stocky-bg-global px-2 text-xs text-stocky-text-main focus:border-stocky-primary focus:outline-none"
             >
-              <option value="all">Any staff count</option>
-              <option value="has_staff">Has staff members</option>
-              <option value="no_staff">No staff assigned</option>
+              <option value="all">{t('locations.anyStaffCount')}</option>
+              <option value="has_staff">{t('locations.hasStaffMembers')}</option>
+              <option value="no_staff">{t('locations.noStaffAssigned')}</option>
             </select>
           </label>
 
           <label className="block text-xs font-medium text-stocky-text-main">
-            Operational Health
+            {t('locations.operationalHealth')}
             <select
               value={filterHealth}
               onChange={(e) => setFilterHealth(e.target.value as any)}
               className="mt-1 h-8 w-full rounded-lg border border-stocky-border-subtle bg-stocky-bg-global px-2 text-xs text-stocky-text-main focus:border-stocky-primary focus:outline-none"
             >
-              <option value="all">All operational statuses</option>
-              <option value="expiring">Has expiry issues</option>
-              <option value="low_stock">Has low stock</option>
-              <option value="healthy">Healthy stock</option>
+              <option value="all">{t('locations.allOperationalStatuses')}</option>
+              <option value="expiring">{t('locations.hasExpiryIssues')}</option>
+              <option value="low_stock">{t('locations.hasLowStock')}</option>
+              <option value="healthy">{t('locations.healthyStock')}</option>
             </select>
           </label>
         </div>
@@ -658,27 +660,27 @@ export function LocationsDirectoryWidget({
           <StandardToolbarWidget
             searchQuery={searchQuery}
             onSearchChange={setSearchQuery}
-            searchPlaceholder="Search branches, addresses, managers, phone..."
+            searchPlaceholder={t('locations.searchPlaceholder')}
             activeFilterCount={activeFilterCount}
             isFilterOpen={isFilterPanelOpen}
             onToggleFilter={() => setIsFilterPanelOpen((open) => !open)}
             primaryAction={
               canManage
                 ? {
-                    label: 'Add location',
-                    shortLabel: 'Add',
+                    label: t('locations.addLocation'),
+                    shortLabel: t('locations.add'),
                     icon: <PlusIcon size="xs" />,
                     onClick: openCreateDrawer,
-                    title: 'Add new location',
+                    title: t('locations.addLocation'),
                   }
                 : undefined
             }
             moreActions={[
               {
-                label: 'Export locations',
+                label: t('locations.export'),
                 icon: <CloudDownloadIcon size="xs" />,
                 onClick: exportLocationsCsv,
-                description: 'Download CSV directory report',
+                description: t('locations.exportDesc'),
               },
             ]}
           />
@@ -687,18 +689,18 @@ export function LocationsDirectoryWidget({
           {isFilterPanelOpen && (
             <div
               ref={filterPanelRef}
-              className="hidden sm:flex stocky-column-filter-panel absolute top-full left-3 sm:left-3.5 mt-1 z-40"
+              className="hidden sm:flex stocky-column-filter-panel absolute top-full start-3 sm:start-3.5 mt-1 z-40"
               role="dialog"
-              aria-label="Location column filters"
+              aria-label={t('locations.filtersTitle')}
             >
               {/* Sticky Header */}
               <div className="sticky top-0 z-10 flex shrink-0 items-center justify-between border-b border-stocky-border-subtle bg-white px-4 py-2.5">
                 <div className="flex items-center gap-2">
                   <FilterIcon size="xs" className="text-stocky-primary" />
-                  <h3 className="text-xs font-semibold text-stocky-text-main">Location Filters</h3>
+                  <h3 className="text-xs font-semibold text-stocky-text-main">{t('locations.filtersTitle')}</h3>
                   {activeFilterCount > 0 && (
                     <span className="rounded-full bg-stocky-primary/10 px-2 py-0.5 text-[10px] font-semibold text-stocky-primary">
-                      {activeFilterCount} active
+                      {t('locations.activeCount', { count: activeFilterCount })}
                     </span>
                   )}
                 </div>
@@ -708,7 +710,7 @@ export function LocationsDirectoryWidget({
                     onClick={resetFilters}
                     className="text-[11px] font-medium text-stocky-primary hover:underline cursor-pointer"
                   >
-                    Reset all
+                    {t('locations.resetAll')}
                   </button>
                 )}
               </div>
@@ -720,14 +722,16 @@ export function LocationsDirectoryWidget({
               {/* Sticky Footer */}
               <div className="sticky bottom-0 z-10 flex shrink-0 items-center justify-between border-t border-stocky-border-subtle bg-stocky-bg-global px-4 py-2">
                 <span className="text-[11px] font-medium text-stocky-text-sub">
-                  {filteredStats.length} location{filteredStats.length === 1 ? '' : 's'} matching
+                  {filteredStats.length === 1
+                    ? t('locations.matchingLocations', { count: filteredStats.length })
+                    : t('locations.matchingLocationsPlural', { count: filteredStats.length })}
                 </span>
                 <button
                   type="button"
                   onClick={() => setIsFilterPanelOpen(false)}
                   className="h-7 rounded-full bg-stocky-primary px-3 text-xs font-medium text-white hover:bg-stocky-primary-hover cursor-pointer"
                 >
-                  Done
+                  {t('locations.done')}
                 </button>
               </div>
             </div>
@@ -740,20 +744,22 @@ export function LocationsDirectoryWidget({
             mobileOnly
             isOpen={isFilterPanelOpen}
             onClose={() => setIsFilterPanelOpen(false)}
-            title="Location Filters"
+            title={t('locations.filtersTitle')}
             activeCount={activeFilterCount}
             onReset={activeFilterCount > 0 ? resetFilters : undefined}
             footer={
               <div className="flex items-center justify-between w-full">
                 <span className="text-xs text-stocky-text-sub">
-                  {filteredStats.length} location{filteredStats.length === 1 ? '' : 's'} matching
+                  {filteredStats.length === 1
+                    ? t('locations.matchingLocations', { count: filteredStats.length })
+                    : t('locations.matchingLocationsPlural', { count: filteredStats.length })}
                 </span>
                 <button
                   type="button"
                   onClick={() => setIsFilterPanelOpen(false)}
                   className="h-9 px-5 rounded-full bg-stocky-primary text-white text-xs font-semibold cursor-pointer"
                 >
-                  Apply filters
+                  {t('locations.applyFilters')}
                 </button>
               </div>
             }
@@ -793,10 +799,10 @@ export function LocationsDirectoryWidget({
                         onOpenStock(location.id);
                       }
                     }}
-                    className="group flex flex-col md:flex-row items-stretch rounded-2xl bg-white border border-stocky-border-subtle shadow-2xs hover:border-stocky-border-strong hover:shadow-xs transition-all duration-200 cursor-pointer overflow-hidden text-left"
+                    className="group flex flex-col md:flex-row items-stretch rounded-2xl bg-white border border-stocky-border-subtle shadow-2xs hover:border-stocky-border-strong hover:shadow-xs transition-all duration-200 cursor-pointer overflow-hidden text-start"
                   >
                     {/* Left: Landscape Thumbnail Banner */}
-                    <div className="relative w-full md:w-56 lg:w-64 h-36 md:h-auto shrink-0 bg-stocky-bg-subtle overflow-hidden border-b md:border-b-0 md:border-r border-stocky-border-subtle">
+                    <div className="relative w-full md:w-56 lg:w-64 h-36 md:h-auto shrink-0 bg-stocky-bg-subtle overflow-hidden border-b md:border-b-0 md:border-r rtl:md:border-r-0 rtl:md:border-l border-stocky-border-subtle">
                       {location.imageUrl ? (
                         <img
                           src={location.imageUrl}
@@ -812,15 +818,15 @@ export function LocationsDirectoryWidget({
                           <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white border border-stocky-border-subtle shadow-2xs text-stocky-primary mb-1.5">
                             {location.type === 'warehouse' ? <WarehouseIcon size="md" /> : <BoxIcon size="md" />}
                           </div>
-                          <span className="text-[10px] font-medium text-stocky-text-sub">No image</span>
+                          <span className="text-[10px] font-medium text-stocky-text-sub">{t('locations.noImage')}</span>
                         </div>
                       )}
 
                       {/* Top Floating Badge */}
-                      <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5">
+                      <div className="absolute top-2.5 start-2.5 flex items-center gap-1.5">
                         <span className="inline-flex items-center gap-1 rounded-full bg-white/95 backdrop-blur-md px-2.5 py-0.5 text-[10px] font-semibold text-stocky-text-main shadow-2xs border border-stocky-border-subtle">
                           {location.type === 'warehouse' ? <WarehouseIcon size="xs" /> : <BoxIcon size="xs" />}
-                          <span>{location.type === 'warehouse' ? 'Warehouse' : 'Branch'}</span>
+                          <span>{location.type === 'warehouse' ? t('locations.warehouse') : t('locations.branch')}</span>
                         </span>
                       </div>
 
@@ -832,8 +838,8 @@ export function LocationsDirectoryWidget({
                             e.stopPropagation();
                             openEditDrawer(location);
                           }}
-                          className="absolute top-2.5 right-2.5 flex h-7 w-7 items-center justify-center rounded-full bg-white/90 backdrop-blur-md text-stocky-text-sub hover:text-stocky-primary hover:bg-white shadow-2xs border border-stocky-border-subtle transition-colors cursor-pointer"
-                          title="Edit location details or photo"
+                          className="absolute top-2.5 end-2.5 flex h-7 w-7 items-center justify-center rounded-full bg-white/90 backdrop-blur-md text-stocky-text-sub hover:text-stocky-primary hover:bg-white shadow-2xs border border-stocky-border-subtle transition-colors cursor-pointer"
+                          title={t('locations.editLocationTitle')}
                         >
                           <CameraIcon size="xs" />
                         </button>
@@ -850,11 +856,11 @@ export function LocationsDirectoryWidget({
                               <span
                                 className={`inline-flex rounded-full px-2 py-0.5 text-[10px] font-medium border ${location.isActive ? 'stocky-status-success' : 'stocky-status-muted'}`}
                               >
-                                {location.isActive ? 'Active' : 'Archived'}
+                                {location.isActive ? t('locations.active') : t('locations.archived')}
                               </span>
                             </div>
                             <p className="text-xs text-stocky-text-sub truncate mt-1">
-                              {location.address || 'Address not registered'}
+                              {location.address || t('locations.addressNotRegistered')}
                               {location.phone ? ` · ${location.phone}` : ''}
                             </p>
                           </div>
@@ -878,13 +884,13 @@ export function LocationsDirectoryWidget({
                             )}
                             <div className="min-w-0">
                               <span className="text-[10px] uppercase font-bold tracking-wider text-stocky-text-sub block">
-                                Branch Manager
+                                {t('locations.branchManager')}
                               </span>
                               <span className="text-xs font-medium text-stocky-text-main truncate block">
                                 {manager ? (
                                   manager.full_name || manager.email
                                 ) : (
-                                  <span className="text-amber-700">Not assigned</span>
+                                  <span className="text-amber-700">{t('locations.notAssigned')}</span>
                                 )}
                               </span>
                             </div>
@@ -895,9 +901,9 @@ export function LocationsDirectoryWidget({
                                   e.stopPropagation();
                                   openEditDrawer(location);
                                 }}
-                                className="text-[11px] font-medium text-stocky-primary hover:underline ml-1 cursor-pointer"
+                                className="text-[11px] font-medium text-stocky-primary hover:underline ms-1 cursor-pointer"
                               >
-                                Assign
+                                {t('locations.assignBtn')}
                               </button>
                             )}
                           </div>
@@ -907,11 +913,11 @@ export function LocationsDirectoryWidget({
                           {/* Staff count & avatars */}
                           <div className="flex items-center gap-2">
                             <span className="text-[10px] uppercase font-bold tracking-wider text-stocky-text-sub">
-                              Staff:
+                              {t('locations.staffLabel')}
                             </span>
                             {assignedStaff.length > 0 ? (
                               <div className="flex items-center gap-1.5">
-                                <div className="flex items-center -space-x-1.5 shrink-0" title={assignedStaff.map((s) => s.full_name || s.email).join(', ')}>
+                                <div className="flex items-center -space-x-1.5 rtl:space-x-reverse shrink-0" title={assignedStaff.map((s) => s.full_name || s.email).join(', ')}>
                                   {assignedStaff.slice(0, 3).map((member) => (
                                     <div key={member.id} className="relative">
                                       <UserAvatar
@@ -934,7 +940,7 @@ export function LocationsDirectoryWidget({
                                 </span>
                               </div>
                             ) : (
-                              <span className="text-xs text-stocky-text-sub italic">None assigned</span>
+                              <span className="text-xs text-stocky-text-sub italic">{t('locations.noneAssigned')}</span>
                             )}
                           </div>
 
@@ -943,35 +949,35 @@ export function LocationsDirectoryWidget({
                           {/* Active Shifts Today */}
                           <div className="flex items-center gap-1.5">
                             <span className="text-[10px] uppercase font-bold tracking-wider text-stocky-text-sub">
-                              Active:
+                              {t('locations.onDutyNow')}:
                             </span>
                             {activeShiftsNow > 0 ? (
                               <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200/80 px-2 py-0.5 rounded-full">
                                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                                <span>{activeShiftsNow} working</span>
+                                <span>{t('locations.workingCount', { count: activeShiftsNow })}</span>
                               </span>
                             ) : (
-                              <span className="text-[11px] text-stocky-text-sub">0 clocked in</span>
+                              <span className="text-[11px] text-stocky-text-sub">{t('locations.zeroClockedIn')}</span>
                             )}
                           </div>
                         </div>
                       </div>
 
                       <div className="mt-2 text-[11px] text-stocky-text-sub truncate">
-                        Last count: {lastCompletedCount ? new Date(lastCompletedCount).toLocaleDateString() : 'Not recorded'}
+                        {t('locations.lastCount', { date: lastCompletedCount ? new Date(lastCompletedCount).toLocaleDateString() : t('locations.notRecorded') })}
                       </div>
                     </div>
 
                     {/* Right: Operational Health Metrics & Action Triggers */}
-                    <div className="p-4 sm:p-5 md:w-72 lg:w-80 shrink-0 flex flex-col justify-between border-t md:border-t-0 md:border-l border-stocky-border-subtle bg-stocky-bg-subtle/30">
+                    <div className="p-4 sm:p-5 md:w-72 lg:w-80 shrink-0 flex flex-col justify-between border-t md:border-t-0 md:border-l rtl:md:border-l-0 rtl:md:border-r border-stocky-border-subtle bg-stocky-bg-subtle/30">
                       <div>
                         <div className="grid grid-cols-2 gap-2">
                           <div className="rounded-xl bg-white p-2 border border-stocky-border-subtle">
-                            <span className="text-[10px] uppercase font-semibold text-stocky-text-sub block">Active SKUs</span>
+                            <span className="text-[10px] uppercase font-semibold text-stocky-text-sub block">{t('locations.activeSkus')}</span>
                             <span className="text-sm font-semibold text-stocky-text-main">{skuCount}</span>
                           </div>
                           <div className="rounded-xl bg-white p-2 border border-stocky-border-subtle">
-                            <span className="text-[10px] uppercase font-semibold text-stocky-text-sub block">Total Units</span>
+                            <span className="text-[10px] uppercase font-semibold text-stocky-text-sub block">{t('locations.totalUnits')}</span>
                             <span className="text-sm font-semibold text-stocky-text-main">{units.toLocaleString()}</span>
                           </div>
                         </div>
@@ -980,23 +986,23 @@ export function LocationsDirectoryWidget({
                         <div className="mt-2 flex flex-wrap items-center gap-1.5">
                           {expiring > 0 ? (
                             <span className="inline-flex items-center gap-1 rounded-full border stocky-status-hold px-2.5 py-0.5 text-[10px] font-medium">
-                              <ClockIcon size="xs" /> {expiring} expiring
+                              <ClockIcon size="xs" /> {t('locations.expiringCount', { count: expiring })}
                             </span>
                           ) : (
                             <span className="inline-flex items-center gap-1 rounded-full border stocky-status-success px-2.5 py-0.5 text-[10px] font-medium">
-                              <CheckIcon size="xs" /> Expiry healthy
+                              <CheckIcon size="xs" /> {t('locations.expiryHealthy')}
                             </span>
                           )}
 
                           {pendingTransfers > 0 && (
                             <span className="inline-flex items-center gap-1 rounded-full border stocky-status-info px-2.5 py-0.5 text-[10px] font-medium">
-                              <BoxesIcon size="xs" /> {pendingTransfers} in transit
+                              <BoxesIcon size="xs" /> {t('locations.inTransitCount', { count: pendingTransfers })}
                             </span>
                           )}
 
                           {lowStock > 0 && (
                             <span className="inline-flex items-center gap-1 rounded-full border stocky-status-critical px-2.5 py-0.5 text-[10px] font-medium">
-                              <AlertCircleIcon size="xs" /> {lowStock} low stock
+                              <AlertCircleIcon size="xs" /> {t('locations.lowStockCount', { count: lowStock })}
                             </span>
                           )}
                         </div>
@@ -1013,10 +1019,10 @@ export function LocationsDirectoryWidget({
                                 openEditDrawer(location);
                               }}
                               className="h-10 px-3.5 flex-1 sm:flex-initial rounded-full border border-stocky-border-subtle bg-white text-xs font-medium text-stocky-text-main hover:bg-stocky-bg-global hover:border-stocky-border-strong transition-colors cursor-pointer inline-flex items-center justify-center gap-1.5"
-                              title="Edit location"
+                              title={t('locations.edit')}
                             >
                               <EditIcon size="xs" />
-                              <span>Edit</span>
+                              <span>{t('locations.edit')}</span>
                             </button>
                           )}
                           <button
@@ -1026,11 +1032,11 @@ export function LocationsDirectoryWidget({
                               setQrLocation(location);
                             }}
                             className="h-10 px-3.5 flex-1 sm:flex-initial rounded-full border border-stocky-border-subtle bg-white text-xs font-medium text-stocky-text-main hover:border-stocky-primary hover:text-stocky-primary transition-colors cursor-pointer inline-flex items-center justify-center gap-1.5 shadow-2xs"
-                            title="Generate Attendance QR check-in poster"
+                            title={t('locations.attendanceQrTitle')}
                           >
                             <QrCodeIcon size="xs" />
-                            <span className="hidden sm:inline">Attendance QR</span>
-                            <span className="sm:hidden">QR Poster</span>
+                            <span className="hidden sm:inline">{t('locations.attendanceQr')}</span>
+                            <span className="sm:hidden">{t('locations.qrPoster')}</span>
                           </button>
                         </div>
                         <button
@@ -1041,8 +1047,8 @@ export function LocationsDirectoryWidget({
                           }}
                           className="h-10 px-4 w-full sm:w-auto rounded-full border border-stocky-border-subtle bg-white text-xs font-medium text-stocky-text-main hover:border-stocky-primary hover:text-stocky-primary transition-colors cursor-pointer inline-flex items-center justify-center gap-1.5 shadow-2xs sm:flex-1"
                         >
-                          <span>View inventory</span>
-                          <ChevronRightIcon size="xs" />
+                          <span>{t('locations.viewInventory')}</span>
+                          <ChevronRightIcon size="xs" className="rtl:rotate-180" />
                         </button>
                       </div>
                     </div>
@@ -1054,11 +1060,11 @@ export function LocationsDirectoryWidget({
             /* Empty State */
             <div className="rounded-2xl bg-white px-6 py-16 text-center">
               <BoxesIcon size="md" className="mx-auto text-stocky-text-sub/50" />
-              <h2 className="mt-3 text-base font-semibold text-stocky-text-main">No locations found</h2>
+              <h2 className="mt-3 text-base font-semibold text-stocky-text-main">{t('locations.noLocationsFound')}</h2>
               <p className="mt-1 text-sm text-stocky-text-sub">
                 {searchQuery || activeFilterCount > 0
-                  ? 'Try adjusting your search query or column filters.'
-                  : 'Create a branch or warehouse to begin managing inventory.'}
+                  ? t('locations.adjustFiltersDesc')
+                  : t('locations.createLocationPrompt')}
               </p>
               {(searchQuery || activeFilterCount > 0) ? (
                 <button
@@ -1069,7 +1075,7 @@ export function LocationsDirectoryWidget({
                   }}
                   className="mt-4 inline-flex items-center gap-1.5 rounded-full bg-stocky-bg-global px-4 py-2 text-xs font-medium text-stocky-text-main hover:bg-stocky-border-subtle cursor-pointer"
                 >
-                  Clear all filters
+                  {t('locations.clearAllFilters')}
                 </button>
               ) : canManage ? (
                 <button
@@ -1077,7 +1083,7 @@ export function LocationsDirectoryWidget({
                   onClick={openCreateDrawer}
                   className="mt-4 stocky-table-toolbar-button stocky-table-toolbar-button--primary h-10 px-4 rounded-full text-xs font-medium inline-flex items-center justify-center gap-1.5 whitespace-nowrap cursor-pointer"
                 >
-                  <PlusIcon size="xs" /> Add location
+                  <PlusIcon size="xs" /> {t('locations.addLocation')}
                 </button>
               ) : null}
             </div>
@@ -1089,26 +1095,26 @@ export function LocationsDirectoryWidget({
       <SideDrawer
         isOpen={drawerOpen}
         onClose={closeDrawer}
-        ariaLabel={editingLocation ? `Edit ${editingLocation.name}` : 'Add location'}
+        ariaLabel={editingLocation ? t('locations.editSpecificLocation', { name: editingLocation.name }) : t('locations.addLocation')}
       >
         <div className="flex h-full flex-col">
           {/* Drawer Header */}
           <div className="flex items-center justify-between border-b border-stocky-border-subtle px-5 py-4">
             <div>
               <h2 className="text-base font-semibold text-stocky-text-main">
-                {editingLocation ? 'Edit location' : 'Add new location'}
+                {editingLocation ? t('locations.editLocation') : t('locations.addNewLocation')}
               </h2>
               <p className="text-xs text-stocky-text-sub mt-0.5">
                 {editingLocation
-                  ? 'Update location details, manager, staff assignments, and branch cover photo.'
-                  : 'Create a new branch or warehouse in your company structure.'}
+                  ? t('locations.editLocationDesc')
+                  : t('locations.addNewLocationDesc')}
               </p>
             </div>
             <button
               type="button"
               onClick={closeDrawer}
               className="flex h-8 w-8 items-center justify-center rounded-full text-stocky-text-sub hover:bg-stocky-bg-global cursor-pointer"
-              aria-label="Close drawer"
+              aria-label={t('locations.closeDrawer')}
             >
               <XIcon size="xs" />
             </button>
@@ -1119,18 +1125,18 @@ export function LocationsDirectoryWidget({
             {/* Basic Information */}
             <div className="space-y-3">
               <span className="text-[10px] font-bold uppercase tracking-wider text-stocky-text-sub">
-                Location Details
+                {t('locations.locationDetails')}
               </span>
 
               <div>
                 <label className="block text-xs font-medium text-stocky-text-main">
-                  Location Name *
+                  {t('locations.locationNameRequired')}
                   <input
                     type="text"
                     required
                     value={drawerName}
                     onChange={(e) => setDrawerName(e.target.value)}
-                    placeholder="e.g. Downtown Flagship, Haram Branch, Central Depot"
+                    placeholder={t('locations.locationNamePlaceholder')}
                     className="mt-1 h-9 w-full rounded-xl border border-stocky-border-subtle bg-stocky-bg-global px-3 text-xs text-stocky-text-main focus:border-stocky-primary focus:bg-white focus:outline-none"
                   />
                 </label>
@@ -1138,24 +1144,24 @@ export function LocationsDirectoryWidget({
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <label className="block text-xs font-medium text-stocky-text-main">
-                  Type
+                  {t('locations.type')}
                   <select
                     value={drawerType}
                     onChange={(e) => setDrawerType(e.target.value as any)}
                     className="mt-1 h-9 w-full rounded-xl border border-stocky-border-subtle bg-stocky-bg-global px-3 text-xs text-stocky-text-main focus:border-stocky-primary focus:bg-white focus:outline-none"
                   >
-                    <option value="branch">Branch (Retail / Outlet)</option>
-                    <option value="warehouse">Warehouse (Depot / Storage)</option>
+                    <option value="branch">{t('locations.typeBranchOption')}</option>
+                    <option value="warehouse">{t('locations.typeWarehouseOption')}</option>
                   </select>
                 </label>
 
                 <label className="block text-xs font-medium text-stocky-text-main">
-                  Phone Number
+                  {t('locations.phoneNumber')}
                   <input
                     type="text"
                     value={drawerPhone}
                     onChange={(e) => setDrawerPhone(e.target.value)}
-                    placeholder="+20 100 123 4567"
+                    placeholder={t('locations.phonePlaceholder')}
                     className="mt-1 h-9 w-full rounded-xl border border-stocky-border-subtle bg-stocky-bg-global px-3 text-xs text-stocky-text-main focus:border-stocky-primary focus:bg-white focus:outline-none"
                   />
                 </label>
@@ -1163,12 +1169,12 @@ export function LocationsDirectoryWidget({
 
               <div>
                 <label className="block text-xs font-medium text-stocky-text-main">
-                  Address
+                  {t('locations.address')}
                   <input
                     type="text"
                     value={drawerAddress}
                     onChange={(e) => setDrawerAddress(e.target.value)}
-                    placeholder="Street address, district, city"
+                    placeholder={t('locations.addressInputPlaceholder')}
                     className="mt-1 h-9 w-full rounded-xl border border-stocky-border-subtle bg-stocky-bg-global px-3 text-xs text-stocky-text-main focus:border-stocky-primary focus:bg-white focus:outline-none"
                   />
                 </label>
@@ -1179,7 +1185,7 @@ export function LocationsDirectoryWidget({
             <div className="space-y-3 border-t border-stocky-border-subtle pt-4">
               <div className="flex items-center justify-between">
                 <span className="text-[10px] font-bold uppercase tracking-wider text-stocky-text-sub">
-                  Branch Cover Photo
+                  {t('locations.branchCoverPhoto')}
                 </span>
                 {drawerImageUrl && (
                   <button
@@ -1190,7 +1196,7 @@ export function LocationsDirectoryWidget({
                     }}
                     className="text-[11px] font-medium text-rose-600 hover:underline cursor-pointer"
                   >
-                    Remove photo
+                    {t('locations.removePhoto')}
                   </button>
                 )}
               </div>
@@ -1200,7 +1206,7 @@ export function LocationsDirectoryWidget({
                 <div className="relative h-44 w-full overflow-hidden rounded-2xl border border-stocky-border-subtle bg-slate-100 group shadow-xs">
                   <img
                     src={drawerImageUrl}
-                    alt="Cover preview"
+                    alt={t('locations.coverPreviewAlt')}
                     referrerPolicy="no-referrer"
                     onError={(e) => {
                       (e.currentTarget as HTMLImageElement).style.display = 'none';
@@ -1211,7 +1217,7 @@ export function LocationsDirectoryWidget({
                     <div className="flex justify-end">
                       <span className="inline-flex items-center gap-1.5 rounded-full bg-black/65 backdrop-blur-md px-2.5 py-1 text-[10px] font-medium text-white shadow-xs">
                         <CheckIcon size="xs" className="text-stocky-accent" />
-                        <span>Saved to stocky-private</span>
+                        <span>{t('locations.savedToPrivate')}</span>
                       </span>
                     </div>
 
@@ -1223,7 +1229,7 @@ export function LocationsDirectoryWidget({
                         className="rounded-lg bg-white/95 hover:bg-white px-3 py-1.5 text-xs font-semibold text-stocky-text-main shadow-sm transition-all cursor-pointer inline-flex items-center gap-1.5 disabled:opacity-60"
                       >
                         <CameraIcon size="xs" />
-                        <span>Replace photo</span>
+                        <span>{t('locations.replacePhoto')}</span>
                       </button>
                       <button
                         type="button"
@@ -1233,7 +1239,7 @@ export function LocationsDirectoryWidget({
                         }}
                         className="rounded-lg bg-rose-600/90 hover:bg-rose-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition-all cursor-pointer"
                       >
-                        Remove
+                        {t('locations.remove')}
                       </button>
                     </div>
                   </div>
@@ -1268,14 +1274,14 @@ export function LocationsDirectoryWidget({
                   </div>
 
                   <p className="text-xs font-semibold text-stocky-text-main">
-                    {uploadingImage ? 'Uploading to company private storage...' : 'Upload branch cover photo'}
+                    {uploadingImage ? t('locations.uploadingToStorage') : t('locations.uploadCoverPhoto')}
                   </p>
                   <p className="mt-1 text-[11px] text-stocky-text-sub max-w-[280px]">
-                    Drag and drop your image here, or{' '}
-                    <span className="font-semibold text-stocky-primary underline underline-offset-2">browse files</span>
+                    {t('locations.dragDropPrompt')}{' '}
+                    <span className="font-semibold text-stocky-primary underline underline-offset-2">{t('locations.browseFiles')}</span>
                   </p>
                   <p className="mt-2 text-[10px] text-stocky-text-sub/80">
-                    Saved directly to <span className="font-mono font-medium">stocky-private / company folder</span> · PNG, JPG, WEBP up to 5MB
+                    {t('locations.privateStorageHint')}
                   </p>
                 </div>
               )}
@@ -1305,17 +1311,17 @@ export function LocationsDirectoryWidget({
             {/* Branch Manager Assignment */}
             <div className="space-y-3 border-t border-stocky-border-subtle pt-4">
               <span className="text-[10px] font-bold uppercase tracking-wider text-stocky-text-sub">
-                Branch Manager
+                {t('locations.branchManager')}
               </span>
 
               <label className="block text-xs font-medium text-stocky-text-main">
-                Assigned Manager
+                {t('locations.assignedManager')}
                 <select
                   value={drawerManagerUserId}
                   onChange={(e) => setDrawerManagerUserId(e.target.value)}
                   className="mt-1 h-9 w-full rounded-xl border border-stocky-border-subtle bg-stocky-bg-global px-3 text-xs text-stocky-text-main focus:border-stocky-primary focus:bg-white focus:outline-none"
                 >
-                  <option value="">No manager assigned</option>
+                  <option value="">{t('locations.noManagerAssigned')}</option>
                   {availableMembers
                     .filter((m) => ['manager', 'admin', 'owner'].includes(m.role || ''))
                     .map((member) => (
@@ -1332,10 +1338,10 @@ export function LocationsDirectoryWidget({
               <div className="flex items-center justify-between">
                 <div>
                   <span className="text-[10px] font-bold uppercase tracking-wider text-stocky-text-sub">
-                    Staff Members ({drawerAssignedUserIds.length} assigned)
+                    {t('locations.staffMembersAssigned', { count: drawerAssignedUserIds.length })}
                   </span>
                   <p className="text-[11px] text-stocky-text-sub mt-0.5">
-                    Select team members assigned to work at this location.
+                    {t('locations.staffMembersSubtitle')}
                   </p>
                 </div>
                 {availableMembers.length > 0 && (
@@ -1350,7 +1356,7 @@ export function LocationsDirectoryWidget({
                     }}
                     className="text-[11px] text-stocky-primary hover:underline cursor-pointer"
                   >
-                    {drawerAssignedUserIds.length === availableMembers.length ? 'Deselect all' : 'Select all'}
+                    {drawerAssignedUserIds.length === availableMembers.length ? t('locations.deselectAll') : t('locations.selectAll')}
                   </button>
                 )}
               </div>
@@ -1397,7 +1403,7 @@ export function LocationsDirectoryWidget({
                   );
                 })}
                 {availableMembers.length === 0 && (
-                  <p className="p-4 text-center text-xs text-stocky-text-sub">No team members available.</p>
+                  <p className="p-4 text-center text-xs text-stocky-text-sub">{t('locations.noTeamMembersAvailable')}</p>
                 )}
               </div>
             </div>
@@ -1411,7 +1417,7 @@ export function LocationsDirectoryWidget({
               disabled={drawerSaving}
               className="h-10 rounded-full border border-stocky-border-subtle bg-white px-5 text-xs font-medium text-stocky-text-main hover:bg-stocky-bg-global transition-colors cursor-pointer"
             >
-              Cancel
+              {t('locations.cancel')}
             </button>
             <button
               type="submit"
@@ -1420,10 +1426,10 @@ export function LocationsDirectoryWidget({
               className="h-10 rounded-full bg-stocky-primary px-6 text-xs font-medium text-white hover:bg-stocky-primary-hover transition-colors shadow-xs disabled:opacity-50 cursor-pointer"
             >
               {drawerSaving
-                ? 'Saving...'
+                ? t('locations.saving')
                 : editingLocation
-                  ? 'Update location'
-                  : 'Create location'}
+                  ? t('locations.updateLocation')
+                  : t('locations.createLocation')}
             </button>
           </div>
         </div>
@@ -1435,7 +1441,7 @@ export function LocationsDirectoryWidget({
       <SideDrawer
         isOpen={Boolean(qrLocation)}
         onClose={() => setQrLocation(null)}
-        ariaLabel={`${qrLocation?.name || 'Branch'} Attendance QR Poster`}
+        ariaLabel={qrLocation ? t('locations.qrPosterAria', { name: qrLocation.name }) : ''}
       >
         {qrLocation && (
           <div className="flex h-full flex-col">
@@ -1443,16 +1449,17 @@ export function LocationsDirectoryWidget({
             <div className="flex items-center justify-between border-b border-stocky-border-subtle px-5 py-4 shrink-0">
               <div>
                 <h2 className="text-base font-semibold text-stocky-text-main">
-                  {qrLocation.name} Attendance QR
+                  {t('locations.attendanceQrHeader', { name: qrLocation.name })}
                 </h2>
                 <p className="text-xs text-stocky-text-sub mt-0.5">
-                  Print or download official entrance QR poster for employee shift check-in.
+                  {t('locations.attendanceQrSubtitle')}
                 </p>
               </div>
               <button
                 type="button"
                 onClick={() => setQrLocation(null)}
                 className="flex h-8 w-8 items-center justify-center rounded-full text-stocky-text-sub hover:bg-stocky-bg-global hover:text-stocky-text-main cursor-pointer"
+                aria-label={t('locations.closeModal')}
               >
                 <XIcon size="xs" />
               </button>
@@ -1467,28 +1474,28 @@ export function LocationsDirectoryWidget({
                 {qrLocation.name}
               </h3>
               <p className="text-xs text-stocky-text-sub mt-0.5 max-w-xs">
-                {qrLocation.address || 'Registered branch entrance'} · {qrLocation.type}
+                {qrLocation.address || t('locations.registeredEntrance')} · {qrLocation.type === 'warehouse' ? t('locations.warehouse') : t('locations.branch')}
               </p>
 
               {/* QR Card Preview */}
               <div className="my-6 p-6 rounded-2xl border-2 border-dashed border-stocky-border-subtle bg-stocky-bg-global/30 flex flex-col items-center">
                 <img
                   src={`https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=stocky:branch:${qrLocation.id}`}
-                  alt={`${qrLocation.name} Attendance QR Code`}
+                  alt={t('locations.qrCodeAlt', { name: qrLocation.name })}
                   className="w-56 h-56 rounded-xl object-contain bg-white p-2 shadow-xs"
                 />
                 <div className="mt-4 text-xs font-mono font-semibold text-stocky-text-sub bg-white border border-stocky-border-subtle px-3 py-1 rounded-full">
-                  Branch Token: {qrLocation.id.slice(0, 8)}
+                  {t('locations.branchToken', { token: qrLocation.id.slice(0, 8) })}
                 </div>
               </div>
 
-              <div className="p-4 rounded-xl bg-stocky-bg-global/60 border border-stocky-border-subtle text-left w-full text-xs text-stocky-text-sub space-y-1.5">
+              <div className="p-4 rounded-xl bg-stocky-bg-global/60 border border-stocky-border-subtle text-start w-full text-xs text-stocky-text-sub space-y-1.5">
                 <div className="font-semibold text-stocky-text-main flex items-center gap-1.5">
                   <CheckIcon size="xs" className="text-stocky-status-success-fg" />
-                  <span>Employee Check-In Protocol</span>
+                  <span>{t('locations.checkInProtocol')}</span>
                 </div>
                 <p>
-                  Staff scan this poster using the mobile camera or the Stocky app upon arrival and departure. Shift punches are automatically verified against the branch location.
+                  {t('locations.checkInProtocolDesc')}
                 </p>
               </div>
             </div>
@@ -1500,7 +1507,7 @@ export function LocationsDirectoryWidget({
                 onClick={() => setQrLocation(null)}
                 className="h-9 px-4 rounded-full border border-stocky-border-subtle text-xs font-medium text-stocky-text-sub hover:text-stocky-text-main cursor-pointer"
               >
-                Close
+                {t('locations.close')}
               </button>
               <div className="flex items-center gap-2">
                 <a
@@ -1511,7 +1518,7 @@ export function LocationsDirectoryWidget({
                   className="h-9 px-3.5 rounded-full border border-stocky-border-subtle bg-white text-xs font-medium text-stocky-text-main hover:border-stocky-primary hover:text-stocky-primary transition-colors cursor-pointer inline-flex items-center gap-1.5 shadow-2xs"
                 >
                   <CloudDownloadIcon size="xs" />
-                  <span>Download PNG</span>
+                  <span>{t('locations.downloadPng')}</span>
                 </a>
                 <button
                   type="button"
@@ -1519,7 +1526,7 @@ export function LocationsDirectoryWidget({
                   className="h-9 px-4 rounded-full bg-stocky-primary text-white text-xs font-semibold hover:bg-stocky-primary-hover transition-colors cursor-pointer inline-flex items-center gap-1.5 shadow-sm"
                 >
                   <QrCodeIcon size="xs" />
-                  <span>Print Poster</span>
+                  <span>{t('locations.printPoster')}</span>
                 </button>
               </div>
             </div>

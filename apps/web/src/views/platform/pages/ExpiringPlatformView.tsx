@@ -1,5 +1,6 @@
 import React from 'react';
 import type { CompanyUserRole, Location, Product, StockLot } from '@stocky/types';
+import { useTranslation } from '@/lib/i18n';
 import { PlatformPageLayout } from './PlatformPageLayout';
 import { ExpiringStockWidget } from '@/widgets';
 
@@ -18,21 +19,22 @@ export function ExpiringPlatformView({
   onLocationChange,
   ...widgetProps
 }: ExpiringPlatformViewProps) {
+  const { t } = useTranslation();
   const canFilterLocation = userRole === 'owner' || userRole === 'admin';
 
   return (
     <PlatformPageLayout
-      title="Expiring stock"
-      subtitle="Decide what happens to batches before they reach their expiry date."
+      title={t('expiring.title')}
+      subtitle={t('expiring.subtitle')}
       actions={
         canFilterLocation ? (
           <select
             value={selectedLocationId}
             onChange={(event) => onLocationChange(event.target.value)}
             className="h-8 rounded-full bg-white border border-stocky-border-subtle px-3 text-xs focus:outline-none focus:border-stocky-primary"
-            aria-label="Filter expiring stock by location"
+            aria-label={t('expiring.filterLocationAria')}
           >
-            <option value="all">All locations</option>
+            <option value="all">{t('inventory.allLocations')}</option>
             {locations.map((location) => (
               <option key={location.id} value={location.id}>
                 {location.name}

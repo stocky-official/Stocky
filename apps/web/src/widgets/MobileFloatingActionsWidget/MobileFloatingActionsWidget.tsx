@@ -3,6 +3,7 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { BarcodeIcon, ClockIcon } from '@stocky/icons';
+import { useTranslation } from '@/lib/i18n';
 
 export interface MobileFloatingActionsWidgetProps {
   isAttendancePage: boolean;
@@ -17,9 +18,9 @@ export interface MobileFloatingActionsWidgetProps {
  * Floating Action Button (FAB) stack positioned on mobile viewports.
  *
  * Geometric Alignment:
- * - Uses `right-0 w-[20%]` with `items-center` to guarantee that both FABs
- *   are centered at 10% from the right edge, perfectly aligning with the
- *   center of the 5th (Attendance) button on the mobile bottom navigation bar.
+ * - Uses `ltr:right-0 rtl:left-0 w-[20%]` with `items-center` to guarantee that both FABs
+ *   are centered at 10% from the trailing edge, perfectly aligning with the
+ *   center of the 5th (Attendance) button on the mobile bottom navigation bar in both LTR and RTL.
  * - On the Attendance workspace, the Attendance QR Clock In/Out button is stacked
  *   directly on top of the Barcode button.
  */
@@ -30,10 +31,12 @@ export function MobileFloatingActionsWidget({
   onOpenBarcodeScanner,
   hideBarcodeScanner = false,
 }: MobileFloatingActionsWidgetProps) {
+  const { t } = useTranslation();
+
   return (
     <div
-      className="fixed bottom-[7.25rem] right-0 w-[20%] flex flex-col items-center gap-2.5 z-40 md:hidden pointer-events-none [&>*]:pointer-events-auto select-none"
-      aria-label="Floating Action Controls"
+      className="fixed bottom-[7.25rem] ltr:right-0 rtl:left-0 w-[20%] flex flex-col items-center gap-2.5 z-40 md:hidden pointer-events-none [&>*]:pointer-events-auto select-none"
+      aria-label={t('toolbar.actions')}
     >
       {/* 1. Top FAB: Attendance QR Clock Button (Shown on Attendance page only) */}
       <AnimatePresence>
@@ -48,8 +51,8 @@ export function MobileFloatingActionsWidget({
             whileHover={{ scale: 1.08 }}
             whileTap={{ scale: 0.92 }}
             transition={{ type: 'spring', stiffness: 450, damping: 28 }}
-            aria-label={isClockedIn ? 'Clocked In. Tap to Scan QR and Clock Out' : 'Tap to Scan QR and Clock In'}
-            title={isClockedIn ? 'Clocked In · Scan QR to Clock Out' : 'Scan QR to Clock In'}
+            aria-label={isClockedIn ? t('floatingActions.clockOutAria') : t('floatingActions.clockInAria')}
+            title={isClockedIn ? t('floatingActions.clockOutAria') : t('floatingActions.clockInAria')}
             className={`relative rounded-full flex items-center justify-center ring-[2.5px] ring-white shadow-xl transition-colors focus:outline-none cursor-pointer ${
               isClockedIn
                 ? 'bg-emerald-500 text-white shadow-emerald-500/30'
@@ -61,7 +64,7 @@ export function MobileFloatingActionsWidget({
             {isClockedIn && (
               <>
                 <span className="absolute -inset-1 rounded-full border-2 border-emerald-400 animate-ping opacity-35 pointer-events-none" />
-                <span className="absolute top-1 right-1 w-2.5 h-2.5 rounded-full bg-white border-2 border-emerald-500 shadow-2xs" />
+                <span className="absolute top-1 ltr:right-1 rtl:left-1 w-2.5 h-2.5 rounded-full bg-white border-2 border-emerald-500 shadow-2xs" />
               </>
             )}
 
@@ -81,8 +84,8 @@ export function MobileFloatingActionsWidget({
           whileHover={{ scale: 1.08 }}
           whileTap={{ scale: 0.92 }}
           transition={{ type: 'spring', stiffness: 450, damping: 28 }}
-          aria-label="Scan Barcode with Camera"
-          title="Scan Barcode"
+          aria-label={t('floatingActions.scanBarcodeAria')}
+          title={t('floatingActions.scanBarcodeAria')}
           className="bg-stocky-text-main text-white rounded-full flex items-center justify-center ring-[2.5px] ring-white shadow-xl hover:bg-black active:bg-neutral-800 transition-all focus:outline-none cursor-pointer"
           style={{ width: '52px', height: '52px' }}
         >

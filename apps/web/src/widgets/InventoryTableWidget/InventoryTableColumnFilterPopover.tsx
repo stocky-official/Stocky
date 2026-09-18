@@ -18,6 +18,7 @@ import {
   XIcon,
 } from '@stocky/icons';
 import type { TableFilters, SortKey, ExpiryFilter } from './InventoryTableWidget';
+import { useTranslation } from '@/lib/i18n';
 
 export interface InventoryTableColumnFilterPopoverProps {
   isOpen: boolean;
@@ -46,6 +47,7 @@ export function InventoryTableColumnFilterPopover({
   options,
   optionCounts = {},
 }: StockTableColumnFilterPopoverProps) {
+  const { t } = useTranslation();
   const [searchValue, setSearchValue] = useState('');
 
   const isTextFilter =
@@ -181,13 +183,13 @@ export function InventoryTableColumnFilterPopover({
           key="stock-column-filter-popover"
           data-stock-column-filter
           role="dialog"
-          aria-label={`Filter ${columnLabel}`}
+          aria-label={t('inventory.filterColumnTitle', { column: columnLabel })}
           initial={{ opacity: 0, y: -6, scale: 0.98 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: -6, scale: 0.98 }}
           transition={{ duration: 0.15, ease: 'easeOut' }}
           style={{ top: position.top, left: position.left }}
-          className="fixed z-50 w-72 sm:w-80 rounded-2xl border border-stocky-border-subtle bg-white shadow-xl flex flex-col overflow-hidden text-left"
+          className="fixed z-50 w-72 sm:w-80 rounded-2xl border border-stocky-border-subtle bg-white shadow-xl flex flex-col overflow-hidden text-start"
         >
           {/* Header */}
           <header className="flex items-center justify-between border-b border-stocky-border-subtle px-4 py-3 bg-stocky-bg-global/50">
@@ -196,11 +198,11 @@ export function InventoryTableColumnFilterPopover({
                 {getColumnIcon()}
               </span>
               <span className="text-xs font-semibold text-stocky-text-main truncate">
-                Filter {columnLabel}
+                {t('inventory.filterColumnTitle', { column: columnLabel })}
               </span>
               {hasActiveFilter && (
                 <span className="shrink-0 px-2 py-0.5 text-[10px] font-medium bg-stocky-primary/10 text-stocky-primary rounded-full border border-stocky-primary/20">
-                  Active
+                  {t('inventory.activeBadge')}
                 </span>
               )}
             </div>
@@ -208,7 +210,7 @@ export function InventoryTableColumnFilterPopover({
               type="button"
               onClick={onClose}
               className="flex h-6 w-6 items-center justify-center rounded-full text-stocky-text-sub hover:bg-stocky-bg-hover hover:text-stocky-text-main transition-colors cursor-pointer"
-              aria-label="Close filter"
+              aria-label={t('inventory.closeFilterAria')}
             >
               <XIcon size="xs" />
             </button>
@@ -222,22 +224,22 @@ export function InventoryTableColumnFilterPopover({
                 <div className="relative">
                   <SearchIcon
                     size="xs"
-                    className="absolute left-2.5 top-1/2 -translate-y-1/2 text-stocky-text-sub pointer-events-none"
+                    className="absolute start-2.5 top-1/2 -translate-y-1/2 text-stocky-text-sub pointer-events-none"
                   />
                   <input
                     type="text"
                     autoFocus
                     value={searchValue}
                     onChange={(e) => setSearchValue(e.target.value)}
-                    placeholder={`Search ${columnLabel.toLowerCase()}...`}
-                    className="h-8 w-full rounded-xl border border-stocky-border-subtle bg-stocky-bg-global/50 pl-8 pr-7 text-xs text-stocky-text-main placeholder:text-stocky-text-sub/60 focus:border-stocky-primary focus:bg-white focus:outline-none"
+                    placeholder={t('inventory.filterValuesPlaceholder', { label: columnLabel })}
+                    className="h-8 w-full rounded-xl border border-stocky-border-subtle bg-stocky-bg-global/50 ps-8 pe-7 text-xs text-stocky-text-main placeholder:text-stocky-text-sub/60 focus:border-stocky-primary focus:bg-white focus:outline-none"
                   />
                   {searchValue && (
                     <button
                       type="button"
                       onClick={() => setSearchValue('')}
-                      className="absolute right-2 top-1/2 -translate-y-1/2 text-stocky-text-sub hover:text-stocky-text-main cursor-pointer"
-                      aria-label="Clear search text"
+                      className="absolute end-2 top-1/2 -translate-y-1/2 text-stocky-text-sub hover:text-stocky-text-main cursor-pointer"
+                      aria-label={t('inventory.clearSearchAria')}
                     >
                       <XIcon size="xs" />
                     </button>
@@ -252,18 +254,20 @@ export function InventoryTableColumnFilterPopover({
                   >
                     {filteredOptions.length > 0 &&
                     filteredOptions.every((opt) => selectedValues.includes(opt))
-                      ? 'Deselect all'
-                      : 'Select all visible'}
+                      ? t('inventory.deselectAll')
+                      : t('inventory.selectAllVisible')}
                   </button>
                   <span>
-                    {filteredOptions.length} option{filteredOptions.length === 1 ? '' : 's'}
+                    {filteredOptions.length === 1
+                      ? t('inventory.optionCountSingle')
+                      : t('inventory.optionsCount', { count: filteredOptions.length })}
                   </span>
                 </div>
 
-                <div className="space-y-1 max-h-48 overflow-y-auto pr-0.5">
+                <div className="space-y-1 max-h-48 overflow-y-auto pe-0.5">
                   {filteredOptions.length === 0 ? (
                     <p className="py-6 text-center text-xs text-stocky-text-sub">
-                      No matching {columnLabel.toLowerCase()}
+                      {t('inventory.noMatchingOptions', { label: columnLabel })}
                     </p>
                   ) : (
                     filteredOptions.map((option) => {
@@ -274,7 +278,7 @@ export function InventoryTableColumnFilterPopover({
                           key={option}
                           type="button"
                           onClick={() => toggleOption(option)}
-                          className={`w-full flex items-center justify-between gap-2 px-2.5 py-1.5 rounded-lg text-xs transition-colors cursor-pointer text-left ${
+                          className={`w-full flex items-center justify-between gap-2 px-2.5 py-1.5 rounded-lg text-xs transition-colors cursor-pointer text-start ${
                             isChecked
                               ? 'bg-stocky-primary/5 text-stocky-text-main font-medium'
                               : 'hover:bg-stocky-bg-hover text-stocky-text-sub'
@@ -311,14 +315,14 @@ export function InventoryTableColumnFilterPopover({
                 {/* Presets */}
                 <div className="space-y-1.5">
                   <label className="text-[11px] font-medium text-stocky-text-sub uppercase tracking-wider">
-                    Stock status
+                    {t('inventory.stockStatus')}
                   </label>
                   <div className="grid grid-cols-2 gap-1.5">
                     {[
-                      { id: 'all', label: 'All stock' },
-                      { id: 'in_stock', label: 'In stock (> 0)' },
-                      { id: 'low_stock', label: 'Low stock (≤ 10)' },
-                      { id: 'out_of_stock', label: 'Out of stock (= 0)' },
+                      { id: 'all', label: t('inventory.allStock') },
+                      { id: 'in_stock', label: t('inventory.inStockOption') },
+                      { id: 'low_stock', label: t('inventory.lowStockOption') },
+                      { id: 'out_of_stock', label: t('inventory.outOfStockOption') },
                     ].map((preset) => {
                       const isActive = (filters.quantityPreset || 'all') === preset.id;
                       return (
@@ -344,11 +348,11 @@ export function InventoryTableColumnFilterPopover({
                 {/* Custom Range */}
                 <div className="space-y-1.5 pt-1 border-t border-stocky-border-subtle">
                   <label className="text-[11px] font-medium text-stocky-text-sub uppercase tracking-wider">
-                    Custom range (units)
+                    {t('inventory.customRangeUnits')}
                   </label>
                   <div className="grid grid-cols-2 gap-2">
                     <div>
-                      <label className="text-[10px] text-stocky-text-sub block mb-1">Min</label>
+                      <label className="text-[10px] text-stocky-text-sub block mb-1">{t('inventory.minLabel')}</label>
                       <input
                         type="number"
                         min="0"
@@ -359,13 +363,13 @@ export function InventoryTableColumnFilterPopover({
                       />
                     </div>
                     <div>
-                      <label className="text-[10px] text-stocky-text-sub block mb-1">Max</label>
+                      <label className="text-[10px] text-stocky-text-sub block mb-1">{t('inventory.maxLabel')}</label>
                       <input
                         type="number"
                         min="0"
                         value={filters.quantityMax || ''}
                         onChange={(e) => onUpdateFilter('quantityMax', e.target.value)}
-                        placeholder="No limit"
+                        placeholder={t('inventory.noLimit')}
                         className="h-8 w-full rounded-xl border border-stocky-border-subtle bg-white px-2.5 text-xs text-stocky-text-main focus:border-stocky-primary focus:outline-none"
                       />
                     </div>
@@ -380,14 +384,14 @@ export function InventoryTableColumnFilterPopover({
                 {/* Presets */}
                 <div className="space-y-1.5">
                   <label className="text-[11px] font-medium text-stocky-text-sub uppercase tracking-wider">
-                    Price bracket
+                    {t('inventory.priceBracket')}
                   </label>
                   <div className="grid grid-cols-2 gap-1.5">
                     {[
-                      { id: 'all', label: 'All prices' },
-                      { id: 'under_100', label: '< 100 EGP' },
-                      { id: '100_500', label: '100 – 500 EGP' },
-                      { id: 'over_500', label: '> 500 EGP' },
+                      { id: 'all', label: t('inventory.allPrices') },
+                      { id: 'under_100', label: t('inventory.under100') },
+                      { id: '100_500', label: t('inventory.between100_500') },
+                      { id: 'over_500', label: t('inventory.over500') },
                     ].map((preset) => {
                       const isActive = (filters.pricePreset || 'all') === preset.id;
                       return (
@@ -413,11 +417,11 @@ export function InventoryTableColumnFilterPopover({
                 {/* Custom Range */}
                 <div className="space-y-1.5 pt-1 border-t border-stocky-border-subtle">
                   <label className="text-[11px] font-medium text-stocky-text-sub uppercase tracking-wider">
-                    Custom price (EGP)
+                    {t('inventory.customPriceEgp')}
                   </label>
                   <div className="grid grid-cols-2 gap-2">
                     <div>
-                      <label className="text-[10px] text-stocky-text-sub block mb-1">Min (EGP)</label>
+                      <label className="text-[10px] text-stocky-text-sub block mb-1">{t('inventory.minPriceLabel')}</label>
                       <input
                         type="number"
                         min="0"
@@ -428,13 +432,13 @@ export function InventoryTableColumnFilterPopover({
                       />
                     </div>
                     <div>
-                      <label className="text-[10px] text-stocky-text-sub block mb-1">Max (EGP)</label>
+                      <label className="text-[10px] text-stocky-text-sub block mb-1">{t('inventory.maxPriceLabel')}</label>
                       <input
                         type="number"
                         min="0"
                         value={filters.priceMax || ''}
                         onChange={(e) => onUpdateFilter('priceMax', e.target.value)}
-                        placeholder="No limit"
+                        placeholder={t('inventory.noLimit')}
                         className="h-8 w-full rounded-xl border border-stocky-border-subtle bg-white px-2.5 text-xs text-stocky-text-main focus:border-stocky-primary focus:outline-none"
                       />
                     </div>
@@ -448,38 +452,38 @@ export function InventoryTableColumnFilterPopover({
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <label className="text-[11px] font-medium text-stocky-text-sub uppercase tracking-wider">
-                    Expiry condition
+                    {t('inventory.expiryCondition')}
                   </label>
-                  <span className="text-[11px] text-stocky-text-sub">Threshold window</span>
+                  <span className="text-[11px] text-stocky-text-sub">{t('inventory.thresholdWindow')}</span>
                 </div>
                 <div className="space-y-1.5">
                   {[
                     {
                       id: 'expired' as const,
-                      title: 'Expired',
-                      daysBadge: '< 0 days (overdue)',
-                      description: 'Past the recorded expiry date',
+                      title: t('inventory.expired'),
+                      daysBadge: t('inventory.expiredOverdue'),
+                      description: t('inventory.expiredDesc'),
                       tone: 'stocky-status-critical',
                     },
                     {
                       id: 'soon' as const,
-                      title: 'Expiring soon',
-                      daysBadge: '≤ 30 days left',
-                      description: 'Within notice window (≤ 30 days)',
+                      title: t('inventory.expiringSoon'),
+                      daysBadge: t('inventory.expiringSoonDays'),
+                      description: t('inventory.expiringSoonDesc'),
                       tone: 'stocky-status-warning',
                     },
                     {
                       id: 'healthy' as const,
-                      title: 'Healthy stock',
-                      daysBadge: '> 30 days left',
-                      description: 'Safe shelf life remaining',
+                      title: t('inventory.healthyStock'),
+                      daysBadge: t('inventory.healthyDays'),
+                      description: t('inventory.healthyDesc'),
                       tone: 'stocky-status-success',
                     },
                     {
                       id: 'missing' as const,
-                      title: 'No expiry date',
-                      daysBadge: 'No date set',
-                      description: 'Batches without an expiry date',
+                      title: t('inventory.noExpiryDate'),
+                      daysBadge: t('inventory.noDateSet'),
+                      description: t('inventory.noExpiryDesc'),
                       tone: 'stocky-status-muted',
                     },
                   ].map((status) => {
@@ -496,7 +500,7 @@ export function InventoryTableColumnFilterPopover({
                           else current.push(status.id);
                           onUpdateFilter('expiry', current);
                         }}
-                        className={`w-full flex items-center justify-between gap-2.5 px-3 py-2 rounded-xl border transition-colors cursor-pointer text-left ${
+                        className={`w-full flex items-center justify-between gap-2.5 px-3 py-2 rounded-xl border transition-colors cursor-pointer text-start ${
                           isChecked
                             ? 'border-stocky-primary bg-stocky-primary/5 text-stocky-text-main'
                             : 'border-stocky-border-subtle/50 hover:bg-stocky-bg-hover hover:border-stocky-border-subtle text-stocky-text-sub'
@@ -543,24 +547,24 @@ export function InventoryTableColumnFilterPopover({
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <label className="text-[11px] font-medium text-stocky-text-sub uppercase tracking-wider">
-                    Audit status
+                    {t('inventory.auditStatus')}
                   </label>
-                  <span className="text-[11px] text-stocky-text-sub">Verification record</span>
+                  <span className="text-[11px] text-stocky-text-sub">{t('inventory.verificationRecord')}</span>
                 </div>
                 <div className="space-y-1.5">
                   {[
                     {
                       id: 'audited' as const,
-                      title: 'Audited',
-                      badge: 'Audit logged',
-                      description: 'Physical count verified on record',
+                      title: t('inventory.audited'),
+                      badge: t('inventory.auditLogged'),
+                      description: t('inventory.auditedDesc'),
                       tone: 'stocky-status-success',
                     },
                     {
                       id: 'never' as const,
-                      title: 'Never audited',
-                      badge: 'Pending audit',
-                      description: 'No inventory audit on record yet',
+                      title: t('inventory.neverAudited'),
+                      badge: t('inventory.pendingAudit'),
+                      description: t('inventory.neverAuditedDesc'),
                       tone: 'stocky-status-warning',
                     },
                   ].map((status) => {
@@ -577,7 +581,7 @@ export function InventoryTableColumnFilterPopover({
                           else current.push(status.id);
                           onUpdateFilter('audit', current);
                         }}
-                        className={`w-full flex items-center justify-between gap-2.5 px-3 py-2 rounded-xl border transition-colors cursor-pointer text-left ${
+                        className={`w-full flex items-center justify-between gap-2.5 px-3 py-2 rounded-xl border transition-colors cursor-pointer text-start ${
                           isChecked
                             ? 'border-stocky-primary bg-stocky-primary/5 text-stocky-text-main'
                             : 'border-stocky-border-subtle/50 hover:bg-stocky-bg-hover hover:border-stocky-border-subtle text-stocky-text-sub'
@@ -628,14 +632,14 @@ export function InventoryTableColumnFilterPopover({
               onClick={() => onResetColumn(columnKey)}
               className="text-xs text-stocky-text-sub hover:text-stocky-text-main font-medium disabled:opacity-40 disabled:hover:text-stocky-text-sub transition-colors cursor-pointer disabled:cursor-not-allowed"
             >
-              Reset
+              {t('inventory.resetBtn')}
             </button>
             <button
               type="button"
               onClick={onClose}
               className="h-8 px-4 rounded-full bg-stocky-text-main text-white hover:bg-black text-xs font-medium transition-colors cursor-pointer"
             >
-              Done
+              {t('inventory.doneBtn')}
             </button>
           </footer>
         </motion.div>

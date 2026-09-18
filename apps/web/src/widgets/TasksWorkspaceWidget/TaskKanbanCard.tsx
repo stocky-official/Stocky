@@ -31,9 +31,9 @@ export interface TaskKanbanCardProps {
   onOpenDetails: (task: StockTask) => void;
 }
 
-function formatDate(value?: string | null) {
+function formatDate(value?: string | null, loc: string = 'en') {
   return value
-    ? new Intl.DateTimeFormat('en', {
+    ? new Intl.DateTimeFormat(loc === 'ar' ? 'ar-EG' : 'en-US', {
         day: 'numeric',
         month: 'short',
       }).format(new Date(value))
@@ -51,7 +51,7 @@ export function TaskKanbanCard({
   onOpenReview,
   onOpenDetails,
 }: TaskKanbanCardProps) {
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
   const [isDragging, setIsDragging] = React.useState(false);
   const dragOccurredRef = React.useRef(false);
 
@@ -158,11 +158,11 @@ export function TaskKanbanCard({
             className="h-4.5 w-4.5 shrink-0"
           />
           <span className="truncate font-medium text-stocky-text-sub group-hover:text-stocky-text-main transition-colors">
-            {assignee?.full_name || assignee?.email?.split('@')[0] || 'Unassigned'}
+            {assignee?.full_name || assignee?.email?.split('@')[0] || t('tasks.unassigned')}
           </span>
         </div>
         <span className="shrink-0 text-[10px] text-stocky-text-sub/80 font-normal">
-          {formatDate(task.createdAt)}
+          {formatDate(task.createdAt, locale)}
         </span>
       </div>
     </div>

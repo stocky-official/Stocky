@@ -10,6 +10,7 @@ import {
   XIcon,
 } from '@stocky/icons';
 import type { Location, Product, StockLot, Supplier, SupplierContact } from '@stocky/types';
+import { useTranslation } from '@/lib/i18n';
 
 export interface ResupplyItemDetail {
   product: Product;
@@ -61,6 +62,7 @@ export function SupplierResupplyModalWidget({
   currentLocationName = 'All Locations',
   onSendRequest,
 }: SupplierResupplyModalWidgetProps) {
+  const { t, locale, isRtl } = useTranslation();
   const [toEmails, setToEmails] = useState<string[]>([]);
   const [emailInput, setEmailInput] = useState('');
   const [ccEmails, setCcEmails] = useState<string[]>([]);
@@ -91,7 +93,7 @@ export function SupplierResupplyModalWidget({
     supplierContacts.forEach((sc) => {
       if (sc.email) {
         const sup = suppliers.find((s) => s.id === sc.supplierId);
-        const supName = sup ? sup.name : 'Supplier';
+        const supName = sup ? sup.name : (locale === 'ar' ? 'المورّد' : 'Supplier');
         list.push({
           email: sc.email,
           label: `${sc.name} · ${supName} (${sc.email})`,
@@ -100,7 +102,7 @@ export function SupplierResupplyModalWidget({
       }
     });
     return list;
-  }, [suppliers, supplierContacts]);
+  }, [suppliers, supplierContacts, locale]);
 
   // Determine items to include in resupply
   const itemsToResupply = useMemo<ResupplyItemDetail[]>(() => {
@@ -127,7 +129,7 @@ export function SupplierResupplyModalWidget({
               lot,
               quantity: lot.quantityOnHand,
               expiryDate: lot.expiryDate,
-              locationName: locationMap.get(lot.locationId) || 'Location',
+              locationName: locationMap.get(lot.locationId) || (locale === 'ar' ? 'الفرع' : 'Location'),
               daysLeft: days,
             });
           });
@@ -158,7 +160,7 @@ export function SupplierResupplyModalWidget({
             lot,
             quantity: lot.quantityOnHand,
             expiryDate: lot.expiryDate,
-            locationName: locationMap.get(lot.locationId) || 'Location',
+            locationName: locationMap.get(lot.locationId) || (locale === 'ar' ? 'الفرع' : 'Location'),
             daysLeft: days,
           });
         }
@@ -166,7 +168,7 @@ export function SupplierResupplyModalWidget({
     });
 
     return result;
-  }, [expiringItems, locations, selectedProductIds, products, lots, currentLocationName]);
+  }, [expiringItems, locations, selectedProductIds, products, lots, currentLocationName, locale]);
 
   // Generate email body and subject template
   useEffect(() => {
@@ -183,9 +185,9 @@ export function SupplierResupplyModalWidget({
     }
 
     const supplierObj = suppliers.find((s) => s.id === selectedSupplierId);
-    const supplierGreeting = supplierObj ? supplierObj.name : 'Supplier Team';
+    const supplierGreeting = supplierObj ? supplierObj.name : t('modals.resupply.defaultSupplierGreeting');
 
-    const subjectTemplate = `[Resupply & Replacement Request] Expiring/Expired Products Pickup - ${companyName}`;
+    const subjectTemplate = t('modals.resupply.subjectTemplate', { companyName });
     setSubject(subjectTemplate);
 
     let itemsBlock = '';
@@ -195,47 +197,61 @@ export function SupplierResupplyModalWidget({
       itemsToResupply.forEach((item, index) => {
         totalUnits += item.quantity;
         const expiryFormatted = item.expiryDate
-          ? new Intl.DateTimeFormat('en', { day: 'numeric', month: 'short', year: 'numeric' }).format(new Date(item.expiryDate))
-          : 'Not recorded';
+          ? new Intl.DateTimeFormat(locale === 'ar' ? 'ar-EG' : 'en', { day: 'numeric', month: 'short', year: 'numeric' }).format(new Date(item.expiryDate))
+          : t('modals.resupply.notRecorded');
         const daysText = item.daysLeft !== null && item.daysLeft !== undefined
           ? item.daysLeft < 0
-            ? 'EXPIRED'
-            : `${item.daysLeft} days remaining`
-          : 'No date';
+            ? t('modals.resupply.expired')
+            : t('modals.resupply.daysRemaining', { count: item.daysLeft })
+          : t('modals.resupply.noDate');
 
-        itemsBlock += `${index + 1}. ${item.product.name} ${item.product.barcode ? `(Barcode: ${item.product.barcode})` : ''}\n`;
-        itemsBlock += `   • Batch/Lot #: ${item.lot?.lotNumber || 'General Stock'}\n`;
-        itemsBlock += `   • Quantity: ${item.quantity} ${item.product.unitName || 'units'}\n`;
-        itemsBlock += `   • Expiry Date: ${expiryFormatted} [${daysText}]\n`;
-        itemsBlock += `   • Location: ${item.locationName || currentLocationName}\n\n`;
+        const lotLabel = item.lot?.lotNumber || (locale === 'ar' ? 'مخزون عام' : 'General Stock');
+        const unitLabel = item.product.unitName || (locale === 'ar' ? 'وحدة' : 'units');
+        const batchPrefix = locale === 'ar' ? 'رقم التشغيلة/الدفعة' : 'Batch/Lot #';
+        const qtyPrefix = locale === 'ar' ? 'الكمية' : 'Quantity';
+        const expiryPrefix = locale === 'ar' ? 'تاريخ الانتهاء' : 'Expiry Date';
+        const locPrefix = locale === 'ar' ? 'الموقع/الفرع' : 'Location';
+
+        itemsBlock += `${index + 1}. ${item.product.name} ${item.product.barcode ? `(${locale === 'ar' ? 'الباركود' : 'Barcode'}: ${item.product.barcode})` : ''}\n`;
+        itemsBlock += `   • ${batchPrefix}: ${lotLabel}\n`;
+        itemsBlock += `   • ${qtyPrefix}: ${item.quantity} ${unitLabel}\n`;
+        itemsBlock += `   • ${expiryPrefix}: ${expiryFormatted} [${daysText}]\n`;
+        itemsBlock += `   • ${locPrefix}: ${item.locationName || currentLocationName}\n\n`;
       });
     } else {
-      itemsBlock = '(No items currently selected or filtered)\n\n';
+      itemsBlock = `${t('modals.resupply.noItemsSelected')}\n\n`;
     }
 
-    const bodyTemplate = `Dear ${supplierGreeting},
+    const dearGreeting = t('modals.resupply.dearGreeting', { supplier: supplierGreeting });
+    const bodyOpening = t('modals.resupply.bodyOpening', { location: currentLocationName });
+    const bodyAgreement = t('modals.resupply.bodyAgreement');
+    const itemsSectionHeader = t('modals.resupply.itemsSectionHeader');
+    const totalUnitsText = t('modals.resupply.totalUnits', { count: totalUnits });
+    const bodyClosing = t('modals.resupply.bodyClosing');
+    const bestRegards = t('modals.resupply.bestRegards');
+    const locationLabel = t('modals.resupply.locationLabel', { location: currentLocationName });
 
-We are writing to request the physical pickup and replacement of the products listed below, which are approaching expiration or have expired at our facility (${currentLocationName}).
+    const bodyTemplate = `${dearGreeting}
 
-In accordance with our supplier replacement agreement, please schedule a pickup for these items and arrange for fresh replacement batches to be delivered.
+${bodyOpening}
+
+${bodyAgreement}
 
 --------------------------------------------------
-ITEMS FOR PICKUP & REPLACEMENT:
+${itemsSectionHeader}
 --------------------------------------------------
 ${itemsBlock}--------------------------------------------------
-TOTAL UNITS REQUIRING REPLACEMENT: ${totalUnits} units
+${totalUnitsText}
 
-Please confirm the earliest available collection date and delivery window for the replacements.
+${bodyClosing}
 
-Thank you for your cooperation and prompt support.
-
-Best regards,
+${bestRegards}
 ${userName}
 ${userRole} · ${companyName}
-Location: ${currentLocationName}`;
+${locationLabel}`;
 
     setBody(bodyTemplate);
-  }, [isOpen, selectedSupplierId, itemsToResupply, companyName, currentLocationName, userName, userRole, suppliers, supplierEmailOptions]);
+  }, [isOpen, selectedSupplierId, itemsToResupply, companyName, currentLocationName, userName, userRole, suppliers, supplierEmailOptions, t, locale]);
 
   if (!isOpen) return null;
 
@@ -278,7 +294,7 @@ Location: ${currentLocationName}`;
 
   const handleSend = async () => {
     if (toEmails.length === 0) {
-      alert('Please add at least one recipient email in the "To" field.');
+      alert(t('modals.resupply.recipientRequired'));
       return;
     }
     setIsSending(true);
@@ -304,7 +320,7 @@ Location: ${currentLocationName}`;
         onClose();
       }, 1200);
     } catch (err: any) {
-      alert(err?.message || 'Failed to submit resupply request.');
+      alert(err?.message || t('modals.resupply.failedToSend'));
     } finally {
       setIsSending(false);
     }
@@ -315,20 +331,20 @@ Location: ${currentLocationName}`;
       <div
         className="w-full max-w-2xl max-h-[90vh] bg-white rounded-widget border border-stocky-border-subtle flex flex-col overflow-hidden animate-scale-in"
         role="dialog"
-        aria-label="Resupply Email Composer"
+        aria-label={t('modals.resupply.composerTitle')}
       >
         {/* Composer Window Header (Google Style) */}
         <div className="flex items-center justify-between px-4 py-2.5 bg-stocky-bg-global border-b border-stocky-border-subtle select-none">
           <div className="flex items-center gap-2 text-xs font-medium text-stocky-text-main">
             <MailIcon size="xs" className="text-stocky-primary" />
-            <span>New Resupply & Replacement Request</span>
+            <span>{t('modals.resupply.composerTitle')}</span>
           </div>
           <div className="flex items-center gap-1.5">
             <button
               type="button"
               onClick={onClose}
               className="p-1 rounded-md text-stocky-text-sub hover:bg-stocky-bg-hover hover:text-stocky-text-main transition-colors"
-              aria-label="Close composer"
+              aria-label={t('modals.resupply.closeComposer')}
             >
               <XIcon size="xs" />
             </button>
@@ -339,13 +355,13 @@ Location: ${currentLocationName}`;
         <div className="flex-1 overflow-y-auto flex flex-col">
           {/* Supplier Quick-Pick Row */}
           <div className="px-4 py-2 bg-stocky-bg-global/40 border-b border-stocky-border-subtle/70 flex items-center justify-between gap-2 text-xs">
-            <span className="text-[11px] text-stocky-text-sub font-light">Target Supplier:</span>
+            <span className="text-[11px] text-stocky-text-sub font-light">{t('modals.resupply.targetSupplier')}</span>
             <select
               value={selectedSupplierId}
               onChange={(e) => handleSupplierSelect(e.target.value)}
               className="h-7 px-2 rounded-md border border-stocky-border-subtle bg-white text-xs text-stocky-text-main focus:border-stocky-primary focus:outline-none max-w-[280px]"
             >
-              <option value="">Select supplier to load details...</option>
+              <option value="">{t('modals.resupply.selectSupplierPlaceholder')}</option>
               {suppliers.map((s) => (
                 <option key={s.id} value={s.id}>
                   {s.name} {s.contactEmail ? `(${s.contactEmail})` : ''}
@@ -356,7 +372,7 @@ Location: ${currentLocationName}`;
 
           {/* Recipients: To */}
           <div className="flex items-start gap-2 px-4 py-2 border-b border-stocky-border-subtle min-h-[40px] flex-wrap">
-            <span className="text-xs font-medium text-stocky-text-sub w-10 pt-1">To</span>
+            <span className="text-xs font-medium text-stocky-text-sub w-10 pt-1">{t('modals.resupply.to')}</span>
             <div className="flex-1 flex flex-wrap items-center gap-1.5 min-w-[200px]">
               {toEmails.map((email) => (
                 <span
@@ -384,7 +400,7 @@ Location: ${currentLocationName}`;
                   }
                 }}
                 onBlur={() => handleAddEmail('to', emailInput)}
-                placeholder={toEmails.length === 0 ? 'Recipient emails (e.g. orders@supplier.com)...' : ''}
+                placeholder={toEmails.length === 0 ? t('modals.resupply.recipientPlaceholder') : ''}
                 className="flex-1 min-w-[140px] text-xs text-stocky-text-main bg-transparent outline-none placeholder:text-stocky-text-sub/50 py-1"
               />
             </div>
@@ -395,7 +411,7 @@ Location: ${currentLocationName}`;
                   onClick={() => setShowCc(true)}
                   className="hover:text-stocky-primary transition-colors cursor-pointer"
                 >
-                  Cc
+                  {t('modals.resupply.cc')}
                 </button>
               )}
               {!showBcc && (
@@ -404,7 +420,7 @@ Location: ${currentLocationName}`;
                   onClick={() => setShowBcc(true)}
                   className="hover:text-stocky-primary transition-colors cursor-pointer"
                 >
-                  Bcc
+                  {t('modals.resupply.bcc')}
                 </button>
               )}
             </div>
@@ -413,7 +429,7 @@ Location: ${currentLocationName}`;
           {/* Recipients: Cc */}
           {showCc && (
             <div className="flex items-start gap-2 px-4 py-2 border-b border-stocky-border-subtle min-h-[36px] flex-wrap bg-stocky-bg-global/20">
-              <span className="text-xs font-medium text-stocky-text-sub w-10 pt-1">Cc</span>
+              <span className="text-xs font-medium text-stocky-text-sub w-10 pt-1">{t('modals.resupply.cc')}</span>
               <div className="flex-1 flex flex-wrap items-center gap-1.5 min-w-[200px]">
                 {ccEmails.map((email) => (
                   <span
@@ -441,7 +457,7 @@ Location: ${currentLocationName}`;
                     }
                   }}
                   onBlur={() => handleAddEmail('cc', ccInput)}
-                  placeholder="Cc recipients..."
+                  placeholder={t('modals.resupply.ccPlaceholder')}
                   className="flex-1 min-w-[140px] text-xs text-stocky-text-main bg-transparent outline-none placeholder:text-stocky-text-sub/50 py-0.5"
                 />
               </div>
@@ -451,7 +467,7 @@ Location: ${currentLocationName}`;
           {/* Recipients: Bcc */}
           {showBcc && (
             <div className="flex items-start gap-2 px-4 py-2 border-b border-stocky-border-subtle min-h-[36px] flex-wrap bg-stocky-bg-global/20">
-              <span className="text-xs font-medium text-stocky-text-sub w-10 pt-1">Bcc</span>
+              <span className="text-xs font-medium text-stocky-text-sub w-10 pt-1">{t('modals.resupply.bcc')}</span>
               <div className="flex-1 flex flex-wrap items-center gap-1.5 min-w-[200px]">
                 {bccEmails.map((email) => (
                   <span
@@ -479,7 +495,7 @@ Location: ${currentLocationName}`;
                     }
                   }}
                   onBlur={() => handleAddEmail('bcc', bccInput)}
-                  placeholder="Bcc recipients..."
+                  placeholder={t('modals.resupply.bccPlaceholder')}
                   className="flex-1 min-w-[140px] text-xs text-stocky-text-main bg-transparent outline-none placeholder:text-stocky-text-sub/50 py-0.5"
                 />
               </div>
@@ -492,7 +508,7 @@ Location: ${currentLocationName}`;
               type="text"
               value={subject}
               onChange={(e) => setSubject(e.target.value)}
-              placeholder="Subject..."
+              placeholder={t('modals.resupply.subjectPlaceholder')}
               className="w-full text-xs font-medium text-stocky-text-main bg-transparent outline-none placeholder:text-stocky-text-sub/50"
             />
           </div>
@@ -504,7 +520,7 @@ Location: ${currentLocationName}`;
               onChange={(e) => setBody(e.target.value)}
               className="w-full flex-1 resize-none text-xs text-stocky-text-main leading-relaxed font-normal bg-transparent outline-none border-0 focus:ring-0 p-0"
               rows={14}
-              aria-label="Email message body"
+              aria-label={t('modals.resupply.emailBodyLabel')}
             />
           </div>
         </div>
@@ -520,13 +536,13 @@ Location: ${currentLocationName}`;
             >
               {sendSuccess ? (
                 <>
-                  <CheckIcon size="xs" /> Request Recorded!
+                  <CheckIcon size="xs" /> {t('modals.resupply.requestRecorded')}
                 </>
               ) : isSending ? (
-                'Sending…'
+                t('modals.resupply.sending')
               ) : (
                 <>
-                  <MailIcon size="xs" /> Send Request
+                  <MailIcon size="xs" /> {t('modals.resupply.sendRequest')}
                 </>
               )}
             </button>
@@ -535,28 +551,30 @@ Location: ${currentLocationName}`;
               type="button"
               onClick={handleCopy}
               className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border border-stocky-border-subtle bg-white text-xs font-medium text-stocky-text-main hover:bg-stocky-bg-global transition-colors cursor-pointer"
-              title="Copy formatted email to clipboard to paste into Gmail, Outlook, or WhatsApp"
+              title={t('modals.resupply.copyTitle')}
             >
               {copied ? (
                 <>
                   <CheckIcon size="xs" className="text-emerald-600" />
-                  <span className="text-emerald-600">Copied to clipboard</span>
+                  <span className="text-emerald-600">{t('modals.resupply.copiedToClipboard')}</span>
                 </>
               ) : (
-                <>Copy text</>
+                <>{t('modals.resupply.copyText')}</>
               )}
             </button>
           </div>
 
           <div className="flex items-center gap-3">
             <span className="text-[11px] text-stocky-text-sub">
-              {itemsToResupply.length} item{itemsToResupply.length === 1 ? '' : 's'} included
+              {itemsToResupply.length === 1
+                ? t('modals.resupply.itemsIncludedSingular', { count: 1 })
+                : t('modals.resupply.itemsIncludedPlural', { count: itemsToResupply.length })}
             </span>
             <button
               type="button"
               onClick={onClose}
               className="p-1.5 rounded-md text-stocky-text-sub hover:text-red-600 hover:bg-red-50 transition-colors cursor-pointer"
-              title="Discard draft"
+              title={t('modals.resupply.discardDraft')}
             >
               <TrashIcon size="xs" />
             </button>

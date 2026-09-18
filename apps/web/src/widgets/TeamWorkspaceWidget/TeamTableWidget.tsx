@@ -12,6 +12,7 @@ import {
 import type { Location } from '@stocky/types';
 import { UserAvatar } from '@/components/ui/UserAvatar';
 import type { TeamMemberData } from './MemberDetailDrawer';
+import { useTranslation } from '@/lib/i18n';
 
 export interface TeamTableWidgetProps {
   members: TeamMemberData[];
@@ -32,16 +33,18 @@ export function TeamTableWidget({
   onAssignLocation,
   onUnassignLocation,
 }: TeamTableWidgetProps) {
+  const { t } = useTranslation();
+
   const getRoleBadge = (role: string) => {
     switch (role) {
       case 'owner':
-        return <span className="inline-flex rounded-full border stocky-status-muted px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider">Owner</span>;
+        return <span className="inline-flex rounded-full border stocky-status-muted px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider">{t('team.roleOwner')}</span>;
       case 'admin':
-        return <span className="inline-flex rounded-full border stocky-status-info px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider">Admin</span>;
+        return <span className="inline-flex rounded-full border stocky-status-info px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider">{t('team.roleAdmin')}</span>;
       case 'manager':
-        return <span className="inline-flex rounded-full border stocky-status-hold px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider">Manager</span>;
+        return <span className="inline-flex rounded-full border stocky-status-hold px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider">{t('team.roleManager')}</span>;
       default:
-        return <span className="inline-flex rounded-full border stocky-status-muted px-2.5 py-0.5 text-[10px] font-medium uppercase tracking-wider">Staff</span>;
+        return <span className="inline-flex rounded-full border stocky-status-muted px-2.5 py-0.5 text-[10px] font-medium uppercase tracking-wider">{t('team.roleStaff')}</span>;
     }
   };
 
@@ -49,8 +52,8 @@ export function TeamTableWidget({
     return (
       <div className="px-6 py-16 text-center">
         <UsersIcon size="md" className="mx-auto text-stocky-text-sub/50" />
-        <h2 className="mt-3 text-base font-semibold text-stocky-text-main">No team members match your filters</h2>
-        <p className="mt-1 text-xs text-stocky-text-sub">Try searching with a different name, email, or role filter.</p>
+        <h2 className="mt-3 text-base font-semibold text-stocky-text-main">{t('team.noMatchingMembers')}</h2>
+        <p className="mt-1 text-xs text-stocky-text-sub">{t('team.noMatchingMembersDesc')}</p>
       </div>
     );
   }
@@ -59,16 +62,16 @@ export function TeamTableWidget({
     <div className="w-full">
       {/* Desktop Table (hidden on mobile) */}
       <div className="hidden sm:block stocky-team-table-scroll overflow-x-auto w-full">
-      <table className="stocky-board-table w-full min-w-[850px] text-left">
+      <table className="stocky-board-table w-full min-w-[850px] text-start">
         <thead>
           <tr className="border-b border-stocky-border-subtle bg-stocky-bg-global text-[10px] font-medium uppercase tracking-wider text-stocky-text-sub h-11">
-            <th className="px-4 py-2.5 whitespace-nowrap">Member</th>
-            <th className="px-4 py-2.5 whitespace-nowrap">Role & Job Title</th>
-            <th className="px-4 py-2.5 whitespace-nowrap">Reports To</th>
-            <th className="px-4 py-2.5 whitespace-nowrap">Locations</th>
-            <th className="px-4 py-2.5 whitespace-nowrap">Authorizations</th>
-            <th className="px-4 py-2.5 whitespace-nowrap">Status</th>
-            <th className="px-4 py-2.5 whitespace-nowrap text-right">Actions</th>
+            <th className="px-4 py-2.5 whitespace-nowrap">{t('team.colMember')}</th>
+            <th className="px-4 py-2.5 whitespace-nowrap">{t('team.colRoleJobTitle')}</th>
+            <th className="px-4 py-2.5 whitespace-nowrap">{t('team.colReportsTo')}</th>
+            <th className="px-4 py-2.5 whitespace-nowrap">{t('team.colLocations')}</th>
+            <th className="px-4 py-2.5 whitespace-nowrap">{t('team.colAuthorizations')}</th>
+            <th className="px-4 py-2.5 whitespace-nowrap">{t('team.colStatus')}</th>
+            <th className="px-4 py-2.5 whitespace-nowrap text-end">{t('team.colActions')}</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-stocky-border-subtle text-xs">
@@ -109,7 +112,7 @@ export function TeamTableWidget({
                   <div className="flex flex-col gap-1 items-start">
                     {getRoleBadge(member.role)}
                     <span className="text-xs font-medium text-stocky-text-main truncate max-w-[180px]">
-                      {member.job_title || <span className="text-stocky-text-sub italic">No title assigned</span>}
+                      {member.job_title || <span className="text-stocky-text-sub italic">{t('team.noTitleAssigned')}</span>}
                     </span>
                   </div>
                 </td>
@@ -136,11 +139,11 @@ export function TeamTableWidget({
                     </div>
                   ) : member.role === 'owner' ? (
                     <span className="text-[11px] text-stocky-text-sub font-medium">
-                      Top of hierarchy
+                      {t('team.topOfHierarchy')}
                     </span>
                   ) : (
                     <span className="text-[11px] text-stocky-text-sub italic">
-                      Reports to Owner
+                      {t('team.reportsToOwner')}
                     </span>
                   )}
                 </td>
@@ -155,13 +158,13 @@ export function TeamTableWidget({
                           key={assignment.id}
                           className="inline-flex items-center gap-1 rounded-full border stocky-status-info px-2 py-0.5 text-[10px]"
                         >
-                          <span className="truncate max-w-[90px]">{loc?.name || 'Location'}</span>
+                          <span className="truncate max-w-[90px]">{loc?.name || t('common.location')}</span>
                           {canManage && (
                             <button
                               type="button"
                               onClick={() => onUnassignLocation(assignment.id)}
                               className="text-stocky-text-sub hover:text-stocky-text-main cursor-pointer"
-                              title="Unassign"
+                              title={t('team.unassign')}
                             >
                               <XIcon size="xs" />
                             </button>
@@ -171,7 +174,7 @@ export function TeamTableWidget({
                     })}
 
                     {memberAssignments.length === 0 && (
-                      <span className="text-[11px] text-stocky-text-sub italic">No location</span>
+                      <span className="text-[11px] text-stocky-text-sub italic">{t('team.noLocation')}</span>
                     )}
 
                     {canManage && (
@@ -182,7 +185,7 @@ export function TeamTableWidget({
                         }}
                         className="h-6 rounded-full border border-stocky-border-subtle bg-white px-2 text-[10px] text-stocky-text-sub hover:text-stocky-text-main cursor-pointer"
                       >
-                        <option value="">+ Assign</option>
+                        <option value="">{t('team.assignLocationBtn')}</option>
                         {locations
                           .filter((l) => !assignedIds.has(l.id))
                           .map((l) => (
@@ -200,7 +203,7 @@ export function TeamTableWidget({
                   <div className="flex items-center gap-2">
                     <span className="inline-flex items-center gap-1 rounded-full bg-stocky-bg-global px-2.5 py-0.5 text-[10px] font-medium text-stocky-text-main border border-stocky-border-subtle">
                       <ShieldIcon size="xs" className="text-stocky-primary" />
-                      <span>{allowedPages.length} pages</span>
+                      <span>{t('team.pagesCount', { count: allowedPages.length })}</span>
                     </span>
                     {canManage && (
                       <button
@@ -208,7 +211,7 @@ export function TeamTableWidget({
                         onClick={() => onSelectMember(member)}
                         className="text-[11px] text-stocky-primary hover:underline cursor-pointer font-medium"
                       >
-                        Manage
+                        {t('team.manageBtn')}
                       </button>
                     )}
                   </div>
@@ -221,19 +224,19 @@ export function TeamTableWidget({
                       member.status === 'active' ? 'stocky-status-success' : 'stocky-status-warning'
                     }`}
                   >
-                    {member.status || 'active'}
+                    {member.status === 'invited' ? t('team.statusInvited') : t('team.statusActive')}
                   </span>
                 </td>
 
                 {/* 7. Actions */}
-                <td className="px-4 py-3 text-right">
+                <td className="px-4 py-3 text-end">
                   <button
                     type="button"
                     onClick={() => onSelectMember(member)}
                     className="h-8 px-3 rounded-full border border-stocky-border-subtle bg-white text-xs font-medium text-stocky-text-main hover:border-stocky-primary hover:text-stocky-primary inline-flex items-center gap-1.5 transition-colors cursor-pointer"
                   >
                     <EditIcon size="xs" />
-                    <span>Edit</span>
+                    <span>{t('team.editBtn')}</span>
                   </button>
                 </td>
               </tr>
@@ -249,9 +252,9 @@ export function TeamTableWidget({
           const memberAssignments = assignments.filter((a) => a.user_id === member.id);
           const locationText =
             memberAssignments.length > 0
-              ? (locations.find((l) => l.id === memberAssignments[0].location_id)?.name || 'Branch') +
+              ? (locations.find((l) => l.id === memberAssignments[0].location_id)?.name || t('common.location')) +
                 (memberAssignments.length > 1 ? ` +${memberAssignments.length - 1}` : '')
-              : 'All Locations';
+              : t('team.allLocations');
 
           const subtitleText = [
             member.job_title || null,
@@ -270,7 +273,7 @@ export function TeamTableWidget({
                   onSelectMember(member);
                 }
               }}
-              className="p-3.5 flex items-center justify-between gap-3 bg-stocky-bg-widget hover:bg-stocky-bg-global/30 active:bg-stocky-bg-global/50 transition-colors cursor-pointer text-left"
+              className="p-3.5 flex items-center justify-between gap-3 bg-stocky-bg-widget hover:bg-stocky-bg-global/30 active:bg-stocky-bg-global/50 transition-colors cursor-pointer text-start"
             >
               {/* Left Stack: Avatar + Name & Subtitle */}
               <div className="flex items-center gap-2.5 min-w-0 flex-1">
@@ -300,11 +303,11 @@ export function TeamTableWidget({
                   }`}
                 >
                   <span
-                    className={`w-1.5 h-1.5 rounded-full mr-1 ${
+                    className={`w-1.5 h-1.5 rounded-full me-1 ${
                       member.status === 'active' ? 'bg-emerald-500' : 'bg-amber-500'
                     }`}
                   />
-                  {member.status || 'active'}
+                  {member.status === 'invited' ? t('team.statusInvited') : t('team.statusActive')}
                 </span>
               </div>
             </div>

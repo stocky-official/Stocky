@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
 import { MailIcon, XIcon, CheckIcon } from '@stocky/icons';
 import type { Location, Product, Supplier, SupplierRequest } from '@stocky/types';
+import { useTranslation } from '@/lib/i18n';
 
 export interface SupplierEmailModalProps {
   isOpen: boolean;
@@ -24,27 +25,51 @@ export function SupplierEmailModal({
   location,
   onMarkContacted,
 }: SupplierEmailModalProps) {
+  const { t } = useTranslation();
   const [mounted, setMounted] = useState(false);
 
   React.useEffect(() => {
     setMounted(true);
   }, []);
 
+  const buildBody = () => {
+    const greeting = t('supplierEmail.defaultGreeting', {
+      name: supplier?.contactName || supplier?.name || t('supplierEmail.externalVendor'),
+    });
+    const intro = t('supplierEmail.defaultIntro', {
+      type: request?.requestType || 'replenishment',
+    });
+    const prodLine = t('supplierEmail.productLine', {
+      product: product?.name || 'Stock Item',
+      barcode: product?.barcode || 'N/A',
+    });
+    const qtyLine = t('supplierEmail.quantityLine', {
+      quantity: request?.quantityRequested || 'Standard reorder',
+      unit: product?.unitName || 'units',
+    });
+    const destLine = t('supplierEmail.destinationLine', {
+      location: `${location?.name || 'Main Warehouse'} ${location?.address ? `(${location.address})` : ''}`.trim(),
+    });
+    const notesPart = request?.notes
+      ? `\n${t('supplierEmail.notesLine', { notes: request.notes })}`
+      : '';
+    const closing = t('supplierEmail.defaultClosing');
+    const signature = t('supplierEmail.defaultSignature');
+
+    return `${greeting}\n\n${intro}\n\n${prodLine}\n${qtyLine}\n${destLine}${notesPart}\n\n${closing}\n\n${signature}`;
+  };
+
+  const buildSubject = () => {
+    return t('supplierEmail.defaultSubject', {
+      type: request?.requestType ? request.requestType.toUpperCase() : 'REPLENISH',
+      product: product?.name || 'Inventory Order',
+      location: location?.name || 'Store',
+    });
+  };
+
   const defaultTo = supplier?.contactEmail || '';
-  const defaultSubject = `[Stocky] ${request?.requestType ? request.requestType.toUpperCase() : 'REPLENISH'} Request: ${product?.name || 'Inventory Order'} - ${location?.name || 'Store'}`;
-  
-  const defaultBody = `Dear ${supplier?.contactName || supplier?.name || 'Supplier Partner'},
-
-We are reaching out to submit a formal ${request?.requestType || 'replenishment'} request for our inventory:
-
-• Product: ${product?.name || 'Stock Item'} (Barcode: ${product?.barcode || 'N/A'})
-• Quantity Required: ${request?.quantityRequested || 'Standard reorder'} ${product?.unitName || 'units'}
-• Delivery Destination: ${location?.name || 'Main Warehouse'} ${location?.address ? `(${location.address})` : ''}
-${request?.notes ? `• Reference Notes: ${request.notes}\n` : ''}
-Please confirm receipt, pricing, and estimated dispatch date.
-
-Sincerely,
-Stocky Operations`;
+  const defaultSubject = buildSubject();
+  const defaultBody = buildBody();
 
   const [to, setTo] = useState(defaultTo);
   const [cc, setCc] = useState('');
@@ -56,19 +81,8 @@ Stocky Operations`;
     if (isOpen) {
       setTo(supplier?.contactEmail || '');
       setCc('');
-      setSubject(`[Stocky] ${request?.requestType ? request.requestType.toUpperCase() : 'REPLENISH'} Request: ${product?.name || 'Inventory Order'} - ${location?.name || 'Store'}`);
-      setBody(`Dear ${supplier?.contactName || supplier?.name || 'Supplier Partner'},
-
-We are reaching out to submit a formal ${request?.requestType || 'replenishment'} request for our inventory:
-
-• Product: ${product?.name || 'Stock Item'} (Barcode: ${product?.barcode || 'N/A'})
-• Quantity Required: ${request?.quantityRequested || 'Standard reorder'} ${product?.unitName || 'units'}
-• Delivery Destination: ${location?.name || 'Main Warehouse'} ${location?.address ? `(${location.address})` : ''}
-${request?.notes ? `• Reference Notes: ${request.notes}\n` : ''}
-Please confirm receipt, pricing, and estimated dispatch date.
-
-Sincerely,
-Stocky Operations`);
+      setSubject(buildSubject());
+      setBody(buildBody());
       setCopied(false);
     }
   }, [isOpen, supplier, product, request, location]);
@@ -111,19 +125,19 @@ Stocky Operations`);
             <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-stocky-primary/10 text-stocky-primary">
               <MailIcon size="sm" />
             </div>
-            <div>
+            <div className="text-start">
               <h3 id="email-modal-title" className="text-sm font-semibold text-stocky-text-main">
-                Contact Supplier
+                {t('supplierEmail.title')}
               </h3>
               <p className="text-[11px] text-stocky-text-sub">
-                {supplier?.name || 'External Vendor'} · Direct Email Dispatch
+                {t('supplierEmail.subtitle', { name: supplier?.name || t('supplierEmail.externalVendor') })}
               </p>
             </div>
           </div>
           <button
             type="button"
             onClick={onClose}
-            aria-label="Close email modal"
+            aria-label={t('supplierEmail.closeAria')}
             className="flex h-8 w-8 items-center justify-center rounded-full text-stocky-text-sub hover:bg-stocky-bg-global hover:text-stocky-text-main transition-colors cursor-pointer"
           >
             <XIcon size="xs" />
@@ -131,17 +145,17 @@ Stocky Operations`);
         </header>
 
         {/* Content */}
-        <form onSubmit={handleSendMailto} className="flex min-h-0 flex-1 flex-col">
+        <form onSubmit={handleSendMailto} className="flex min-h-0 flex-1 flex-col text-start">
           <div className="overflow-y-auto p-5 space-y-3">
             {/* Recipient info banner */}
             {!to && (
               <div className="rounded-xl border border-stocky-status-warning-border bg-stocky-status-warning-bg p-3 text-xs text-stocky-status-warning-fg">
-                No email address found for this supplier. You can enter one below.
+                {t('supplierEmail.noEmailBanner')}
               </div>
             )}
 
             <div>
-              <label className="block text-xs font-medium text-stocky-text-main">To</label>
+              <label className="block text-xs font-medium text-stocky-text-main">{t('supplierEmail.to')}</label>
               <input
                 required
                 type="email"
@@ -154,7 +168,7 @@ Stocky Operations`);
 
             <div>
               <label className="block text-xs font-medium text-stocky-text-main">
-                Cc <span className="text-stocky-text-sub font-normal">(optional)</span>
+                {t('supplierEmail.cc')} <span className="text-stocky-text-sub font-normal">({t('common.optional')})</span>
               </label>
               <input
                 type="text"
@@ -166,7 +180,7 @@ Stocky Operations`);
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-stocky-text-main">Subject</label>
+              <label className="block text-xs font-medium text-stocky-text-main">{t('supplierEmail.subject')}</label>
               <input
                 required
                 type="text"
@@ -177,7 +191,7 @@ Stocky Operations`);
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-stocky-text-main">Message Body</label>
+              <label className="block text-xs font-medium text-stocky-text-main">{t('supplierEmail.messageBody')}</label>
               <textarea
                 required
                 rows={8}
@@ -198,10 +212,10 @@ Stocky Operations`);
               {copied ? (
                 <>
                   <CheckIcon size="xs" className="text-stocky-status-success-fg" />
-                  <span className="text-stocky-status-success-fg font-semibold">Copied!</span>
+                  <span className="text-stocky-status-success-fg font-semibold">{t('supplierEmail.copiedToClipboard')}</span>
                 </>
               ) : (
-                <span>Copy to clipboard</span>
+                <span>{t('supplierEmail.copyFullEmail')}</span>
               )}
             </button>
 
@@ -211,14 +225,14 @@ Stocky Operations`);
                 onClick={onClose}
                 className="h-9 rounded-full border border-stocky-border-subtle bg-white px-4 text-xs font-medium text-stocky-text-main hover:bg-stocky-bg-global transition-colors cursor-pointer"
               >
-                Cancel
+                {t('common.cancel')}
               </button>
               <button
                 type="submit"
                 className="flex h-9 items-center gap-1.5 rounded-full bg-stocky-primary px-4 text-xs font-medium text-white hover:bg-stocky-primary-hover shadow-sm transition-colors cursor-pointer"
               >
                 <MailIcon size="xs" />
-                <span>Open in Email App</span>
+                <span>{t('supplierEmail.openMailClient')}</span>
               </button>
             </div>
           </footer>

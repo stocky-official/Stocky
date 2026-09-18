@@ -11,6 +11,7 @@ import {
   PlusIcon,
   CheckIcon,
 } from '@stocky/icons';
+import { useTranslation } from '@/lib/i18n';
 
 export interface TimeOffWidgetProps {
   leaves: LeaveRequest[];
@@ -33,6 +34,7 @@ export function TimeOffWidget({
   onRequestLeave,
   onReviewLeave,
 }: TimeOffWidgetProps) {
+  const { t } = useTranslation();
   const [reviewingId, setReviewingId] = useState<string | null>(null);
 
   const memberMap = new Map(members.map((m) => [m.id, m]));
@@ -61,24 +63,24 @@ export function TimeOffWidget({
   };
 
   return (
-    <div className="flex flex-col w-full">
+    <div className="flex flex-col w-full text-start">
       {/* Balance Summary Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 p-4 bg-stocky-bg-global/40 border-b border-stocky-border-subtle">
         {/* Annual PTO Card */}
-        <div className="bg-stocky-bg-widget p-4 rounded-widget border border-stocky-border-subtle shadow-sm flex flex-col justify-between">
+        <div className="bg-stocky-bg-widget p-4 rounded-widget border border-stocky-border-subtle shadow-sm flex flex-col justify-between text-start">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2.5">
               <div className="w-8 h-8 rounded-widget stocky-status-info border flex items-center justify-center">
                 <CalendarIcon size="xs" />
               </div>
-              <span className="text-xs font-semibold text-stocky-text-main">Annual Leave (PTO)</span>
+              <span className="text-xs font-semibold text-stocky-text-main">{t('timeOff.annualPto')}</span>
             </div>
-            <span className="text-xs font-semibold text-stocky-primary">{ptoRemaining} days left</span>
+            <span className="text-xs font-semibold text-stocky-primary">{t('timeOff.daysLeft', { count: ptoRemaining })}</span>
           </div>
           <div>
             <div className="flex items-baseline justify-between text-xs mb-1.5">
-              <span className="text-stocky-text-sub">Used: {userBalance.ptoUsed} days</span>
-              <span className="font-semibold text-stocky-text-main">Allowance: {userBalance.ptoAllowance} days</span>
+              <span className="text-stocky-text-sub">{t('timeOff.usedDays', { count: userBalance.ptoUsed })}</span>
+              <span className="font-semibold text-stocky-text-main">{t('timeOff.allowanceDays', { count: userBalance.ptoAllowance })}</span>
             </div>
             <div className="w-full h-2 rounded-full bg-stocky-bg-global overflow-hidden">
               <div
@@ -90,20 +92,20 @@ export function TimeOffWidget({
         </div>
 
         {/* Sick Leave Card */}
-        <div className="bg-stocky-bg-widget p-4 rounded-widget border border-stocky-border-subtle shadow-sm flex flex-col justify-between">
+        <div className="bg-stocky-bg-widget p-4 rounded-widget border border-stocky-border-subtle shadow-sm flex flex-col justify-between text-start">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2.5">
               <div className="w-8 h-8 rounded-widget stocky-status-critical border flex items-center justify-center">
                 <ClockIcon size="xs" />
               </div>
-              <span className="text-xs font-semibold text-stocky-text-main">Sick Leave</span>
+              <span className="text-xs font-semibold text-stocky-text-main">{t('timeOff.sickLeave')}</span>
             </div>
-            <span className="text-xs font-semibold text-stocky-status-critical-fg">{sickRemaining} days left</span>
+            <span className="text-xs font-semibold text-stocky-status-critical-fg">{t('timeOff.daysLeft', { count: sickRemaining })}</span>
           </div>
           <div>
             <div className="flex items-baseline justify-between text-xs mb-1.5">
-              <span className="text-stocky-text-sub">Used: {userBalance.sickUsed} days</span>
-              <span className="font-semibold text-stocky-text-main">Allowance: {userBalance.sickAllowance} days</span>
+              <span className="text-stocky-text-sub">{t('timeOff.usedDays', { count: userBalance.sickUsed })}</span>
+              <span className="font-semibold text-stocky-text-main">{t('timeOff.allowanceDays', { count: userBalance.sickAllowance })}</span>
             </div>
             <div className="w-full h-2 rounded-full bg-stocky-bg-global overflow-hidden">
               <div
@@ -115,20 +117,20 @@ export function TimeOffWidget({
         </div>
 
         {/* Pending Requests / Action Card */}
-        <div className="bg-stocky-bg-widget p-4 rounded-widget border border-stocky-border-subtle shadow-sm flex items-center justify-between">
+        <div className="bg-stocky-bg-widget p-4 rounded-widget border border-stocky-border-subtle shadow-sm flex items-center justify-between text-start">
           <div>
-            <div className="text-xs font-semibold text-stocky-text-main">Time Off Policy</div>
+            <div className="text-xs font-semibold text-stocky-text-main">{t('timeOff.policyTitle')}</div>
             <p className="text-[11px] text-stocky-text-sub mt-1 leading-relaxed">
-              Requests automatically create a review task for your manager in the Tasks workspace.
+              {t('timeOff.policyDesc')}
             </p>
           </div>
           <button
             type="button"
             onClick={onRequestLeave}
-            className="stocky-table-toolbar-button stocky-table-toolbar-button--primary h-10 px-4 rounded-full text-xs font-medium inline-flex items-center justify-center gap-1.5 whitespace-nowrap cursor-pointer shrink-0 ml-3"
+            className="stocky-table-toolbar-button stocky-table-toolbar-button--primary h-10 px-4 rounded-full text-xs font-medium inline-flex items-center justify-center gap-1.5 whitespace-nowrap cursor-pointer shrink-0 ms-3"
           >
             <PlusIcon size="xs" />
-            <span>Request</span>
+            <span>{t('timeOff.requestTimeOff')}</span>
           </button>
         </div>
       </div>
@@ -139,9 +141,9 @@ export function TimeOffWidget({
           <div className="w-12 h-12 rounded-widget bg-stocky-bg-global border border-stocky-border-subtle shadow-sm flex items-center justify-center text-stocky-text-sub mb-3">
             <UsersIcon size="sm" />
           </div>
-          <h3 className="text-sm font-semibold text-stocky-text-main">No time off requests</h3>
+          <h3 className="text-sm font-semibold text-stocky-text-main">{t('timeOff.noRequests')}</h3>
           <p className="text-xs text-stocky-text-sub max-w-xs mt-1">
-            There are no pending or historic PTO requests recorded for this workspace.
+            {t('timeOff.policyDesc')}
           </p>
           <button
             type="button"
@@ -149,37 +151,37 @@ export function TimeOffWidget({
             className="mt-4 stocky-table-toolbar-button stocky-table-toolbar-button--primary h-10 px-4 rounded-full text-xs font-medium inline-flex items-center justify-center gap-1.5 whitespace-nowrap cursor-pointer"
           >
             <PlusIcon size="xs" />
-            <span>Submit First Request</span>
+            <span>{t('timeOff.submitFirstRequest')}</span>
           </button>
         </div>
       ) : (
         <>
           {/* Desktop Table */}
           <div className="hidden sm:block w-full overflow-x-auto">
-            <table className="stocky-board-table min-w-[800px] w-full text-left border-collapse">
+            <table className="stocky-board-table min-w-[800px] w-full text-start border-collapse">
               <thead>
                 <tr className="border-b border-stocky-border-subtle bg-stocky-bg-global/30 h-11">
-                  <th className="stocky-board-table__header-cell px-4 text-left text-[11px] font-semibold text-stocky-text-sub tracking-wider uppercase whitespace-nowrap">
-                    Employee
+                  <th className="stocky-board-table__header-cell px-4 text-start text-[11px] font-semibold text-stocky-text-sub tracking-wider uppercase whitespace-nowrap">
+                    {t('team.colMember')}
                   </th>
-                  <th className="stocky-board-table__header-cell px-4 text-left text-[11px] font-semibold text-stocky-text-sub tracking-wider uppercase whitespace-nowrap">
-                    Type
+                  <th className="stocky-board-table__header-cell px-4 text-start text-[11px] font-semibold text-stocky-text-sub tracking-wider uppercase whitespace-nowrap">
+                    {t('common.type')}
                   </th>
-                  <th className="stocky-board-table__header-cell px-4 text-left text-[11px] font-semibold text-stocky-text-sub tracking-wider uppercase whitespace-nowrap">
-                    Period & Days
+                  <th className="stocky-board-table__header-cell px-4 text-start text-[11px] font-semibold text-stocky-text-sub tracking-wider uppercase whitespace-nowrap">
+                    {t('timeOff.periodAndDays')}
                   </th>
-                  <th className="stocky-board-table__header-cell px-4 text-left text-[11px] font-semibold text-stocky-text-sub tracking-wider uppercase whitespace-nowrap">
-                    Manager Approver
+                  <th className="stocky-board-table__header-cell px-4 text-start text-[11px] font-semibold text-stocky-text-sub tracking-wider uppercase whitespace-nowrap">
+                    {t('team.colReportsTo')}
                   </th>
-                  <th className="stocky-board-table__header-cell px-4 text-left text-[11px] font-semibold text-stocky-text-sub tracking-wider uppercase whitespace-nowrap">
-                    Linked Task
+                  <th className="stocky-board-table__header-cell px-4 text-start text-[11px] font-semibold text-stocky-text-sub tracking-wider uppercase whitespace-nowrap">
+                    {t('tasks.title')}
                   </th>
-                  <th className="stocky-board-table__header-cell px-4 text-left text-[11px] font-semibold text-stocky-text-sub tracking-wider uppercase whitespace-nowrap">
-                    Status
+                  <th className="stocky-board-table__header-cell px-4 text-start text-[11px] font-semibold text-stocky-text-sub tracking-wider uppercase whitespace-nowrap">
+                    {t('common.status')}
                   </th>
                   {canReview && (
-                    <th className="stocky-board-table__header-cell px-4 text-right text-[11px] font-semibold text-stocky-text-sub tracking-wider uppercase whitespace-nowrap">
-                      Review Actions
+                    <th className="stocky-board-table__header-cell px-4 text-end text-[11px] font-semibold text-stocky-text-sub tracking-wider uppercase whitespace-nowrap">
+                      {t('common.actions')}
                     </th>
                   )}
                 </tr>
@@ -188,13 +190,13 @@ export function TimeOffWidget({
                 {leaves.map((req) => {
                   const member = memberMap.get(req.companyUserId);
                   const approver = memberMap.get(req.approverCompanyUserId);
-                  const memberName = member?.full_name || member?.email?.split('@')[0] || 'Staff Member';
-                  const approverName = approver?.full_name || approver?.email?.split('@')[0] || 'Direct Manager';
+                  const memberName = member?.full_name || member?.email?.split('@')[0] || t('team.title');
+                  const approverName = approver?.full_name || approver?.email?.split('@')[0] || t('team.colReportsTo');
                   const isPending = req.status === 'pending';
 
                   return (
                     <tr key={req.id} className="hover:bg-stocky-bg-global/40 transition-colors">
-                      <td className="px-4 py-3 whitespace-nowrap">
+                      <td className="px-4 py-3 whitespace-nowrap text-start">
                         <div className="flex items-center gap-2.5">
                           <div className="w-7 h-7 rounded-full bg-stocky-primary/10 text-stocky-primary flex items-center justify-center text-xs font-semibold">
                             {memberName.slice(0, 2).toUpperCase()}
@@ -206,57 +208,57 @@ export function TimeOffWidget({
                         </div>
                       </td>
 
-                      <td className="px-4 py-3 whitespace-nowrap">
+                      <td className="px-4 py-3 whitespace-nowrap text-start">
                         <span className="inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-medium uppercase tracking-wider stocky-status-muted border">
                           {req.leaveType}
                         </span>
                       </td>
 
-                      <td className="px-4 py-3 whitespace-nowrap">
+                      <td className="px-4 py-3 whitespace-nowrap text-start">
                         <div className="text-xs font-semibold text-stocky-text-main">
                           {req.startDate} → {req.endDate}
                         </div>
                         <div className="text-[11px] text-stocky-text-sub font-medium">
-                          {req.daysCount} day{req.daysCount !== 1 ? 's' : ''}
+                          {req.daysCount} {t('timeOff.daysLeft', { count: req.daysCount })}
                         </div>
                       </td>
 
-                      <td className="px-4 py-3 whitespace-nowrap text-xs text-stocky-text-sub">
+                      <td className="px-4 py-3 whitespace-nowrap text-xs text-stocky-text-sub text-start">
                         {approverName}
                       </td>
 
-                      <td className="px-4 py-3 whitespace-nowrap">
+                      <td className="px-4 py-3 whitespace-nowrap text-start">
                         {req.taskId ? (
                           <span className="inline-flex items-center gap-1 text-[11px] font-medium stocky-status-success border px-2 py-0.5 rounded-full">
                             <CheckCircleIcon size="xs" />
-                            <span>Task Dispatched</span>
+                            <span>{t('timeOff.taskDispatched')}</span>
                           </span>
                         ) : (
                           <span className="text-xs text-stocky-text-sub">—</span>
                         )}
                       </td>
 
-                      <td className="px-4 py-3 whitespace-nowrap">
+                      <td className="px-4 py-3 whitespace-nowrap text-start">
                         {isPending ? (
                           <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium stocky-status-warning border">
                             <span className="w-1.5 h-1.5 rounded-full bg-current animate-pulse" />
-                            Pending Review
+                            {t('timeOff.pendingReview')}
                           </span>
                         ) : req.status === 'approved' ? (
                           <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium stocky-status-success border">
                             <span className="w-1.5 h-1.5 rounded-full bg-current" />
-                            Approved
+                            {t('timeOff.statusApproved')}
                           </span>
                         ) : (
                           <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium stocky-status-critical border">
                             <span className="w-1.5 h-1.5 rounded-full bg-current" />
-                            Rejected
+                            {t('timeOff.statusRejected')}
                           </span>
                         )}
                       </td>
 
                       {canReview && (
-                        <td className="px-4 py-3 whitespace-nowrap text-right">
+                        <td className="px-4 py-3 whitespace-nowrap text-end">
                           {isPending ? (
                             <div className="inline-flex items-center gap-2">
                               <button
@@ -266,7 +268,7 @@ export function TimeOffWidget({
                                 className="h-8 px-3 rounded-full bg-stocky-primary text-white text-xs font-medium hover:bg-stocky-primary-hover transition-colors inline-flex items-center gap-1 cursor-pointer"
                               >
                                 <CheckIcon size="xs" />
-                                <span>Approve</span>
+                                <span>{t('timeOff.approve')}</span>
                               </button>
                               <button
                                 type="button"
@@ -275,11 +277,11 @@ export function TimeOffWidget({
                                 className="h-8 px-3 rounded-full border border-stocky-border-subtle bg-stocky-bg-widget text-stocky-status-critical-fg hover:bg-stocky-status-critical-bg text-xs font-medium transition-colors inline-flex items-center gap-1 cursor-pointer"
                               >
                                 <XIcon size="xs" />
-                                <span>Reject</span>
+                                <span>{t('timeOff.reject')}</span>
                               </button>
                             </div>
                           ) : (
-                            <span className="text-[11px] text-stocky-text-sub">Reviewed</span>
+                            <span className="text-[11px] text-stocky-text-sub">{t('timeOff.reviewed')}</span>
                           )}
                         </td>
                       )}
@@ -295,8 +297,8 @@ export function TimeOffWidget({
             {leaves.map((req) => {
               const member = memberMap.get(req.companyUserId);
               const approver = memberMap.get(req.approverCompanyUserId);
-              const memberName = member?.full_name || member?.email?.split('@')[0] || 'Staff Member';
-              const approverName = approver?.full_name || approver?.email?.split('@')[0] || 'Direct Manager';
+              const memberName = member?.full_name || member?.email?.split('@')[0] || t('team.title');
+              const approverName = approver?.full_name || approver?.email?.split('@')[0] || t('team.colReportsTo');
               const isPending = req.status === 'pending';
               const memberInitials = memberName
                 .split(' ')
@@ -306,13 +308,13 @@ export function TimeOffWidget({
                 .slice(0, 2);
 
               return (
-                <article key={req.id} className="p-3.5 flex items-center justify-between gap-3 bg-white hover:bg-stocky-bg-global/30 transition-colors text-left">
+                <article key={req.id} className="p-3.5 flex items-center justify-between gap-3 bg-white hover:bg-stocky-bg-global/30 transition-colors text-start">
                   {/* Left Anchor + Center Info */}
                   <div className="flex items-center gap-2.5 min-w-0 flex-1">
                     <div className="w-9 h-9 rounded-full bg-stocky-primary/10 border border-stocky-primary/20 text-stocky-primary flex items-center justify-center text-xs font-semibold shrink-0">
                       {memberInitials}
                     </div>
-                    <div className="min-w-0 flex-1">
+                    <div className="min-w-0 flex-1 text-start">
                       <h4 className="text-xs font-semibold text-stocky-text-main leading-tight truncate">
                         {memberName}
                       </h4>
@@ -338,7 +340,7 @@ export function TimeOffWidget({
                             className="h-7 px-2.5 rounded-full bg-stocky-primary text-white text-xs font-medium hover:bg-stocky-primary-hover transition-colors inline-flex items-center gap-1 cursor-pointer shadow-2xs"
                           >
                             <CheckIcon size="xs" />
-                            <span>Approve</span>
+                            <span>{t('timeOff.approve')}</span>
                           </button>
                           <button
                             type="button"
@@ -352,20 +354,20 @@ export function TimeOffWidget({
                       ) : (
                         <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-medium stocky-status-warning border">
                           <span className="w-1.5 h-1.5 rounded-full bg-current animate-pulse" />
-                          Pending
+                          {t('timeOff.pendingReview')}
                         </span>
                       )
                     ) : req.status === 'approved' ? (
                       <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-medium stocky-status-success border">
-                        Approved
+                        {t('timeOff.statusApproved')}
                       </span>
                     ) : (
                       <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-medium stocky-status-critical border">
-                        Rejected
+                        {t('timeOff.statusRejected')}
                       </span>
                     )}
                     <span className="text-[10px] text-stocky-text-sub">
-                      Mgr: {approverName.split(' ')[0]}
+                      {approverName.split(' ')[0]}
                     </span>
                   </div>
                 </article>

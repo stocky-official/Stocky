@@ -12,6 +12,7 @@ import {
 import type { Location } from '@stocky/types';
 import { UserAvatar } from '@/components/ui/UserAvatar';
 import type { TeamMemberData } from './MemberDetailDrawer';
+import { useTranslation } from '@/lib/i18n';
 
 export interface OrgStructureWidgetProps {
   members: TeamMemberData[];
@@ -33,6 +34,7 @@ export function OrgStructureWidget({
   canManage,
   onSelectMember,
 }: OrgStructureWidgetProps) {
+  const { t } = useTranslation();
   const [zoom, setZoom] = useState(1);
   const [collapsedIds, setCollapsedIds] = useState<Set<string>>(new Set());
 
@@ -121,13 +123,13 @@ export function OrgStructureWidget({
     const roleBadge = () => {
       switch (node.member.role) {
         case 'owner':
-          return <span className="inline-flex rounded-full border stocky-status-muted px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider">Owner</span>;
+          return <span className="inline-flex rounded-full border stocky-status-muted px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider">{t('team.roleOwner')}</span>;
         case 'admin':
-          return <span className="inline-flex rounded-full border stocky-status-info px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider">Admin</span>;
+          return <span className="inline-flex rounded-full border stocky-status-info px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider">{t('team.roleAdmin')}</span>;
         case 'manager':
-          return <span className="inline-flex rounded-full border stocky-status-hold px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider">Manager</span>;
+          return <span className="inline-flex rounded-full border stocky-status-hold px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider">{t('team.roleManager')}</span>;
         default:
-          return <span className="inline-flex rounded-full border stocky-status-muted px-2 py-0.5 text-[9px] font-semibold uppercase tracking-wider">Staff</span>;
+          return <span className="inline-flex rounded-full border stocky-status-muted px-2 py-0.5 text-[9px] font-semibold uppercase tracking-wider">{t('team.roleStaff')}</span>;
       }
     };
 
@@ -143,7 +145,7 @@ export function OrgStructureWidget({
           role="button"
           tabIndex={0}
           onClick={() => onSelectMember(node.member)}
-          className="group relative w-60 rounded-2xl bg-white border border-stocky-border-subtle p-3.5 shadow-2xs hover:border-stocky-primary hover:shadow-md transition-all text-left cursor-pointer z-10"
+          className="group relative w-60 rounded-2xl bg-white border border-stocky-border-subtle p-3.5 shadow-2xs hover:border-stocky-primary hover:shadow-md transition-all text-start cursor-pointer z-10"
         >
           {/* Top row: Avatar & Role */}
           <div className="flex items-center justify-between gap-2">
@@ -164,7 +166,7 @@ export function OrgStructureWidget({
             </h4>
             <p className="text-[11px] font-medium text-stocky-primary truncate mt-0.5">
               {node.member.job_title || (
-                <span className="text-stocky-text-sub font-normal italic">No title assigned</span>
+                <span className="text-stocky-text-sub font-normal italic">{t('team.noTitleAssigned')}</span>
               )}
             </p>
           </div>
@@ -173,13 +175,13 @@ export function OrgStructureWidget({
           <div className="mt-2.5 pt-2 border-t border-stocky-border-subtle flex items-center justify-between text-[10px] text-stocky-text-sub">
             <span className="truncate max-w-[120px] inline-flex items-center gap-1">
               <WarehouseIcon size="xs" />
-              <span>{primaryLoc ? primaryLoc.name : 'All Locations'}</span>
+              <span>{primaryLoc ? primaryLoc.name : t('team.allLocations')}</span>
             </span>
 
             {hasChildren && (
               <span className="inline-flex items-center gap-1 font-semibold text-stocky-text-main">
                 <UsersIcon size="xs" />
-                <span>{node.children.length} direct</span>
+                <span>{t('team.directCount', { count: node.children.length })}</span>
               </span>
             )}
           </div>
@@ -190,7 +192,7 @@ export function OrgStructureWidget({
               type="button"
               onClick={(e) => toggleCollapse(node.member.id, e)}
               className="absolute -bottom-3 left-1/2 -translate-x-1/2 flex h-6 px-2 items-center justify-center gap-1 rounded-full bg-white border border-stocky-border-strong text-[10px] font-bold text-stocky-text-main hover:bg-stocky-bg-global shadow-2xs cursor-pointer z-20"
-              title={isCollapsed ? 'Expand direct reports' : 'Collapse direct reports'}
+              title={isCollapsed ? t('team.expandReports') : t('team.collapseReports')}
             >
               <span>{isCollapsed ? `+${node.children.length}` : '-'}</span>
             </button>
@@ -233,10 +235,10 @@ export function OrgStructureWidget({
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 border-b border-stocky-border-subtle bg-stocky-bg-global/50 px-3 sm:px-4 py-2.5 text-xs">
         <div className="flex items-center justify-between sm:justify-start gap-2">
           <span className="text-[11px] font-semibold uppercase tracking-wider text-stocky-text-sub">
-            Hierarchy Tree:
+            {t('team.hierarchyTree')}
           </span>
           <span className="text-xs font-medium text-stocky-text-main">
-            {members.length} members ({treeRoots.length} reporting branches)
+            {t('team.treeMembersCount', { members: members.length, branches: treeRoots.length })}
           </span>
         </div>
 
@@ -248,14 +250,14 @@ export function OrgStructureWidget({
               onClick={expandAll}
               className="h-8 px-3 rounded-full border border-stocky-border-subtle bg-white text-[11px] font-medium text-stocky-text-main hover:bg-stocky-bg-global cursor-pointer"
             >
-              Expand all
+              {t('team.expandAll')}
             </button>
             <button
               type="button"
               onClick={collapseAll}
               className="h-8 px-3 rounded-full border border-stocky-border-subtle bg-white text-[11px] font-medium text-stocky-text-main hover:bg-stocky-bg-global cursor-pointer"
             >
-              Collapse all
+              {t('team.collapseAll')}
             </button>
           </div>
 
@@ -268,7 +270,7 @@ export function OrgStructureWidget({
               onClick={handleZoomOut}
               disabled={zoom <= 0.5}
               className="flex h-7 w-7 items-center justify-center rounded-full hover:bg-stocky-bg-global text-stocky-text-main disabled:opacity-40 cursor-pointer"
-              title="Zoom out"
+              title={t('team.zoomOut')}
             >
               -
             </button>
@@ -280,7 +282,7 @@ export function OrgStructureWidget({
               onClick={handleZoomIn}
               disabled={zoom >= 1.5}
               className="flex h-7 w-7 items-center justify-center rounded-full hover:bg-stocky-bg-global text-stocky-text-main disabled:opacity-40 cursor-pointer"
-              title="Zoom in"
+              title={t('team.zoomIn')}
             >
               +
             </button>
@@ -288,7 +290,7 @@ export function OrgStructureWidget({
               type="button"
               onClick={handleZoomReset}
               className="flex h-7 w-7 items-center justify-center rounded-full hover:bg-stocky-bg-global text-stocky-text-sub hover:text-stocky-text-main cursor-pointer"
-              title="Reset zoom"
+              title={t('team.resetZoom')}
             >
               <RotateCcwIcon size="xs" />
             </button>
@@ -299,7 +301,7 @@ export function OrgStructureWidget({
       {/* Interactive Tree View Canvas */}
       <div className="overflow-auto min-h-[440px] max-h-[70vh] p-4 sm:p-8 bg-stocky-bg-global/20 text-center overscroll-contain">
         <div
-          className="inline-flex transition-transform duration-200 origin-top items-start gap-8 sm:gap-12 justify-center text-left"
+          className="inline-flex transition-transform duration-200 origin-top items-start gap-8 sm:gap-12 justify-center text-start"
           style={{ transform: `scale(${zoom})`, transformOrigin: 'top center' }}
         >
           {treeRoots.map((root) => renderTreeNode(root, true))}

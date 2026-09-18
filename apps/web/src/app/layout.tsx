@@ -41,6 +41,11 @@ export const metadata: Metadata = {
     capable: true,
     statusBarStyle: 'black-translucent',
     title: 'Stocky',
+    startupImage: [
+      {
+        url: '/apple-splash.png',
+      },
+    ],
   },
 };
 

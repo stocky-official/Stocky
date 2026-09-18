@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { FilterIcon, MoreHorizontalIcon, PlusIcon, SearchIcon, XIcon } from '@stocky/icons';
 import { ActionsBottomSheet, type ActionItem } from '@/components/ui/ActionsBottomSheet';
+import { useTranslation } from '@/lib/i18n';
 
 export interface StandardToolbarAction {
   label: string;
@@ -50,19 +51,22 @@ export interface StandardToolbarWidgetProps {
 export function StandardToolbarWidget({
   searchQuery,
   onSearchChange,
-  searchPlaceholder = 'Search...',
+  searchPlaceholder,
   isFilterOpen = false,
   onToggleFilter,
   activeFilterCount = 0,
   primaryAction,
   moreActions = [],
-  moreActionsTitle = 'Actions',
+  moreActionsTitle,
   viewSwitcher,
   children,
   className = '',
 }: StandardToolbarWidgetProps) {
+  const { t } = useTranslation();
   const [isActionsDrawerOpen, setIsActionsDrawerOpen] = useState(false);
   const hasMoreActions = moreActions && moreActions.length > 0;
+  const resolvedSearchPlaceholder = searchPlaceholder ?? t('toolbar.searchPlaceholder');
+  const resolvedMoreActionsTitle = moreActionsTitle ?? t('toolbar.actions');
 
   return (
     <>
@@ -85,17 +89,17 @@ export function StandardToolbarWidget({
                 type="text"
                 value={searchQuery}
                 onChange={(e) => onSearchChange(e.target.value)}
-                placeholder={searchPlaceholder}
+                placeholder={resolvedSearchPlaceholder}
                 className="stocky-split-search-field__input"
-                aria-label="Search"
+                aria-label={t('toolbar.search')}
               />
               {searchQuery ? (
                 <button
                   type="button"
                   onClick={() => onSearchChange('')}
                   className="stocky-split-search-field__clear-btn"
-                  aria-label="Clear search"
-                  title="Clear search"
+                  aria-label={t('toolbar.clearSearch')}
+                  title={t('toolbar.clearSearch')}
                 >
                   <XIcon size="xs" />
                 </button>
@@ -106,14 +110,14 @@ export function StandardToolbarWidget({
               <button
                 type="button"
                 onClick={onToggleFilter}
-                aria-label="Filter"
+                aria-label={t('toolbar.filter')}
                 aria-expanded={isFilterOpen}
                 className={`stocky-split-search-field__filter-btn ${
                   isFilterOpen || activeFilterCount > 0
                     ? 'stocky-split-search-field__filter-btn--active'
                     : ''
                 }`}
-                title="Open filters"
+                title={t('toolbar.openFilters')}
               >
                 <FilterIcon size="xs" />
                 {activeFilterCount > 0 && (
@@ -182,8 +186,8 @@ export function StandardToolbarWidget({
             <button
               type="button"
               onClick={() => setIsActionsDrawerOpen(true)}
-              aria-label="More actions"
-              title="More actions"
+              aria-label={t('toolbar.moreActions')}
+              title={t('toolbar.moreActions')}
               className="stocky-standard-toolbar__circle-btn stocky-standard-toolbar__circle-btn--secondary flex sm:hidden text-xs cursor-pointer active:scale-95 shrink-0"
             >
               <MoreHorizontalIcon size="xs" />
@@ -197,7 +201,7 @@ export function StandardToolbarWidget({
         <ActionsBottomSheet
           isOpen={isActionsDrawerOpen}
           onClose={() => setIsActionsDrawerOpen(false)}
-          title={moreActionsTitle}
+          title={resolvedMoreActionsTitle}
           actions={moreActions}
         />
       )}

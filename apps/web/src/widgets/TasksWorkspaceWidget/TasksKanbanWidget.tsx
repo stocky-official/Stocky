@@ -10,6 +10,7 @@ import type {
   StockTaskItem,
 } from '@stocky/types';
 import { TaskKanbanCard } from './TaskKanbanCard';
+import { useTranslation } from '@/lib/i18n';
 
 type TeamMember = {
   id: string;
@@ -51,39 +52,6 @@ interface KanbanColumnConfig {
   emptyText: string;
 }
 
-const KANBAN_COLUMNS: KanbanColumnConfig[] = [
-  {
-    id: 'assigned',
-    title: 'Assigned',
-    dotColorClass: 'bg-slate-400',
-    emptyText: 'No assigned tasks',
-  },
-  {
-    id: 'in_progress',
-    title: 'In Progress',
-    dotColorClass: 'bg-amber-500',
-    emptyText: 'No tasks running',
-  },
-  {
-    id: 'submitted',
-    title: 'In Review',
-    dotColorClass: 'bg-blue-500',
-    emptyText: 'No tasks awaiting review',
-  },
-  {
-    id: 'rejected',
-    title: 'Needs Correction',
-    dotColorClass: 'bg-rose-500',
-    emptyText: 'No corrections needed',
-  },
-  {
-    id: 'completed',
-    title: 'Completed',
-    dotColorClass: 'bg-emerald-500',
-    emptyText: 'No completed tasks yet',
-  },
-];
-
 export function TasksKanbanWidget({
   tasks,
   taskItems,
@@ -99,7 +67,44 @@ export function TasksKanbanWidget({
   onOpenDetails,
   onTaskDrop,
 }: TasksKanbanWidgetProps) {
+  const { t } = useTranslation();
   const [dragOverColumn, setDragOverColumn] = React.useState<KanbanColumnId | null>(null);
+
+  const columns: KanbanColumnConfig[] = useMemo(
+    () => [
+      {
+        id: 'assigned',
+        title: t('tasks.statusAssigned'),
+        dotColorClass: 'bg-slate-400',
+        emptyText: t('tasks.kanbanEmptyAssigned'),
+      },
+      {
+        id: 'in_progress',
+        title: t('tasks.statusInProgress'),
+        dotColorClass: 'bg-amber-500',
+        emptyText: t('tasks.kanbanEmptyInProgress'),
+      },
+      {
+        id: 'submitted',
+        title: t('tasks.statusSubmitted'),
+        dotColorClass: 'bg-blue-500',
+        emptyText: t('tasks.kanbanEmptySubmitted'),
+      },
+      {
+        id: 'rejected',
+        title: t('tasks.statusRejected'),
+        dotColorClass: 'bg-rose-500',
+        emptyText: t('tasks.kanbanEmptyRejected'),
+      },
+      {
+        id: 'completed',
+        title: t('tasks.completed'),
+        dotColorClass: 'bg-emerald-500',
+        emptyText: t('tasks.kanbanEmptyCompleted'),
+      },
+    ],
+    [t]
+  );
 
   const locationMap = useMemo(
     () => new Map(locations.map((loc) => [loc.id, loc.name])),
@@ -161,12 +166,12 @@ export function TasksKanbanWidget({
           <CheckCircleIcon size="md" />
         </div>
         <h3 className="mt-3 text-sm font-medium text-stocky-text-main">
-          {searchQuery ? 'No matching tasks' : 'No tasks found'}
+          {searchQuery ? t('tasks.noMatchingTasks') : t('tasks.noTasksFound')}
         </h3>
         <p className="mt-1 max-w-sm mx-auto text-xs text-stocky-text-sub">
           {searchQuery
-            ? 'Try another search term or reset your filters.'
-            : 'Assign a count or expiry check to a team member to get started.'}
+            ? t('tasks.noMatchingTasksDesc')
+            : t('tasks.noTasksDesc')}
         </p>
         {!searchQuery && canAssignTask && (
           <button
@@ -175,7 +180,7 @@ export function TasksKanbanWidget({
             className="mt-4 stocky-table-toolbar-button stocky-table-toolbar-button--primary h-10 px-4 rounded-full text-xs font-medium inline-flex items-center justify-center gap-1.5 whitespace-nowrap cursor-pointer"
           >
             <PlusIcon size="xs" />
-            <span>Assign task</span>
+            <span>{t('tasks.assignTask')}</span>
           </button>
         )}
       </div>
@@ -186,7 +191,7 @@ export function TasksKanbanWidget({
     <div className="w-full p-3 sm:p-3.5">
       {/* 1. Mobile Layout (< 768px): Column Headings with Horizontal Swipeable Card Rails */}
       <div className="flex flex-col gap-4 md:hidden">
-        {KANBAN_COLUMNS.map((column) => {
+        {columns.map((column) => {
           const colTasks = tasksByColumn[column.id] || [];
           const isOver = dragOverColumn === column.id;
 
@@ -249,7 +254,7 @@ export function TasksKanbanWidget({
 
       {/* 2. Desktop Layout (>= 768px): 5-Column Board */}
       <div className="hidden md:grid gap-3 md:grid-cols-2 lg:grid-cols-5">
-        {KANBAN_COLUMNS.map((column) => {
+        {columns.map((column) => {
           const colTasks = tasksByColumn[column.id] || [];
           const isOver = dragOverColumn === column.id;
 
@@ -281,7 +286,7 @@ export function TasksKanbanWidget({
               {/* Drop Target Indicator when dragging over */}
               {isOver && (
                 <div className="mb-2 flex items-center justify-center rounded-xl border-2 border-dashed border-stocky-primary/50 bg-stocky-primary/10 py-2.5 text-center text-[11px] font-medium text-stocky-primary animate-pulse">
-                  Drop to move to {column.title}
+                  {t('tasks.kanbanDropToMove', { column: column.title })}
                 </div>
               )}
 

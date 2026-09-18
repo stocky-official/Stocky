@@ -4,6 +4,7 @@ import React from 'react';
 import { CheckCircleIcon, MailIcon, PlusIcon, WarehouseIcon, TruckIcon } from '@stocky/icons';
 import type { CompanyUserRole, Location, Product, Supplier, SupplierRequest } from '@stocky/types';
 import { SupplierEmailModal } from './SupplierEmailModal';
+import { useTranslation } from '@/lib/i18n';
 
 export interface SupplierRequestsTableWidgetProps {
   requests: SupplierRequest[];
@@ -43,10 +44,23 @@ export function SupplierRequestsTableWidget({
   onPageChange,
   onPageSizeChange,
 }: SupplierRequestsTableWidgetProps) {
+  const { t } = useTranslation();
   const productMap = React.useMemo(() => new Map(products.map((p) => [p.id, p])), [products]);
   const locationMap = React.useMemo(() => new Map(locations.map((l) => [l.id, l])), [locations]);
   const supplierMap = React.useMemo(() => new Map(suppliers.map((s) => [s.id, s])), [suppliers]);
   const [emailRequest, setEmailRequest] = React.useState<SupplierRequest | null>(null);
+
+  const statusLabels: Record<SupplierRequest['status'], string> = React.useMemo(
+    () => ({
+      open: t('suppliers.statusOpen'),
+      contacted: t('suppliers.statusContacted'),
+      ordered: t('suppliers.statusOrdered'),
+      received: t('suppliers.statusReceived'),
+      closed: t('suppliers.statusClosed'),
+      cancelled: t('suppliers.statusCancelled'),
+    }),
+    [t]
+  );
 
   const pageCount = Math.max(1, Math.ceil(requests.length / pageSize));
   const currentPage = Math.min(page, pageCount - 1);
@@ -59,23 +73,23 @@ export function SupplierRequestsTableWidget({
       {pagedRequests.length === 0 ? (
         <div className="px-6 py-16 text-center">
           <CheckCircleIcon size="md" className="mx-auto text-stocky-status-success-fg/70" />
-          <h2 className="mt-3 text-sm font-medium text-stocky-text-main">No supplier requests</h2>
+          <h2 className="mt-3 text-sm font-medium text-stocky-text-main">{t('suppliers.noSupplierRequests')}</h2>
           <p className="mt-1 text-xs text-stocky-text-sub">
-            Create a request when inventory is low or a batch needs replacement.
+            {t('suppliers.noSupplierRequestsDesc')}
           </p>
           <button
             type="button"
             onClick={onCreateRequest}
             className="mt-4 stocky-table-toolbar-button stocky-table-toolbar-button--primary h-10 px-4 rounded-full text-xs font-medium inline-flex items-center justify-center gap-1.5 whitespace-nowrap cursor-pointer"
           >
-            <PlusIcon size="xs" /> New request
+            <PlusIcon size="xs" /> {t('suppliers.newRequestBtn')}
           </button>
         </div>
       ) : (
         <>
           {/* Desktop Table (hidden on mobile) */}
           <div className="hidden sm:block overflow-x-auto">
-            <table className="w-full table-fixed text-left text-[11px] stocky-board-table">
+            <table className="w-full table-fixed text-start text-[11px] stocky-board-table">
               <colgroup>
                 <col className="w-[30%]" />
                 <col className="w-[20%]" />
@@ -85,11 +99,11 @@ export function SupplierRequestsTableWidget({
               </colgroup>
               <thead>
                 <tr className="border-b border-stocky-border-subtle bg-stocky-bg-global/60 text-[10px] uppercase tracking-wide text-stocky-text-sub h-11">
-                  <th className="px-4 py-3 font-medium whitespace-nowrap align-middle">Product & Request</th>
-                  <th className="px-4 py-3 font-medium whitespace-nowrap align-middle">Location</th>
-                  <th className="px-4 py-3 font-medium whitespace-nowrap align-middle">Supplier</th>
-                  <th className="px-4 py-3 font-medium whitespace-nowrap align-middle">Status</th>
-                  <th className="px-4 py-3 text-right font-medium whitespace-nowrap align-middle">Action</th>
+                  <th className="px-4 py-3 font-medium whitespace-nowrap align-middle">{t('suppliers.colProductRequest')}</th>
+                  <th className="px-4 py-3 font-medium whitespace-nowrap align-middle">{t('suppliers.colLocation')}</th>
+                  <th className="px-4 py-3 font-medium whitespace-nowrap align-middle">{t('suppliers.colSupplier')}</th>
+                  <th className="px-4 py-3 font-medium whitespace-nowrap align-middle">{t('suppliers.colStatus')}</th>
+                  <th className="px-4 py-3 text-end font-medium whitespace-nowrap align-middle">{t('suppliers.colAction')}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-stocky-border-subtle">
@@ -106,17 +120,17 @@ export function SupplierRequestsTableWidget({
                   return (
                     <tr key={request.id} className="align-middle hover:bg-stocky-bg-global/30 transition-colors">
                       <td className="px-4 py-3">
-                        <p className="font-medium text-stocky-text-main text-xs">{product?.name || 'Product'}</p>
+                        <p className="font-medium text-stocky-text-main text-xs">{product?.name || t('inventory.productName')}</p>
                         <p className="mt-0.5 text-[10px] text-stocky-text-sub capitalize">
-                          Type: {request.requestType}
-                          {request.quantityRequested ? ` · ${request.quantityRequested} units` : ''}
+                          {t('suppliers.typePrefix', { type: request.requestType })}
+                          {request.quantityRequested ? ` · ${t('suppliers.unitsCount', { count: request.quantityRequested })}` : ''}
                         </p>
                       </td>
                       <td className="px-4 py-3 text-stocky-text-main text-xs">
-                        {location?.name || 'Location'}
+                        {location?.name || t('common.location')}
                       </td>
                       <td className="px-4 py-3 text-stocky-text-main text-xs">
-                        {supplier?.name || <span className="text-stocky-text-sub">Not recorded</span>}
+                        {supplier?.name || <span className="text-stocky-text-sub">{t('suppliers.notRecorded')}</span>}
                       </td>
                       <td className="px-4 py-3">
                         <span
@@ -124,17 +138,17 @@ export function SupplierRequestsTableWidget({
                             statusBadgeClasses[request.status] || 'bg-slate-100 text-slate-700'
                           }`}
                         >
-                          {request.status}
+                          {statusLabels[request.status] || request.status}
                         </span>
                       </td>
-                      <td className="px-4 py-3 text-right">
+                      <td className="px-4 py-3 text-end">
                         <div className="flex items-center justify-end gap-1.5">
                           <button
                             type="button"
                             onClick={() => setEmailRequest(request)}
-                            title="Email supplier"
+                            title={t('suppliers.emailSupplier')}
                             className="h-8 w-8 rounded-full border border-stocky-border-subtle bg-white text-stocky-text-sub hover:border-stocky-primary hover:text-stocky-primary inline-flex items-center justify-center transition-colors cursor-pointer"
-                            aria-label="Email supplier"
+                            aria-label={t('suppliers.emailSupplier')}
                           >
                             <MailIcon size="xs" />
                           </button>
@@ -147,7 +161,7 @@ export function SupplierRequestsTableWidget({
                               onClick={() => onStatusChange(request, nextStatus)}
                               className="h-8 rounded-full border border-stocky-border-subtle bg-white px-3 text-[11px] font-medium text-stocky-text-main hover:border-stocky-primary hover:text-stocky-primary cursor-pointer inline-flex items-center justify-center transition-colors"
                             >
-                              Mark {nextStatus}
+                              {t('suppliers.markStatus', { status: statusLabels[nextStatus] || nextStatus })}
                             </button>
                           ) : null}
                         </div>
@@ -172,7 +186,7 @@ export function SupplierRequestsTableWidget({
                   : null;
 
               return (
-                <article key={request.id} className="p-3.5 flex items-center justify-between gap-3 bg-white hover:bg-stocky-bg-global/30 transition-colors text-left">
+                <article key={request.id} className="p-3.5 flex items-center justify-between gap-3 bg-white hover:bg-stocky-bg-global/30 transition-colors text-start">
                   {/* Left Anchor + Center Info */}
                   <div className="flex items-center gap-2.5 min-w-0 flex-1">
                     <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-stocky-border-subtle bg-stocky-bg-global text-stocky-text-sub">
@@ -180,16 +194,16 @@ export function SupplierRequestsTableWidget({
                     </div>
                     <div className="min-w-0 flex-1">
                       <h4 className="text-xs font-semibold text-stocky-text-main leading-tight truncate">
-                        {product?.name || 'Product'}
+                        {product?.name || t('inventory.productName')}
                       </h4>
                       <p className="mt-0.5 text-[11px] text-stocky-text-sub flex items-center gap-1.5 truncate">
-                        <span className="truncate max-w-[100px]">{location?.name || 'Branch'}</span>
+                        <span className="truncate max-w-[100px]">{location?.name || t('common.location')}</span>
                         <span>·</span>
-                        <span className="truncate max-w-[100px]">{supplier?.name || 'Supplier'}</span>
+                        <span className="truncate max-w-[100px]">{supplier?.name || t('suppliers.colSupplier')}</span>
                         {request.quantityRequested ? (
                           <>
                             <span>·</span>
-                            <span className="font-semibold text-stocky-text-main">{request.quantityRequested} units</span>
+                            <span className="font-semibold text-stocky-text-main">{t('suppliers.unitsCount', { count: request.quantityRequested })}</span>
                           </>
                         ) : null}
                       </p>
@@ -203,15 +217,15 @@ export function SupplierRequestsTableWidget({
                         statusBadgeClasses[request.status] || 'bg-slate-100 text-slate-700'
                       }`}
                     >
-                      {request.status}
+                      {statusLabels[request.status] || request.status}
                     </span>
                     <div className="flex items-center gap-1 mt-0.5">
                       <button
                         type="button"
                         onClick={() => setEmailRequest(request)}
-                        title="Email supplier"
+                        title={t('suppliers.emailSupplier')}
                         className="h-6 w-6 rounded-full border border-stocky-border-subtle bg-white text-stocky-text-sub hover:text-stocky-primary hover:border-stocky-primary inline-flex items-center justify-center transition-colors cursor-pointer"
-                        aria-label="Email supplier"
+                        aria-label={t('suppliers.emailSupplier')}
                       >
                         <MailIcon size="xs" />
                       </button>
@@ -224,7 +238,7 @@ export function SupplierRequestsTableWidget({
                           onClick={() => onStatusChange(request, nextStatus)}
                           className="h-6 px-2 rounded-full border border-stocky-border-subtle bg-white text-[10px] font-medium text-stocky-text-main hover:border-stocky-primary hover:text-stocky-primary cursor-pointer transition-colors shadow-2xs"
                         >
-                          → {nextStatus}
+                          → {statusLabels[nextStatus] || nextStatus}
                         </button>
                       ) : null}
                     </div>
@@ -238,11 +252,14 @@ export function SupplierRequestsTableWidget({
           <footer className="stocky-board-table__footer flex flex-wrap items-center justify-between gap-3 border-t border-stocky-border-subtle p-3.5">
             <div className="flex flex-wrap items-center gap-3 text-[11px] text-stocky-text-sub">
               <span>
-                Showing {firstRowNumber.toLocaleString()}–{lastRowNumber.toLocaleString()} of{' '}
-                {requests.length.toLocaleString()} requests
+                {t('suppliers.showingRequests', {
+                  from: firstRowNumber.toLocaleString(),
+                  to: lastRowNumber.toLocaleString(),
+                  total: requests.length.toLocaleString(),
+                })}
               </span>
               <span>
-                Rows per page{' '}
+                {t('suppliers.rowsPerPage')}{' '}
                 <select
                   value={pageSize}
                   onChange={(event) => {
@@ -260,14 +277,14 @@ export function SupplierRequestsTableWidget({
 
             <div className="flex items-center gap-2">
               <span className="text-[11px] text-stocky-text-sub">
-                Page {currentPage + 1} of {pageCount}
+                {t('suppliers.pageOf', { page: currentPage + 1, pages: pageCount })}
               </span>
               <button
                 type="button"
                 onClick={() => onPageChange(Math.max(0, currentPage - 1))}
                 disabled={currentPage === 0}
                 className="stocky-table-page-button"
-                aria-label="Previous page"
+                aria-label={t('suppliers.prevPage')}
               >
                 ‹
               </button>
@@ -276,7 +293,7 @@ export function SupplierRequestsTableWidget({
                 onClick={() => onPageChange(Math.min(pageCount - 1, currentPage + 1))}
                 disabled={currentPage >= pageCount - 1}
                 className="stocky-table-page-button"
-                aria-label="Next page"
+                aria-label={t('suppliers.nextPage')}
               >
                 ›
               </button>

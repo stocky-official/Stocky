@@ -15,6 +15,7 @@ import {
 import type { Location, AttendanceShift, PunchMethod } from '@stocky/types';
 import { Html5Qrcode, Html5QrcodeSupportedFormats } from 'html5-qrcode';
 import { checkBranchGeofence, type GeofenceCheckResult } from '@/lib/attendanceGeofence';
+import { useTranslation } from '@/lib/i18n';
 
 export interface AttendanceQrScannerModalProps {
   isOpen: boolean;
@@ -57,6 +58,7 @@ export function AttendanceQrScannerModal({
   activeShift,
   onPunchAttendance,
 }: AttendanceQrScannerModalProps) {
+  const { t, locale, isRtl } = useTranslation();
   const isClockedIn = Boolean(activeShift);
   const [hasTorch, setHasTorch] = useState(false);
   const [isTorchOn, setIsTorchOn] = useState(false);
@@ -128,7 +130,7 @@ export function AttendanceQrScannerModal({
             : locations[0]);
 
         const targetLocId = targetBranch?.id || locations[0]?.id || '';
-        const branchName = targetBranch?.name || 'Branch';
+        const branchName = targetBranch?.name || (locale === 'ar' ? 'الفرع' : 'Branch');
 
         // 2. Record Clock In / Out
         const res = await onPunchAttendance({
@@ -136,8 +138,8 @@ export function AttendanceQrScannerModal({
           method: 'qr_scan',
           qrToken: cleanCode,
           notes: isClockedIn
-            ? `Clocked out via mobile QR scan at ${branchName}`
-            : `Clocked in via mobile QR scan at ${branchName}`,
+            ? t('modals.qrScanner.clockOutNote', { branch: branchName })
+            : t('modals.qrScanner.clockInNote', { branch: branchName }),
         });
 
         // Stop camera immediately
@@ -154,12 +156,12 @@ export function AttendanceQrScannerModal({
           handleCloseModal();
         }, 2200);
       } catch (err: any) {
-        setErrorMsg(err.message || 'Failed to record punch. Please try scanning again.');
+        setErrorMsg(err.message || t('modals.qrScanner.cameraError'));
         isProcessingRef.current = false;
         setPunching(false);
       }
     },
-    [locations, activeShift, isClockedIn, onPunchAttendance]
+    [locations, activeShift, isClockedIn, onPunchAttendance, t, locale]
   );
 
   const handleDecodedQrRef = useRef(handleDecodedQr);
@@ -408,7 +410,7 @@ export function AttendanceQrScannerModal({
       } catch (err: any) {
         if (isMounted) {
           console.warn('Attendance QR scanner error:', err);
-          setErrorMsg('Unable to access device camera. Please check browser permissions.');
+          setErrorMsg(t('modals.qrScanner.cameraError'));
         }
       } finally {
         isStartingRef.current = false;
@@ -480,7 +482,7 @@ export function AttendanceQrScannerModal({
               </div>
               <div className="min-w-0">
                 <h2 className="text-sm font-bold text-white leading-tight truncate">
-                  {isClockedIn ? 'Scan to Clock Out' : 'Scan to Clock In'}
+                  {isClockedIn ? t('modals.qrScanner.scanToClockOut') : t('modals.qrScanner.scanToClockIn')}
                 </h2>
                 <div className="flex items-center gap-1.5 mt-0.5">
                   <span
@@ -490,11 +492,13 @@ export function AttendanceQrScannerModal({
                   />
                   <span className="text-[11px] text-white/80 font-medium truncate">
                     {isClockedIn
-                      ? `Active shift · ${new Date(activeShift?.clockInAt || '').toLocaleTimeString([], {
-                          hour: '2-digit',
-                          minute: '2-digit',
-                        })}`
-                      : 'Currently Clocked Out'}
+                      ? t('modals.qrScanner.activeShiftAt', {
+                          time: new Date(activeShift?.clockInAt || '').toLocaleTimeString(locale === 'ar' ? 'ar-EG' : [], {
+                            hour: '2-digit',
+                            minute: '2-digit',
+                          }),
+                        })
+                      : t('modals.qrScanner.currentlyClockedOut')}
                   </span>
                 </div>
               </div>
@@ -506,8 +510,8 @@ export function AttendanceQrScannerModal({
                   type="button"
                   onClick={handleToggleTorch}
                   className="w-10 h-10 rounded-full bg-white/15 backdrop-blur-md flex items-center justify-center text-white hover:bg-white/25 active:scale-95 transition-all cursor-pointer"
-                  aria-label="Toggle Flashlight"
-                  title="Flashlight"
+                  aria-label={t('modals.qrScanner.toggleFlashlight')}
+                  title={t('modals.qrScanner.flashlight')}
                 >
                   {isTorchOn ? <ZapIcon size="sm" className="text-[#D8FF00]" /> : <ZapOffIcon size="sm" />}
                 </button>
@@ -517,8 +521,8 @@ export function AttendanceQrScannerModal({
                 type="button"
                 onClick={handleCloseModal}
                 className="w-10 h-10 rounded-full bg-white/15 backdrop-blur-md flex items-center justify-center text-white hover:bg-white/25 active:scale-95 transition-all cursor-pointer"
-                aria-label="Close Scanner"
-                title="Close"
+                aria-label={t('modals.qrScanner.closeScanner')}
+                title={t('modals.qrScanner.close')}
               >
                 <XIcon size="sm" />
               </button>
@@ -600,10 +604,10 @@ export function AttendanceQrScannerModal({
               <div className="mt-7 flex flex-col items-center gap-1.5 px-6 text-center max-w-xs">
                 <div className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-black/80 backdrop-blur-md text-xs font-semibold text-white border border-white/20 shadow-lg">
                   <QrCodeIcon size="xs" className={isClockedIn ? 'text-emerald-400' : 'text-[#D8FF00]'} />
-                  <span>Align Branch QR Code inside frame</span>
+                  <span>{t('modals.qrScanner.alignBranchQr')}</span>
                 </div>
                 <p className="text-[11px] text-white/75 leading-relaxed">
-                  Scan the QR poster stationed at the branch entrance or kiosk.
+                  {t('modals.qrScanner.scanPosterHint')}
                 </p>
               </div>
             </div>
@@ -632,7 +636,7 @@ export function AttendanceQrScannerModal({
             </div>
             <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-white/15 text-[10px] font-medium text-white/90">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-              100m Geofence Active
+              {t('modals.qrScanner.geofenceActive')}
             </span>
           </div>
 
@@ -656,17 +660,17 @@ export function AttendanceQrScannerModal({
 
                   <div className="space-y-1">
                     <h3 className="text-base font-bold text-stocky-text-main">
-                      {punchResult.action === 'out' ? 'Clocked Out Successfully' : 'Clocked In Successfully'}
+                      {punchResult.action === 'out' ? t('modals.qrScanner.clockOutSuccess') : t('modals.qrScanner.clockInSuccess')}
                     </h3>
                     <p className="text-xs text-stocky-text-sub">
-                      Recorded at <span className="font-semibold text-stocky-text-main">{punchResult.branchName}</span>
+                      {t('modals.qrScanner.recordedAt', { branch: punchResult.branchName })}
                     </p>
                   </div>
 
                   <div className="w-full p-3 rounded-2xl bg-stocky-bg-global/70 border border-stocky-border-subtle text-xs flex items-center justify-between">
-                    <span className="text-stocky-text-sub font-medium">Time Recorded</span>
+                    <span className="text-stocky-text-sub font-medium">{t('modals.qrScanner.timeRecorded')}</span>
                     <span className="font-bold text-stocky-text-main">
-                      {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      {new Date().toLocaleTimeString(locale === 'ar' ? 'ar-EG' : [], { hour: '2-digit', minute: '2-digit' })}
                     </span>
                   </div>
 
@@ -675,7 +679,7 @@ export function AttendanceQrScannerModal({
                     onClick={handleCloseModal}
                     className="w-full h-11 rounded-full stocky-table-toolbar-button stocky-table-toolbar-button--primary text-xs font-semibold mt-1 cursor-pointer shadow-sm"
                   >
-                    Done
+                    {t('modals.qrScanner.done')}
                   </button>
                 </div>
               </motion.div>

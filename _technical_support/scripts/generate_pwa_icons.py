@@ -39,6 +39,16 @@ SVG_MASKABLE = f"""<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"
   </svg>
 </svg>"""
 
+# Official iOS Splash / Startup Screen (#D8FF00 background, centered #11120F artwork)
+SVG_SPLASH = f"""<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1170 2532" width="1170" height="2532">
+  <rect width="1170" height="2532" fill="#D8FF00" />
+  <svg x="375" y="1056" width="420" height="420" viewBox="0 0 1254 1254">
+    <g transform="translate(0, 1254) scale(0.1, -0.1)" fill="#11120F" stroke="none">
+{SVG_PATHS}
+    </g>
+  </svg>
+</svg>"""
+
 def render_svg_to_png(svg_content, out_png_path, width=512, height=512):
     temp_html = out_png_path + ".html"
     html_content = f"""<!DOCTYPE html>
@@ -129,7 +139,10 @@ def main():
         format="ICO",
         sizes=[(16, 16), (32, 32), (48, 48)]
     )
-    print("Generated favicon.ico (16/32/48 multi-size)")
+    # 5. Render iOS Apple splash screen (1170x2532)
+    splash_png = os.path.join(public_dir, "apple-splash.png")
+    render_svg_to_png(SVG_SPLASH, splash_png, 1170, 2532)
+    print("Rendered apple-splash.png")
 
 if __name__ == "__main__":
     main()

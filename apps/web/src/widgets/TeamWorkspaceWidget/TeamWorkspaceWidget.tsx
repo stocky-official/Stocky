@@ -19,6 +19,7 @@ import { TeamTableWidget } from './TeamTableWidget';
 import { OrgStructureWidget } from './OrgStructureWidget';
 import { MemberDetailDrawer, type TeamMemberData } from './MemberDetailDrawer';
 import { TeamInviteDrawer } from './TeamInviteDrawer';
+import { useTranslation } from '@/lib/i18n';
 
 export interface TeamWorkspaceWidgetProps {
   members: TeamMemberData[];
@@ -59,6 +60,7 @@ export function TeamWorkspaceWidget({
   onAssign,
   onUnassign,
 }: TeamWorkspaceWidgetProps) {
+  const { t } = useTranslation();
   const [viewMode, setViewMode] = useState<'table' | 'org'>('table');
   const [searchQuery, setSearchQuery] = useState('');
   const [isFilterPanelOpen, setIsFilterPanelOpen] = useState(false);
@@ -194,7 +196,7 @@ export function TeamWorkspaceWidget({
     <div className="space-y-4">
       {/* Search in Fields */}
       <div className="space-y-1.5">
-        <span className="text-[10px] font-bold uppercase tracking-wider text-stocky-text-sub">Search In Fields</span>
+        <span className="text-[10px] font-bold uppercase tracking-wider text-stocky-text-sub">{t('team.searchInFields')}</span>
         <div className="flex flex-wrap gap-1.5">
           <button
             type="button"
@@ -205,7 +207,7 @@ export function TeamWorkspaceWidget({
                 : 'border-stocky-border-subtle bg-white text-stocky-text-sub hover:text-stocky-text-main'
             }`}
           >
-            Name
+            {t('team.name')}
           </button>
           <button
             type="button"
@@ -216,7 +218,7 @@ export function TeamWorkspaceWidget({
                 : 'border-stocky-border-subtle bg-white text-stocky-text-sub hover:text-stocky-text-main'
             }`}
           >
-            Email
+            {t('team.email')}
           </button>
           <button
             type="button"
@@ -227,14 +229,14 @@ export function TeamWorkspaceWidget({
                 : 'border-stocky-border-subtle bg-white text-stocky-text-sub hover:text-stocky-text-main'
             }`}
           >
-            Job Title
+            {t('team.jobTitle')}
           </button>
         </div>
       </div>
 
       {/* Role Filter */}
       <div className="space-y-1.5 pt-3 border-t border-stocky-border-subtle">
-        <span className="text-[10px] font-bold uppercase tracking-wider text-stocky-text-sub">Role</span>
+        <span className="text-[10px] font-bold uppercase tracking-wider text-stocky-text-sub">{t('team.role')}</span>
         <div className="flex flex-wrap gap-1.5">
           {(['all', 'admin', 'manager', 'staff'] as const).map((r) => {
             const count =
@@ -244,7 +246,14 @@ export function TeamWorkspaceWidget({
                 ? members.filter((m) => m.role === 'admin' || m.role === 'owner').length
                 : members.filter((m) => m.role === r).length;
             const isSelected = roleFilter === r;
-            const label = r === 'all' ? 'All Roles' : r === 'admin' ? 'Admins' : r === 'manager' ? 'Managers' : 'Staff';
+            const label =
+              r === 'all'
+                ? t('team.allRoles')
+                : r === 'admin'
+                ? t('team.roleAdmins')
+                : r === 'manager'
+                ? t('team.roleManagers')
+                : t('team.roleStaffPlural');
             return (
               <button
                 key={r}
@@ -266,7 +275,7 @@ export function TeamWorkspaceWidget({
       {/* Location Filter */}
       {locations.length > 0 && (
         <div className="space-y-1.5 pt-3 border-t border-stocky-border-subtle">
-          <span className="text-[10px] font-bold uppercase tracking-wider text-stocky-text-sub">Assigned Location</span>
+          <span className="text-[10px] font-bold uppercase tracking-wider text-stocky-text-sub">{t('team.assignedBranches')}</span>
           <div className="flex flex-wrap gap-1.5">
             <button
               type="button"
@@ -277,7 +286,7 @@ export function TeamWorkspaceWidget({
                   : 'border-stocky-border-subtle bg-white text-stocky-text-sub hover:text-stocky-text-main'
               }`}
             >
-              All Locations
+              {t('team.allLocations')}
             </button>
             {locations.map((loc) => (
               <button
@@ -299,7 +308,7 @@ export function TeamWorkspaceWidget({
 
       {/* Status Filter */}
       <div className="space-y-1.5 pt-3 border-t border-stocky-border-subtle">
-        <span className="text-[10px] font-bold uppercase tracking-wider text-stocky-text-sub">Account Status</span>
+        <span className="text-[10px] font-bold uppercase tracking-wider text-stocky-text-sub">{t('team.accountStatus')}</span>
         <div className="flex flex-wrap gap-1.5">
           {(['all', 'active', 'invited'] as const).map((s) => (
             <button
@@ -312,7 +321,7 @@ export function TeamWorkspaceWidget({
                   : 'border-stocky-border-subtle bg-white text-stocky-text-sub hover:text-stocky-text-main'
               }`}
             >
-              {s === 'all' ? 'All Statuses' : s === 'active' ? 'Active' : 'Invited / Pending'}
+              {s === 'all' ? t('team.allStatuses') : s === 'active' ? t('team.statusActive') : t('team.statusInvitedPending')}
             </button>
           ))}
         </div>
@@ -329,12 +338,12 @@ export function TeamWorkspaceWidget({
           <StandardToolbarWidget
             searchQuery={searchQuery}
             onSearchChange={setSearchQuery}
-            searchPlaceholder="Search team members by name, email, or job title..."
+            searchPlaceholder={t('team.searchPlaceholder')}
             activeFilterCount={activeFilterCount}
             isFilterOpen={isFilterPanelOpen}
             onToggleFilter={() => setIsFilterPanelOpen((open) => !open)}
             viewSwitcher={
-              <div className="flex items-center gap-1 p-1 bg-stocky-bg-global rounded-full border border-stocky-border-subtle shrink-0" role="tablist" aria-label="View switcher">
+              <div className="flex items-center gap-1 p-1 bg-stocky-bg-global rounded-full border border-stocky-border-subtle shrink-0" role="tablist" aria-label={t('team.viewSwitcher')}>
                 <button
                   type="button"
                   role="tab"
@@ -345,10 +354,10 @@ export function TeamWorkspaceWidget({
                       ? 'bg-white text-stocky-text-main shadow-xs'
                       : 'text-stocky-text-sub hover:text-stocky-text-main'
                   }`}
-                  title="Table view"
+                  title={t('team.tableView')}
                 >
                   <TableIcon size="xs" />
-                  <span className="hidden sm:inline">Table</span>
+                  <span className="hidden sm:inline">{t('team.table')}</span>
                 </button>
                 <button
                   type="button"
@@ -360,30 +369,30 @@ export function TeamWorkspaceWidget({
                       ? 'bg-white text-stocky-text-main shadow-xs'
                       : 'text-stocky-text-sub hover:text-stocky-text-main'
                   }`}
-                  title="Org structure"
+                  title={t('team.orgStructure')}
                 >
                   <NetworkIcon size="xs" />
-                  <span className="hidden sm:inline">Org</span>
+                  <span className="hidden sm:inline">{t('team.org')}</span>
                 </button>
               </div>
             }
             primaryAction={
               canManage
                 ? {
-                    label: 'Invite member',
-                    shortLabel: 'Invite',
+                    label: t('team.inviteMember'),
+                    shortLabel: t('team.invite'),
                     icon: <PlusIcon size="xs" />,
                     onClick: () => setIsInviteOpen(true),
-                    title: 'Invite team member',
+                    title: t('team.inviteMember'),
                   }
                 : undefined
             }
             moreActions={[
               {
-                label: 'Export team',
+                label: t('team.exportTeam'),
                 icon: <CloudDownloadIcon size="xs" />,
                 onClick: exportTeamCsv,
-                description: 'Download team directory CSV',
+                description: t('team.exportTeamDesc'),
               },
             ]}
           />
@@ -392,18 +401,18 @@ export function TeamWorkspaceWidget({
           {isFilterPanelOpen && (
             <div
               ref={filterPanelRef}
-              className="hidden sm:flex stocky-column-filter-panel absolute top-full left-3 sm:left-3.5 mt-1 z-40"
+              className="hidden sm:flex stocky-column-filter-panel absolute top-full start-3 sm:start-3.5 mt-1 z-40"
               role="dialog"
-              aria-label="Team member filters"
+              aria-label={t('team.filtersTitle')}
             >
               {/* Sticky Header */}
               <div className="sticky top-0 z-10 flex shrink-0 items-center justify-between border-b border-stocky-border-subtle bg-white px-4 py-2.5">
                 <div className="flex items-center gap-2">
                   <FilterIcon size="xs" className="text-stocky-primary" />
-                  <h3 className="text-xs font-semibold text-stocky-text-main">Team Filters</h3>
+                  <h3 className="text-xs font-semibold text-stocky-text-main">{t('team.filtersTitle')}</h3>
                   {activeFilterCount > 0 && (
                     <span className="rounded-full bg-stocky-primary/10 px-2 py-0.5 text-[10px] font-semibold text-stocky-primary">
-                      {activeFilterCount} active
+                      {t('team.activeCount', { count: activeFilterCount })}
                     </span>
                   )}
                 </div>
@@ -413,7 +422,7 @@ export function TeamWorkspaceWidget({
                     onClick={resetFilters}
                     className="text-[11px] font-medium text-stocky-primary hover:underline cursor-pointer"
                   >
-                    Reset all
+                    {t('team.resetAll')}
                   </button>
                 )}
               </div>
@@ -425,14 +434,14 @@ export function TeamWorkspaceWidget({
               {/* Sticky Footer */}
               <div className="sticky bottom-0 z-10 flex shrink-0 items-center justify-between border-t border-stocky-border-subtle bg-stocky-bg-global px-4 py-2">
                 <span className="text-[11px] font-medium text-stocky-text-sub">
-                  Showing <span className="font-semibold text-stocky-text-main">{filteredMembers.length}</span> of {members.length} members
+                  {t('team.showingMembers', { filtered: filteredMembers.length, total: members.length })}
                 </span>
                 <button
                   type="button"
                   onClick={() => setIsFilterPanelOpen(false)}
                   className="h-7 rounded-full bg-stocky-primary px-3 text-xs font-medium text-white hover:bg-stocky-primary-hover cursor-pointer"
                 >
-                  Done
+                  {t('team.done')}
                 </button>
               </div>
             </div>
@@ -445,20 +454,20 @@ export function TeamWorkspaceWidget({
             mobileOnly
             isOpen={isFilterPanelOpen}
             onClose={() => setIsFilterPanelOpen(false)}
-            title="Team Filters"
+            title={t('team.filtersTitle')}
             activeCount={activeFilterCount}
             onReset={activeFilterCount > 0 ? resetFilters : undefined}
             footer={
               <div className="flex items-center justify-between w-full">
                 <span className="text-xs text-stocky-text-sub">
-                  Showing <span className="font-semibold text-stocky-text-main">{filteredMembers.length}</span> of {members.length} members
+                  {t('team.showingMembers', { filtered: filteredMembers.length, total: members.length })}
                 </span>
                 <button
                   type="button"
                   onClick={() => setIsFilterPanelOpen(false)}
                   className="h-9 px-5 rounded-full bg-stocky-primary text-white text-xs font-semibold cursor-pointer"
                 >
-                  Apply filters
+                  {t('team.applyFilters')}
                 </button>
               </div>
             }

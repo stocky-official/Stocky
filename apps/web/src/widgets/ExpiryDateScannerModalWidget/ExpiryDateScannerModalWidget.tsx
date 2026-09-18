@@ -16,6 +16,7 @@ import {
 } from '@stocky/icons';
 import type { Worker } from 'tesseract.js';
 import { parseExpiryDateFromText, type ParsedDateResult } from '@/lib/ocr/dateParser';
+import { useTranslation } from '@/lib/i18n';
 
 export interface ExpiryDateScannerModalWidgetProps {
   isOpen: boolean;
@@ -118,13 +119,14 @@ export function ExpiryDateScannerModalWidget({
   onDateSelected,
   initialDate,
 }: ExpiryDateScannerModalWidgetProps): any {
+  const { t, locale, isRtl } = useTranslation();
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const activeStreamRef = useRef<MediaStream | null>(null);
   const workerRef = useRef<Worker | null>(null);
 
   const [mounted, setMounted] = useState(false);
   const [isEngineReady, setIsEngineReady] = useState(false);
-  const [engineStatus, setEngineStatus] = useState('Initializing OCR engine...');
+  const [engineStatus, setEngineStatus] = useState(() => t('modals.expiryScanner.initializingOcr'));
   const [cameraError, setCameraError] = useState<string | null>(null);
   const [isScanning, setIsScanning] = useState(false);
   const [isTorchOn, setIsTorchOn] = useState(false);
@@ -595,10 +597,10 @@ export function ExpiryDateScannerModalWidget({
               </div>
               <div>
                 <h3 className="text-sm font-medium text-white tracking-tight leading-tight">
-                  Scan Expiry Date
+                  {t('modals.expiryScanner.title')}
                 </h3>
                 <p className="text-[11px] text-white/60 font-normal">
-                  {isEngineReady ? '100% In-Browser OCR' : engineStatus}
+                  {isEngineReady ? t('modals.expiryScanner.inBrowserOcr') : engineStatus}
                 </p>
               </div>
             </div>
@@ -609,7 +611,7 @@ export function ExpiryDateScannerModalWidget({
                   type="button"
                   onClick={handleToggleTorch}
                   className="w-10 h-10 rounded-full bg-white/15 text-white flex items-center justify-center hover:bg-white/25 active:scale-95 transition-all"
-                  aria-label="Toggle Torch"
+                  aria-label={t('modals.expiryScanner.toggleTorch')}
                 >
                   {isTorchOn ? <ZapIcon size="sm" /> : <ZapOffIcon size="sm" />}
                 </button>
@@ -619,7 +621,7 @@ export function ExpiryDateScannerModalWidget({
                 type="button"
                 onClick={handleClose}
                 className="w-10 h-10 rounded-full bg-white/15 text-white flex items-center justify-center hover:bg-white/25 active:scale-95 transition-all"
-                aria-label="Close Scanner"
+                aria-label={t('modals.expiryScanner.closeScanner')}
               >
                 <XIcon size="sm" />
               </button>
@@ -656,7 +658,7 @@ export function ExpiryDateScannerModalWidget({
                       : 'text-white/70 hover:text-white'
                   }`}
                 >
-                  1x
+                  {t('modals.expiryScanner.macroZoom1')}
                 </button>
                 <button
                   type="button"
@@ -670,7 +672,7 @@ export function ExpiryDateScannerModalWidget({
                       : 'text-white/70 hover:text-white'
                   }`}
                 >
-                  2x Macro
+                  {t('modals.expiryScanner.macroZoom2')}
                 </button>
                 {zoomRange.max >= 3 && (
                   <button
@@ -685,7 +687,7 @@ export function ExpiryDateScannerModalWidget({
                         : 'text-white/70 hover:text-white'
                     }`}
                   >
-                    3x
+                    {t('modals.expiryScanner.macroZoom3')}
                   </button>
                 )}
               </div>
@@ -749,7 +751,7 @@ export function ExpiryDateScannerModalWidget({
                       className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/90 text-white shadow-lg text-xs font-medium"
                     >
                       <CheckCircleIcon size="sm" />
-                      <span>Date Locked</span>
+                      <span>{t('modals.expiryScanner.dateLocked')}</span>
                     </motion.div>
                   )}
                 </div>
@@ -762,7 +764,7 @@ export function ExpiryDateScannerModalWidget({
                     className="mt-3 px-3 py-1 bg-black/75 backdrop-blur-md rounded-full border border-white/20 text-[11px] text-white/90 max-w-xs truncate shadow-lg flex items-center gap-1.5"
                   >
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping shrink-0" />
-                    <span className="text-emerald-400 font-medium shrink-0">Reading:</span>
+                    <span className="text-emerald-400 font-medium shrink-0">{t('modals.expiryScanner.reading')}</span>
                     <span className="truncate">&ldquo;{liveOcrText}&rdquo;</span>
                   </motion.div>
                 )}
@@ -770,8 +772,8 @@ export function ExpiryDateScannerModalWidget({
                 {/* Guide Text */}
                 <p className="mt-3 text-xs font-medium text-white/85 text-center drop-shadow-md max-w-xs">
                   {detectedResult
-                    ? 'Confirm date below or tap Rescan'
-                    : 'Align date stamp (e.g. EXP 12/2026 or 15.10.25) within box'}
+                    ? t('modals.expiryScanner.guideDetected')
+                    : t('modals.expiryScanner.guideScan')}
                 </p>
               </div>
             )}
@@ -781,14 +783,14 @@ export function ExpiryDateScannerModalWidget({
               <div className="absolute inset-0 z-30 flex items-center justify-center p-4">
                 <div className="p-6 bg-slate-900/95 rounded-3xl border border-white/10 max-w-xs text-center space-y-3 shadow-2xl text-white">
                   <AlertCircleIcon size="lg" className="text-red-400 mx-auto" />
-                  <h3 className="text-sm font-medium">Camera Access Required</h3>
+                  <h3 className="text-sm font-medium">{t('modals.expiryScanner.cameraAccessRequired')}</h3>
                   <p className="text-xs text-white/70 leading-relaxed">{cameraError}</p>
                   <button
                     type="button"
                     onClick={handleClose}
                     className="w-full py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-medium rounded-xl transition-colors"
                   >
-                    Close
+                    {t('modals.expiryScanner.close')}
                   </button>
                 </div>
               </div>
@@ -811,7 +813,7 @@ export function ExpiryDateScannerModalWidget({
                     </div>
                     <div>
                       <span className="text-[11px] font-medium uppercase tracking-wider text-emerald-400">
-                        Expiration Detected
+                        {t('modals.expiryScanner.expirationDetected')}
                       </span>
                       <h4 className="text-lg font-medium tracking-tight text-white">
                         {detectedResult.displayDate}
@@ -825,9 +827,9 @@ export function ExpiryDateScannerModalWidget({
                 </div>
 
                 <div className="flex items-center justify-between text-xs text-white/60 bg-black/40 rounded-xl px-3 py-1.5 border border-white/5">
-                  <span className="truncate">Stamp: &ldquo;{detectedResult.rawMatch}&rdquo;</span>
+                  <span className="truncate">{t('modals.expiryScanner.stamp', { text: detectedResult.rawMatch })}</span>
                   <span className="text-emerald-400 font-medium shrink-0 ml-2">
-                    {Math.round(detectedResult.confidence * 100)}% Confidence
+                    {t('modals.expiryScanner.confidence', { confidence: Math.round(detectedResult.confidence * 100) })}
                   </span>
                 </div>
 
@@ -838,7 +840,7 @@ export function ExpiryDateScannerModalWidget({
                     className="py-2.5 px-3 bg-white/10 hover:bg-white/15 active:scale-98 text-white rounded-2xl text-xs font-medium flex items-center justify-center gap-1.5 transition-all"
                   >
                     <RefreshIcon size="xs" />
-                    <span>Rescan</span>
+                    <span>{t('modals.expiryScanner.rescan')}</span>
                   </button>
 
                   <button
@@ -848,7 +850,9 @@ export function ExpiryDateScannerModalWidget({
                   >
                     <CheckCircleIcon size="xs" />
                     <span>
-                      Apply Date {autoApplyCountdown !== null && `(${autoApplyCountdown}s)`}
+                      {autoApplyCountdown !== null
+                        ? t('modals.expiryScanner.applyDateCountdown', { seconds: autoApplyCountdown })
+                        : t('modals.expiryScanner.applyDate')}
                     </span>
                   </button>
                 </div>
@@ -860,13 +864,13 @@ export function ExpiryDateScannerModalWidget({
                 className="w-full max-w-md bg-slate-900/95 border border-white/20 rounded-3xl p-4 shadow-2xl backdrop-blur-xl text-white space-y-3"
               >
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-medium text-white">Enter Expiry Date Manually</span>
+                  <span className="text-xs font-medium text-white">{t('modals.expiryScanner.manualModalTitle')}</span>
                   <button
                     type="button"
                     onClick={() => setShowManualInput(false)}
                     className="text-xs text-white/60 hover:text-white"
                   >
-                    Back to Camera
+                    {t('modals.expiryScanner.backToCamera')}
                   </button>
                 </div>
                 <input
@@ -881,14 +885,14 @@ export function ExpiryDateScannerModalWidget({
                     onClick={() => setShowManualInput(false)}
                     className="py-2 px-3 bg-white/10 hover:bg-white/15 text-white rounded-xl text-xs font-medium"
                   >
-                    Cancel
+                    {t('modals.expiryScanner.cancel')}
                   </button>
                   <button
                     type="submit"
                     disabled={!manualDateInput}
                     className="py-2 px-3 bg-emerald-500 hover:bg-emerald-400 disabled:opacity-50 text-white rounded-xl text-xs font-medium"
                   >
-                    Confirm Date
+                    {t('modals.expiryScanner.confirmDate')}
                   </button>
                 </div>
               </form>
@@ -906,7 +910,7 @@ export function ExpiryDateScannerModalWidget({
                         : 'bg-white/10 text-white/60 border border-white/15'
                     }`}
                   >
-                    Auto-Scan: {autoScanEnabled ? 'ON' : 'OFF'}
+                    {t('modals.expiryScanner.autoScan', { status: autoScanEnabled ? t('modals.expiryScanner.on') : t('modals.expiryScanner.off') })}
                   </button>
 
                   {/* Manual Shutter Button */}
@@ -915,7 +919,7 @@ export function ExpiryDateScannerModalWidget({
                     onClick={processCurrentFrame}
                     disabled={isScanning || !isEngineReady}
                     className="w-16 h-16 rounded-full border-4 border-white/80 p-1 flex items-center justify-center hover:scale-105 active:scale-95 transition-all disabled:opacity-50 shadow-xl"
-                    aria-label="Capture and Read Expiry Date"
+                    aria-label={t('modals.expiryScanner.captureAndRead')}
                   >
                     <div
                       className={`w-full h-full rounded-full transition-colors ${
@@ -927,7 +931,7 @@ export function ExpiryDateScannerModalWidget({
                   <div className="w-16 text-right">
                     {isScanning && (
                       <span className="text-[10px] text-emerald-400 animate-pulse font-medium">
-                        Scanning...
+                        {t('modals.expiryScanner.scanning')}
                       </span>
                     )}
                   </div>
@@ -935,14 +939,14 @@ export function ExpiryDateScannerModalWidget({
 
                 <div className="flex flex-col items-center gap-1.5">
                   <p className="text-[11px] text-white/60 text-center">
-                    Tap white shutter button or hold steady over date
+                    {t('modals.expiryScanner.shutterHint')}
                   </p>
                   <button
                     type="button"
                     onClick={() => setShowManualInput(true)}
                     className="text-[11px] text-emerald-400/90 hover:text-emerald-300 underline underline-offset-2 transition-colors"
                   >
-                    Can&apos;t scan? Enter date manually
+                    {t('modals.expiryScanner.manualEntryPrompt')}
                   </button>
                 </div>
               </div>

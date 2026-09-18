@@ -3,6 +3,7 @@
 import React from 'react';
 import { PlusIcon } from '@stocky/icons';
 import type { CompanyUserRole, Supplier, SupplierContact, SupplierProduct, SupplierRequest } from '@stocky/types';
+import { useTranslation } from '@/lib/i18n';
 
 export interface SuppliersTableWidgetProps {
   suppliers: Supplier[];
@@ -37,6 +38,7 @@ export function SuppliersTableWidget({
   onPageChange,
   onPageSizeChange,
 }: SuppliersTableWidgetProps) {
+  const { t } = useTranslation();
   const canManage = userRole === 'owner' || userRole === 'admin';
   const pageCount = Math.max(1, Math.ceil(suppliers.length / pageSize));
   const currentPage = Math.min(page, pageCount - 1);
@@ -59,9 +61,9 @@ export function SuppliersTableWidget({
       {pagedSuppliers.length === 0 ? (
         <div className="px-6 py-16 text-center">
           <PlusIcon size="md" className="mx-auto text-stocky-text-sub/50" />
-          <h3 className="mt-3 text-sm font-medium text-stocky-text-main">No matching suppliers</h3>
+          <h3 className="mt-3 text-sm font-medium text-stocky-text-main">{t('suppliers.noMatchingSuppliers')}</h3>
           <p className="mt-1 text-xs text-stocky-text-sub">
-            Try adjusting your search terms or column filters.
+            {t('suppliers.noMatchingSuppliersDesc')}
           </p>
           {canManage && (
             <button
@@ -69,7 +71,7 @@ export function SuppliersTableWidget({
               onClick={onAddSupplier}
               className="mt-4 stocky-table-toolbar-button stocky-table-toolbar-button--primary h-10 px-4 rounded-full text-xs font-medium inline-flex items-center justify-center gap-1.5 whitespace-nowrap cursor-pointer"
             >
-              <PlusIcon size="xs" /> Add supplier
+              <PlusIcon size="xs" /> {t('suppliers.addSupplierBtn')}
             </button>
           )}
         </div>
@@ -77,7 +79,7 @@ export function SuppliersTableWidget({
         <>
           {/* 1. Desktop Table (hidden on mobile) */}
           <div className="hidden sm:block overflow-x-auto">
-            <table className="w-full min-w-[780px] table-fixed text-left text-[11px] stocky-board-table">
+            <table className="w-full min-w-[780px] table-fixed text-start text-[11px] stocky-board-table">
               <colgroup>
                 <col className="w-[22%]" />
                 <col className="w-[24%]" />
@@ -87,11 +89,11 @@ export function SuppliersTableWidget({
               </colgroup>
               <thead>
                 <tr className="border-b border-stocky-border-subtle bg-stocky-bg-global/60 text-[10px] uppercase tracking-wide text-stocky-text-sub h-11">
-                  <th className="px-4 py-3 font-medium whitespace-nowrap align-middle">Supplier</th>
-                  <th className="px-4 py-3 font-medium whitespace-nowrap align-middle">Address</th>
-                  <th className="px-4 py-3 font-medium whitespace-nowrap align-middle">Products</th>
-                  <th className="px-4 py-3 font-medium whitespace-nowrap align-middle">Contacts</th>
-                  <th className="px-4 py-3 text-right font-medium whitespace-nowrap align-middle">Actions</th>
+                  <th className="px-4 py-3 font-medium whitespace-nowrap align-middle">{t('suppliers.colSupplier')}</th>
+                  <th className="px-4 py-3 font-medium whitespace-nowrap align-middle">{t('suppliers.colAddress')}</th>
+                  <th className="px-4 py-3 font-medium whitespace-nowrap align-middle">{t('suppliers.colProducts')}</th>
+                  <th className="px-4 py-3 font-medium whitespace-nowrap align-middle">{t('suppliers.colContacts')}</th>
+                  <th className="px-4 py-3 text-end font-medium whitespace-nowrap align-middle">{t('suppliers.colActions')}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-stocky-border-subtle">
@@ -142,58 +144,61 @@ export function SuppliersTableWidget({
                             <p className="font-semibold text-stocky-text-main text-xs truncate">
                               {supplier.name}
                             </p>
-                            <p className="text-[10px] text-stocky-text-sub truncate">
-                              {supplier.contactName || 'No contact specified'}
-                            </p>
+                              <p className="text-[10px] text-stocky-text-sub truncate">
+                                {supplier.contactName || t('suppliers.noContactSpecified')}
+                              </p>
+                            </div>
                           </div>
-                        </div>
-                      </td>
-                      <td className="px-4 py-3">
-                        <p className="text-xs text-stocky-text-main truncate max-w-[200px]">
-                          {supplier.address || <span className="text-stocky-text-sub italic">Not recorded</span>}
-                        </p>
-                      </td>
-                      <td className="px-4 py-3">
-                        <p className="text-xs font-medium text-stocky-text-main">
-                          {linked.length} linked product{linked.length === 1 ? '' : 's'}
-                        </p>
-                        <p className="text-[10px] text-stocky-text-sub truncate max-w-[180px]">
-                          {linkedNames.slice(0, 2).join(', ') || 'No catalog items'}
-                          {linkedNames.length > 2 ? ` +${linkedNames.length - 2}` : ''}
-                        </p>
-                      </td>
-                      <td className="px-4 py-3">
-                        <p className="text-xs text-stocky-text-main truncate max-w-[160px]">
-                          {primary?.phone || primary?.email || 'No primary details'}
-                        </p>
-                        <p className="text-[10px] text-stocky-text-sub truncate max-w-[160px]">
-                          {supplier.contactPhone ||
-                            supplier.contactEmail ||
-                            primary?.phone ||
-                            supplier.contactPhone ||
-                            `${contacts.length || 0} saved contact${contacts.length === 1 ? '' : 's'}`}
-                        </p>
-                      </td>
-                      <td className="px-4 py-3 text-right">
-                        <div className="flex justify-end gap-1.5" onClick={(e) => e.stopPropagation()}>
-                          <button
-                            type="button"
-                            onClick={() => onRequestFromSupplier(supplier)}
-                            className="h-8 rounded-full border stocky-status-info px-3 text-[11px] font-medium cursor-pointer inline-flex items-center justify-center transition-colors"
-                          >
-                            Request
-                          </button>
-                          {canManage && (
+                        </td>
+                        <td className="px-4 py-3">
+                          <p className="text-xs text-stocky-text-main truncate max-w-[200px]">
+                            {supplier.address || <span className="text-stocky-text-sub italic">{t('suppliers.notRecorded')}</span>}
+                          </p>
+                        </td>
+                        <td className="px-4 py-3">
+                          <p className="text-xs font-medium text-stocky-text-main">
+                            {linked.length === 1
+                              ? t('suppliers.linkedProducts', { count: linked.length })
+                              : t('suppliers.linkedProductsPlural', { count: linked.length })}
+                          </p>
+                          <p className="text-[10px] text-stocky-text-sub truncate max-w-[180px]">
+                            {linkedNames.slice(0, 2).join(', ') || t('suppliers.noCatalogItems')}
+                            {linkedNames.length > 2 ? ` +${linkedNames.length - 2}` : ''}
+                          </p>
+                        </td>
+                        <td className="px-4 py-3">
+                          <p className="text-xs text-stocky-text-main truncate max-w-[160px]">
+                            {primary?.phone || primary?.email || t('suppliers.noPrimaryDetails')}
+                          </p>
+                          <p className="text-[10px] text-stocky-text-sub truncate max-w-[160px]">
+                            {supplier.contactPhone ||
+                              supplier.contactEmail ||
+                              primary?.phone ||
+                              (contacts.length === 1
+                                ? t('suppliers.savedContacts', { count: contacts.length })
+                                : t('suppliers.savedContactsPlural', { count: contacts.length }))}
+                          </p>
+                        </td>
+                        <td className="px-4 py-3 text-end">
+                          <div className="flex justify-end gap-1.5" onClick={(e) => e.stopPropagation()}>
                             <button
                               type="button"
-                              onClick={() => onLinkProductToSupplier(supplier)}
-                              className="h-8 rounded-full border border-stocky-border-subtle bg-white px-3 text-[11px] font-medium text-stocky-text-main hover:border-stocky-primary hover:text-stocky-primary cursor-pointer inline-flex items-center justify-center transition-colors"
+                              onClick={() => onRequestFromSupplier(supplier)}
+                              className="h-8 rounded-full border stocky-status-info px-3 text-[11px] font-medium cursor-pointer inline-flex items-center justify-center transition-colors"
                             >
-                              Product
+                              {t('suppliers.requestAction')}
                             </button>
-                          )}
-                        </div>
-                      </td>
+                            {canManage && (
+                              <button
+                                type="button"
+                                onClick={() => onLinkProductToSupplier(supplier)}
+                                className="h-8 rounded-full border border-stocky-border-subtle bg-white px-3 text-[11px] font-medium text-stocky-text-main hover:border-stocky-primary hover:text-stocky-primary cursor-pointer inline-flex items-center justify-center transition-colors"
+                              >
+                                {t('suppliers.productAction')}
+                              </button>
+                            )}
+                          </div>
+                        </td>
                     </tr>
                   );
                 })}
@@ -225,7 +230,7 @@ export function SuppliersTableWidget({
                       onSelectSupplier(supplier);
                     }
                   }}
-                  className="p-3.5 flex items-center justify-between gap-3 bg-white hover:bg-stocky-bg-global/30 active:bg-stocky-bg-global/60 transition-colors cursor-pointer text-left"
+                  className="p-3.5 flex items-center justify-between gap-3 bg-white hover:bg-stocky-bg-global/30 active:bg-stocky-bg-global/60 transition-colors cursor-pointer text-start"
                 >
                   {/* Left Anchor + Center Info */}
                   <div className="flex items-center gap-2.5 min-w-0 flex-1">
@@ -250,7 +255,7 @@ export function SuppliersTableWidget({
                         {supplier.name}
                       </h4>
                       <p className="mt-0.5 text-[11px] text-stocky-text-sub flex items-center gap-1.5 truncate">
-                        <span className="truncate max-w-[130px]">{supplier.address || 'No address'}</span>
+                        <span className="truncate max-w-[130px]">{supplier.address || t('suppliers.noAddress')}</span>
                         {contactSnippet && (
                           <>
                             <span>·</span>
@@ -264,10 +269,14 @@ export function SuppliersTableWidget({
                   {/* Right Metric & Requests Stack */}
                   <div className="shrink-0 flex flex-col items-end gap-0.5">
                     <span className="text-xs font-semibold text-stocky-text-main">
-                      {linked.length} product{linked.length === 1 ? '' : 's'}
+                      {linked.length === 1
+                        ? t('suppliers.linkedProducts', { count: linked.length })
+                        : t('suppliers.linkedProductsPlural', { count: linked.length })}
                     </span>
                     <span className={`text-[10px] font-medium mt-0.5 ${openRequests > 0 ? 'text-stocky-text-warning' : 'text-stocky-text-sub'}`}>
-                      {openRequests > 0 ? `${openRequests} open req` : 'No open req'}
+                      {openRequests > 0
+                        ? t('suppliers.openReqCount', { count: openRequests })
+                        : t('suppliers.noOpenReq')}
                     </span>
                   </div>
                 </article>
@@ -279,11 +288,14 @@ export function SuppliersTableWidget({
           <footer className="stocky-board-table__footer flex flex-wrap items-center justify-between gap-3 border-t border-stocky-border-subtle p-3.5">
             <div className="flex flex-wrap items-center gap-3 text-[11px] text-stocky-text-sub">
               <span>
-                Showing {firstRowNumber.toLocaleString()}–{lastRowNumber.toLocaleString()} of{' '}
-                {suppliers.length.toLocaleString()} suppliers
+                {t('suppliers.showingSuppliers', {
+                  from: firstRowNumber.toLocaleString(),
+                  to: lastRowNumber.toLocaleString(),
+                  total: suppliers.length.toLocaleString(),
+                })}
               </span>
               <span>
-                Rows per page{' '}
+                {t('suppliers.rowsPerPage')}{' '}
                 <select
                   value={pageSize}
                   onChange={(event) => {
@@ -301,14 +313,14 @@ export function SuppliersTableWidget({
 
             <div className="flex items-center gap-2">
               <span className="text-[11px] text-stocky-text-sub">
-                Page {currentPage + 1} of {pageCount}
+                {t('suppliers.pageOf', { page: currentPage + 1, pages: pageCount })}
               </span>
               <button
                 type="button"
                 onClick={() => onPageChange(Math.max(0, currentPage - 1))}
                 disabled={currentPage === 0}
                 className="stocky-table-page-button"
-                aria-label="Previous page"
+                aria-label={t('suppliers.prevPage')}
               >
                 ‹
               </button>
@@ -317,7 +329,7 @@ export function SuppliersTableWidget({
                 onClick={() => onPageChange(Math.min(pageCount - 1, currentPage + 1))}
                 disabled={currentPage >= pageCount - 1}
                 className="stocky-table-page-button"
-                aria-label="Next page"
+                aria-label={t('suppliers.nextPage')}
               >
                 ›
               </button>
