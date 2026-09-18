@@ -442,11 +442,11 @@ export function InventoryWorkspaceWidget({
       >
         <div className="flex h-full min-h-0 flex-col text-start">
           {/* Header with Product Image next to Product Name */}
-          <div className="shrink-0 border-b border-stocky-border-subtle bg-white px-5 py-4">
+          <div className="shrink-0 border-b border-stocky-border-subtle bg-white px-4 py-3 sm:px-5 sm:py-4">
             <div className="flex items-start justify-between gap-3">
-              <div className="flex min-w-0 items-center gap-3">
+              <div className="flex min-w-0 items-center gap-2.5 sm:gap-3">
                 {/* Rounded square product image */}
-                <div className="relative flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-stocky-border-subtle bg-stocky-bg-global text-stocky-text-sub select-none">
+                <div className="relative flex h-10 w-10 sm:h-11 sm:w-11 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-stocky-border-subtle bg-stocky-bg-global text-stocky-text-sub select-none">
                   {activeDetailRow.product.imageUrl ? (
                     <img
                       src={activeDetailRow.product.imageUrl}
@@ -463,7 +463,7 @@ export function InventoryWorkspaceWidget({
                 {/* Product Name & Badges */}
                 <div className="min-w-0">
                   <h2
-                    className="truncate text-base font-semibold text-stocky-text-main tracking-tight leading-snug"
+                    className="truncate text-sm sm:text-base font-semibold text-stocky-text-main tracking-tight leading-snug"
                     title={activeDetailRow.product.name}
                   >
                     {activeDetailRow.product.name}
@@ -493,8 +493,11 @@ export function InventoryWorkspaceWidget({
                     type="button"
                     onClick={() => onEditProduct(activeDetailRow.product)}
                     className="inline-flex items-center gap-1.5 rounded-lg border border-stocky-border-subtle bg-white px-2.5 py-1.5 text-xs font-medium text-stocky-text-main hover:bg-stocky-bg-global transition-colors cursor-pointer"
+                    aria-label={t('drawers.inventoryLots.editProduct')}
+                    title={t('drawers.inventoryLots.editProduct')}
                   >
-                    <EditIcon size="xs" /> {t('drawers.inventoryLots.editProduct')}
+                    <EditIcon size="xs" />
+                    <span className="hidden sm:inline">{t('drawers.inventoryLots.editProduct')}</span>
                   </button>
                 )}
                 <button
@@ -509,7 +512,7 @@ export function InventoryWorkspaceWidget({
             </div>
 
             {/* Profile Stats Strip */}
-            <div className="mt-3 flex items-center gap-4 border-t border-stocky-border-subtle/70 pt-2.5 text-xs">
+            <div className="mt-3 flex flex-wrap items-center gap-x-3 sm:gap-x-4 gap-y-1.5 border-t border-stocky-border-subtle/70 pt-2.5 text-xs">
               <div>
                 <span className="font-semibold text-stocky-text-main">
                   {activeDetailRow.totalQuantity.toLocaleString()}
