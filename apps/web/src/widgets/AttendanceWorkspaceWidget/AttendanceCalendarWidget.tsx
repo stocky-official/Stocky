@@ -655,7 +655,7 @@ export function AttendanceCalendarWidget({
               <button
                 type="button"
                 onClick={onRequestLeave}
-                className="stocky-table-toolbar-button stocky-table-toolbar-button--primary h-8 px-4 rounded-full text-xs font-semibold inline-flex items-center justify-center gap-1.5 whitespace-nowrap cursor-pointer shadow-sm"
+                className="stocky-table-toolbar-button stocky-table-toolbar-button--primary h-10 px-4 rounded-full text-xs font-semibold inline-flex items-center justify-center gap-1.5 whitespace-nowrap cursor-pointer shadow-sm"
               >
                 <PlusIcon size="xs" />
                 <span>{t('calendar.requestLeave')}</span>

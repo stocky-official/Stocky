@@ -300,7 +300,7 @@ export function AttendanceToolbarWidget({
               <button
                 type="button"
                 onClick={() => setIsFilterDrawerOpen(false)}
-                className="stocky-table-toolbar-button stocky-table-toolbar-button--primary h-9 px-4 rounded-full text-xs font-semibold cursor-pointer shadow-xs"
+                className="stocky-table-toolbar-button stocky-table-toolbar-button--primary h-10 px-4 rounded-full text-xs font-semibold cursor-pointer shadow-xs"
               >
                 {t('common.apply') || "Apply filters"}
               </button>

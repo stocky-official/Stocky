@@ -104,7 +104,7 @@ export function SupplierRequestsToolbarWidget({
                 role="tab"
                 aria-selected={isActive}
                 onClick={() => onStatusFilterChange(tab.id)}
-                className={`stocky-table-toolbar-button w-full sm:w-auto h-9 sm:h-10 px-2 sm:px-4 rounded-full text-xs font-medium inline-flex items-center justify-center whitespace-nowrap cursor-pointer transition-colors ${
+                className={`stocky-table-toolbar-button w-full sm:w-auto h-10 px-2 sm:px-4 rounded-full text-xs font-medium inline-flex items-center justify-center whitespace-nowrap cursor-pointer transition-colors ${
                   isActive
                     ? 'stocky-table-toolbar-button--active border-stocky-primary bg-stocky-primary/10 text-stocky-primary font-semibold'
                     : 'border border-stocky-border-subtle bg-white text-stocky-text-main hover:border-stocky-primary hover:text-stocky-primary'

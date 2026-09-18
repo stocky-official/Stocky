@@ -2662,7 +2662,7 @@ a:hover {
   .stocky-platform-shell .stocky-platform-content { padding: var(--stocky-space-4) var(--stocky-space-4) calc(var(--stocky-space-16) + 4.5rem); }
   .stocky-platform-shell .stocky-stock-filterbar { border-radius: 14px; padding: .65rem; }
   .stocky-platform-shell .stocky-stock-table-shell { border-radius: 14px; box-shadow: var(--stocky-shadow-card); }
-  .stocky-platform-shell .stocky-stock-table-toolbar__actions .stocky-table-toolbar-button { min-height: 2.25rem; }
+  .stocky-platform-shell .stocky-stock-table-toolbar__actions .stocky-table-toolbar-button { min-height: 2.5rem; height: 2.5rem; }
   .stocky-platform-shell .stocky-team-table-scroll { overflow-x: visible; }
   .stocky-platform-shell .stocky-team-table { display: block; min-width: 0; }
   .stocky-platform-shell .stocky-team-table thead { display: none; }
@@ -3012,6 +3012,22 @@ html[lang="ar"] .stocky-stock-table-toolbar__actions {
     border-radius: 9999px !important;
     aspect-ratio: auto !important;
   }
+}
+
+/* Enforce uniform 40px (2.5rem) height and pill radius for all action buttons in toolbars */
+.stocky-standard-toolbar__actions .stocky-table-toolbar-button,
+.stocky-stock-table-toolbar__actions .stocky-table-toolbar-button {
+  height: 2.5rem !important;
+  min-height: 2.5rem !important;
+  border-radius: 9999px !important;
+  font-size: var(--stocky-font-xs) !important;
+  font-weight: 500 !important;
+  padding-inline: 1rem !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 0.375rem !important;
+  box-sizing: border-box !important;
 }
 
 /* Floating Column Filter Panel */

@@ -44,7 +44,7 @@ export function TasksToolbarWidget({
 
   const viewSwitcher = onViewModeChange ? (
     <div
-      className="inline-flex items-center rounded-full border border-stocky-border-subtle p-0.5 bg-stocky-bg-global"
+      className="h-10 inline-flex items-center rounded-full border border-stocky-border-subtle p-0.5 bg-stocky-bg-global box-border"
       role="group"
       aria-label="Task view mode"
     >

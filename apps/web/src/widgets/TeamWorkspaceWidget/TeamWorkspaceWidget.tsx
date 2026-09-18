@@ -343,7 +343,7 @@ export function TeamWorkspaceWidget({
             isFilterOpen={isFilterPanelOpen}
             onToggleFilter={() => setIsFilterPanelOpen((open) => !open)}
             viewSwitcher={
-              <div className="flex items-center gap-1 p-1 bg-stocky-bg-global rounded-full border border-stocky-border-subtle shrink-0" role="tablist" aria-label={t('team.viewSwitcher')}>
+              <div className="h-10 flex items-center gap-1 p-1 bg-stocky-bg-global rounded-full border border-stocky-border-subtle shrink-0 box-border" role="tablist" aria-label={t('team.viewSwitcher')}>
                 <button
                   type="button"
                   role="tab"

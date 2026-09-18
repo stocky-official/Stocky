@@ -139,6 +139,19 @@ export function StandardToolbarWidget({
             </div>
           )}
 
+          {/* ••• More Actions Trigger: Perfect 40x40 circle, positioned as the leftmost action button */}
+          {hasMoreActions && (
+            <button
+              type="button"
+              onClick={() => setIsActionsDrawerOpen(true)}
+              aria-label={t('toolbar.moreActions')}
+              title={t('toolbar.moreActions')}
+              className="stocky-standard-toolbar__circle-btn stocky-standard-toolbar__circle-btn--secondary text-xs cursor-pointer active:scale-95 shrink-0"
+            >
+              <MoreHorizontalIcon size="xs" />
+            </button>
+          )}
+
           {/* Desktop Only: Secondary Action Pills (Inline) */}
           {hasMoreActions && (
             <div className="hidden sm:flex items-center gap-1.5 sm:gap-2 shrink-0">
@@ -148,7 +161,7 @@ export function StandardToolbarWidget({
                   type="button"
                   disabled={action.disabled}
                   onClick={action.onClick}
-                  className="stocky-table-toolbar-button"
+                  className="stocky-table-toolbar-button h-10 px-4 rounded-full text-xs font-medium inline-flex items-center justify-center gap-1.5 whitespace-nowrap cursor-pointer transition-colors"
                   title={action.description || action.label}
                 >
                   {action.icon && <span className="shrink-0">{action.icon}</span>}
@@ -178,19 +191,6 @@ export function StandardToolbarWidget({
             >
               {primaryAction.icon || <PlusIcon size="xs" />}
               <span className="hidden sm:inline sm:ms-1.5">{primaryAction.label}</span>
-            </button>
-          )}
-
-          {/* Mobile Only: ••• More Actions Trigger: Perfect 40x40 circle */}
-          {hasMoreActions && (
-            <button
-              type="button"
-              onClick={() => setIsActionsDrawerOpen(true)}
-              aria-label={t('toolbar.moreActions')}
-              title={t('toolbar.moreActions')}
-              className="stocky-standard-toolbar__circle-btn stocky-standard-toolbar__circle-btn--secondary flex sm:hidden text-xs cursor-pointer active:scale-95 shrink-0"
-            >
-              <MoreHorizontalIcon size="xs" />
             </button>
           )}
         </div>
