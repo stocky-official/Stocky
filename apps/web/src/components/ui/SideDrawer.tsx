@@ -18,6 +18,7 @@ export interface SideDrawerProps {
   ariaLabel: string;
   zIndex?: number;
   panelClassName?: string;
+  widthClassName?: string;
 }
 
 /**
@@ -33,6 +34,7 @@ export function SideDrawer({
   ariaLabel,
   zIndex = 50,
   panelClassName = '',
+  widthClassName = 'md:w-[50vw]',
 }: SideDrawerProps) {
   const [mounted, setMounted] = useState(false);
   const onCloseRef = useRef(onClose);
@@ -93,7 +95,7 @@ export function SideDrawer({
             }}
             transition={STOCKY_DRAWER_TRANSITION}
             onClick={(event) => event.stopPropagation()}
-            className={`fixed inset-y-0 right-0 flex h-dvh w-full flex-col overflow-hidden border-l border-stocky-border-subtle bg-white shadow-2xl md:w-[50vw] ${panelClassName}`}
+            className={`fixed inset-y-0 right-0 flex h-dvh w-full flex-col overflow-hidden border-l border-stocky-border-subtle bg-white shadow-2xl ${widthClassName} ${panelClassName}`}
           >
             {children as any}
           </motion.aside>

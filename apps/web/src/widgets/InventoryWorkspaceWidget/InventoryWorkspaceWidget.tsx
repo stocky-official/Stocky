@@ -438,6 +438,7 @@ export function InventoryWorkspaceWidget({
         onClose={closeLotsDrawer}
         ariaLabel={t('drawers.inventoryLots.drawerAria', { name: activeDetailRow.product.name })}
         panelClassName="stocky-stock-lots-drawer"
+        widthClassName="md:w-[72vw] lg:w-[68vw] xl:w-[62vw] max-w-6xl"
       >
         <div className="flex h-full min-h-0 flex-col text-start">
           {/* Header with Product Image next to Product Name */}
