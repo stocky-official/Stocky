@@ -12,6 +12,7 @@ import {
 } from '@stocky/icons';
 import type { AttendanceShift, Location } from '@stocky/types';
 import { exportTimesheetsToExcel, type TimesheetExportRow } from '@/lib/excel/export';
+import { useTranslation } from '@/lib/i18n';
 
 export interface TimesheetsExportModalWidgetProps {
   isOpen: boolean;
@@ -37,6 +38,7 @@ export function TimesheetsExportModalWidget({
   locations = [],
   members = [],
 }: TimesheetsExportModalWidgetProps) {
+  const { t, isRtl } = useTranslation();
   // 1. Date Range State
   const [preset, setPreset] = useState<DatePreset>('this_month');
   const [startDate, setStartDate] = useState<string>('');
@@ -168,8 +170,8 @@ export function TimesheetsExportModalWidget({
     const totalMinutes = matchingShifts.reduce((acc, s) => acc + (s.totalMinutes || 0), 0);
     const hours = Math.floor(totalMinutes / 60);
     const minutes = totalMinutes % 60;
-    return `${hours}h ${minutes}m`;
-  }, [matchingShifts]);
+    return t('modals.exportTimesheets.hoursMinutes', { hours, minutes });
+  }, [matchingShifts, t]);
 
   const uniqueEmployeesCount = useMemo(() => {
     const set = new Set(matchingShifts.map((s) => s.companyUserId));
@@ -219,6 +221,25 @@ export function TimesheetsExportModalWidget({
     onClose();
   };
 
+  const getPresetLabel = (presetKey: DatePreset) => {
+    switch (presetKey) {
+      case 'this_month':
+        return t('modals.exportTimesheets.thisMonth');
+      case 'last_month':
+        return t('modals.exportTimesheets.lastMonth');
+      case 'last_30_days':
+        return t('modals.exportTimesheets.last30Days');
+      case 'this_week':
+        return t('modals.exportTimesheets.thisWeek');
+      case 'all_time':
+        return t('modals.exportTimesheets.allTime');
+      case 'custom':
+        return t('modals.exportTimesheets.custom');
+      default:
+        return presetKey;
+    }
+  };
+
   if (!isOpen) return null;
 
   return (
@@ -227,6 +248,8 @@ export function TimesheetsExportModalWidget({
       role="dialog"
       aria-modal="true"
       aria-labelledby="export-modal-title"
+      dir={isRtl ? 'rtl' : 'ltr'}
+      style={{ fontFamily: isRtl ? 'Cairo, sans-serif' : undefined }}
     >
       <div className="w-full max-w-xl bg-stocky-bg-widget rounded-card border border-stocky-border-subtle shadow-bevel-float flex flex-col max-h-[90vh] overflow-hidden animate-scale-in">
         {/* Modal Header */}
@@ -237,10 +260,10 @@ export function TimesheetsExportModalWidget({
             </div>
             <div>
               <h2 id="export-modal-title" className="text-sm font-semibold text-stocky-text-main">
-                Export Timesheets
+                {t('modals.exportTimesheets.title')}
               </h2>
               <p className="text-[11px] text-stocky-text-sub">
-                Customize date range, branches, and people for your Excel report.
+                {t('modals.exportTimesheets.subtitle')}
               </p>
             </div>
           </div>
@@ -248,7 +271,7 @@ export function TimesheetsExportModalWidget({
             type="button"
             onClick={onClose}
             className="w-7 h-7 rounded-full flex items-center justify-center text-stocky-text-sub hover:text-stocky-text-main hover:bg-stocky-bg-hover transition-colors cursor-pointer"
-            aria-label="Close modal"
+            aria-label={t('modals.exportTimesheets.close')}
           >
             <XIcon size="xs" />
           </button>
@@ -261,10 +284,10 @@ export function TimesheetsExportModalWidget({
             <div className="flex items-center justify-between">
               <label className="text-xs font-semibold text-stocky-text-main flex items-center gap-1.5">
                 <CalendarIcon size="xs" className="text-stocky-primary" />
-                <span>Date Range</span>
+                <span>{t('modals.exportTimesheets.dateRange')}</span>
               </label>
               <span className="text-[10px] text-stocky-text-sub uppercase tracking-wider font-medium">
-                {preset.replace('_', ' ')}
+                {getPresetLabel(preset)}
               </span>
             </div>
 
@@ -272,11 +295,11 @@ export function TimesheetsExportModalWidget({
             <div className="flex flex-wrap gap-1.5">
               {(
                 [
-                  { id: 'this_month', label: 'This Month' },
-                  { id: 'last_month', label: 'Last Month' },
-                  { id: 'last_30_days', label: 'Last 30 Days' },
-                  { id: 'this_week', label: 'This Week' },
-                  { id: 'all_time', label: 'All Time' },
+                  { id: 'this_month', label: t('modals.exportTimesheets.thisMonth') },
+                  { id: 'last_month', label: t('modals.exportTimesheets.lastMonth') },
+                  { id: 'last_30_days', label: t('modals.exportTimesheets.last30Days') },
+                  { id: 'this_week', label: t('modals.exportTimesheets.thisWeek') },
+                  { id: 'all_time', label: t('modals.exportTimesheets.allTime') },
                 ] as const
               ).map((p) => (
                 <button
@@ -298,7 +321,7 @@ export function TimesheetsExportModalWidget({
             <div className="grid grid-cols-2 gap-2.5 pt-1">
               <div>
                 <label className="block text-[11px] text-stocky-text-sub mb-1 font-medium">
-                  Start Date
+                  {t('modals.exportTimesheets.startDate')}
                 </label>
                 <input
                   type="date"
@@ -312,7 +335,7 @@ export function TimesheetsExportModalWidget({
               </div>
               <div>
                 <label className="block text-[11px] text-stocky-text-sub mb-1 font-medium">
-                  End Date
+                  {t('modals.exportTimesheets.endDate')}
                 </label>
                 <input
                   type="date"
@@ -334,7 +357,7 @@ export function TimesheetsExportModalWidget({
             <div className="flex items-center justify-between">
               <label className="text-xs font-semibold text-stocky-text-main flex items-center gap-1.5">
                 <WarehouseIcon size="xs" className="text-stocky-primary" />
-                <span>Branches & Locations</span>
+                <span>{t('modals.exportTimesheets.branchesLocations')}</span>
               </label>
               <div className="flex items-center gap-1 bg-stocky-bg-global p-1 rounded-full border border-stocky-border-subtle text-[11px]">
                 <button
@@ -346,7 +369,7 @@ export function TimesheetsExportModalWidget({
                       : 'text-stocky-text-sub hover:text-stocky-text-main'
                   }`}
                 >
-                  All ({locations.length})
+                  {t('modals.exportTimesheets.allBranchesCount', { count: locations.length })}
                 </button>
                 <button
                   type="button"
@@ -357,7 +380,7 @@ export function TimesheetsExportModalWidget({
                       : 'text-stocky-text-sub hover:text-stocky-text-main'
                   }`}
                 >
-                  Selected ({selectedLocationIds.length})
+                  {t('modals.exportTimesheets.selectedBranchesCount', { count: selectedLocationIds.length })}
                 </button>
               </div>
             </div>
@@ -365,14 +388,14 @@ export function TimesheetsExportModalWidget({
             {branchScope === 'specific' && (
               <div className="space-y-2 pt-1">
                 <div className="flex items-center justify-between text-[11px] text-stocky-text-sub px-1">
-                  <span>Choose branches to include:</span>
+                  <span>{t('modals.exportTimesheets.chooseBranches')}</span>
                   <div className="flex items-center gap-2">
                     <button
                       type="button"
                       onClick={handleSelectAllLocations}
                       className="text-stocky-primary hover:underline cursor-pointer"
                     >
-                      Select all
+                      {t('modals.exportTimesheets.selectAll')}
                     </button>
                     <span>·</span>
                     <button
@@ -380,7 +403,7 @@ export function TimesheetsExportModalWidget({
                       onClick={handleClearLocations}
                       className="text-stocky-text-sub hover:text-stocky-text-main cursor-pointer"
                     >
-                      Clear
+                      {t('modals.exportTimesheets.clear')}
                     </button>
                   </div>
                 </div>
@@ -393,13 +416,13 @@ export function TimesheetsExportModalWidget({
                         key={loc.id}
                         type="button"
                         onClick={() => handleToggleLocation(loc.id)}
-                        className={`flex items-center justify-between p-2 rounded-widget border text-left text-xs transition-colors cursor-pointer ${
+                        className={`flex items-center justify-between p-2 rounded-widget border text-start text-xs transition-colors cursor-pointer ${
                           isSelected
                             ? 'border-stocky-primary bg-stocky-primary/5 text-stocky-text-main font-medium'
                             : 'border-stocky-border-subtle bg-stocky-bg-widget text-stocky-text-sub hover:border-stocky-primary/40'
                         }`}
                       >
-                        <div className="min-w-0 pr-2">
+                        <div className="min-w-0 pe-2">
                           <p className="truncate font-medium text-stocky-text-main">{loc.name}</p>
                           {loc.code && <p className="text-[10px] text-stocky-text-sub">{loc.code}</p>}
                         </div>
@@ -425,7 +448,7 @@ export function TimesheetsExportModalWidget({
             <div className="flex items-center justify-between">
               <label className="text-xs font-semibold text-stocky-text-main flex items-center gap-1.5">
                 <UsersIcon size="xs" className="text-stocky-primary" />
-                <span>Employees & Staff</span>
+                <span>{t('modals.exportTimesheets.employeesStaff')}</span>
               </label>
               <div className="flex items-center gap-1 bg-stocky-bg-global p-1 rounded-full border border-stocky-border-subtle text-[11px]">
                 <button
@@ -437,7 +460,7 @@ export function TimesheetsExportModalWidget({
                       : 'text-stocky-text-sub hover:text-stocky-text-main'
                   }`}
                 >
-                  All Staff ({members.length})
+                  {t('modals.exportTimesheets.allStaffCount', { count: members.length })}
                 </button>
                 <button
                   type="button"
@@ -448,7 +471,7 @@ export function TimesheetsExportModalWidget({
                       : 'text-stocky-text-sub hover:text-stocky-text-main'
                   }`}
                 >
-                  Selected ({selectedMemberIds.length})
+                  {t('modals.exportTimesheets.selectedStaffCount', { count: selectedMemberIds.length })}
                 </button>
               </div>
             </div>
@@ -459,26 +482,26 @@ export function TimesheetsExportModalWidget({
                 <div className="relative">
                   <SearchIcon
                     size="xs"
-                    className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-stocky-text-sub"
+                    className="pointer-events-none absolute start-3 top-1/2 -translate-y-1/2 text-stocky-text-sub"
                   />
                   <input
                     type="text"
                     value={memberSearch}
                     onChange={(e) => setMemberSearch(e.target.value)}
-                    placeholder="Search staff by name or email..."
-                    className="w-full h-10 rounded-widget border border-stocky-border-subtle bg-stocky-bg-widget pl-8 pr-3 text-xs text-stocky-text-main placeholder:text-stocky-text-sub focus:border-stocky-primary focus:outline-none transition-colors"
+                    placeholder={t('modals.exportTimesheets.searchStaffPlaceholder')}
+                    className="w-full h-10 rounded-widget border border-stocky-border-subtle bg-stocky-bg-widget ps-8 pe-3 text-xs text-stocky-text-main placeholder:text-stocky-text-sub focus:border-stocky-primary focus:outline-none transition-colors"
                   />
                 </div>
 
                 <div className="flex items-center justify-between text-[11px] text-stocky-text-sub px-1">
-                  <span>Select employees to extract:</span>
+                  <span>{t('modals.exportTimesheets.selectEmployees')}</span>
                   <div className="flex items-center gap-2">
                     <button
                       type="button"
                       onClick={handleSelectAllMembers}
                       className="text-stocky-primary hover:underline cursor-pointer"
                     >
-                      Select all
+                      {t('modals.exportTimesheets.selectAll')}
                     </button>
                     <span>·</span>
                     <button
@@ -486,7 +509,7 @@ export function TimesheetsExportModalWidget({
                       onClick={handleClearMembers}
                       className="text-stocky-text-sub hover:text-stocky-text-main cursor-pointer"
                     >
-                      Clear
+                      {t('modals.exportTimesheets.clear')}
                     </button>
                   </div>
                 </div>
@@ -494,7 +517,7 @@ export function TimesheetsExportModalWidget({
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 max-h-40 overflow-y-auto p-1 border border-stocky-border-subtle rounded-widget bg-stocky-bg-widget/40">
                   {searchedMembers.length === 0 ? (
                     <p className="col-span-2 text-center text-xs text-stocky-text-sub py-3">
-                      No staff members found matching “{memberSearch}”.
+                      {t('modals.exportTimesheets.noStaffFound', { query: memberSearch })}
                     </p>
                   ) : (
                     searchedMembers.map((member) => {
@@ -507,13 +530,13 @@ export function TimesheetsExportModalWidget({
                           key={member.id}
                           type="button"
                           onClick={() => handleToggleMember(member.id)}
-                          className={`flex items-center justify-between p-2 rounded-widget border text-left text-xs transition-colors cursor-pointer ${
+                          className={`flex items-center justify-between p-2 rounded-widget border text-start text-xs transition-colors cursor-pointer ${
                             isSelected
                               ? 'border-stocky-primary bg-stocky-primary/5 text-stocky-text-main font-medium'
                               : 'border-stocky-border-subtle bg-stocky-bg-widget text-stocky-text-sub hover:border-stocky-primary/40'
                           }`}
                         >
-                          <div className="flex items-center gap-2 min-w-0 pr-2">
+                          <div className="flex items-center gap-2 min-w-0 pe-2">
                             <div className="w-6 h-6 rounded-full bg-stocky-primary/10 text-stocky-primary text-[10px] font-semibold flex items-center justify-center shrink-0">
                               {initial}
                             </div>
@@ -548,17 +571,27 @@ export function TimesheetsExportModalWidget({
               </div>
               <div>
                 <p className="text-xs font-semibold text-stocky-text-main">
-                  {matchingShifts.length} Shift{matchingShifts.length === 1 ? '' : 's'} Selected
+                  {matchingShifts.length === 1
+                    ? t('modals.exportTimesheets.shiftsSelectedSingular', { count: 1 })
+                    : t('modals.exportTimesheets.shiftsSelectedPlural', { count: matchingShifts.length })}
                 </p>
                 <p className="text-[11px] text-stocky-text-sub">
-                  {uniqueEmployeesCount} employee{uniqueEmployeesCount === 1 ? '' : 's'} · {totalHoursWorked} total
+                  {uniqueEmployeesCount === 1
+                    ? t('modals.exportTimesheets.summaryDetailsSingular', {
+                        count: 1,
+                        hours: totalHoursWorked,
+                      })
+                    : t('modals.exportTimesheets.summaryDetailsPlural', {
+                        count: uniqueEmployeesCount,
+                        hours: totalHoursWorked,
+                      })}
                 </p>
               </div>
             </div>
 
             {matchingShifts.length === 0 && (
               <span className="text-[11px] stocky-status-warning border px-2.5 py-0.5 rounded-full font-medium">
-                No matching shifts
+                {t('modals.exportTimesheets.noMatchingShifts')}
               </span>
             )}
           </div>
@@ -571,7 +604,7 @@ export function TimesheetsExportModalWidget({
             onClick={onClose}
             className="h-10 px-5 rounded-full border border-stocky-border-subtle bg-stocky-bg-widget text-xs font-medium text-stocky-text-sub hover:text-stocky-text-main hover:bg-stocky-bg-global transition-colors cursor-pointer"
           >
-            Cancel
+            {t('modals.exportTimesheets.cancel')}
           </button>
 
           <button
@@ -581,7 +614,7 @@ export function TimesheetsExportModalWidget({
             className="inline-flex items-center justify-center gap-2 h-10 px-5 rounded-full bg-stocky-primary text-white text-xs font-medium hover:bg-stocky-primary-hover disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-sm cursor-pointer"
           >
             <FileSpreadsheetIcon size="xs" />
-            <span>Export to Excel (.xlsx)</span>
+            <span>{t('modals.exportTimesheets.downloadBtn')}</span>
           </button>
         </div>
       </div>

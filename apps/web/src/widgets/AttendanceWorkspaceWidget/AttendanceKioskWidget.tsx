@@ -12,6 +12,7 @@ import {
   AlertTriangleIcon,
 } from '@stocky/icons';
 import { Html5Qrcode, Html5QrcodeSupportedFormats } from 'html5-qrcode';
+import { useTranslation } from '@/lib/i18n';
 
 export interface AttendanceKioskWidgetProps {
   locations: Location[];
@@ -27,6 +28,7 @@ export function AttendanceKioskWidget({
   locations,
   onPunchAttendance,
 }: AttendanceKioskWidgetProps) {
+  const { t, isRtl } = useTranslation();
   const [activeSection, setActiveSection] = useState<'poster' | 'scanner'>('poster');
   const [selectedLocationId, setSelectedLocationId] = useState<string>(locations[0]?.id || '');
   const [punchStatus, setPunchStatus] = useState<{
@@ -95,15 +97,16 @@ export function AttendanceKioskWidget({
                 method: 'qr_scan',
                 qrToken: decodedText,
               });
+              const action = res.clockOutAt ? t('modals.kiosk.clockOut') : t('modals.kiosk.clockIn');
               setPunchStatus({
                 success: true,
-                message: `Clocked ${res.clockOutAt ? 'out' : 'in'} successfully! Status: ${res.status}`,
+                message: t('modals.kiosk.clockSuccess', { action, status: res.status }),
                 shift: res,
               });
             } catch (err: any) {
               setPunchStatus({
                 success: false,
-                message: err.message || 'Failed to punch shift',
+                message: err.message || t('modals.kiosk.clockFailed'),
               });
             }
           },
@@ -112,7 +115,7 @@ export function AttendanceKioskWidget({
         setIsScanning(true);
       } catch (err: any) {
         console.warn('Scanner camera error:', err);
-        setScannerError('Camera access required or unavailable on this device.');
+        setScannerError(t('modals.kiosk.cameraError'));
         setIsScanning(false);
       }
     };
@@ -128,38 +131,43 @@ export function AttendanceKioskWidget({
         });
       }
     };
-  }, [activeSection, selectedLocationId]);
+  }, [activeSection, selectedLocationId, t, onPunchAttendance]);
 
   const handleManualPunch = async () => {
     try {
       const res = await onPunchAttendance({
         locationId: selectedLocationId,
         method: 'kiosk',
-        notes: 'Clocked in via Kiosk station',
+        notes: t('modals.kiosk.kioskNote'),
       });
+      const action = res.clockOutAt ? t('modals.kiosk.clockOut') : t('modals.kiosk.clockIn');
       setPunchStatus({
         success: true,
-        message: `Clocked ${res.clockOutAt ? 'out' : 'in'} successfully! Status: ${res.status}`,
+        message: t('modals.kiosk.clockSuccess', { action, status: res.status }),
         shift: res,
       });
     } catch (err: any) {
       setPunchStatus({
         success: false,
-        message: err.message || 'Failed to punch shift',
+        message: err.message || t('modals.kiosk.clockFailed'),
       });
     }
   };
 
   return (
-    <div className="flex flex-col w-full p-4 sm:p-6">
+    <div
+      className="flex flex-col w-full p-4 sm:p-6"
+      dir={isRtl ? 'rtl' : 'ltr'}
+      style={{ fontFamily: isRtl ? 'Cairo, sans-serif' : undefined }}
+    >
       {/* Kiosk Mode Switcher */}
       <div className="flex items-center justify-between pb-4 mb-6 border-b border-stocky-border-subtle flex-wrap gap-3">
         <div>
           <h2 className="text-base font-semibold text-stocky-text-main">
-            Branch QR & Kiosk Attendance Station
+            {t('modals.kiosk.title')}
           </h2>
           <p className="text-xs text-stocky-text-sub mt-0.5">
-            Print branch entrance QR posters for staff or use this tablet as a digital punch kiosk.
+            {t('modals.kiosk.subtitle')}
           </p>
         </div>
 
@@ -173,7 +181,7 @@ export function AttendanceKioskWidget({
                 : 'text-stocky-text-sub hover:text-stocky-text-main'
             }`}
           >
-            Branch QR Poster
+            {t('modals.kiosk.posterTab')}
           </button>
           <button
             type="button"
@@ -184,7 +192,7 @@ export function AttendanceKioskWidget({
                 : 'text-stocky-text-sub hover:text-stocky-text-main'
             }`}
           >
-            Digital Punch Kiosk
+            {t('modals.kiosk.kioskTab')}
           </button>
         </div>
       </div>
@@ -192,17 +200,17 @@ export function AttendanceKioskWidget({
       {/* BRANCH SELECTOR */}
       <div className="max-w-md mb-6">
         <label className="block text-xs font-semibold text-stocky-text-main mb-1.5">
-          Select Branch Location
+          {t('modals.kiosk.selectBranch')}
         </label>
         <div className="relative">
           <WarehouseIcon
             size="xs"
-            className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-stocky-text-sub"
+            className="pointer-events-none absolute start-3.5 top-1/2 -translate-y-1/2 text-stocky-text-sub"
           />
           <select
             value={selectedLocationId}
             onChange={(e) => setSelectedLocationId(e.target.value)}
-            className="w-full h-10 rounded-full border border-stocky-border-subtle bg-stocky-bg-widget pl-9 pr-4 text-xs font-medium text-stocky-text-main focus:border-stocky-primary focus:outline-none cursor-pointer"
+            className="w-full h-10 rounded-full border border-stocky-border-subtle bg-stocky-bg-widget ps-9 pe-4 text-xs font-medium text-stocky-text-main focus:border-stocky-primary focus:outline-none cursor-pointer text-start"
           >
             {locations.map((loc) => (
               <option key={loc.id} value={loc.id}>
@@ -221,10 +229,12 @@ export function AttendanceKioskWidget({
           </div>
 
           <h3 className="text-lg font-semibold text-stocky-text-main">
-            {selectedLocation?.name || 'Stocky Branch'} Check-In Station
+            {t('modals.kiosk.stationTitle', {
+              branch: selectedLocation?.name || t('modals.kiosk.defaultBranch'),
+            })}
           </h3>
           <p className="text-xs text-stocky-text-sub mt-1 max-w-sm">
-            Scan this official QR code with your mobile camera or the Stocky app upon arrival and departure.
+            {t('modals.kiosk.posterSubheading')}
           </p>
 
           {/* Generated QR Code */}
@@ -237,13 +247,16 @@ export function AttendanceKioskWidget({
               />
             ) : (
               <div className="w-56 h-56 flex items-center justify-center text-stocky-text-sub text-xs">
-                No location selected
+                {t('modals.kiosk.noLocationSelected')}
               </div>
             )}
           </div>
 
           <div className="text-xs font-semibold text-stocky-text-sub mb-6">
-            Branch Token: <code className="bg-stocky-bg-global px-2 py-0.5 rounded text-stocky-text-main">{selectedLocation?.id?.slice(0, 8)}</code>
+            {t('modals.kiosk.branchToken')}{' '}
+            <code className="bg-stocky-bg-global px-2 py-0.5 rounded text-stocky-text-main">
+              {selectedLocation?.id?.slice(0, 8)}
+            </code>
           </div>
 
           <div className="flex items-center gap-3">
@@ -252,7 +265,7 @@ export function AttendanceKioskWidget({
               onClick={() => window.print()}
               className="h-10 px-5 rounded-full bg-stocky-primary text-white text-xs font-medium hover:bg-stocky-primary-hover transition-colors cursor-pointer"
             >
-              Print QR Poster
+              {t('modals.kiosk.printPoster')}
             </button>
             <a
               href={qrUrl}
@@ -261,7 +274,7 @@ export function AttendanceKioskWidget({
               rel="noreferrer"
               className="h-10 px-5 rounded-full border border-stocky-border-subtle text-stocky-text-main text-xs font-medium hover:border-stocky-primary hover:text-stocky-primary transition-colors cursor-pointer inline-flex items-center"
             >
-              Download PNG
+              {t('modals.kiosk.downloadPng')}
             </a>
           </div>
         </div>
@@ -304,7 +317,7 @@ export function AttendanceKioskWidget({
             )}
 
             <p className="text-xs text-stocky-text-sub max-w-sm mb-4">
-              Hold the Branch QR code up to the camera or use the 1-click punch button below.
+              {t('modals.kiosk.cameraInstructions')}
             </p>
 
             <button
@@ -313,7 +326,7 @@ export function AttendanceKioskWidget({
               className="stocky-table-toolbar-button stocky-table-toolbar-button--primary h-10 px-6 rounded-full text-xs font-semibold inline-flex items-center justify-center gap-2 cursor-pointer shadow-sm"
             >
               <ClockIcon size="xs" />
-              <span>Punch In / Out Now</span>
+              <span>{t('modals.kiosk.punchBtn')}</span>
             </button>
           </div>
         </div>

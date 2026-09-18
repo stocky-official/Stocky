@@ -21,7 +21,7 @@ export function ShiftDetailsDrawerWidget({
   locations,
   members,
 }: ShiftDetailsDrawerWidgetProps) {
-  const { t, language } = useTranslation();
+  const { t, locale } = useTranslation();
   if (!shift) return null;
 
   const member = members.find((m) => m.id === shift.companyUserId);
@@ -32,7 +32,7 @@ export function ShiftDetailsDrawerWidget({
   const formatTime = (isoString?: string | null) => {
     if (!isoString) return '—';
     try {
-      return new Intl.DateTimeFormat(language === 'ar' ? 'ar-EG' : 'en-US', {
+      return new Intl.DateTimeFormat(locale === 'ar' ? 'ar-EG' : 'en-US', {
         hour: '2-digit',
         minute: '2-digit',
       }).format(new Date(isoString));

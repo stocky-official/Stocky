@@ -171,14 +171,14 @@ export function TasksFilterPanelWidget({
         {/* Location */}
         <div>
           <label className="block text-[11px] font-medium text-stocky-text-sub mb-1.5">
-            Location
+            {t('filters.locations')}
           </label>
           <select
             value={filters.locationId}
             onChange={(e) => onFilterChange({ ...filters, locationId: e.target.value })}
             className="w-full h-9 rounded-xl border border-stocky-border-subtle bg-white px-3 text-xs text-stocky-text-main focus:border-stocky-primary focus:outline-none transition-colors"
           >
-            <option value="all">All locations</option>
+            <option value="all">{t('filters.allLocations')}</option>
             {locations.map((loc) => (
               <option key={loc.id} value={loc.id}>
                 {loc.name} ({loc.type})
@@ -190,14 +190,14 @@ export function TasksFilterPanelWidget({
         {/* Assignee */}
         <div>
           <label className="block text-[11px] font-medium text-stocky-text-sub mb-1.5">
-            Assigned to
+            {t('tasks.assignedTo')}
           </label>
           <select
             value={filters.assigneeId}
             onChange={(e) => onFilterChange({ ...filters, assigneeId: e.target.value })}
             className="w-full h-9 rounded-xl border border-stocky-border-subtle bg-white px-3 text-xs text-stocky-text-main focus:border-stocky-primary focus:outline-none transition-colors"
           >
-            <option value="all">All team members</option>
+            <option value="all">{t('tasks.allTeamMembers')}</option>
             {members.map((member) => (
               <option key={member.id} value={member.id}>
                 {member.full_name || member.email}

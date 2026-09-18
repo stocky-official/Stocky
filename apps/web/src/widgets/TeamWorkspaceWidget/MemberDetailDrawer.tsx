@@ -11,6 +11,7 @@ import {
 import type { CompanyUserRole, Location } from '@stocky/types';
 import { SideDrawer } from '@/components/ui/SideDrawer';
 import { UserAvatar } from '@/components/ui/UserAvatar';
+import { useTranslation } from '@/lib/i18n';
 
 export interface TeamMemberData {
   id: string;
@@ -52,13 +53,13 @@ export interface MemberDetailDrawerProps {
 }
 
 const AVAILABLE_PAGES = [
-  { id: 'inventory', label: 'Inventory & Lots', description: 'View stock levels, batches, and reorder points' },
-  { id: 'transfers', label: 'Transfers', description: 'Request, dispatch, and receive inventory transfers' },
-  { id: 'suppliers', label: 'Suppliers & Requests', description: 'Manage supplier catalogs and replenishment' },
-  { id: 'tasks', label: 'Tasks & Stock Counts', description: 'Execute barcode scans, audits, and shelf checks' },
-  { id: 'attendance', label: 'Attendance & Shifts', description: 'Clock in/out, view timesheets, and review time off' },
-  { id: 'locations', label: 'Locations Directory', description: 'Inspect branches, warehouses, and health status' },
-  { id: 'team', label: 'Team & Organization', description: 'Manage members, permissions, and organizational tree' },
+  { id: 'inventory', labelKey: 'drawers.memberDetail.pages.inventory', descKey: 'drawers.memberDetail.pages.inventoryDesc' },
+  { id: 'transfers', labelKey: 'drawers.memberDetail.pages.transfers', descKey: 'drawers.memberDetail.pages.transfersDesc' },
+  { id: 'suppliers', labelKey: 'drawers.memberDetail.pages.suppliers', descKey: 'drawers.memberDetail.pages.suppliersDesc' },
+  { id: 'tasks', labelKey: 'drawers.memberDetail.pages.tasks', descKey: 'drawers.memberDetail.pages.tasksDesc' },
+  { id: 'attendance', labelKey: 'drawers.memberDetail.pages.attendance', descKey: 'drawers.memberDetail.pages.attendanceDesc' },
+  { id: 'locations', labelKey: 'drawers.memberDetail.pages.locations', descKey: 'drawers.memberDetail.pages.locationsDesc' },
+  { id: 'team', labelKey: 'drawers.memberDetail.pages.team', descKey: 'drawers.memberDetail.pages.teamDesc' },
 ];
 
 export function MemberDetailDrawer({
@@ -73,6 +74,7 @@ export function MemberDetailDrawer({
   onAssignLocation,
   onUnassignLocation,
 }: MemberDetailDrawerProps) {
+  const { t } = useTranslation();
   const [fullName, setFullName] = useState('');
   const [jobTitle, setJobTitle] = useState('');
   const [role, setRole] = useState<CompanyUserRole>('staff');
@@ -180,7 +182,7 @@ export function MemberDetailDrawer({
       });
       onClose();
     } catch (err: any) {
-      alert(err?.message || 'Failed to update member');
+      alert(err?.message || t('drawers.memberDetail.errors.updateFailed'));
     } finally {
       setSaving(false);
     }
@@ -190,7 +192,7 @@ export function MemberDetailDrawer({
     <SideDrawer
       isOpen={isOpen}
       onClose={onClose}
-      ariaLabel={`Edit member profile: ${member.full_name || member.email}`}
+      ariaLabel={`${t('drawers.memberDetail.title')}: ${member.full_name || member.email}`}
     >
       <div className="flex h-full flex-col">
         {/* Drawer Header */}
@@ -214,7 +216,7 @@ export function MemberDetailDrawer({
             type="button"
             onClick={onClose}
             className="flex h-8 w-8 items-center justify-center rounded-full text-stocky-text-sub hover:bg-stocky-bg-global hover:text-stocky-text-main cursor-pointer"
-            aria-label="Close drawer"
+            aria-label={t('drawers.memberDetail.close')}
           >
             <XIcon size="xs" />
           </button>
@@ -224,33 +226,33 @@ export function MemberDetailDrawer({
         <form
           id="member-detail-form"
           onSubmit={handleSubmit}
-          className="flex-1 overflow-y-auto p-6 space-y-6 text-left"
+          className="flex-1 overflow-y-auto p-6 space-y-6 text-start"
         >
           {/* Section: Profile & Identity */}
           <div className="space-y-4">
             <h3 className="text-xs font-semibold uppercase tracking-wider text-stocky-text-sub flex items-center gap-2">
-              <UsersIcon size="xs" /> Team Member Profile
+              <UsersIcon size="xs" /> {t('drawers.memberDetail.profileTitle')}
             </h3>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <label className="block text-xs font-medium text-stocky-text-main">
-                Full Name
+                {t('drawers.memberDetail.fullName')}
                 <input
                   type="text"
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
-                  placeholder="e.g. John Doe"
+                  placeholder={t('drawers.memberDetail.fullNamePlaceholder')}
                   className="mt-1.5 h-10 w-full rounded-xl border border-stocky-border-subtle bg-white px-3 text-xs text-stocky-text-main focus:border-stocky-primary focus:outline-none"
                 />
               </label>
 
               <label className="block text-xs font-medium text-stocky-text-main">
-                Job Title
+                {t('drawers.memberDetail.jobTitle')}
                 <input
                   type="text"
                   value={jobTitle}
                   onChange={(e) => setJobTitle(e.target.value)}
-                  placeholder="e.g. Operations Director, Lead Barista"
+                  placeholder={t('drawers.memberDetail.jobTitlePlaceholder')}
                   className="mt-1.5 h-10 w-full rounded-xl border border-stocky-border-subtle bg-white px-3 text-xs text-stocky-text-main focus:border-stocky-primary focus:outline-none"
                 />
               </label>
@@ -258,29 +260,29 @@ export function MemberDetailDrawer({
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <label className="block text-xs font-medium text-stocky-text-main">
-                Platform Role
+                {t('drawers.memberDetail.role')}
                 <select
                   value={role}
                   disabled={member.role === 'owner' || !canManage}
                   onChange={(e) => setRole(e.target.value as CompanyUserRole)}
                   className="mt-1.5 h-10 w-full rounded-xl border border-stocky-border-subtle bg-white px-3 text-xs text-stocky-text-main focus:border-stocky-primary focus:outline-none disabled:bg-stocky-bg-global"
                 >
-                  <option value="staff">Staff</option>
-                  <option value="manager">Branch Manager</option>
-                  <option value="admin">Administrator</option>
-                  {member.role === 'owner' && <option value="owner">Owner</option>}
+                  <option value="staff">{t('drawers.memberDetail.roles.staff')}</option>
+                  <option value="manager">{t('drawers.memberDetail.roles.manager')}</option>
+                  <option value="admin">{t('drawers.memberDetail.roles.admin')}</option>
+                  {member.role === 'owner' && <option value="owner">{t('drawers.memberDetail.roles.owner')}</option>}
                 </select>
               </label>
 
               <label className="block text-xs font-medium text-stocky-text-main">
-                Reports To (Direct Supervisor)
+                {t('drawers.memberDetail.reportsTo')}
                 <select
                   value={reportsTo}
                   disabled={member.role === 'owner' || !canManage}
                   onChange={(e) => setReportsTo(e.target.value)}
                   className="mt-1.5 h-10 w-full rounded-xl border border-stocky-border-subtle bg-white px-3 text-xs text-stocky-text-main focus:border-stocky-primary focus:outline-none disabled:bg-stocky-bg-global"
                 >
-                  <option value="">None (Top of hierarchy / Reports to Owner)</option>
+                  <option value="">{t('drawers.memberDetail.reportsToNone')}</option>
                   {potentialManagers.map((m) => (
                     <option key={m.id} value={m.id}>
                       {m.full_name || m.email} ({m.job_title || m.role})
@@ -294,10 +296,10 @@ export function MemberDetailDrawer({
           {/* Section: Location Assignments */}
           <div className="border-t border-stocky-border-subtle pt-5 space-y-3">
             <h3 className="text-xs font-semibold uppercase tracking-wider text-stocky-text-sub flex items-center gap-2">
-              <WarehouseIcon size="xs" /> Location Assignments
+              <WarehouseIcon size="xs" /> {t('drawers.memberDetail.locationAssignments')}
             </h3>
             <p className="text-xs text-stocky-text-sub">
-              Branches and warehouses where this member can receive stock, conduct counts, and clock in.
+              {t('drawers.memberDetail.locationAssignmentsDesc')}
             </p>
 
             <div className="flex flex-wrap gap-2 pt-1">
@@ -308,13 +310,13 @@ export function MemberDetailDrawer({
                     key={assignment.id}
                     className="inline-flex items-center gap-1.5 rounded-full border stocky-status-info px-3 py-1 text-xs"
                   >
-                    <span>{loc?.name || 'Assigned Location'}</span>
+                    <span>{loc?.name || t('drawers.memberDetail.assignedLocation')}</span>
                     {canManage && (
                       <button
                         type="button"
                         onClick={() => onUnassignLocation(assignment.id)}
                         className="text-stocky-text-sub hover:text-stocky-text-main cursor-pointer"
-                        title="Remove location"
+                        title={t('drawers.memberDetail.removeLocation')}
                       >
                         <XIcon size="xs" />
                       </button>
@@ -325,7 +327,7 @@ export function MemberDetailDrawer({
 
               {memberAssignments.length === 0 && (
                 <span className="text-xs text-amber-700 font-medium py-1">
-                  No location assigned yet.
+                  {t('drawers.memberDetail.noLocationAssigned')}
                 </span>
               )}
             </div>
@@ -341,7 +343,7 @@ export function MemberDetailDrawer({
                   }}
                   className="h-9 rounded-full border border-stocky-border-subtle bg-white px-3 text-xs text-stocky-text-main focus:border-stocky-primary focus:outline-none cursor-pointer"
                 >
-                  <option value="">+ Assign another location</option>
+                  <option value="">{t('drawers.memberDetail.assignAnotherLocation')}</option>
                   {locations
                     .filter((loc) => !assignedLocationIds.has(loc.id))
                     .map((loc) => (
@@ -358,40 +360,40 @@ export function MemberDetailDrawer({
           <div className="border-t border-stocky-border-subtle pt-5 space-y-4">
             <div className="flex items-center justify-between">
               <h3 className="text-xs font-semibold uppercase tracking-wider text-stocky-text-sub flex items-center gap-2">
-                <ShieldIcon size="xs" /> Granular Authorizations & Pages
+                <ShieldIcon size="xs" /> {t('drawers.memberDetail.granularAuthorizations')}
               </h3>
 
               {/* Quick Presets */}
               {canManage && member.role !== 'owner' && (
                 <div className="flex items-center gap-1 text-[11px]">
-                  <span className="text-stocky-text-sub mr-1">Presets:</span>
+                  <span className="text-stocky-text-sub me-1">{t('drawers.memberDetail.presets')}</span>
                   <button
                     type="button"
                     onClick={() => applyPreset('admin')}
                     className="px-2 py-0.5 rounded-full border border-stocky-border-subtle bg-white hover:bg-stocky-bg-global cursor-pointer"
                   >
-                    Admin
+                    {t('drawers.memberDetail.presetsAdmin')}
                   </button>
                   <button
                     type="button"
                     onClick={() => applyPreset('manager')}
                     className="px-2 py-0.5 rounded-full border border-stocky-border-subtle bg-white hover:bg-stocky-bg-global cursor-pointer"
                   >
-                    Manager
+                    {t('drawers.memberDetail.presetsManager')}
                   </button>
                   <button
                     type="button"
                     onClick={() => applyPreset('warehouse')}
                     className="px-2 py-0.5 rounded-full border border-stocky-border-subtle bg-white hover:bg-stocky-bg-global cursor-pointer"
                   >
-                    Warehouse
+                    {t('drawers.memberDetail.presetsWarehouse')}
                   </button>
                   <button
                     type="button"
                     onClick={() => applyPreset('staff')}
                     className="px-2 py-0.5 rounded-full border border-stocky-border-subtle bg-white hover:bg-stocky-bg-global cursor-pointer"
                   >
-                    Staff
+                    {t('drawers.memberDetail.presetsStaff')}
                   </button>
                 </div>
               )}
@@ -400,7 +402,7 @@ export function MemberDetailDrawer({
             {/* Page Access Checkbox List */}
             <div className="rounded-xl border border-stocky-border-subtle divide-y divide-stocky-border-subtle overflow-hidden bg-white">
               <div className="bg-stocky-bg-global px-3.5 py-2 text-[10px] font-bold uppercase tracking-wider text-stocky-text-sub">
-                Permitted Modules & Pages
+                {t('drawers.memberDetail.permittedModules')}
               </div>
               {AVAILABLE_PAGES.map((page) => {
                 const isChecked = allowedPages.includes(page.id);
@@ -409,9 +411,9 @@ export function MemberDetailDrawer({
                     key={page.id}
                     className={`flex items-start justify-between p-3 cursor-pointer hover:bg-stocky-bg-global/60 transition-colors ${isChecked ? 'bg-stocky-bg-global/30' : ''}`}
                   >
-                    <div className="min-w-0 pr-3">
-                      <p className="text-xs font-medium text-stocky-text-main">{page.label}</p>
-                      <p className="text-[11px] text-stocky-text-sub mt-0.5">{page.description}</p>
+                    <div className="min-w-0 pe-3">
+                      <p className="text-xs font-medium text-stocky-text-main">{t(page.labelKey)}</p>
+                      <p className="text-[11px] text-stocky-text-sub mt-0.5">{t(page.descKey)}</p>
                     </div>
                     <input
                       type="checkbox"
@@ -428,13 +430,13 @@ export function MemberDetailDrawer({
             {/* Capabilities Checkbox List */}
             <div className="rounded-xl border border-stocky-border-subtle divide-y divide-stocky-border-subtle overflow-hidden bg-white mt-3">
               <div className="bg-stocky-bg-global px-3.5 py-2 text-[10px] font-bold uppercase tracking-wider text-stocky-text-sub">
-                Operational Write Privileges
+                {t('drawers.memberDetail.operationalPrivileges')}
               </div>
 
               <label className="flex items-center justify-between p-3 cursor-pointer hover:bg-stocky-bg-global/60">
                 <div>
-                  <p className="text-xs font-medium text-stocky-text-main">Inventory Edit & Reorder Control</p>
-                  <p className="text-[11px] text-stocky-text-sub">Can update lot batches, modify expiry dates, and edit product costs</p>
+                  <p className="text-xs font-medium text-stocky-text-main">{t('drawers.memberDetail.inventoryEdit')}</p>
+                  <p className="text-[11px] text-stocky-text-sub">{t('drawers.memberDetail.inventoryEditDesc')}</p>
                 </div>
                 <input
                   type="checkbox"
@@ -447,8 +449,8 @@ export function MemberDetailDrawer({
 
               <label className="flex items-center justify-between p-3 cursor-pointer hover:bg-stocky-bg-global/60">
                 <div>
-                  <p className="text-xs font-medium text-stocky-text-main">Transfer Approvals</p>
-                  <p className="text-[11px] text-stocky-text-sub">Can approve inter-branch transfers and mark dispatches as received</p>
+                  <p className="text-xs font-medium text-stocky-text-main">{t('drawers.memberDetail.transferApprovals')}</p>
+                  <p className="text-[11px] text-stocky-text-sub">{t('drawers.memberDetail.transferApprovalsDesc')}</p>
                 </div>
                 <input
                   type="checkbox"
@@ -461,8 +463,8 @@ export function MemberDetailDrawer({
 
               <label className="flex items-center justify-between p-3 cursor-pointer hover:bg-stocky-bg-global/60">
                 <div>
-                  <p className="text-xs font-medium text-stocky-text-main">Attendance & Leave Management</p>
-                  <p className="text-[11px] text-stocky-text-sub">Can approve employee leave requests and adjust timesheet logs</p>
+                  <p className="text-xs font-medium text-stocky-text-main">{t('drawers.memberDetail.attendanceLeave')}</p>
+                  <p className="text-[11px] text-stocky-text-sub">{t('drawers.memberDetail.attendanceLeaveDesc')}</p>
                 </div>
                 <input
                   type="checkbox"
@@ -475,8 +477,8 @@ export function MemberDetailDrawer({
 
               <label className="flex items-center justify-between p-3 cursor-pointer hover:bg-stocky-bg-global/60">
                 <div>
-                  <p className="text-xs font-medium text-stocky-text-main">Team & Member Administration</p>
-                  <p className="text-[11px] text-stocky-text-sub">Can invite teammates, assign job titles, and alter permission matrices</p>
+                  <p className="text-xs font-medium text-stocky-text-main">{t('drawers.memberDetail.teamAdmin')}</p>
+                  <p className="text-[11px] text-stocky-text-sub">{t('drawers.memberDetail.teamAdminDesc')}</p>
                 </div>
                 <input
                   type="checkbox"
@@ -498,7 +500,7 @@ export function MemberDetailDrawer({
             disabled={saving}
             className="h-10 rounded-full border border-stocky-border-subtle bg-white px-5 text-xs font-medium text-stocky-text-main hover:bg-stocky-bg-global transition-colors cursor-pointer"
           >
-            Cancel
+            {t('drawers.memberDetail.cancel')}
           </button>
           <button
             type="submit"
@@ -506,7 +508,7 @@ export function MemberDetailDrawer({
             disabled={saving}
             className="h-10 rounded-full bg-stocky-primary px-6 text-xs font-medium text-white hover:bg-stocky-primary-hover transition-colors shadow-xs disabled:opacity-50 cursor-pointer"
           >
-            {saving ? 'Saving changes...' : 'Save changes'}
+            {saving ? t('drawers.memberDetail.saving') : t('drawers.memberDetail.save')}
           </button>
         </div>
       </div>

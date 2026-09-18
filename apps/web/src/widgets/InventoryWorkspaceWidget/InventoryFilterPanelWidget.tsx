@@ -14,6 +14,7 @@ import {
   WarehouseIcon,
   XIcon,
 } from '@stocky/icons';
+import { useTranslation } from '@/lib/i18n';
 
 export interface FilterColumnScope {
   product: boolean;
@@ -97,6 +98,7 @@ function SearchSelectTagField({
   onToggle: (id: string) => void;
   onClear: () => void;
 }) {
+  const { t } = useTranslation();
   const [query, setQuery] = useState('');
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -147,7 +149,7 @@ function SearchSelectTagField({
             onClick={onClear}
             className="text-[10px] text-stocky-text-sub hover:text-red-500 cursor-pointer"
           >
-            Clear all
+            {t('filters.clearAll')}
           </button>
         )}
       </div>
@@ -175,7 +177,7 @@ function SearchSelectTagField({
                 onToggle(item.id);
               }}
               className="text-stocky-text-sub hover:text-red-600 cursor-pointer p-0.5"
-              title="Remove"
+              title={t('filters.remove')}
             >
               <XIcon size="xs" />
             </button>
@@ -192,7 +194,7 @@ function SearchSelectTagField({
               setIsOpen(true);
             }}
             onFocus={() => setIsOpen(true)}
-            placeholder={selectedIds.length === 0 ? placeholder : 'Add more...'}
+            placeholder={selectedIds.length === 0 ? placeholder : t('filters.addMore')}
             className="w-full bg-transparent text-xs text-stocky-text-main placeholder:text-stocky-text-sub focus:outline-none"
           />
           <ChevronDownIcon
@@ -207,7 +209,7 @@ function SearchSelectTagField({
         <div className="absolute top-[calc(100%+4px)] inset-x-0 z-50 max-h-52 overflow-y-auto rounded-xl border border-stocky-border-subtle bg-white p-1 shadow-lg">
           {filteredOptions.length === 0 ? (
             <p className="px-3 py-2 text-[11px] text-stocky-text-sub text-center">
-              No matching options
+              {t('filters.noMatching')}
             </p>
           ) : (
             filteredOptions.map((opt) => {
@@ -220,14 +222,14 @@ function SearchSelectTagField({
                     onToggle(opt.id);
                     setQuery('');
                   }}
-                  className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs transition-colors text-left cursor-pointer ${
+                  className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs transition-colors text-start cursor-pointer ${
                     isSelected
                       ? 'bg-stocky-primary/10 text-stocky-primary font-medium'
                       : 'text-stocky-text-main hover:bg-stocky-bg-global'
                   }`}
                 >
                   <span className="truncate">{opt.label}</span>
-                  <div className="flex items-center gap-1.5 shrink-0 ml-2">
+                  <div className="flex items-center gap-1.5 shrink-0 ms-2">
                     {opt.count !== undefined && (
                       <span className="text-[10px] text-stocky-text-sub tabular-nums">
                         {opt.count}
@@ -282,6 +284,7 @@ export function InventoryFilterPanelWidget({
   onClose,
   className,
 }: InventoryFilterPanelWidgetProps) {
+  const { t } = useTranslation();
   const allColumnsSelected =
     selectedColumns.product &&
     selectedColumns.barcode &&
@@ -301,8 +304,8 @@ export function InventoryFilterPanelWidget({
 
   const supplierOptions = useMemo(() => {
     const list = availableSuppliers.map((s) => ({ id: s.id, label: s.name, count: s.count }));
-    return [{ id: 'unassigned', label: 'No supplier assigned' }, ...list];
-  }, [availableSuppliers]);
+    return [{ id: 'unassigned', label: t('filters.noSupplierAssigned') }, ...list];
+  }, [availableSuppliers, t]);
 
   return (
     <motion.div
@@ -311,8 +314,8 @@ export function InventoryFilterPanelWidget({
       exit={{ opacity: 0, y: -6, scale: 0.99 }}
       transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
       role="dialog"
-      aria-label="Inventory filters"
-      className={className || "w-full rounded-2xl bg-white border border-stocky-border-subtle shadow-bevel-float overflow-hidden flex flex-col z-50 text-left select-none"}
+      aria-label={t('filters.inventoryFilters')}
+      className={className || "w-full rounded-2xl bg-white border border-stocky-border-subtle shadow-bevel-float overflow-hidden flex flex-col z-50 text-start select-none"}
     >
       {/* 1. Header */}
       <div className="flex items-center justify-between px-5 py-3 border-b border-stocky-border-subtle bg-white shrink-0">
@@ -322,17 +325,17 @@ export function InventoryFilterPanelWidget({
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h2 className="text-xs font-semibold text-stocky-text-main">Filters</h2>
+              <h2 className="text-xs font-semibold text-stocky-text-main">{t('filters.title')}</h2>
               {activeFilterCount > 0 ? (
                 <span className="rounded-full bg-stocky-primary px-2 py-0.5 text-[10px] font-semibold text-white">
-                  {activeFilterCount} active
+                  {t('filters.activeCount', { count: activeFilterCount })}
                 </span>
               ) : (
-                <span className="text-[10px] text-stocky-text-sub">No filters applied</span>
+                <span className="text-[10px] text-stocky-text-sub">{t('filters.noFiltersApplied')}</span>
               )}
             </div>
             <p className="text-[10px] text-stocky-text-sub mt-0.5">
-              Refine active inventory by search tags, quantity ranges, price boundaries, and expiry date windows.
+              {t('filters.inventorySubtitle')}
             </p>
           </div>
         </div>
@@ -345,13 +348,13 @@ export function InventoryFilterPanelWidget({
               className="text-xs font-medium text-stocky-text-sub hover:text-red-600 px-2 py-1 rounded transition-colors cursor-pointer flex items-center gap-1"
             >
               <RefreshIcon size="xs" />
-              Reset all
+              {t('filters.resetAll')}
             </button>
           )}
           <button
             type="button"
             onClick={onClose}
-            aria-label="Close filters"
+            aria-label={t('filters.closeFilters')}
             className="w-7 h-7 rounded-full flex items-center justify-center text-stocky-text-sub hover:text-stocky-text-main hover:bg-stocky-bg-global transition-colors cursor-pointer"
           >
             <XIcon size="xs" />
@@ -366,9 +369,9 @@ export function InventoryFilterPanelWidget({
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {/* Category */}
           <SearchSelectTagField
-            label="Category"
+            label={t('filters.category')}
             icon={<TagIcon size="xs" className="text-stocky-primary" />}
-            placeholder="Search or select category..."
+            placeholder={t('filters.searchCategory')}
             selectedIds={filterCategories}
             options={categoryOptions}
             onToggle={onToggleCategory}
@@ -377,9 +380,9 @@ export function InventoryFilterPanelWidget({
 
           {/* Location */}
           <SearchSelectTagField
-            label="Locations"
+            label={t('filters.locations')}
             icon={<WarehouseIcon size="xs" className="text-stocky-primary" />}
-            placeholder="Search or select location..."
+            placeholder={t('filters.searchLocation')}
             selectedIds={filterLocationIds}
             options={locationOptions}
             onToggle={onToggleLocation}
@@ -388,9 +391,9 @@ export function InventoryFilterPanelWidget({
 
           {/* Supplier */}
           <SearchSelectTagField
-            label="Suppliers"
+            label={t('filters.suppliers')}
             icon={<TruckIcon size="xs" className="text-stocky-primary" />}
-            placeholder="Search or select supplier..."
+            placeholder={t('filters.searchSupplier')}
             selectedIds={filterSupplierIds}
             options={supplierOptions}
             onToggle={onToggleSupplier}
@@ -404,7 +407,7 @@ export function InventoryFilterPanelWidget({
           {/* Numerical 1: Stock Quantity (Min and Max fields only) */}
           <div className="flex flex-col gap-1.5">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-stocky-text-main">Stock Quantity</span>
+              <span className="text-xs font-semibold text-stocky-text-main">{t('filters.stockQuantity')}</span>
               {(filterQuantityMin || filterQuantityMax) && (
                 <button
                   type="button"
@@ -414,7 +417,7 @@ export function InventoryFilterPanelWidget({
                   }}
                   className="text-[10px] text-stocky-text-sub hover:text-red-500 cursor-pointer"
                 >
-                  Clear
+                  {t('filters.clear')}
                 </button>
               )}
             </div>
@@ -425,18 +428,18 @@ export function InventoryFilterPanelWidget({
                   min="0"
                   value={filterQuantityMin}
                   onChange={(e) => onQuantityMinChange(e.target.value)}
-                  placeholder="Min quantity"
+                  placeholder={t('filters.minQuantity')}
                   className="w-full h-9 rounded-xl bg-white px-3 text-xs text-stocky-text-main placeholder:text-stocky-text-sub border border-stocky-border-subtle focus:outline-none focus:border-stocky-primary focus:ring-2 focus:ring-stocky-primary/10 transition-all"
                 />
               </div>
-              <span className="text-xs text-stocky-text-sub font-medium">to</span>
+              <span className="text-xs text-stocky-text-sub font-medium">{t('filters.to')}</span>
               <div className="flex-1 relative">
                 <input
                   type="number"
                   min="0"
                   value={filterQuantityMax}
                   onChange={(e) => onQuantityMaxChange(e.target.value)}
-                  placeholder="Max quantity"
+                  placeholder={t('filters.maxQuantity')}
                   className="w-full h-9 rounded-xl bg-white px-3 text-xs text-stocky-text-main placeholder:text-stocky-text-sub border border-stocky-border-subtle focus:outline-none focus:border-stocky-primary focus:ring-2 focus:ring-stocky-primary/10 transition-all"
                 />
               </div>
@@ -448,7 +451,7 @@ export function InventoryFilterPanelWidget({
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-1 text-xs font-semibold text-stocky-text-main">
                 <DollarSignIcon size="xs" className="text-stocky-primary" />
-                <span>Unit Price (EGP)</span>
+                <span>{t('filters.unitPriceCurrency')}</span>
               </div>
               {(filterPriceMin || filterPriceMax) && (
                 <button
@@ -459,7 +462,7 @@ export function InventoryFilterPanelWidget({
                   }}
                   className="text-[10px] text-stocky-text-sub hover:text-red-500 cursor-pointer"
                 >
-                  Clear
+                  {t('filters.clear')}
                 </button>
               )}
             </div>
@@ -471,11 +474,11 @@ export function InventoryFilterPanelWidget({
                   step="any"
                   value={filterPriceMin}
                   onChange={(e) => onPriceMinChange(e.target.value)}
-                  placeholder="Min price"
+                  placeholder={t('filters.minPrice')}
                   className="w-full h-9 rounded-xl bg-white px-3 text-xs text-stocky-text-main placeholder:text-stocky-text-sub border border-stocky-border-subtle focus:outline-none focus:border-stocky-primary focus:ring-2 focus:ring-stocky-primary/10 transition-all"
                 />
               </div>
-              <span className="text-xs text-stocky-text-sub font-medium">to</span>
+              <span className="text-xs text-stocky-text-sub font-medium">{t('filters.to')}</span>
               <div className="flex-1 relative">
                 <input
                   type="number"
@@ -483,7 +486,7 @@ export function InventoryFilterPanelWidget({
                   step="any"
                   value={filterPriceMax}
                   onChange={(e) => onPriceMaxChange(e.target.value)}
-                  placeholder="Max price"
+                  placeholder={t('filters.maxPrice')}
                   className="w-full h-9 rounded-xl bg-white px-3 text-xs text-stocky-text-main placeholder:text-stocky-text-sub border border-stocky-border-subtle focus:outline-none focus:border-stocky-primary focus:ring-2 focus:ring-stocky-primary/10 transition-all"
                 />
               </div>
@@ -495,7 +498,7 @@ export function InventoryFilterPanelWidget({
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-1 text-xs font-semibold text-stocky-text-main">
                 <CalendarIcon size="xs" className="text-stocky-primary" />
-                <span>Next Expiry Date</span>
+                <span>{t('filters.nextExpiryDate')}</span>
               </div>
               {(filterExpiryFrom || filterExpiryTo) && (
                 <button
@@ -506,7 +509,7 @@ export function InventoryFilterPanelWidget({
                   }}
                   className="text-[10px] text-stocky-text-sub hover:text-red-500 cursor-pointer"
                 >
-                  Clear
+                  {t('filters.clear')}
                 </button>
               )}
             </div>
@@ -516,19 +519,19 @@ export function InventoryFilterPanelWidget({
                   type="date"
                   value={filterExpiryFrom}
                   onChange={(e) => onExpiryFromChange(e.target.value)}
-                  title="From date"
-                  aria-label="Expiry from date"
+                  title={t('filters.fromDate')}
+                  aria-label={t('filters.expiryFromDate')}
                   className="w-full h-9 rounded-xl bg-white px-2.5 text-xs text-stocky-text-main border border-stocky-border-subtle focus:outline-none focus:border-stocky-primary focus:ring-2 focus:ring-stocky-primary/10 transition-all"
                 />
               </div>
-              <span className="text-xs text-stocky-text-sub font-medium">to</span>
+              <span className="text-xs text-stocky-text-sub font-medium">{t('filters.to')}</span>
               <div className="flex-1 relative">
                 <input
                   type="date"
                   value={filterExpiryTo}
                   onChange={(e) => onExpiryToChange(e.target.value)}
-                  title="To date"
-                  aria-label="Expiry to date"
+                  title={t('filters.toDate')}
+                  aria-label={t('filters.expiryToDate')}
                   className="w-full h-9 rounded-xl bg-white px-2.5 text-xs text-stocky-text-main border border-stocky-border-subtle focus:outline-none focus:border-stocky-primary focus:ring-2 focus:ring-stocky-primary/10 transition-all"
                 />
               </div>
@@ -540,15 +543,15 @@ export function InventoryFilterPanelWidget({
         <div className="pt-3 border-t border-stocky-border-subtle flex flex-wrap items-center justify-between gap-2">
           <div className="flex items-center gap-2">
             <SearchIcon size="xs" className="text-stocky-primary" />
-            <span className="text-xs font-semibold text-stocky-text-main">Search matches:</span>
+            <span className="text-xs font-semibold text-stocky-text-main">{t('filters.searchMatches')}</span>
             <div className="flex items-center gap-1.5 flex-wrap">
               {(
                 [
-                  { key: 'product', label: 'Product' },
-                  { key: 'barcode', label: 'Barcode' },
-                  { key: 'category', label: 'Category' },
-                  { key: 'location', label: 'Location' },
-                  { key: 'supplier', label: 'Supplier' },
+                  { key: 'product', label: t('filters.columns.product') },
+                  { key: 'barcode', label: t('filters.columns.barcode') },
+                  { key: 'category', label: t('filters.columns.category') },
+                  { key: 'location', label: t('filters.columns.location') },
+                  { key: 'supplier', label: t('filters.columns.supplier') },
                 ] as const
               ).map(({ key, label }) => {
                 const isChecked = selectedColumns[key];
@@ -575,7 +578,7 @@ export function InventoryFilterPanelWidget({
             onClick={onSelectAllColumns}
             className="text-[10px] text-stocky-text-sub hover:text-stocky-primary cursor-pointer"
           >
-            {allColumnsSelected ? 'All active' : 'Select all'}
+            {allColumnsSelected ? t('filters.allActive') : t('filters.selectAll')}
           </button>
         </div>
 
@@ -584,8 +587,7 @@ export function InventoryFilterPanelWidget({
       {/* 3. Footer */}
       <div className="px-5 py-3 border-t border-stocky-border-subtle bg-white flex items-center justify-between shrink-0">
         <div className="text-xs text-stocky-text-sub">
-          Showing <strong className="font-semibold text-stocky-text-main">{matchingCount}</strong> of{' '}
-          <span className="tabular-nums">{totalCount}</span> products matching
+          {t('filters.productsMatching', { matching: matchingCount, total: totalCount })}
         </div>
 
         <div className="flex items-center gap-2">
@@ -595,7 +597,7 @@ export function InventoryFilterPanelWidget({
               onClick={onResetAll}
               className="h-8 px-3 rounded-full text-xs font-medium text-stocky-text-sub hover:text-red-600 hover:bg-red-50 transition-colors cursor-pointer"
             >
-              Reset all
+              {t('filters.resetAll')}
             </button>
           )}
           <button
@@ -603,7 +605,7 @@ export function InventoryFilterPanelWidget({
             onClick={onClose}
             className="h-8 px-5 rounded-full bg-stocky-text-main text-white text-xs font-semibold hover:opacity-90 transition-opacity cursor-pointer shadow-sm"
           >
-            Done
+            {t('filters.done')}
           </button>
         </div>
       </div>

@@ -4,6 +4,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { ArrowRightIcon, BoxesIcon, PlusIcon, TrashIcon, WarehouseIcon, XIcon } from '@stocky/icons';
 import type { Location, Product, StockLot } from '@stocky/types';
 import { SideDrawer } from '@/components/ui/SideDrawer';
+import { useTranslation } from '@/lib/i18n';
 
 export type TransferLineDraft = { productId: string; quantity: string };
 
@@ -33,6 +34,7 @@ export function TransferRequestDrawerWidget({
   defaultProductId,
   onCreate,
 }: TransferRequestDrawerWidgetProps) {
+  const { t } = useTranslation();
   const suggestedSourceId =
     defaultProductId && selectedLocationId === 'all'
       ? lots.find(
@@ -127,15 +129,15 @@ export function TransferRequestDrawerWidget({
     setError(null);
 
     if (!sourceLocationId) {
-      setError('Please choose a source location.');
+      setError(t('drawers.transferRequest.errors.chooseSource'));
       return;
     }
     if (!destinationLocationId) {
-      setError('Please choose a destination location.');
+      setError(t('drawers.transferRequest.errors.chooseDest'));
       return;
     }
     if (sourceLocationId === destinationLocationId) {
-      setError('Source and destination locations must be different.');
+      setError(t('drawers.transferRequest.errors.sameLocation'));
       return;
     }
 
@@ -145,20 +147,23 @@ export function TransferRequestDrawerWidget({
     }));
 
     if (normalized.length === 0 || normalized.some((line) => !line.productId)) {
-      setError('Please select a product for each line.');
+      setError(t('drawers.transferRequest.errors.selectProduct'));
       return;
     }
 
     for (const line of normalized) {
       if (!Number.isInteger(line.quantity) || line.quantity <= 0) {
-        setError('Quantities must be whole numbers greater than zero.');
+        setError(t('drawers.transferRequest.errors.wholeNumbers'));
         return;
       }
       const available = availableFor(line.productId);
       if (line.quantity > available) {
         const prod = products.find((p) => p.id === line.productId);
         setError(
-          `Requested quantity for ${prod?.name || 'product'} exceeds available stock (${available} available).`
+          t('drawers.transferRequest.errors.exceedsAvailable', {
+            product: prod?.name || 'product',
+            available,
+          })
         );
         return;
       }
@@ -177,21 +182,21 @@ export function TransferRequestDrawerWidget({
   };
 
   return (
-    <SideDrawer isOpen={isOpen} onClose={onClose} ariaLabel="Request stock">
+    <SideDrawer isOpen={isOpen} onClose={onClose} ariaLabel={t('drawers.transferRequest.title')}>
       <div className="flex h-full flex-col bg-white">
         {/* Header */}
         <div className="flex items-center justify-between border-b border-stocky-border-subtle p-4 sm:p-5">
           <div>
-            <h2 className="text-base font-medium text-stocky-text-main">Request stock</h2>
+            <h2 className="text-base font-medium text-stocky-text-main">{t('drawers.transferRequest.title')}</h2>
             <p className="mt-0.5 text-xs text-stocky-text-sub">
-              Move one or more products between locations.
+              {t('drawers.transferRequest.subtitle')}
             </p>
           </div>
           <button
             type="button"
             onClick={onClose}
             className="flex h-8 w-8 items-center justify-center rounded-full text-stocky-text-sub hover:bg-stocky-bg-global hover:text-stocky-text-main transition-colors cursor-pointer"
-            aria-label="Close"
+            aria-label={t('drawers.transferRequest.close')}
           >
             <XIcon size="xs" />
           </button>
@@ -208,11 +213,11 @@ export function TransferRequestDrawerWidget({
           {/* Paired Location Selectors (TASK-TRF-02) */}
           <div className="rounded-2xl border border-stocky-border-subtle bg-stocky-bg-global/50 p-3.5 sm:p-4 flex flex-col gap-3">
             <div className="flex items-center justify-between">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-stocky-text-sub">Transfer Route</span>
+              <span className="text-[11px] font-bold uppercase tracking-wider text-stocky-text-sub">{t('drawers.transferRequest.transferRoute')}</span>
               <span className="inline-flex items-center gap-1.5 text-xs font-medium text-stocky-primary">
-                <span>{selectedSourceLoc?.name || 'Origin'}</span>
-                <ArrowRightIcon size="xs" />
-                <span>{selectedDestLoc?.name || 'Destination'}</span>
+                <span>{selectedSourceLoc?.name || t('drawers.transferRequest.origin')}</span>
+                <ArrowRightIcon size="xs" className="rtl:rotate-180" />
+                <span>{selectedDestLoc?.name || t('drawers.transferRequest.destination')}</span>
               </span>
             </div>
 
@@ -222,7 +227,7 @@ export function TransferRequestDrawerWidget({
                 <div className="flex items-center justify-between">
                   <label className="text-[11px] font-semibold text-stocky-text-sub uppercase tracking-wider flex items-center gap-1">
                     <WarehouseIcon size="xs" className="text-stocky-primary" />
-                    <span>Origin (From)</span>
+                    <span>{t('drawers.transferRequest.originFrom')}</span>
                   </label>
                   {selectedSourceLoc && (
                     <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-stocky-primary/10 text-stocky-primary border border-stocky-primary/20 capitalize">
@@ -240,14 +245,14 @@ export function TransferRequestDrawerWidget({
                   }}
                   className="h-9 w-full bg-transparent text-xs font-semibold text-stocky-text-main outline-none cursor-pointer"
                 >
-                  <option value="">Choose source location</option>
+                  <option value="">{t('drawers.transferRequest.chooseSource')}</option>
                   {locations.map((loc) => {
                     const skuCountAtLoc = lots.filter(
                       (l) => l.locationId === loc.id && l.quantityOnHand > 0
                     ).length;
                     return (
                       <option key={loc.id} value={loc.id}>
-                        {loc.name} ({loc.type.toUpperCase()}) — {skuCountAtLoc} items in stock
+                        {loc.name} ({loc.type.toUpperCase()}) — {t('drawers.transferRequest.itemsInStock', { count: skuCountAtLoc })}
                       </option>
                     );
                   })}
@@ -256,7 +261,7 @@ export function TransferRequestDrawerWidget({
 
               {/* Directional arrow between them */}
               <div className="hidden sm:flex absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 z-10 w-7 h-7 rounded-full bg-white border border-stocky-border-subtle shadow-2xs items-center justify-center text-stocky-primary">
-                <ArrowRightIcon size="xs" />
+                <ArrowRightIcon size="xs" className="rtl:rotate-180" />
               </div>
 
               {/* Destination Location Card */}
@@ -264,7 +269,7 @@ export function TransferRequestDrawerWidget({
                 <div className="flex items-center justify-between">
                   <label className="text-[11px] font-semibold text-stocky-text-sub uppercase tracking-wider flex items-center gap-1">
                     <WarehouseIcon size="xs" className="text-stocky-accent" />
-                    <span>Destination (To)</span>
+                    <span>{t('drawers.transferRequest.destinationTo')}</span>
                   </label>
                   {selectedDestLoc && (
                     <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-stocky-bg-global text-stocky-text-sub border border-stocky-border-subtle capitalize">
@@ -281,7 +286,7 @@ export function TransferRequestDrawerWidget({
                   }}
                   className="h-9 w-full bg-transparent text-xs font-semibold text-stocky-text-main outline-none cursor-pointer"
                 >
-                  <option value="">Choose destination location</option>
+                  <option value="">{t('drawers.transferRequest.chooseDestination')}</option>
                   {locations
                     .filter((loc) => loc.id !== sourceLocationId)
                     .map((loc) => (
@@ -299,10 +304,10 @@ export function TransferRequestDrawerWidget({
             <div className="flex items-center justify-between bg-stocky-bg-global px-4 py-3 border-b border-stocky-border-subtle">
               <div>
                 <span className="text-xs font-semibold text-stocky-text-main">
-                  Products in this transfer
+                  {t('drawers.transferRequest.productsInTransfer')}
                 </span>
-                <span className="ml-1.5 text-[11px] text-stocky-text-sub">
-                  ({lines.filter((l) => l.productId).length} selected)
+                <span className="ms-1.5 text-[11px] text-stocky-text-sub">
+                  {t('drawers.transferRequest.selectedCount', { count: lines.filter((l) => l.productId).length })}
                 </span>
               </div>
               <button
@@ -310,7 +315,7 @@ export function TransferRequestDrawerWidget({
                 onClick={addLine}
                 className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-stocky-border-subtle text-xs font-medium text-stocky-primary hover:border-stocky-primary transition-colors cursor-pointer shadow-2xs"
               >
-                <PlusIcon size="xs" /> Add product
+                <PlusIcon size="xs" /> {t('drawers.transferRequest.addProduct')}
               </button>
             </div>
 
@@ -327,7 +332,7 @@ export function TransferRequestDrawerWidget({
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                       <div className="min-w-0 flex-1">
                         <label className="block text-[10px] font-bold uppercase tracking-wider text-stocky-text-sub mb-1">
-                          Product Line #{index + 1}
+                          {t('drawers.transferRequest.productLine', { index: index + 1 })}
                         </label>
                         <select
                           required
@@ -335,12 +340,12 @@ export function TransferRequestDrawerWidget({
                           onChange={(event) => updateLine(index, 'productId', event.target.value)}
                           className="h-10 w-full rounded-xl border border-stocky-border-subtle bg-stocky-bg-widget px-3 text-xs font-medium text-stocky-text-main focus:border-stocky-primary focus:outline-none"
                         >
-                          <option value="">Select a product from origin...</option>
+                          <option value="">{t('drawers.transferRequest.selectProductFromOrigin')}</option>
                           {sourceProducts.map((product) => {
                             const avail = availableFor(product.id);
                             return (
                               <option key={product.id} value={product.id}>
-                                {product.name} {product.barcode ? `(${product.barcode})` : ''} — {avail} available
+                                {product.name} {product.barcode ? `(${product.barcode})` : ''} — {t('drawers.transferRequest.availableCount', { count: avail })}
                               </option>
                             );
                           })}
@@ -357,7 +362,7 @@ export function TransferRequestDrawerWidget({
                             }`}
                           >
                             <BoxesIcon size="xs" />
-                            <span>{available} in stock at origin</span>
+                            <span>{t('drawers.transferRequest.inStockAtOrigin', { count: available })}</span>
                           </span>
                         </div>
                       )}
@@ -366,7 +371,7 @@ export function TransferRequestDrawerWidget({
                     {/* Bottom: Quantity Stepper & Remove */}
                     <div className="flex items-center justify-between gap-3 pt-2.5 border-t border-stocky-border-subtle/60">
                       <div className="flex items-center gap-2.5">
-                        <span className="text-xs font-medium text-stocky-text-sub">Transfer Qty:</span>
+                        <span className="text-xs font-medium text-stocky-text-sub">{t('drawers.transferRequest.transferQty')}</span>
                         <div className="inline-flex items-center rounded-xl border border-stocky-border-subtle bg-stocky-bg-global p-0.5">
                           <button
                             type="button"
@@ -376,7 +381,7 @@ export function TransferRequestDrawerWidget({
                             }}
                             disabled={!line.quantity || parseInt(line.quantity, 10) <= 1}
                             className="h-8 w-8 rounded-lg bg-white border border-stocky-border-subtle/80 flex items-center justify-center text-stocky-text-main hover:bg-stocky-bg-hover disabled:opacity-40 cursor-pointer font-bold text-sm"
-                            aria-label="Decrease quantity"
+                            aria-label={t('drawers.transferRequest.decreaseQuantity')}
                           >
                             -
                           </button>
@@ -399,14 +404,14 @@ export function TransferRequestDrawerWidget({
                             }}
                             disabled={Boolean(available && parseInt(line.quantity || '0', 10) >= available)}
                             className="h-8 w-8 rounded-lg bg-white border border-stocky-border-subtle/80 flex items-center justify-center text-stocky-text-main hover:bg-stocky-bg-hover disabled:opacity-40 cursor-pointer font-bold text-sm"
-                            aria-label="Increase quantity"
+                            aria-label={t('drawers.transferRequest.increaseQuantity')}
                           >
                             +
                           </button>
                         </div>
                         {selectedProd && (
                           <span className="text-xs font-medium text-stocky-text-sub">
-                            {selectedProd.unitName || 'units'}
+                            {selectedProd.unitName || t('drawers.transferRequest.units')}
                           </span>
                         )}
                       </div>
@@ -416,10 +421,10 @@ export function TransferRequestDrawerWidget({
                           type="button"
                           onClick={() => removeLine(index)}
                           className="h-8 px-3 rounded-full border border-stocky-border-subtle text-xs text-stocky-text-sub hover:border-stocky-status-critical-border hover:text-stocky-status-critical-fg hover:bg-stocky-status-critical-bg transition-colors inline-flex items-center gap-1.5 cursor-pointer"
-                          aria-label="Remove product"
+                          aria-label={t('drawers.transferRequest.removeProduct')}
                         >
                           <TrashIcon size="xs" />
-                          <span className="hidden sm:inline">Remove</span>
+                          <span className="hidden sm:inline">{t('drawers.transferRequest.remove')}</span>
                         </button>
                       )}
                     </div>
@@ -432,13 +437,13 @@ export function TransferRequestDrawerWidget({
           {/* Request Note */}
           <div>
             <label className="block text-xs font-medium text-stocky-text-main">
-              Note <span className="text-stocky-text-sub font-normal">(optional)</span>
+              {t('drawers.transferRequest.note')} <span className="text-stocky-text-sub font-normal">{t('drawers.transferRequest.optional')}</span>
             </label>
             <textarea
               value={requestNote}
               onChange={(event) => setRequestNote(event.target.value)}
               rows={3}
-              placeholder="Why is this stock movement needed? (e.g. Weekly branch replenishment)"
+              placeholder={t('drawers.transferRequest.notePlaceholder')}
               className="mt-1.5 w-full rounded-xl border border-stocky-border-subtle bg-stocky-bg-widget p-3 text-xs text-stocky-text-main placeholder:text-stocky-text-sub/50 focus:border-stocky-primary focus:outline-none resize-none"
             />
           </div>
@@ -450,13 +455,13 @@ export function TransferRequestDrawerWidget({
               onClick={onClose}
               className="h-10 rounded-full border border-stocky-border-subtle px-5 text-xs font-medium text-stocky-text-main hover:bg-stocky-bg-global transition-colors cursor-pointer"
             >
-              Cancel
+              {t('drawers.transferRequest.cancel')}
             </button>
             <button
               type="submit"
               className="h-10 rounded-full bg-stocky-primary px-6 text-xs font-medium text-white hover:bg-stocky-primary-hover transition-colors cursor-pointer shadow-sm"
             >
-              Send request
+              {t('drawers.transferRequest.sendRequest')}
             </button>
           </div>
         </form>

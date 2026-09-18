@@ -5,6 +5,7 @@ import { MailIcon, PlusIcon, WarehouseIcon, XIcon } from '@stocky/icons';
 import type { CompanyUserRole, Location } from '@stocky/types';
 import { SideDrawer } from '@/components/ui/SideDrawer';
 import { UserAvatar } from '@/components/ui/UserAvatar';
+import { useTranslation } from '@/lib/i18n';
 import type { TeamMemberData } from './MemberDetailDrawer';
 
 export interface TeamInviteDrawerProps {
@@ -29,6 +30,7 @@ export function TeamInviteDrawer({
   allMembers,
   onInvite,
 }: TeamInviteDrawerProps) {
+  const { t } = useTranslation();
   const [email, setEmail] = useState('');
   const [fullName, setFullName] = useState('');
   const [jobTitle, setJobTitle] = useState('');
@@ -41,7 +43,7 @@ export function TeamInviteDrawer({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email.trim()) {
-      setError('Please provide a valid work email.');
+      setError(t('drawers.teamInvite.errors.emailRequired'));
       return;
     }
     setSaving(true);
@@ -63,14 +65,14 @@ export function TeamInviteDrawer({
       setReportsTo('');
       onClose();
     } catch (err: any) {
-      setError(err?.message || 'Failed to send invitation.');
+      setError(err?.message || t('drawers.teamInvite.errors.inviteFailed'));
     } finally {
       setSaving(false);
     }
   };
 
   return (
-    <SideDrawer isOpen={isOpen} onClose={onClose} ariaLabel="Invite team member">
+    <SideDrawer isOpen={isOpen} onClose={onClose} ariaLabel={t('drawers.teamInvite.title')}>
       <div className="flex h-full flex-col">
         {/* Header */}
         <div className="flex items-center justify-between border-b border-stocky-border-subtle px-6 py-4">
@@ -79,15 +81,15 @@ export function TeamInviteDrawer({
               <PlusIcon size="xs" />
             </div>
             <div>
-              <h2 className="text-base font-semibold text-stocky-text-main">Invite Team Member</h2>
-              <p className="text-xs text-stocky-text-sub">Add a teammate with assigned role, title, and initial location.</p>
+              <h2 className="text-base font-semibold text-stocky-text-main">{t('drawers.teamInvite.title')}</h2>
+              <p className="text-xs text-stocky-text-sub">{t('drawers.teamInvite.subtitle')}</p>
             </div>
           </div>
           <button
             type="button"
             onClick={onClose}
             className="flex h-8 w-8 items-center justify-center rounded-full text-stocky-text-sub hover:bg-stocky-bg-global hover:text-stocky-text-main cursor-pointer"
-            aria-label="Close drawer"
+            aria-label={t('drawers.teamInvite.close')}
           >
             <XIcon size="xs" />
           </button>
@@ -97,7 +99,7 @@ export function TeamInviteDrawer({
         <form
           id="team-invite-form"
           onSubmit={handleSubmit}
-          className="flex-1 overflow-y-auto p-6 space-y-4 text-left"
+          className="flex-1 overflow-y-auto p-6 space-y-4 text-start"
         >
           {error && (
             <div className="rounded-xl border border-red-200 bg-red-50 p-3 text-xs text-red-700">
@@ -106,61 +108,61 @@ export function TeamInviteDrawer({
           )}
 
           <label className="block text-xs font-medium text-stocky-text-main">
-            Email Address *
+            {t('drawers.teamInvite.email')}
             <input
               required
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="colleague@company.com"
+              placeholder={t('drawers.teamInvite.emailPlaceholder')}
               className="mt-1.5 h-10 w-full rounded-xl border border-stocky-border-subtle bg-white px-3 text-xs text-stocky-text-main focus:border-stocky-primary focus:outline-none"
             />
           </label>
 
           <label className="block text-xs font-medium text-stocky-text-main">
-            Full Name
+            {t('drawers.teamInvite.fullName')}
             <input
               type="text"
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
-              placeholder="e.g. Sarah Jenkins"
+              placeholder={t('drawers.teamInvite.fullNamePlaceholder')}
               className="mt-1.5 h-10 w-full rounded-xl border border-stocky-border-subtle bg-white px-3 text-xs text-stocky-text-main focus:border-stocky-primary focus:outline-none"
             />
           </label>
 
           <label className="block text-xs font-medium text-stocky-text-main">
-            Official Job Title
+            {t('drawers.teamInvite.jobTitle')}
             <input
               type="text"
               value={jobTitle}
               onChange={(e) => setJobTitle(e.target.value)}
-              placeholder="e.g. Inventory Supervisor, Lead Barista"
+              placeholder={t('drawers.teamInvite.jobTitlePlaceholder')}
               className="mt-1.5 h-10 w-full rounded-xl border border-stocky-border-subtle bg-white px-3 text-xs text-stocky-text-main focus:border-stocky-primary focus:outline-none"
             />
           </label>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <label className="block text-xs font-medium text-stocky-text-main">
-              Platform Role
+              {t('drawers.teamInvite.role')}
               <select
                 value={role}
                 onChange={(e) => setRole(e.target.value as CompanyUserRole)}
                 className="mt-1.5 h-10 w-full rounded-xl border border-stocky-border-subtle bg-white px-3 text-xs text-stocky-text-main focus:border-stocky-primary focus:outline-none"
               >
-                <option value="staff">Staff (Floor / Scans / Clock in)</option>
-                <option value="manager">Branch Manager (Approvals / Counts)</option>
-                <option value="admin">Administrator (Company-wide)</option>
+                <option value="staff">{t('drawers.teamInvite.roles.staff')}</option>
+                <option value="manager">{t('drawers.teamInvite.roles.manager')}</option>
+                <option value="admin">{t('drawers.teamInvite.roles.admin')}</option>
               </select>
             </label>
 
             <label className="block text-xs font-medium text-stocky-text-main">
-              Primary Location
+              {t('drawers.teamInvite.location')}
               <select
                 value={locationId}
                 onChange={(e) => setLocationId(e.target.value)}
                 className="mt-1.5 h-10 w-full rounded-xl border border-stocky-border-subtle bg-white px-3 text-xs text-stocky-text-main focus:border-stocky-primary focus:outline-none"
               >
-                <option value="">Assign later</option>
+                <option value="">{t('drawers.teamInvite.assignLater')}</option>
                 {locations.map((loc) => (
                   <option key={loc.id} value={loc.id}>
                     {loc.name} ({loc.type})
@@ -171,13 +173,13 @@ export function TeamInviteDrawer({
           </div>
 
           <label className="block text-xs font-medium text-stocky-text-main">
-            Reports To (Direct Supervisor)
+            {t('drawers.teamInvite.reportsTo')}
             <select
               value={reportsTo}
               onChange={(e) => setReportsTo(e.target.value)}
               className="mt-1.5 h-10 w-full rounded-xl border border-stocky-border-subtle bg-white px-3 text-xs text-stocky-text-main focus:border-stocky-primary focus:outline-none"
             >
-              <option value="">None (Top of hierarchy / Reports to Owner)</option>
+              <option value="">{t('drawers.teamInvite.reportsToNone')}</option>
               {allMembers.map((m) => (
                 <option key={m.id} value={m.id}>
                   {m.full_name || m.email} ({m.job_title || m.role})
@@ -195,7 +197,7 @@ export function TeamInviteDrawer({
             disabled={saving}
             className="h-10 rounded-full border border-stocky-border-subtle bg-white px-5 text-xs font-medium text-stocky-text-main hover:bg-stocky-bg-global transition-colors cursor-pointer"
           >
-            Cancel
+            {t('drawers.teamInvite.cancel')}
           </button>
           <button
             type="submit"
@@ -203,10 +205,11 @@ export function TeamInviteDrawer({
             disabled={saving || !email.trim()}
             className="h-10 rounded-full bg-stocky-primary px-6 text-xs font-medium text-white hover:bg-stocky-primary-hover transition-colors shadow-xs disabled:opacity-50 cursor-pointer"
           >
-            {saving ? 'Sending invitation...' : 'Send invitation'}
+            {saving ? t('drawers.teamInvite.sending') : t('drawers.teamInvite.sendInvite')}
           </button>
         </div>
       </div>
     </SideDrawer>
   );
 }
+
