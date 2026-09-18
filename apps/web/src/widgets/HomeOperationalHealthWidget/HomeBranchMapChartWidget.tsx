@@ -4,6 +4,7 @@ import React, { useMemo, useState } from 'react';
 import type { Location, StockLot, AttendanceShift } from '@stocky/types';
 import { ChevronRightIcon, FilterIcon, InfoIcon, XIcon } from '@stocky/icons';
 import { ChartFilterBottomSheet } from './ChartFilterBottomSheet';
+import { useTranslation } from '@/lib/i18n';
 
 export interface BranchMapItem {
   id: string;
@@ -76,6 +77,7 @@ export function HomeBranchMapChartWidget({
   teamAssignments = [],
   onSelectLocation,
 }: HomeBranchMapChartWidgetProps) {
+  const { t } = useTranslation();
   // Date filter controls
   const [dateRangePreset, setDateRangePreset] = useState<'7D' | '14D' | '30D' | '90D'>('30D');
   const [startDate, setStartDate] = useState<string>(() => {
@@ -158,7 +160,7 @@ export function HomeBranchMapChartWidget({
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-1.5 min-w-0">
             <h3 className="text-sm sm:text-base font-semibold text-stocky-text-main tracking-tight truncate">
-              Branch Network & Inventory Distribution
+              {t('home.charts.branchMap.title')}
             </h3>
             <button
               type="button"
@@ -178,7 +180,7 @@ export function HomeBranchMapChartWidget({
             className="h-8 px-3 rounded-full border border-stocky-border-subtle bg-stocky-bg-global hover:bg-stocky-border-subtle text-xs font-semibold text-stocky-text-main flex items-center gap-1.5 cursor-pointer shadow-xs transition-colors shrink-0"
           >
             <FilterIcon size="xs" />
-            <span>Filter</span>
+            <span>{t('common.filter')}</span>
             <span className="px-1.5 py-0.5 rounded-full bg-stocky-primary text-white text-[10px] font-bold">
               {dateRangePreset}
             </span>
@@ -187,14 +189,14 @@ export function HomeBranchMapChartWidget({
 
         {/* Desktop subtitle (hidden on phone) */}
         <p className="hidden sm:block text-[11px] text-stocky-text-sub mt-0.5">
-          Dot size represents on-hand stock volume across branches. Tap dots for metrics.
+          {t('home.charts.branchMap.subtitle')}
         </p>
 
         {/* Expandable Info Callout when 'i' icon is clicked on phone or desktop */}
         {showInfo && (
           <div className="mt-2.5 p-2.5 bg-stocky-bg-global/90 border border-stocky-border-subtle rounded-xl text-xs text-stocky-text-sub flex items-start justify-between gap-2 animate-in fade-in duration-150">
             <span>
-              Dot size represents on-hand stock volume across branches. Tap any dot to view live metrics and percentage inventory changes over the selected timeframe.
+              {t('home.charts.branchMap.info')}
             </span>
             <button
               type="button"
@@ -220,16 +222,16 @@ export function HomeBranchMapChartWidget({
 
         {/* Geographic Regional Guide Labels */}
         <span className="absolute top-4 left-6 text-[10px] font-bold uppercase tracking-widest text-stocky-text-muted/60">
-          Western Province
+          {t('home.charts.branchMap.western')}
         </span>
         <span className="absolute top-4 right-8 text-[10px] font-bold uppercase tracking-widest text-stocky-text-muted/60">
-          Eastern Province
+          {t('home.charts.branchMap.eastern')}
         </span>
         <span className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-[10px] font-bold uppercase tracking-widest text-stocky-text-muted/50">
-          Central Region
+          {t('home.charts.branchMap.central')}
         </span>
         <span className="absolute bottom-4 left-1/3 text-[10px] font-bold uppercase tracking-widest text-stocky-text-muted/50">
-          Southern Hub
+          {t('home.charts.branchMap.southern')}
         </span>
 
         {/* Branch Marker Dots */}
@@ -291,7 +293,7 @@ export function HomeBranchMapChartWidget({
             <div className="flex items-start justify-between gap-2">
               <div className="min-w-0 flex-1">
                 <span className="text-[10px] uppercase font-bold text-stocky-primary tracking-wider block">
-                  {selectedBranch.type === 'warehouse' ? 'Warehouse Hub' : 'Retail Branch'}
+                  {selectedBranch.type === 'warehouse' ? t('home.charts.branchMap.warehouseHub') : t('home.charts.branchMap.retailBranch')}
                 </span>
                 <h4 className="text-xs sm:text-sm font-bold text-stocky-text-main truncate mt-0.5">
                   {selectedBranch.name}
@@ -312,28 +314,28 @@ export function HomeBranchMapChartWidget({
 
             <div className="grid grid-cols-2 gap-2 mt-3 pt-2.5 border-t border-stocky-border-subtle">
               <div className="flex flex-col">
-                <span className="text-[10px] text-stocky-text-sub font-medium">Inventory Units</span>
+                <span className="text-[10px] text-stocky-text-sub font-medium">{t('home.charts.branchMap.inventoryUnits')}</span>
                 <span className="text-xs font-bold text-stocky-text-main">
-                  {selectedBranch.units.toLocaleString()} units
+                  {selectedBranch.units.toLocaleString()} {t('common.items')}
                 </span>
               </div>
 
               <div className="flex flex-col">
-                <span className="text-[10px] text-stocky-text-sub font-medium">Valuation</span>
+                <span className="text-[10px] text-stocky-text-sub font-medium">{t('home.charts.branchMap.valuation')}</span>
                 <span className="text-xs font-bold text-stocky-text-main">
                   ${(selectedBranch.value / 1000).toFixed(1)}k
                 </span>
               </div>
 
               <div className="flex flex-col">
-                <span className="text-[10px] text-stocky-text-sub font-medium">Assigned Staff</span>
+                <span className="text-[10px] text-stocky-text-sub font-medium">{t('home.charts.branchMap.assignedStaff')}</span>
                 <span className="text-xs font-bold text-stocky-text-main">
-                  {selectedBranch.staffCount} members
+                  {selectedBranch.staffCount}
                 </span>
               </div>
 
               <div className="flex flex-col">
-                <span className="text-[10px] text-stocky-text-sub font-medium">Inventory Delta</span>
+                <span className="text-[10px] text-stocky-text-sub font-medium">{t('home.charts.branchMap.inventoryDelta')}</span>
                 <span
                   className={`text-xs font-bold ${
                     selectedBranch.changePct >= 0 ? 'text-emerald-600' : 'text-amber-600'
@@ -350,7 +352,7 @@ export function HomeBranchMapChartWidget({
                 onClick={() => onSelectLocation(selectedBranch.id)}
                 className="w-full mt-3 h-8 rounded-lg bg-stocky-primary hover:bg-stocky-primary-hover text-white text-[11px] font-semibold flex items-center justify-center gap-1 transition-colors cursor-pointer"
               >
-                <span>View Branch Stock</span>
+                <span>{t('home.charts.branchMap.viewBranchStock')}</span>
                 <ChevronRightIcon size="xs" />
               </button>
             )}
@@ -360,9 +362,9 @@ export function HomeBranchMapChartWidget({
 
       {/* 4. Footer Summary Stats */}
       <div className="flex items-center justify-between text-[11px] text-stocky-text-sub pt-2 border-t border-stocky-border-subtle font-medium">
-        <span>Total Branches: {branchData.length}</span>
+        <span>{t('home.charts.branchMap.totalBranches', { count: branchData.length })}</span>
         <span>
-          Combined Stock: {branchData.reduce((acc, b) => acc + b.units, 0).toLocaleString()} units
+          {t('home.charts.branchMap.combinedStock', { count: branchData.reduce((acc, b) => acc + b.units, 0).toLocaleString() })}
         </span>
       </div>
 
@@ -370,13 +372,13 @@ export function HomeBranchMapChartWidget({
       <ChartFilterBottomSheet
         isOpen={isFilterSheetOpen}
         onClose={() => setIsFilterSheetOpen(false)}
-        title="Branch Map Filters"
+        title={t('home.charts.branchMap.filterTitle')}
         onReset={() => handlePresetChange('30D')}
       >
         <div className="space-y-4">
           <div>
             <label className="text-xs font-semibold text-stocky-text-main block mb-2">
-              Timeframe Presets
+              {t('home.charts.branchMap.timeframePresets')}
             </label>
             <div className="grid grid-cols-4 gap-2">
               {(['7D', '14D', '30D', '90D'] as const).map((preset) => (
@@ -398,13 +400,13 @@ export function HomeBranchMapChartWidget({
 
           <div className="pt-2 border-t border-stocky-border-subtle">
             <span className="text-xs font-semibold text-stocky-text-main block mb-2">
-              Active Calculation Range
+              {t('home.charts.branchMap.calcRange')}
             </span>
             <div className="p-3 rounded-xl bg-stocky-bg-global border border-stocky-border-subtle text-xs text-stocky-text-sub space-y-1">
-              <div>From: <strong className="text-stocky-text-main">{startDate}</strong></div>
-              <div>To: <strong className="text-stocky-text-main">{endDate}</strong></div>
+              <div>{t('home.charts.branchMap.from')}: <strong className="text-stocky-text-main">{startDate}</strong></div>
+              <div>{t('home.charts.branchMap.to')}: <strong className="text-stocky-text-main">{endDate}</strong></div>
               <div className="text-[11px] text-stocky-text-muted pt-1">
-                Stock volume changes are calculated against baseline inventory at start date.
+                {t('home.charts.branchMap.baselineNote')}
               </div>
             </div>
           </div>

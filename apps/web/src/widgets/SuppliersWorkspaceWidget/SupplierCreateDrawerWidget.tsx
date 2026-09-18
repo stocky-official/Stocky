@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { XIcon } from '@stocky/icons';
 import { SideDrawer } from '@/components/ui/SideDrawer';
+import { useTranslation } from '@/lib/i18n';
 
 export const supplierPhoneCountries = [
   { code: '+20', country: 'Egypt', flag: '🇪🇬' },
@@ -46,6 +47,7 @@ export function SupplierCreateDrawerWidget({
   onClose,
   onCreateSupplier,
 }: SupplierCreateDrawerWidgetProps) {
+  const { t } = useTranslation();
   const [name, setName] = useState('');
   const [imageUrl, setImageUrl] = useState('');
   const [address, setAddress] = useState('');
@@ -76,12 +78,12 @@ export function SupplierCreateDrawerWidget({
     event.preventDefault();
     const cleanPhone = phoneNumber.trim();
     if (!name.trim() || !contactName.trim() || !cleanPhone) {
-      setError('Supplier name, primary contact person, and phone number are required.');
+      setError(t('drawers.supplierCreate.errors.required'));
       return;
     }
 
     if (!onCreateSupplier) {
-      setError('Create supplier capability is not configured.');
+      setError(t('drawers.supplierCreate.errors.notConfigured'));
       return;
     }
 
@@ -98,28 +100,28 @@ export function SupplierCreateDrawerWidget({
       });
       handleClose();
     } catch (err: any) {
-      setError(err?.message || 'Could not add this supplier. Please verify the information.');
+      setError(err?.message || t('drawers.supplierCreate.errors.saveFailed'));
     } finally {
       setIsSaving(false);
     }
   };
 
   return (
-    <SideDrawer isOpen={isOpen} onClose={handleClose} ariaLabel="Add new supplier">
+    <SideDrawer isOpen={isOpen} onClose={handleClose} ariaLabel={t('drawers.supplierCreate.title')}>
       <div className="flex h-full flex-col">
         {/* Header */}
         <div className="flex items-center justify-between border-b border-stocky-border-subtle p-5 sm:p-6">
           <div>
-            <h2 className="text-base font-medium text-stocky-text-main">Add supplier</h2>
+            <h2 className="text-base font-medium text-stocky-text-main">{t('drawers.supplierCreate.title')}</h2>
             <p className="mt-0.5 text-xs text-stocky-text-sub">
-              Register a new vendor and their primary contact details.
+              {t('drawers.supplierCreate.subtitle')}
             </p>
           </div>
           <button
             type="button"
             onClick={handleClose}
             className="flex h-8 w-8 items-center justify-center rounded-full text-stocky-text-sub hover:bg-stocky-bg-global hover:text-stocky-text-main transition-colors cursor-pointer"
-            aria-label="Close"
+            aria-label={t('common.close')}
           >
             <XIcon size="xs" />
           </button>
@@ -135,21 +137,21 @@ export function SupplierCreateDrawerWidget({
 
           <div>
             <label className="block text-xs font-medium text-stocky-text-main">
-              Supplier / Company name <span className="text-stocky-status-danger-fg">*</span>
+              {t('drawers.supplierCreate.name')} <span className="text-stocky-status-danger-fg">*</span>
             </label>
             <input
               required
               autoFocus
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="e.g. Acme Beverage Distributors"
+              placeholder={t('drawers.supplierCreate.namePlaceholder')}
               className="mt-1.5 h-10 w-full rounded-xl border border-stocky-border-subtle bg-stocky-bg-widget px-3 text-xs text-stocky-text-main placeholder:text-stocky-text-sub/50 focus:border-stocky-primary focus:outline-none"
             />
           </div>
 
           <div>
             <label className="block text-xs font-medium text-stocky-text-main">
-              Profile image / Logo URL <span className="text-stocky-text-sub font-normal">(optional)</span>
+              {t('drawers.supplierCreate.logoUrl')} <span className="text-stocky-text-sub font-normal">({t('common.optional')})</span>
             </label>
             <div className="mt-1.5 flex items-center gap-3">
               <div className="relative flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-stocky-border-subtle bg-stocky-bg-global text-stocky-text-sub select-none font-medium">
@@ -172,7 +174,7 @@ export function SupplierCreateDrawerWidget({
                 type="url"
                 value={imageUrl}
                 onChange={(e) => setImageUrl(e.target.value)}
-                placeholder="https://example.com/logo.png"
+                placeholder={t('drawers.supplierCreate.logoUrlPlaceholder')}
                 className="h-10 min-w-0 flex-1 rounded-xl border border-stocky-border-subtle bg-stocky-bg-widget px-3 text-xs text-stocky-text-main placeholder:text-stocky-text-sub/50 focus:border-stocky-primary focus:outline-none"
               />
             </div>
@@ -180,45 +182,45 @@ export function SupplierCreateDrawerWidget({
 
           <div>
             <label className="block text-xs font-medium text-stocky-text-main">
-              Address <span className="text-stocky-text-sub font-normal">(optional)</span>
+              {t('drawers.supplierCreate.address')} <span className="text-stocky-text-sub font-normal">({t('common.optional')})</span>
             </label>
             <input
               value={address}
               onChange={(e) => setAddress(e.target.value)}
-              placeholder="e.g. 14 Industrial Park Road, Warehouse 3B"
+              placeholder={t('drawers.supplierCreate.addressPlaceholder')}
               className="mt-1.5 h-10 w-full rounded-xl border border-stocky-border-subtle bg-stocky-bg-widget px-3 text-xs text-stocky-text-main placeholder:text-stocky-text-sub/50 focus:border-stocky-primary focus:outline-none"
             />
           </div>
 
           <div className="border-t border-stocky-border-subtle pt-4">
-            <h3 className="text-xs font-medium text-stocky-text-main">Primary Contact</h3>
+            <h3 className="text-xs font-medium text-stocky-text-main">{t('drawers.supplierCreate.primaryContact')}</h3>
             <p className="text-[11px] text-stocky-text-sub mt-0.5">
-              The main representative for replenishments and delivery queries.
+              {t('drawers.supplierCreate.primaryContactDesc')}
             </p>
           </div>
 
           <div>
             <label className="block text-xs font-medium text-stocky-text-main">
-              Contact person name <span className="text-stocky-status-danger-fg">*</span>
+              {t('drawers.supplierCreate.contactName')} <span className="text-stocky-status-danger-fg">*</span>
             </label>
             <input
               required
               value={contactName}
               onChange={(e) => setContactName(e.target.value)}
-              placeholder="e.g. Tarek Mansour"
+              placeholder={t('drawers.supplierCreate.contactNamePlaceholder')}
               className="mt-1.5 h-10 w-full rounded-xl border border-stocky-border-subtle bg-stocky-bg-widget px-3 text-xs text-stocky-text-main placeholder:text-stocky-text-sub/50 focus:border-stocky-primary focus:outline-none"
             />
           </div>
 
           <div>
             <label className="block text-xs font-medium text-stocky-text-main">
-              Phone number <span className="text-stocky-status-danger-fg">*</span>
+              {t('drawers.supplierCreate.phone')} <span className="text-stocky-status-danger-fg">*</span>
             </label>
             <div className="mt-1.5 flex gap-2">
               <select
                 value={phoneCountryCode}
                 onChange={(e) => setPhoneCountryCode(e.target.value)}
-                aria-label="Country calling code"
+                aria-label={t('drawers.supplierCreate.callingCode')}
                 className="h-10 w-36 sm:w-44 shrink-0 rounded-xl border border-stocky-border-subtle bg-stocky-bg-widget px-2 text-xs text-stocky-text-main focus:border-stocky-primary focus:outline-none"
               >
                 {supplierPhoneCountries.map((country) => (
@@ -233,7 +235,7 @@ export function SupplierCreateDrawerWidget({
                 inputMode="tel"
                 value={phoneNumber}
                 onChange={(e) => setPhoneNumber(e.target.value)}
-                placeholder="100 123 4567"
+                placeholder={t('drawers.supplierCreate.phonePlaceholder')}
                 className="h-10 min-w-0 flex-1 rounded-xl border border-stocky-border-subtle bg-stocky-bg-widget px-3 text-xs text-stocky-text-main placeholder:text-stocky-text-sub/50 focus:border-stocky-primary focus:outline-none"
               />
             </div>
@@ -241,13 +243,13 @@ export function SupplierCreateDrawerWidget({
 
           <div>
             <label className="block text-xs font-medium text-stocky-text-main">
-              Email address <span className="text-stocky-text-sub font-normal">(optional)</span>
+              {t('drawers.supplierCreate.email')} <span className="text-stocky-text-sub font-normal">({t('common.optional')})</span>
             </label>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="orders@supplier.com"
+              placeholder={t('drawers.supplierCreate.emailPlaceholder')}
               className="mt-1.5 h-10 w-full rounded-xl border border-stocky-border-subtle bg-stocky-bg-widget px-3 text-xs text-stocky-text-main placeholder:text-stocky-text-sub/50 focus:border-stocky-primary focus:outline-none"
             />
           </div>
@@ -260,14 +262,14 @@ export function SupplierCreateDrawerWidget({
               disabled={isSaving}
               className="h-10 rounded-full border border-stocky-border-subtle px-5 text-xs font-medium text-stocky-text-main hover:bg-stocky-bg-global transition-colors cursor-pointer disabled:opacity-50"
             >
-              Cancel
+              {t('common.cancel')}
             </button>
             <button
               type="submit"
               disabled={isSaving}
               className="h-10 rounded-full bg-stocky-primary px-6 text-xs font-medium text-white hover:bg-stocky-primary-hover transition-colors cursor-pointer shadow-sm disabled:opacity-50"
             >
-              {isSaving ? 'Saving…' : 'Save supplier'}
+              {isSaving ? t('drawers.supplierCreate.saving') : t('drawers.supplierCreate.save')}
             </button>
           </div>
         </form>

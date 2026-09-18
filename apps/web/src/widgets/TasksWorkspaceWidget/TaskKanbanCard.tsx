@@ -4,6 +4,7 @@ import React from 'react';
 import {
   CheckCircleIcon,
   ClockIcon,
+  ListTodoIcon,
 } from '@stocky/icons';
 import type {
   CompanyUserRole,
@@ -11,6 +12,7 @@ import type {
   StockTaskItem,
 } from '@stocky/types';
 import { UserAvatar } from '@/components/ui/UserAvatar';
+import { useTranslation } from '@/lib/i18n';
 
 export interface TaskKanbanCardProps {
   task: StockTask;
@@ -49,6 +51,7 @@ export function TaskKanbanCard({
   onOpenReview,
   onOpenDetails,
 }: TaskKanbanCardProps) {
+  const { t } = useTranslation();
   const [isDragging, setIsDragging] = React.useState(false);
   const dragOccurredRef = React.useRef(false);
 
@@ -109,7 +112,7 @@ export function TaskKanbanCard({
           handleClick();
         }
       }}
-      className={`group relative flex flex-col justify-between rounded-xl bg-white p-2.5 select-none text-left cursor-grab active:cursor-grabbing transition-all duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stocky-primary ${
+      className={`group relative flex flex-col justify-between rounded-xl bg-white p-2.5 select-none text-start cursor-grab active:cursor-grabbing transition-all duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stocky-primary ${
         isDragging
           ? 'opacity-30 scale-[0.97] border-2 border-dashed border-stocky-border-subtle bg-stocky-bg-global/50 shadow-none'
           : 'border border-stocky-border-subtle/80 shadow-[0_1px_3px_rgba(0,0,0,0.03)] hover:-translate-y-0.5 hover:shadow-[0_8px_18px_-6px_rgba(0,0,0,0.08),0_2px_6px_-2px_rgba(0,0,0,0.03)] hover:border-slate-300 active:scale-[0.985] active:translate-y-0 active:shadow-[0_1px_2px_rgba(0,0,0,0.04)]'
@@ -122,8 +125,10 @@ export function TaskKanbanCard({
             <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-md bg-stocky-bg-global text-stocky-text-sub group-hover:bg-stocky-bg-global/70 transition-colors">
               {task.taskType === 'count' ? (
                 <CheckCircleIcon size="xs" className="text-emerald-600" />
-              ) : (
+              ) : task.taskType === 'expiry' ? (
                 <ClockIcon size="xs" className="text-amber-500" />
+              ) : (
+                <ListTodoIcon size="xs" className="text-blue-600" />
               )}
             </div>
             <h4 className="truncate text-xs font-semibold text-stocky-text-main group-hover:text-black transition-colors">
@@ -132,13 +137,13 @@ export function TaskKanbanCard({
           </div>
 
           <span className="shrink-0 rounded-md bg-stocky-bg-global px-1.5 py-0.5 text-[10px] font-medium text-stocky-text-sub border border-transparent group-hover:border-stocky-border-subtle/40 transition-colors">
-            {completedCount}/{items.length}
+            {task.taskType === 'open' ? (t('tasks.directTask') || 'Direct') : `${completedCount}/${items.length}`}
           </span>
         </div>
 
         {/* Row 2: Location */}
         <div className="mt-1.5 flex items-center text-[10px] text-stocky-text-sub">
-          <span className="truncate">{locationName || 'Location'}</span>
+          <span className="truncate">{locationName || t('common.location') || 'Location'}</span>
         </div>
       </div>
 

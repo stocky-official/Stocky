@@ -64,6 +64,7 @@ import {
   QrCode,
   FileSpreadsheet,
   Network,
+  ListTodo,
   type LucideIcon,
 } from 'lucide-react';
 import { StockyIcon } from './StockyIcon';
@@ -71,6 +72,7 @@ import type { StockyIconProps } from './types';
 
 export * from './types';
 export * from './StockyIcon';
+export * from './StockyLogoIcon';
 
 function createIcon(icon: LucideIcon, displayName: string) {
   const Component = (props: StockyIconProps) => (
@@ -145,3 +147,4 @@ export const TableIcon = createIcon(Table, 'TableIcon');
 export const QrCodeIcon = createIcon(QrCode, 'QrCodeIcon');
 export const FileSpreadsheetIcon = createIcon(FileSpreadsheet, 'FileSpreadsheetIcon');
 export const NetworkIcon = createIcon(Network, 'NetworkIcon');
+export const ListTodoIcon = createIcon(ListTodo, 'ListTodoIcon');

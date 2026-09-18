@@ -15,6 +15,7 @@ import {
 } from 'recharts';
 import { ChartFilterBottomSheet } from './ChartFilterBottomSheet';
 import { exportVisualDataToExcel } from '@/lib/excel/export';
+import { useTranslation } from '@/lib/i18n';
 
 export type BranchAnalysisMetric = 'units' | 'value' | 'moving' | 'lagging' | 'staff';
 
@@ -41,6 +42,7 @@ export function HomeBranchesAnalysisChartWidget({
   externalTimeframe,
   externalLocationId,
 }: HomeBranchesAnalysisChartWidgetProps) {
+  const { t } = useTranslation();
   const [metric, setMetric] = useState<BranchAnalysisMetric>('units');
   const [internalTimeframe, setInternalTimeframe] = useState<'7D' | '14D' | '30D' | '90D'>('30D');
   const effectiveTimeframe = (externalTimeframe && externalTimeframe !== 'YTD' ? externalTimeframe : internalTimeframe) as '7D' | '14D' | '30D' | '90D';
@@ -55,33 +57,33 @@ export function HomeBranchesAnalysisChartWidget({
     { label: string; unitLabel: string; formatter: (v: number) => string; color: string }
   > = {
     units: {
-      label: 'Inventory Units',
-      unitLabel: 'units',
-      formatter: (v) => `${v.toLocaleString()} units`,
+      label: t('home.charts.branchComparison.unitsLabel'),
+      unitLabel: t('home.charts.branchComparison.unitsUnit'),
+      formatter: (v) => `${v.toLocaleString()} ${t('home.charts.branchComparison.unitsUnit')}`,
       color: 'var(--stocky-primary)',
     },
     value: {
-      label: 'Valuation ($)',
-      unitLabel: '$',
+      label: t('home.charts.branchComparison.valueLabel'),
+      unitLabel: t('home.charts.branchComparison.valueUnit'),
       formatter: (v) => `$${(v / 1000).toFixed(1)}k`,
       color: 'var(--stocky-primary)',
     },
     moving: {
-      label: 'Products Moving',
-      unitLabel: 'units moved',
-      formatter: (v) => `${v.toLocaleString()} moved`,
+      label: t('home.charts.branchComparison.movingLabel'),
+      unitLabel: t('home.charts.branchComparison.movingUnit'),
+      formatter: (v) => `${v.toLocaleString()} ${t('home.charts.branchComparison.movingUnit')}`,
       color: '#0D9488',
     },
     lagging: {
-      label: 'Lagging Products',
-      unitLabel: 'stagnant units',
-      formatter: (v) => `${v.toLocaleString()} stagnant`,
+      label: t('home.charts.branchComparison.laggingLabel'),
+      unitLabel: t('home.charts.branchComparison.laggingUnit'),
+      formatter: (v) => `${v.toLocaleString()} ${t('home.charts.branchComparison.laggingUnit')}`,
       color: '#D97706',
     },
     staff: {
-      label: 'Number of Staff',
-      unitLabel: 'staff members',
-      formatter: (v) => `${v} staff`,
+      label: t('home.charts.branchComparison.staffLabel'),
+      unitLabel: t('home.charts.branchComparison.staffUnit'),
+      formatter: (v) => `${v} ${t('home.charts.branchComparison.staffUnit')}`,
       color: '#6366F1',
     },
   };
@@ -177,7 +179,7 @@ export function HomeBranchesAnalysisChartWidget({
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-1.5 min-w-0">
             <h3 className="text-sm sm:text-base font-semibold text-stocky-text-main tracking-tight truncate">
-              Branch Comparison
+              {t('home.charts.branchComparison.title')}
             </h3>
             <button
               type="button"
@@ -202,7 +204,7 @@ export function HomeBranchesAnalysisChartWidget({
                     : 'text-stocky-text-sub hover:text-stocky-text-main'
                 }`}
               >
-                Chart
+                {t('home.charts.topMovers.chart')}
               </button>
               <button
                 type="button"
@@ -214,7 +216,7 @@ export function HomeBranchesAnalysisChartWidget({
                     : 'text-stocky-text-sub hover:text-stocky-text-main'
                 }`}
               >
-                Table
+                {t('home.charts.topMovers.table')}
               </button>
             </div>
 
@@ -227,7 +229,7 @@ export function HomeBranchesAnalysisChartWidget({
               title="Extract visual data as Excel (.xlsx)"
             >
               <FileSpreadsheetIcon size="xs" />
-              <span>Excel</span>
+              <span>{t('home.charts.topMovers.excel')}</span>
             </button>
 
             <button
@@ -246,13 +248,13 @@ export function HomeBranchesAnalysisChartWidget({
 
         {/* Subtitle hidden on phone */}
         <p className="hidden sm:block text-[11px] text-stocky-text-sub mt-0.5">
-          Cross-branch benchmark by inventory size, capital valuation, turnover velocity, or headcount.
+          {t('home.charts.branchComparison.subtitle')}
         </p>
 
         {showInfo && (
           <div className="mt-2.5 p-2.5 bg-stocky-bg-global/90 border border-stocky-border-subtle rounded-xl text-xs text-stocky-text-sub flex items-start justify-between gap-2 animate-in fade-in duration-150">
             <span>
-              Compare operational metrics across retail branches and fulfillment hubs. Filter by inventory units, capital valuation, stock movement turnover, lagging inventory, or active staffing.
+              {t('home.charts.branchComparison.info')}
             </span>
             <button
               type="button"
@@ -307,13 +309,13 @@ export function HomeBranchesAnalysisChartWidget({
                           {currentConfig.label}: {currentConfig.formatter(data.metricValue)}
                         </div>
                         <div className="text-stocky-text-sub">
-                          Total Stock: <span className="font-medium text-stocky-text-main">{data.units.toLocaleString()} units</span>
+                          {t('home.charts.branchMap.inventoryUnits')}: <span className="font-medium text-stocky-text-main">{data.units.toLocaleString()}</span>
                         </div>
                         <div className="text-stocky-text-sub">
-                          Valuation: <span className="font-medium text-stocky-text-main">${(data.value / 1000).toFixed(1)}k</span>
+                          {t('home.charts.branchMap.valuation')}: <span className="font-medium text-stocky-text-main">${(data.value / 1000).toFixed(1)}k</span>
                         </div>
                         <div className="text-stocky-text-sub">
-                          Staff Headcount: <span className="font-medium text-stocky-text-main">{data.staffCount} members</span>
+                          {t('home.charts.branchMap.assignedStaff')}: <span className="font-medium text-stocky-text-main">{data.staffCount}</span>
                         </div>
                       </div>
                     </div>
@@ -341,14 +343,14 @@ export function HomeBranchesAnalysisChartWidget({
         </div>
       ) : (
         <div className="w-full flex-1 my-3 min-h-[260px] overflow-y-auto rounded-xl border border-stocky-border-subtle">
-          <table className="w-full text-left text-xs border-collapse">
+          <table className="w-full text-start text-xs border-collapse">
             <thead className="bg-stocky-bg-global sticky top-0 border-b border-stocky-border-subtle text-[11px] font-semibold text-stocky-text-sub">
               <tr>
-                <th className="py-2.5 px-3">Location</th>
-                <th className="py-2.5 px-3">Type</th>
-                <th className="py-2.5 px-3 text-right">Units</th>
-                <th className="py-2.5 px-3 text-right">Valuation</th>
-                <th className="py-2.5 px-3 text-right">Staff</th>
+                <th className="py-2.5 px-3 text-start">{t('common.location')}</th>
+                <th className="py-2.5 px-3 text-start">{t('common.type')}</th>
+                <th className="py-2.5 px-3 text-end">{t('home.charts.branchMap.inventoryUnits')}</th>
+                <th className="py-2.5 px-3 text-end">{t('home.charts.branchMap.valuation')}</th>
+                <th className="py-2.5 px-3 text-end">{t('team.title')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-stocky-border-subtle/50 text-stocky-text-main">
@@ -360,9 +362,9 @@ export function HomeBranchesAnalysisChartWidget({
                 >
                   <td className="py-2.5 px-3 font-medium text-stocky-text-main">{item.name}</td>
                   <td className="py-2.5 px-3 text-stocky-text-sub text-[11px] uppercase">{item.type}</td>
-                  <td className="py-2.5 px-3 text-right font-medium">{item.units.toLocaleString()}</td>
-                  <td className="py-2.5 px-3 text-right font-bold text-stocky-primary">${(item.value / 1000).toFixed(1)}k</td>
-                  <td className="py-2.5 px-3 text-right text-stocky-text-sub">{item.staffCount}</td>
+                  <td className="py-2.5 px-3 text-end font-medium">{item.units.toLocaleString()}</td>
+                  <td className="py-2.5 px-3 text-end font-bold text-stocky-primary">${(item.value / 1000).toFixed(1)}k</td>
+                  <td className="py-2.5 px-3 text-end text-stocky-text-sub">{item.staffCount}</td>
                 </tr>
               ))}
             </tbody>
@@ -372,9 +374,9 @@ export function HomeBranchesAnalysisChartWidget({
 
       {/* 4. Footer Summary */}
       <div className="flex items-center justify-between text-[11px] text-stocky-text-sub pt-2 border-t border-stocky-border-subtle font-medium">
-        <span>Comparing {chartData.length} locations</span>
+        <span>{t('home.charts.branchComparison.comparingLocations', { count: chartData.length })}</span>
         <span className="text-stocky-text-main font-semibold">
-          Metric: {currentConfig.label}
+          {t('home.charts.branchComparison.metricLabel', { metric: currentConfig.label })}
         </span>
       </div>
 
@@ -382,7 +384,7 @@ export function HomeBranchesAnalysisChartWidget({
       <ChartFilterBottomSheet
         isOpen={isFilterSheetOpen}
         onClose={() => setIsFilterSheetOpen(false)}
-        title="Branch Analysis Filters"
+        title={t('home.charts.branchComparison.filterTitle')}
         onReset={() => {
           setMetric('units');
           setInternalTimeframe('30D');
@@ -391,7 +393,7 @@ export function HomeBranchesAnalysisChartWidget({
         <div className="space-y-4">
           <div>
             <label className="text-xs font-semibold text-stocky-text-main block mb-2">
-              Comparison Metric
+              {t('home.charts.branchComparison.comparisonMetric')}
             </label>
             <div className="space-y-1.5">
               {(Object.keys(metricConfig) as BranchAnalysisMetric[]).map((key) => {
@@ -420,21 +422,21 @@ export function HomeBranchesAnalysisChartWidget({
 
           <div className="pt-2 border-t border-stocky-border-subtle">
             <label className="text-xs font-semibold text-stocky-text-main block mb-2">
-              Timeframe Presets
+              {t('home.charts.branchMap.timeframePresets')}
             </label>
             <div className="grid grid-cols-4 gap-2">
-              {(['7D', '14D', '30D', '90D'] as const).map((t) => (
+              {(['7D', '14D', '30D', '90D'] as const).map((tVal) => (
                 <button
-                  key={t}
+                  key={tVal}
                   type="button"
-                  onClick={() => setInternalTimeframe(t)}
+                  onClick={() => setInternalTimeframe(tVal)}
                   className={`h-9 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
-                    internalTimeframe === t
+                    internalTimeframe === tVal
                       ? 'bg-stocky-primary text-white shadow-xs'
                       : 'bg-stocky-bg-global text-stocky-text-sub border border-stocky-border-subtle'
                   }`}
                 >
-                  {t}
+                  {tVal}
                 </button>
               ))}
             </div>

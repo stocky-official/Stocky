@@ -8,7 +8,8 @@ const config: Config = {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['var(--font-sans)', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+        sans: ['var(--stocky-font-stack)', 'var(--font-sans)', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+        cairo: ['var(--font-cairo)', 'Cairo', 'sans-serif'],
       },
       fontWeight: {
         light: '300',

@@ -197,7 +197,7 @@ export interface StockMovement {
   createdAt: string;
 }
 
-export type StockTaskType = 'count' | 'expiry';
+export type StockTaskType = 'count' | 'expiry' | 'open';
 export type StockTaskStatus = 'assigned' | 'in_progress' | 'submitted' | 'approved' | 'rejected' | 'cancelled';
 export type StockTaskItemStatus = 'pending' | 'completed' | 'approved';
 
@@ -378,7 +378,8 @@ export interface CreateStockTaskCommand {
   locationId: string;
   taskType: StockTaskType;
   assignedToCompanyUserId: string;
-  productIds: string[];
+  productIds?: string[];
+  title?: string;
   note?: string | null;
   scheduledStartAt?: string | null;
   scheduledEndAt?: string | null;

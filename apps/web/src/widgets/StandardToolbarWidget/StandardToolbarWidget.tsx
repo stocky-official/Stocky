@@ -173,7 +173,7 @@ export function StandardToolbarWidget({
               }`.trim()}
             >
               {primaryAction.icon || <PlusIcon size="xs" />}
-              <span className="hidden sm:inline sm:ml-1.5">{primaryAction.label}</span>
+              <span className="hidden sm:inline sm:ms-1.5">{primaryAction.label}</span>
             </button>
           )}
 

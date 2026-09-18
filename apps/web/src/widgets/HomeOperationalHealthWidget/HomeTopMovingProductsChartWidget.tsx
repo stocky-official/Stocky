@@ -15,6 +15,7 @@ import {
 } from 'recharts';
 import { ChartFilterBottomSheet } from './ChartFilterBottomSheet';
 import { exportVisualDataToExcel } from '@/lib/excel/export';
+import { useTranslation } from '@/lib/i18n';
 
 export interface HomeTopMovingProductsChartWidgetProps {
   products?: Product[];
@@ -35,6 +36,7 @@ export function HomeTopMovingProductsChartWidget({
   externalCategory,
   externalLocationId,
 }: HomeTopMovingProductsChartWidgetProps) {
+  const { t } = useTranslation();
   const [internalTimeframe, setInternalTimeframe] = useState<'7D' | '14D' | '30D' | '90D'>('30D');
   const [internalCategoryFilter, setInternalCategoryFilter] = useState<string>('all');
   const effectiveTimeframe = (externalTimeframe && externalTimeframe !== 'YTD' ? externalTimeframe : internalTimeframe) as '7D' | '14D' | '30D' | '90D';
@@ -140,7 +142,7 @@ export function HomeTopMovingProductsChartWidget({
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-1.5 min-w-0">
             <h3 className="text-sm sm:text-base font-semibold text-stocky-text-main tracking-tight truncate">
-              Top Moving Products
+              {t('home.charts.topMovers.title')}
             </h3>
             <button
               type="button"
@@ -165,7 +167,7 @@ export function HomeTopMovingProductsChartWidget({
                     : 'text-stocky-text-sub hover:text-stocky-text-main'
                 }`}
               >
-                Chart
+                {t('home.charts.topMovers.chart')}
               </button>
               <button
                 type="button"
@@ -177,7 +179,7 @@ export function HomeTopMovingProductsChartWidget({
                     : 'text-stocky-text-sub hover:text-stocky-text-main'
                 }`}
               >
-                Table
+                {t('home.charts.topMovers.table')}
               </button>
             </div>
 
@@ -190,7 +192,7 @@ export function HomeTopMovingProductsChartWidget({
               title="Extract visual data as Excel (.xlsx)"
             >
               <FileSpreadsheetIcon size="xs" />
-              <span>Excel</span>
+              <span>{t('home.charts.topMovers.excel')}</span>
             </button>
 
             <button
@@ -199,7 +201,7 @@ export function HomeTopMovingProductsChartWidget({
               className="h-8 px-3 rounded-full border border-stocky-border-subtle bg-stocky-bg-global hover:bg-stocky-border-subtle text-xs font-semibold text-stocky-text-main flex items-center gap-1.5 cursor-pointer shadow-xs transition-colors"
             >
               <FilterIcon size="xs" />
-              <span>Filter</span>
+              <span>{t('home.charts.topMovers.filter')}</span>
               <span className="px-1.5 py-0.5 rounded-full bg-stocky-primary text-white text-[10px] font-bold">
                 {effectiveTimeframe}
               </span>
@@ -209,13 +211,13 @@ export function HomeTopMovingProductsChartWidget({
 
         {/* Subtitle hidden on phone */}
         <p className="hidden sm:block text-[11px] text-stocky-text-sub mt-0.5">
-          Fastest-turning inventory ranked by total units moved and stock changes.
+          {t('home.charts.topMovers.subtitle')}
         </p>
 
         {showInfo && (
           <div className="mt-2.5 p-2.5 bg-stocky-bg-global/90 border border-stocky-border-subtle rounded-xl text-xs text-stocky-text-sub flex items-start justify-between gap-2 animate-in fade-in duration-150">
             <span>
-              Products with highest stock turnover, active receiving batches, and outbound order velocity over the selected timeframe.
+              {t('home.charts.topMovers.info')}
             </span>
             <button
               type="button"
@@ -263,13 +265,13 @@ export function HomeTopMovingProductsChartWidget({
                       <span className="text-[10px] text-stocky-text-sub block mb-1.5">{data.category}</span>
                       <div className="space-y-0.5 text-[11px]">
                         <div className="text-stocky-primary font-bold">
-                          Units Moved: {data.unitsMoved.toLocaleString()} units
+                          {t('home.charts.topMovers.unitsMoved', { count: data.unitsMoved.toLocaleString() })}
                         </div>
                         <div className="text-stocky-text-main font-medium">
-                          Active Batches: {data.batches} receiving/transfers
+                          {t('home.charts.topMovers.activeBatches', { count: data.batches })}
                         </div>
                         <div className="text-stocky-text-muted text-[10px] mt-1">
-                          Run-rate: {data.velocityScore} units/week
+                          {t('home.charts.topMovers.runRate', { count: data.velocityScore })}
                         </div>
                       </div>
                     </div>
@@ -297,14 +299,14 @@ export function HomeTopMovingProductsChartWidget({
         </div>
       ) : (
         <div className="w-full flex-1 my-3 min-h-[260px] overflow-y-auto rounded-xl border border-stocky-border-subtle">
-          <table className="w-full text-left text-xs border-collapse">
+          <table className="w-full text-start text-xs border-collapse">
             <thead className="bg-stocky-bg-global sticky top-0 border-b border-stocky-border-subtle text-[11px] font-semibold text-stocky-text-sub">
               <tr>
-                <th className="py-2.5 px-3">Product Name</th>
-                <th className="py-2.5 px-3">Category</th>
-                <th className="py-2.5 px-3 text-right">Units Moved</th>
-                <th className="py-2.5 px-3 text-right">Batches</th>
-                <th className="py-2.5 px-3 text-right">Run-Rate</th>
+                <th className="py-2.5 px-3 text-start">{t('inventory.productName')}</th>
+                <th className="py-2.5 px-3 text-start">{t('inventory.category')}</th>
+                <th className="py-2.5 px-3 text-end">{t('home.charts.branchMap.inventoryUnits')}</th>
+                <th className="py-2.5 px-3 text-end">{t('inventory.batches')}</th>
+                <th className="py-2.5 px-3 text-end">{t('home.turnoverVelocity')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-stocky-border-subtle/50 text-stocky-text-main">
@@ -316,9 +318,9 @@ export function HomeTopMovingProductsChartWidget({
                 >
                   <td className="py-2.5 px-3 font-medium text-stocky-text-main truncate max-w-[150px]">{item.name}</td>
                   <td className="py-2.5 px-3 text-stocky-text-sub text-[11px]">{item.category}</td>
-                  <td className="py-2.5 px-3 text-right font-bold text-stocky-primary">{item.unitsMoved.toLocaleString()}</td>
-                  <td className="py-2.5 px-3 text-right text-stocky-text-sub">{item.batches}</td>
-                  <td className="py-2.5 px-3 text-right">
+                  <td className="py-2.5 px-3 text-end font-bold text-stocky-primary">{item.unitsMoved.toLocaleString()}</td>
+                  <td className="py-2.5 px-3 text-end text-stocky-text-sub">{item.batches}</td>
+                  <td className="py-2.5 px-3 text-end">
                     <span className="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-[10px] font-bold border border-emerald-200/60">
                       {item.velocityScore}/wk
                     </span>
@@ -332,9 +334,9 @@ export function HomeTopMovingProductsChartWidget({
 
       {/* 3. Footer Summary */}
       <div className="flex items-center justify-between text-[11px] text-stocky-text-sub pt-2 border-t border-stocky-border-subtle font-medium">
-        <span>Showing top {chartData.length} fast-moving items</span>
+        <span>{t('home.charts.topMovers.showingTop', { count: chartData.length })}</span>
         <span className="text-stocky-primary font-semibold">
-          High Velocity Threshold
+          {t('home.charts.topMovers.velocityThreshold')}
         </span>
       </div>
 
@@ -342,7 +344,7 @@ export function HomeTopMovingProductsChartWidget({
       <ChartFilterBottomSheet
         isOpen={isFilterSheetOpen}
         onClose={() => setIsFilterSheetOpen(false)}
-        title="Top Movers Filters"
+        title={t('home.charts.topMovers.filterTitle')}
         onReset={() => {
           setInternalTimeframe('30D');
           setInternalCategoryFilter('all');
@@ -351,21 +353,21 @@ export function HomeTopMovingProductsChartWidget({
         <div className="space-y-4">
           <div>
             <label className="text-xs font-semibold text-stocky-text-main block mb-2">
-              Timeframe Presets
+              {t('home.charts.branchMap.timeframePresets')}
             </label>
             <div className="grid grid-cols-4 gap-2">
-              {(['7D', '14D', '30D', '90D'] as const).map((t) => (
+              {(['7D', '14D', '30D', '90D'] as const).map((tVal) => (
                 <button
-                  key={t}
+                  key={tVal}
                   type="button"
-                  onClick={() => setInternalTimeframe(t)}
+                  onClick={() => setInternalTimeframe(tVal)}
                   className={`h-9 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
-                    internalTimeframe === t
+                    internalTimeframe === tVal
                       ? 'bg-stocky-primary text-white shadow-xs'
                       : 'bg-stocky-bg-global text-stocky-text-sub border border-stocky-border-subtle'
                   }`}
                 >
-                  {t}
+                  {tVal}
                 </button>
               ))}
             </div>
@@ -374,14 +376,14 @@ export function HomeTopMovingProductsChartWidget({
           {categories.length > 0 && (
             <div className="pt-2 border-t border-stocky-border-subtle">
               <label className="text-xs font-semibold text-stocky-text-main block mb-2">
-                Filter by Category
+                {t('home.charts.topMovers.filterCategory')}
               </label>
               <select
                 value={internalCategoryFilter}
                 onChange={(e) => setInternalCategoryFilter(e.target.value)}
                 className="w-full h-10 px-3 rounded-xl text-xs font-medium bg-stocky-bg-global text-stocky-text-main border border-stocky-border-subtle cursor-pointer focus:outline-none"
               >
-                <option value="all">All Categories</option>
+                <option value="all">{t('home.charts.topMovers.allCategories')}</option>
                 {categories.map((cat) => (
                   <option key={cat} value={cat}>
                     {cat}

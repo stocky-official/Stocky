@@ -7,6 +7,7 @@ import {
   FileSpreadsheetIcon,
   ChevronDownIcon,
 } from '@stocky/icons';
+import { useTranslation } from '@/lib/i18n';
 
 export type TimeframeOption = '7D' | '14D' | '30D' | '90D' | 'YTD';
 export type RiskFilterOption = 'all' | 'expiring' | 'low_stock' | 'stagnant';
@@ -52,6 +53,7 @@ export function HomeGlobalSlicersWidget({
   onExportAll,
   isExporting = false,
 }: HomeGlobalSlicersWidgetProps) {
+  const { t } = useTranslation();
   const isFiltered =
     selectedLocationId !== 'all' ||
     timeframe !== '30D' ||
@@ -66,15 +68,15 @@ export function HomeGlobalSlicersWidget({
       <div className="flex flex-wrap items-center justify-between gap-3 pb-2.5 border-b border-stocky-border-subtle">
         <div>
           <h3 className="text-xs sm:text-sm font-bold text-stocky-text-main tracking-tight flex items-center gap-2">
-            Dashboard Slicers
+            {t('home.charts.desktop.slicersTitle')}
             {isFiltered && (
               <span className="px-2 py-0.5 rounded-full bg-stocky-primary/10 text-stocky-primary text-[10px] font-bold">
-                Active Filters Applied
+                {t('home.charts.desktop.activeFiltersApplied')}
               </span>
             )}
           </h3>
           <p className="text-[11px] text-stocky-text-sub">
-            Cross-filter all visuals and underlying datasets simultaneously.
+            {t('home.charts.desktop.slicersSubtitle')}
           </p>
         </div>
 
@@ -90,10 +92,10 @@ export function HomeGlobalSlicersWidget({
                 ? 'bg-stocky-bg-global hover:bg-stocky-border-subtle text-stocky-text-main border border-stocky-border-subtle shadow-xs'
                 : 'text-stocky-text-muted opacity-40 cursor-not-allowed'
             }`}
-            title="Reset all filters to default"
+            title={t('common.resetFilters')}
           >
             <RotateCcwIcon size="xs" />
-            <span>Reset</span>
+            <span>{t('common.reset')}</span>
           </button>
 
           {/* Export Full Dashboard Workbook */}
@@ -104,10 +106,10 @@ export function HomeGlobalSlicersWidget({
               onClick={onExportAll}
               disabled={isExporting}
               className="h-8 px-3 rounded-lg bg-stocky-primary hover:bg-stocky-primary-hover text-white text-xs font-semibold flex items-center gap-1.5 shadow-xs transition-all cursor-pointer disabled:opacity-50"
-              title="Download full multi-sheet Excel report of all visual datasets"
+              title={t('home.charts.desktop.exportAll')}
             >
               <FileSpreadsheetIcon size="xs" />
-              <span>{isExporting ? 'Generating...' : 'Export Dashboard (.xlsx)'}</span>
+              <span>{isExporting ? t('home.charts.desktop.exporting') : t('home.charts.desktop.exportAll')}</span>
             </button>
           )}
         </div>
@@ -118,23 +120,23 @@ export function HomeGlobalSlicersWidget({
         {/* 1. Location Slicer */}
         <div className="flex flex-col gap-1">
           <label className="text-[11px] font-semibold text-stocky-text-sub block">
-            Branch Location
+            {t('home.charts.desktop.branchLocation')}
           </label>
           <div className="relative">
             <select
               data-testid="location-slicer"
               value={selectedLocationId}
               onChange={(e) => onSelectLocation(e.target.value)}
-              className="w-full h-9 pl-3 pr-8 rounded-xl bg-stocky-bg-global border border-stocky-border-subtle hover:border-stocky-border-default text-xs font-medium text-stocky-text-main appearance-none focus:outline-none focus:ring-2 focus:ring-stocky-primary/20 transition-all cursor-pointer"
+              className="w-full h-9 ps-3 pe-8 rounded-xl bg-stocky-bg-global border border-stocky-border-subtle hover:border-stocky-border-default text-xs font-medium text-stocky-text-main appearance-none focus:outline-none focus:ring-2 focus:ring-stocky-primary/20 transition-all cursor-pointer"
             >
-              <option value="all">All Branches ({locations.length})</option>
+              <option value="all">{t('home.charts.desktop.allBranchesCount', { count: locations.length })}</option>
               {locations.map((loc) => (
                 <option key={loc.id} value={loc.id}>
                   {loc.name} {loc.code ? `(${loc.code})` : ''}
                 </option>
               ))}
             </select>
-            <div className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-stocky-text-sub">
+            <div className="absolute end-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-stocky-text-sub">
               <ChevronDownIcon size="xs" />
             </div>
           </div>
@@ -143,7 +145,7 @@ export function HomeGlobalSlicersWidget({
         {/* 2. Timeframe Slicer (Segmented Buttons) */}
         <div className="flex flex-col gap-1">
           <label className="text-[11px] font-semibold text-stocky-text-sub block">
-            Date Range Window
+            {t('home.charts.desktop.dateRangeWindow')}
           </label>
           <div className="h-9 p-0.5 rounded-xl bg-stocky-bg-global border border-stocky-border-subtle flex items-center justify-between gap-0.5">
             {timeframes.map((tf) => {
@@ -170,23 +172,23 @@ export function HomeGlobalSlicersWidget({
         {/* 3. Category Slicer */}
         <div className="flex flex-col gap-1">
           <label className="text-[11px] font-semibold text-stocky-text-sub block">
-            Product Category
+            {t('home.charts.desktop.productCategory')}
           </label>
           <div className="relative">
             <select
               data-testid="category-slicer"
               value={selectedCategory}
               onChange={(e) => onSelectCategory(e.target.value)}
-              className="w-full h-9 pl-3 pr-8 rounded-xl bg-stocky-bg-global border border-stocky-border-subtle hover:border-stocky-border-default text-xs font-medium text-stocky-text-main appearance-none focus:outline-none focus:ring-2 focus:ring-stocky-primary/20 transition-all cursor-pointer"
+              className="w-full h-9 ps-3 pe-8 rounded-xl bg-stocky-bg-global border border-stocky-border-subtle hover:border-stocky-border-default text-xs font-medium text-stocky-text-main appearance-none focus:outline-none focus:ring-2 focus:ring-stocky-primary/20 transition-all cursor-pointer"
             >
-              <option value="all">All Categories ({categories.length || 'Total'})</option>
+              <option value="all">{t('home.charts.desktop.allCategoriesCount', { count: categories.length || '0' })}</option>
               {categories.map((cat) => (
                 <option key={cat} value={cat}>
                   {cat}
                 </option>
               ))}
             </select>
-            <div className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-stocky-text-sub">
+            <div className="absolute end-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-stocky-text-sub">
               <ChevronDownIcon size="xs" />
             </div>
           </div>
@@ -195,21 +197,21 @@ export function HomeGlobalSlicersWidget({
         {/* 4. Risk / Stock Health Slicer */}
         <div className="flex flex-col gap-1">
           <label className="text-[11px] font-semibold text-stocky-text-sub block">
-            Inventory Risk & Health
+            {t('home.charts.desktop.riskHealth')}
           </label>
           <div className="relative">
             <select
               data-testid="risk-slicer"
               value={selectedRiskFilter}
               onChange={(e) => onSelectRiskFilter(e.target.value as RiskFilterOption)}
-              className="w-full h-9 pl-3 pr-8 rounded-xl bg-stocky-bg-global border border-stocky-border-subtle hover:border-stocky-border-default text-xs font-medium text-stocky-text-main appearance-none focus:outline-none focus:ring-2 focus:ring-stocky-primary/20 transition-all cursor-pointer"
+              className="w-full h-9 ps-3 pe-8 rounded-xl bg-stocky-bg-global border border-stocky-border-subtle hover:border-stocky-border-default text-xs font-medium text-stocky-text-main appearance-none focus:outline-none focus:ring-2 focus:ring-stocky-primary/20 transition-all cursor-pointer"
             >
-              <option value="all">All Stock Statuses</option>
-              <option value="expiring">Expiring Soon (&lt;30 days)</option>
-              <option value="low_stock">Low Stock / Below Reorder</option>
-              <option value="stagnant">Lagging / Stagnant (&gt;30d)</option>
+              <option value="all">{t('home.charts.desktop.allStockStatuses')}</option>
+              <option value="expiring">{t('home.charts.desktop.expiringSoonRisk')}</option>
+              <option value="low_stock">{t('home.charts.desktop.lowStockRisk')}</option>
+              <option value="stagnant">{t('home.charts.desktop.stagnantRisk')}</option>
             </select>
-            <div className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-stocky-text-sub">
+            <div className="absolute end-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-stocky-text-sub">
               <ChevronDownIcon size="xs" />
             </div>
           </div>

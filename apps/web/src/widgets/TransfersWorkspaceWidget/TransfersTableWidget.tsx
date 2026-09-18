@@ -9,6 +9,7 @@ import {
   PlusIcon,
 } from '@stocky/icons';
 import type { CompanyUserRole, InventoryTransfer, InventoryTransferLine, Location, Product } from '@stocky/types';
+import { useTranslation } from '@/lib/i18n';
 
 export type TransferSortKey = 'transfer' | 'route' | 'items' | 'status' | 'requested';
 export type TransferSortDirection = 'asc' | 'desc';
@@ -31,17 +32,6 @@ export interface TransfersTableWidgetProps {
   onRequestStock: () => void;
   queue: string;
 }
-
-const statusLabels: Record<InventoryTransfer['status'], string> = {
-  draft: 'Draft',
-  requested: 'Requested',
-  approved: 'Approved',
-  in_transit: 'In transit',
-  partially_received: 'Partially received',
-  received: 'Received',
-  rejected: 'Rejected',
-  cancelled: 'Cancelled',
-};
 
 const statusTone: Record<InventoryTransfer['status'], string> = {
   draft: 'stocky-status-muted',
@@ -77,6 +67,17 @@ export function TransfersTableWidget({
   onRequestStock,
   queue,
 }: TransfersTableWidgetProps) {
+  const { t, isRtl } = useTranslation();
+  const statusLabels: Record<InventoryTransfer['status'], string> = {
+    draft: t('transfers.statusDraft'),
+    requested: t('transfers.statusRequested'),
+    approved: t('transfers.statusApproved'),
+    in_transit: t('transfers.statusInTransit'),
+    partially_received: t('transfers.statusPartiallyReceived'),
+    received: t('transfers.statusReceived'),
+    rejected: t('transfers.statusRejected'),
+    cancelled: t('transfers.statusCancelled'),
+  };
   const linesForTransfer = (transferId: string) =>
     allTransferLines.filter((line) => line.transferId === transferId);
 
@@ -121,14 +122,14 @@ export function TransfersTableWidget({
   const renderTransferActions = (transfer: InventoryTransfer) => (
     <div className="stocky-board-actions justify-end">
       {isApprovedAllowed && transfer.status === 'requested' && (
-        <button
-          type="button"
-          onClick={() => onApprove(transfer)}
-          className="stocky-transfer-action"
-        >
-          Approve
-        </button>
-      )}
+          <button
+            type="button"
+            onClick={() => onApprove(transfer)}
+            className="stocky-transfer-action stocky-transfer-action--primary"
+          >
+            {t('common.approve')}
+          </button>
+        )}
       {isApprovedAllowed &&
         (transfer.status === 'approved' ||
           transfer.status === 'in_transit' ||
@@ -138,7 +139,7 @@ export function TransfersTableWidget({
             onClick={() => onOpenReceipt(transfer)}
             className="stocky-transfer-action stocky-transfer-action--primary"
           >
-            Receive
+            {t('transfers.receiveTransfer')}
           </button>
         )}
       {transfer.status !== 'requested' &&
@@ -156,17 +157,17 @@ export function TransfersTableWidget({
         <div className="stocky-transfer-empty px-6 py-16 text-center">
           <ArrowUpDownIcon size="md" className="mx-auto text-stocky-text-sub/50" />
           <h2 className="mt-3 text-base font-medium text-stocky-text-main">
-            {queue === 'action' ? 'Nothing needs your action' : 'No transfers in this view'}
+            {queue === 'action' ? t('transfers.needsAction') : t('transfers.noTransfersFound')}
           </h2>
           <p className="mt-1 text-sm text-stocky-text-sub">
-            Requests, approvals, and receipts will appear here.
+            {t('transfers.subtitle')}
           </p>
           <button
             type="button"
             onClick={onRequestStock}
             className="mt-4 stocky-table-toolbar-button stocky-table-toolbar-button--primary h-10 px-4 rounded-full text-xs font-medium inline-flex items-center justify-center gap-1.5 whitespace-nowrap cursor-pointer"
           >
-            <PlusIcon size="xs" /> Request stock
+            <PlusIcon size="xs" /> {t('transfers.requestStock')}
           </button>
         </div>
       ) : (
@@ -184,16 +185,16 @@ export function TransfersTableWidget({
               </colgroup>
               <thead>
                 <tr className="stocky-board-table__column-row text-[10px] uppercase tracking-wide text-stocky-text-sub h-11 border-b border-stocky-border-subtle">
-                  {header('Transfer', 'transfer')}
-                  {header('Route', 'route', 'stocky-transfer-secondary-column')}
-                  {header('Items', 'items', 'stocky-transfer-secondary-column')}
-                  {header('Status', 'status')}
-                  {header('Requested', 'requested', 'stocky-transfer-secondary-column')}
+                  {header(t('transfers.title'), 'transfer')}
+                  {header(t('transfers.route'), 'route', 'stocky-transfer-secondary-column')}
+                  {header(t('transfers.lines'), 'items', 'stocky-transfer-secondary-column')}
+                  {header(t('common.status'), 'status')}
+                  {header(t('transfers.statusRequested'), 'requested', 'stocky-transfer-secondary-column')}
                   <th
-                    className="stocky-board-table__header-cell px-4 py-3 text-right align-middle whitespace-nowrap"
+                    className="stocky-board-table__header-cell px-4 py-3 text-right rtl:text-left align-middle whitespace-nowrap"
                     aria-label="Transfer actions"
                   >
-                    <span className="sr-only">Actions</span>
+                    <span className="sr-only">{t('common.actions')}</span>
                   </th>
                 </tr>
               </thead>
@@ -213,16 +214,16 @@ export function TransfersTableWidget({
                               #{transfer.id.slice(0, 8)}
                             </span>
                             <span className="stocky-transfer-sub text-stocky-text-sub">
-                              {transfer.note || 'Stock movement request'}
+                              {transfer.note || t('transfers.title')}
                             </span>
                           </div>
                         </div>
                       </td>
                       <td className="stocky-transfer-cell stocky-transfer-secondary-column">
                         <div className="stocky-transfer-route flex items-center gap-1.5 text-xs text-stocky-text-main">
-                          <span>{locationMap.get(transfer.sourceLocationId)?.name || 'Source'}</span>
-                          <ChevronRightIcon size="xs" className="text-stocky-text-sub flex-shrink-0" />
-                          <span>{locationMap.get(transfer.destinationLocationId)?.name || 'Destination'}</span>
+                          <span>{locationMap.get(transfer.sourceLocationId)?.name || t('transfers.source')}</span>
+                          <ChevronRightIcon size="xs" className="text-stocky-text-sub flex-shrink-0 rtl:rotate-180" />
+                          <span>{locationMap.get(transfer.destinationLocationId)?.name || t('transfers.destination')}</span>
                         </div>
                       </td>
                       <td className="stocky-transfer-cell stocky-transfer-secondary-column">
@@ -357,10 +358,10 @@ export function TransfersTableWidget({
       <footer className="stocky-board-table__footer flex items-center justify-between border-t border-stocky-border-subtle p-3 text-[11px] text-stocky-text-sub">
         <div className="flex items-center gap-3">
           <span>
-            Showing {firstRowNumber.toLocaleString()}–{lastRowNumber.toLocaleString()} of {transfers.length.toLocaleString()} transfers
+            {t('common.showing')} {firstRowNumber.toLocaleString()}–{lastRowNumber.toLocaleString()} {t('common.of')} {transfers.length.toLocaleString()} {t('transfers.title').toLowerCase()}
           </span>
           <span>
-            Rows per page{' '}
+            {t('inventory.rowsPerPage')}{' '}
             <select
               value={pageSize}
               onChange={(event) => {
@@ -378,7 +379,7 @@ export function TransfersTableWidget({
 
         <div className="flex items-center gap-2">
           <span>
-            Page {currentPage + 1} of {pageCount}
+            {t('common.page')} {currentPage + 1} {t('common.of')} {pageCount}
           </span>
           <button
             type="button"

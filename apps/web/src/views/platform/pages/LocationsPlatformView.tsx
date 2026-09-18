@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import type { Location, Product, StockLot, InventoryTransfer, AttendanceShift } from '@stocky/types';
+import { useTranslation } from '@/lib/i18n';
 import { PlatformPageLayout } from './PlatformPageLayout';
 import { LocationsDirectoryWidget } from '@/widgets';
 
@@ -26,12 +27,13 @@ export interface LocationsPlatformViewProps {
  * Controls page-level layout, header, subtabs, and directory widget.
  */
 export function LocationsPlatformView(props: LocationsPlatformViewProps) {
+  const { t } = useTranslation();
   const [isFormOpen, setIsFormOpen] = useState(false);
 
   return (
     <PlatformPageLayout
-      title="Locations"
-      subtitle="Manage branches and warehouses, track active inventory health, and oversee site staffing."
+      title={t('locations.title')}
+      subtitle={t('locations.subtitle')}
     >
       <LocationsDirectoryWidget
         {...props}

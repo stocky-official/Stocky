@@ -1,10 +1,12 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { BellIcon, BoxesIcon, SearchIcon, XIcon } from '@stocky/icons';
+import { BellIcon, SearchIcon, StockyLogoIcon, XIcon } from '@stocky/icons';
 import type { CompanyUserRole } from '@stocky/types';
 import { getActivePlatformGroup, getPlatformNavigation } from '../platformNavigation';
 import { PlatformAccountMenuWidget } from '../PlatformAccountMenuWidget/PlatformAccountMenuWidget';
+import { LanguageSwitcher } from '@/components/ui';
+import { useTranslation } from '@/lib/i18n';
 
 export interface SidebarNavWidgetProps {
   activeTab: string;
@@ -51,7 +53,8 @@ export function SidebarNavWidget({
     setLogoFailed(false);
   }, [companyLogoUrl]);
 
-  const groups = getPlatformNavigation(userRole, '/platform', permissions);
+  const { t } = useTranslation();
+  const groups = getPlatformNavigation(userRole, '/platform', permissions, t);
   const activeGroupId = getActivePlatformGroup(groups, activeTab)?.id;
   const workspaceGroups = groups.filter((group) => group.id !== 'organization');
   const organizationGroups = groups.filter((group) => group.id === 'organization');
@@ -85,26 +88,29 @@ export function SidebarNavWidget({
               onError={() => setLogoFailed(true)}
             />
           ) : (
-            <span className="stocky-workspace-sidebar__brand-mark"><BoxesIcon size="xs" /></span>
+            <span className="stocky-workspace-sidebar__brand-mark"><StockyLogoIcon size="xs" /></span>
           )}
           <span className="stocky-workspace-sidebar__brand-copy">
             <strong>Stocky</strong>
-            <small>{companyName || 'Operations'}</small>
+            <small>{companyName || t('nav.operations')}</small>
           </span>
         </div>
         <div className="stocky-workspace-sidebar__search">
           <SearchIcon size="xs" aria-hidden="true" />
-          <input type="search" value={searchQuery} onChange={(event) => onSearch?.(event.target.value)} placeholder="Search" aria-label="Search Stocky" />
-          {searchQuery && <button type="button" onClick={() => onSearch?.('')} aria-label="Clear search"><XIcon size="xs" /></button>}
+          <input type="search" value={searchQuery} onChange={(event) => onSearch?.(event.target.value)} placeholder={t('common.search')} aria-label={t('common.search')} />
+          {searchQuery && <button type="button" onClick={() => onSearch?.('')} aria-label={t('common.close')}><XIcon size="xs" /></button>}
         </div>
         <nav className="stocky-workspace-sidebar__nav" aria-label="Workspace">
-          <p className="stocky-workspace-sidebar__label">Workspace</p>
+          <p className="stocky-workspace-sidebar__label">{t('nav.workspace')}</p>
           {workspaceGroups.map(renderGroup)}
-          {organizationGroups.length > 0 && <p className="stocky-workspace-sidebar__label stocky-workspace-sidebar__label--spaced">Organization</p>}
+          {organizationGroups.length > 0 && <p className="stocky-workspace-sidebar__label stocky-workspace-sidebar__label--spaced">{t('nav.organization')}</p>}
           {organizationGroups.map(renderGroup)}
         </nav>
 
         <div className="stocky-workspace-sidebar__footer">
+          {/* Language Switcher Control (Shrinks when collapsed, expands on hover) */}
+          <LanguageSwitcher variant="sidebar" />
+
           <button
             type="button"
             onClick={onNotificationsClick}
@@ -115,7 +121,7 @@ export function SidebarNavWidget({
               <BellIcon size="xs" />
               {notificationCount > 0 && <span className="stocky-workspace-notification-count">{notificationCount > 9 ? '9+' : notificationCount}</span>}
             </span>
-            <span>Notifications</span>
+            <span>{t('nav.notifications')}</span>
           </button>
           <PlatformAccountMenuWidget
             className="stocky-sidebar-account"

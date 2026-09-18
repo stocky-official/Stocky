@@ -1,14 +1,24 @@
 import type { Metadata, Viewport } from 'next';
-import { Geist } from 'next/font/google';
+import { Cairo, Geist } from 'next/font/google';
+import { cookies } from 'next/headers';
 import './global.css';
 import { PWARegistration } from '@/components/PWARegistration';
 import { PWAThemeColorSync } from '@/components/PWAThemeColorSync';
 import { AuthOriginGuard } from '@/components/AuthOriginGuard';
+import { I18nProvider, type Locale } from '@/lib/i18n';
 
 const geistSans = Geist({
   variable: '--font-sans',
   subsets: ['latin'],
   weight: ['300', '400', '500', '600'],
+  display: 'swap',
+});
+
+const cairo = Cairo({
+  variable: '--font-cairo',
+  subsets: ['arabic', 'latin'],
+  weight: ['300', '400', '500', '600', '700', '800', '900'],
+  display: 'swap',
 });
 
 export const metadata: Metadata = {
@@ -35,28 +45,35 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: '#14261C',
+  themeColor: '#D8FF00',
   width: 'device-width',
   initialScale: 1,
   maximumScale: 1,
   viewportFit: 'cover',
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const cookieStore = await cookies();
+  const localeCookie = cookieStore.get('stocky_locale')?.value;
+  const initialLocale: Locale = localeCookie === 'ar' ? 'ar' : 'en';
+  const dir = initialLocale === 'ar' ? 'rtl' : 'ltr';
+
   return (
-    <html lang="en" className={geistSans.variable} suppressHydrationWarning>
+    <html lang={initialLocale} dir={dir} className={`${geistSans.variable} ${cairo.variable}`} suppressHydrationWarning>
       <body
         className="font-sans antialiased bg-stocky-bg-global text-stocky-text-sub min-h-screen"
         suppressHydrationWarning
       >
-        <AuthOriginGuard />
-        <PWARegistration />
-        <PWAThemeColorSync />
-        {children}
+        <I18nProvider initialLocale={initialLocale}>
+          <AuthOriginGuard />
+          <PWARegistration />
+          <PWAThemeColorSync />
+          {children}
+        </I18nProvider>
       </body>
     </html>
   );

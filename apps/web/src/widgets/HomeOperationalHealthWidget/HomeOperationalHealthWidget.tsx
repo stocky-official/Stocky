@@ -2,6 +2,7 @@
 
 import React, { useRef, useState } from 'react';
 import type { AttendanceShift, Location, Product, StockLot, StockMovement, StockTask, StockTaskItem } from '@stocky/types';
+import { useTranslation } from '@/lib/i18n';
 import { HomeBranchMapChartWidget } from './HomeBranchMapChartWidget';
 import { HomeTopMovingProductsChartWidget } from './HomeTopMovingProductsChartWidget';
 import { HomeLaggingProductsChartWidget } from './HomeLaggingProductsChartWidget';
@@ -40,16 +41,17 @@ export function HomeOperationalHealthWidget({
   onOpenAttendance,
   onOpenExpiry,
 }: HomeOperationalHealthWidgetProps) {
+  const { t } = useTranslation();
   // Active slide index for mobile swipe carousel
   const [activeSlide, setActiveSlide] = useState<number>(0);
   const carouselRef = useRef<HTMLDivElement>(null);
 
   const slides = [
-    { id: 'map', label: 'Branch Network' },
-    { id: 'movers', label: 'Top Movers' },
-    { id: 'lagging', label: 'Lagging Stock' },
-    { id: 'compare', label: 'Branch Compare' },
-    { id: 'attendance', label: 'Attendance' },
+    { id: 'map', label: t('home.branchNetwork') },
+    { id: 'movers', label: t('home.topMovers') },
+    { id: 'lagging', label: t('home.laggingStock') },
+    { id: 'compare', label: t('home.branchCompare') },
+    { id: 'attendance', label: t('home.attendance') },
   ];
 
   const handleScrollToSlide = (index: number) => {

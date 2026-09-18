@@ -1,5 +1,6 @@
 import React from 'react';
 import type { InventoryTransfer, Location, Product, StockLot, CompanyUserRole } from '@stocky/types';
+import { useTranslation } from '@/lib/i18n';
 import { PlatformPageLayout } from './PlatformPageLayout';
 import { TransfersWorkspaceWidget } from '@/widgets';
 
@@ -22,10 +23,11 @@ export interface TransfersPlatformViewProps {
  * Orchestrates layout, header, and transfer request/dispatch workflows.
  */
 export function TransfersPlatformView(props: TransfersPlatformViewProps) {
+  const { t } = useTranslation();
   return (
     <PlatformPageLayout
-      title="Stock transfers"
-      subtitle="Request, approve, and receive stock movements between your branches and warehouses."
+      title={t('transfers.title')}
+      subtitle={t('transfers.subtitle')}
     >
       <TransfersWorkspaceWidget {...props} />
     </PlatformPageLayout>

@@ -4,6 +4,7 @@ import React, { useMemo, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import type { CompanyUserRole } from '@stocky/types';
+import { useTranslation } from '@/lib/i18n';
 
 export interface MobileBottomNavWidgetProps {
   activeTab: string;
@@ -56,7 +57,19 @@ export function MobileBottomNavWidget({
   tasksCount = 0,
 }: MobileBottomNavWidgetProps) {
   const router = useRouter();
+  const { t } = useTranslation();
   const [optimisticNavId, setOptimisticNavId] = useState<NavItemId | null>(null);
+
+  const navItems: NavItemConfig[] = useMemo(
+    () => [
+      { id: 'dashboard', label: t('nav.home'), routeTab: 'home' },
+      { id: 'stock', label: t('nav.inventory'), routeTab: 'stock' },
+      { id: 'tasks', label: t('nav.tasks'), routeTab: 'tasks' },
+      { id: 'suppliers', label: t('nav.suppliers'), routeTab: 'suppliers' },
+      { id: 'attendance', label: t('nav.attendance'), routeTab: 'attendance' },
+    ],
+    [t]
+  );
 
   // Map platform activeTab to the corresponding navigation destination
   const routeNavId = useMemo<NavItemId | null>(() => {
@@ -105,11 +118,11 @@ export function MobileBottomNavWidget({
 
   // Prefetch all platform tab routes on mobile so navigation is instant
   useEffect(() => {
-    NAV_ITEMS.forEach((item) => {
+    navItems.forEach((item) => {
       const path = item.routeTab === 'home' ? '/platform' : `/platform/${item.routeTab}`;
       router.prefetch(path);
     });
-  }, [router]);
+  }, [router, navItems]);
 
   const handleItemClick = (item: NavItemConfig) => {
     setOptimisticNavId(item.id);
@@ -370,7 +383,7 @@ export function MobileBottomNavWidget({
     >
       <nav className="relative bg-stocky-bg-widget border-t border-stocky-border-subtle shadow-[0_-2px_12px_rgba(0,0,0,0.04)] pb-[max(env(safe-area-inset-bottom),0.5rem)] overflow-visible">
         <div className="h-[62px] flex items-stretch relative px-0.5">
-          {NAV_ITEMS.map((item) => {
+          {navItems.map((item) => {
             const isActive = currentNavId === item.id;
             const hasTaskBadge = item.id === 'tasks' && tasksCount > 0;
 

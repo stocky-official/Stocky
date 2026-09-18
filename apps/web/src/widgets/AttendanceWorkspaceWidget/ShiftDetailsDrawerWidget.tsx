@@ -4,6 +4,7 @@ import React from 'react';
 import type { AttendanceShift, Location } from '@stocky/types';
 import { SideDrawer } from '@/components/ui/SideDrawer';
 import { ClockIcon, WarehouseIcon, QrCodeIcon, CheckCircleIcon, XIcon } from '@stocky/icons';
+import { useTranslation } from '@/lib/i18n';
 
 export interface ShiftDetailsDrawerWidgetProps {
   isOpen: boolean;
@@ -20,18 +21,31 @@ export function ShiftDetailsDrawerWidget({
   locations,
   members,
 }: ShiftDetailsDrawerWidgetProps) {
+  const { t, language } = useTranslation();
   if (!shift) return null;
 
   const member = members.find((m) => m.id === shift.companyUserId);
   const location = locations.find((l) => l.id === shift.locationId);
-  const memberName = member?.full_name || member?.email?.split('@')[0] || 'Staff Member';
+  const memberName = member?.full_name || member?.email?.split('@')[0] || t('team.roles.staff');
   const isOngoing = !shift.clockOutAt;
+
+  const formatTime = (isoString?: string | null) => {
+    if (!isoString) return '—';
+    try {
+      return new Intl.DateTimeFormat(language === 'ar' ? 'ar-EG' : 'en-US', {
+        hour: '2-digit',
+        minute: '2-digit',
+      }).format(new Date(isoString));
+    } catch {
+      return isoString;
+    }
+  };
 
   return (
     <SideDrawer
       isOpen={isOpen}
       onClose={onClose}
-      ariaLabel="Shift Details"
+      ariaLabel={t('drawers.shiftDetails.title')}
     >
       <div className="flex items-start justify-between gap-4 border-b border-stocky-border-subtle px-5 py-4">
         <div className="flex min-w-0 items-start gap-3">
@@ -39,9 +53,9 @@ export function ShiftDetailsDrawerWidget({
             <ClockIcon size="xs" />
           </span>
           <div className="min-w-0">
-            <h2 className="truncate text-lg font-medium text-stocky-text-main">Shift Details</h2>
+            <h2 className="truncate text-lg font-medium text-stocky-text-main">{t('drawers.shiftDetails.title')}</h2>
             <p className="mt-1 text-xs text-stocky-text-sub">
-              Attendance record for {shift.shiftDate}
+              {t('drawers.shiftDetails.subtitle', { date: shift.shiftDate })}
             </p>
           </div>
         </div>
@@ -49,7 +63,7 @@ export function ShiftDetailsDrawerWidget({
           type="button"
           onClick={onClose}
           className="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-lg text-stocky-text-sub hover:bg-stocky-bg-global"
-          aria-label="Close"
+          aria-label={t('common.close')}
         >
           <XIcon size="xs" />
         </button>
@@ -65,7 +79,7 @@ export function ShiftDetailsDrawerWidget({
             <div className="text-sm font-semibold text-stocky-text-main">{memberName}</div>
             <div className="text-xs text-stocky-text-sub">{member?.email}</div>
             <div className="text-[11px] text-stocky-primary font-semibold capitalize mt-0.5">
-              {member?.role || 'Staff'}
+              {member?.role || t('team.roles.staff')}
             </div>
           </div>
         </div>
@@ -73,26 +87,26 @@ export function ShiftDetailsDrawerWidget({
         {/* Timestamps Card */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div className="p-3.5 rounded-widget border border-stocky-border-subtle bg-stocky-bg-widget shadow-sm">
-            <div className="text-[11px] text-stocky-text-sub font-medium mb-1">Clock In</div>
+            <div className="text-[11px] text-stocky-text-sub font-medium mb-1">{t('drawers.shiftDetails.clockIn')}</div>
             <div className="text-sm font-semibold text-stocky-text-main">
-              {shift.clockInAt ? new Date(shift.clockInAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—'}
+              {formatTime(shift.clockInAt)}
             </div>
             <div className="text-[10px] text-stocky-text-sub capitalize mt-0.5">
-              via {shift.punchInMethod}
+              {t('drawers.shiftDetails.via', { method: shift.punchInMethod })}
             </div>
           </div>
 
           <div className="p-3.5 rounded-widget border border-stocky-border-subtle bg-stocky-bg-widget shadow-sm">
-            <div className="text-[11px] text-stocky-text-sub font-medium mb-1">Clock Out</div>
+            <div className="text-[11px] text-stocky-text-sub font-medium mb-1">{t('drawers.shiftDetails.clockOut')}</div>
             <div className="text-sm font-semibold text-stocky-text-main">
               {isOngoing ? (
-                <span className="text-stocky-primary">Active</span>
+                <span className="text-stocky-primary">{t('drawers.shiftDetails.active')}</span>
               ) : (
-                new Date(shift.clockOutAt!).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                formatTime(shift.clockOutAt)
               )}
             </div>
             <div className="text-[10px] text-stocky-text-sub capitalize mt-0.5">
-              {isOngoing ? 'Currently working' : `via ${shift.punchOutMethod || 'system'}`}
+              {isOngoing ? t('drawers.shiftDetails.currentlyWorking') : t('drawers.shiftDetails.via', { method: shift.punchOutMethod || 'system' })}
             </div>
           </div>
         </div>
@@ -101,23 +115,23 @@ export function ShiftDetailsDrawerWidget({
         <div className="space-y-3">
           <div className="flex items-center justify-between p-3 rounded-widget bg-stocky-bg-widget border border-stocky-border-subtle text-xs shadow-sm">
             <span className="text-stocky-text-sub flex items-center gap-1.5">
-              <WarehouseIcon size="xs" /> Branch
+              <WarehouseIcon size="xs" /> {t('drawers.shiftDetails.branch')}
             </span>
-            <span className="font-semibold text-stocky-text-main">{location?.name || 'Main Branch'}</span>
+            <span className="font-semibold text-stocky-text-main">{location?.name || t('drawers.shiftDetails.mainBranch')}</span>
           </div>
 
           <div className="flex items-center justify-between p-3 rounded-widget bg-stocky-bg-widget border border-stocky-border-subtle text-xs shadow-sm">
             <span className="text-stocky-text-sub flex items-center gap-1.5">
-              <ClockIcon size="xs" /> Total Duration
+              <ClockIcon size="xs" /> {t('drawers.shiftDetails.duration')}
             </span>
             <span className="font-semibold text-stocky-text-main">
-              {shift.totalMinutes ? `${Math.floor(shift.totalMinutes / 60)} hrs ${shift.totalMinutes % 60} mins` : 'In progress'}
+              {shift.totalMinutes ? t('drawers.shiftDetails.durationHoursMins', { hours: Math.floor(shift.totalMinutes / 60), mins: shift.totalMinutes % 60 }) : t('drawers.shiftDetails.inProgress')}
             </span>
           </div>
 
           <div className="flex items-center justify-between p-3 rounded-widget bg-stocky-bg-widget border border-stocky-border-subtle text-xs shadow-sm">
             <span className="text-stocky-text-sub flex items-center gap-1.5">
-              <CheckCircleIcon size="xs" /> Shift Status
+              <CheckCircleIcon size="xs" /> {t('drawers.shiftDetails.status')}
             </span>
             <span className="font-semibold text-stocky-text-main uppercase tracking-wider text-[11px]">
               {shift.status}
@@ -127,7 +141,7 @@ export function ShiftDetailsDrawerWidget({
 
         {shift.notes && (
           <div className="p-3.5 rounded-widget bg-stocky-bg-global border border-stocky-border-subtle">
-            <div className="text-[11px] font-semibold text-stocky-text-sub mb-1">Shift Notes</div>
+            <div className="text-[11px] font-semibold text-stocky-text-sub mb-1">{t('drawers.shiftDetails.notes')}</div>
             <p className="text-xs text-stocky-text-main leading-relaxed">{shift.notes}</p>
           </div>
         )}

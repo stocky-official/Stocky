@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -7,6 +9,59 @@
     max-width: 100%;
     overflow-x: clip;
   }
+}
+
+html[lang="ar"],
+[dir="rtl"] {
+  --stocky-font-stack: var(--font-cairo), 'Cairo', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+  font-family: var(--font-cairo), 'Cairo', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+}
+
+html[lang="ar"] body,
+[dir="rtl"] body,
+html[lang="ar"] .stocky-platform-shell,
+[dir="rtl"] .stocky-platform-shell,
+html[lang="ar"] [class*="font-sans"],
+[dir="rtl"] [class*="font-sans"],
+html[lang="ar"] button,
+[dir="rtl"] button,
+html[lang="ar"] input,
+[dir="rtl"] input,
+html[lang="ar"] select,
+[dir="rtl"] select,
+html[lang="ar"] textarea,
+[dir="rtl"] textarea,
+html[lang="ar"] p,
+[dir="rtl"] p,
+html[lang="ar"] span,
+[dir="rtl"] span,
+html[lang="ar"] h1,
+[dir="rtl"] h1,
+html[lang="ar"] h2,
+[dir="rtl"] h2,
+html[lang="ar"] h3,
+[dir="rtl"] h3,
+html[lang="ar"] h4,
+[dir="rtl"] h4,
+html[lang="ar"] table,
+[dir="rtl"] table,
+html[lang="ar"] th,
+[dir="rtl"] th,
+html[lang="ar"] td,
+[dir="rtl"] td,
+html[lang="ar"] a,
+[dir="rtl"] a,
+html[lang="ar"] label,
+[dir="rtl"] label {
+  font-family: var(--font-cairo), 'Cairo', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+}
+
+[dir="rtl"] .rtl\:rotate-180 {
+  transform: rotate(180deg);
+}
+
+[dir="rtl"] .rtl-mirror {
+  transform: scaleX(-1);
 }
 
 /* Cinematic product landing page. The platform shell stays light; the public
@@ -888,7 +943,7 @@
 }
 .stocky-workspace-sidebar__brand { align-items: center; border-bottom: 1px solid var(--stocky-border-subtle); display: flex; gap: 0; height: 3rem; justify-content: center; min-width: 0; overflow: hidden; padding: 0 0.4rem; transition: gap var(--stocky-sidebar-motion), justify-content var(--stocky-sidebar-motion); }
 .stocky-workspace-sidebar__brand > img,
-.stocky-workspace-sidebar__brand-mark { align-items: center; background: var(--stocky-primary); border-radius: 0.45rem; color: white; display: inline-flex; flex: 0 0 1.75rem; height: 1.75rem; justify-content: center; object-fit: contain; overflow: hidden; width: 1.75rem; }
+.stocky-workspace-sidebar__brand-mark { align-items: center; background: var(--stocky-primary); border-radius: 0.45rem; color: #11120F; display: inline-flex; flex: 0 0 1.75rem; height: 1.75rem; justify-content: center; object-fit: contain; overflow: hidden; width: 1.75rem; }
 .stocky-workspace-sidebar__brand-copy { display: flex; flex: 1 1 auto; flex-direction: column; line-height: 1.1; max-width: 0; min-width: 0; opacity: 0; overflow: hidden; transform: translateX(-0.25rem); transition: max-width var(--stocky-sidebar-motion), opacity var(--stocky-sidebar-motion), transform var(--stocky-sidebar-motion); width: 0; }
 .stocky-workspace-sidebar__brand-copy strong { color: var(--stocky-text-main); font-size: var(--stocky-font-xs); font-weight: 500; white-space: nowrap; }
 .stocky-workspace-sidebar__brand-copy small { color: var(--stocky-text-sub); font-size: 0.625rem; margin-top: 0.18rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -1001,6 +1056,99 @@
 .stocky-workspace-sidebar:not(:hover):not(:has(:focus-visible)) .stocky-workspace-sidebar__footer { padding-inline: 0; }
 .stocky-workspace-sidebar:not(:hover):not(:has(:focus-visible)) .stocky-workspace-sidebar__footer .stocky-workspace-nav-item { gap: 0; margin-inline: auto; width: var(--stocky-sidebar-item-width); }
 .stocky-workspace-sidebar:not(:hover):not(:has(:focus-visible)) .stocky-sidebar-account { margin-inline: auto; width: var(--stocky-sidebar-item-width); }
+
+/* Sidebar language switcher responsive control */
+.stocky-sidebar-language-control {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-width: 0;
+  padding: 0.25rem 0.35rem;
+}
+.stocky-sidebar-language-collapsed {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: var(--stocky-sidebar-item-width);
+  height: var(--stocky-sidebar-item-width);
+  border-radius: var(--stocky-radius-menu-item);
+  background: transparent;
+  border: 1px solid var(--stocky-border-subtle);
+  color: var(--stocky-text-sub);
+  cursor: pointer;
+  position: relative;
+  transition: background-color var(--stocky-transition), color var(--stocky-transition), border-color var(--stocky-transition);
+}
+.stocky-sidebar-language-collapsed:hover {
+  background: var(--stocky-bg-hover);
+  color: var(--stocky-text-main);
+  border-color: var(--stocky-border-default);
+}
+.stocky-sidebar-language-collapsed-badge {
+  position: absolute;
+  bottom: 2px;
+  right: 2px;
+  font-size: 7px;
+  font-weight: 700;
+  line-height: 1;
+  background: var(--stocky-primary);
+  color: white;
+  border-radius: 3px;
+  padding: 1px 2px;
+}
+.stocky-sidebar-language-expanded {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  border-radius: 9999px;
+  background: var(--stocky-bg-global);
+  padding: 2px;
+  border: 1px solid var(--stocky-border-subtle);
+  user-select: none;
+}
+.stocky-sidebar-lang-btn {
+  flex: 1;
+  text-align: center;
+  padding: 0.35rem 0.5rem;
+  border-radius: 9999px;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--stocky-text-sub);
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  transition: all var(--stocky-transition);
+  white-space: nowrap;
+}
+.stocky-sidebar-lang-btn:hover {
+  color: var(--stocky-text-main);
+}
+.stocky-sidebar-lang-btn--active {
+  background: #ffffff;
+  color: var(--stocky-text-main);
+  box-shadow: var(--stocky-shadow-xs);
+  font-weight: 600;
+}
+.stocky-workspace-sidebar:not(:hover):not(:has(:focus-visible)) .stocky-sidebar-language-control {
+  padding-inline: 0;
+}
+.stocky-workspace-sidebar:not(:hover):not(:has(:focus-visible)) .stocky-sidebar-language-expanded {
+  display: none !important;
+}
+.stocky-workspace-sidebar:not(:hover):not(:has(:focus-visible)) .stocky-sidebar-language-collapsed {
+  display: inline-flex !important;
+  margin-inline: auto;
+}
+.stocky-workspace-sidebar:hover .stocky-sidebar-language-collapsed,
+.stocky-workspace-sidebar:has(:focus-visible) .stocky-sidebar-language-collapsed {
+  display: none !important;
+}
+.stocky-workspace-sidebar:hover .stocky-sidebar-language-expanded,
+.stocky-workspace-sidebar:has(:focus-visible) .stocky-sidebar-language-expanded {
+  display: flex !important;
+}
+
 .stocky-topbar-mobile-search { display: flex; }
 .stocky-topbar-account { display: flex; flex: 0 0 auto; }
 .stocky-topbar-account .stocky-account-trigger { width: auto; }
@@ -2780,6 +2928,34 @@ a:hover {
 
 .stocky-split-search-field__clear-btn:hover {
   color: var(--stocky-text-main) !important;
+}
+
+/* Toolbar layout: Ensure search bar is on left and buttons are on the right in both English and Arabic */
+.stocky-standard-toolbar,
+.stocky-stock-table-toolbar {
+  direction: ltr !important;
+}
+
+.stocky-split-search-field {
+  direction: ltr !important;
+}
+
+/* Ensure Arabic search input text flows RTL with Cairo font */
+[dir="rtl"] .stocky-split-search-field__input,
+html[lang="ar"] .stocky-split-search-field__input,
+[dir="rtl"] .stocky-stock-table-toolbar input,
+html[lang="ar"] .stocky-stock-table-toolbar input {
+  direction: rtl;
+  text-align: right;
+  font-family: var(--font-cairo), 'Cairo', sans-serif !important;
+}
+
+/* Ensure action buttons in toolbar retain proper Cairo font and RTL content display */
+[dir="rtl"] .stocky-standard-toolbar__actions,
+html[lang="ar"] .stocky-standard-toolbar__actions,
+[dir="rtl"] .stocky-stock-table-toolbar__actions,
+html[lang="ar"] .stocky-stock-table-toolbar__actions {
+  font-family: var(--font-cairo), 'Cairo', sans-serif !important;
 }
 
 /* Perfect Geometric Circles for Mobile Toolbar Action Buttons */

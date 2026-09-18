@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { useTranslation } from '@/lib/i18n';
 
 export interface HomeExecutiveKpiStripWidgetProps {
   totalValuation: number;
@@ -42,48 +43,50 @@ export function HomeExecutiveKpiStripWidget({
   onOpenExpiry,
   onOpenAttendance,
 }: HomeExecutiveKpiStripWidgetProps) {
+  const { t } = useTranslation();
+
   const kpis = [
     {
       id: 'valuation',
-      label: 'Inventory Valuation',
+      label: t('home.charts.desktop.kpiValuation'),
       value: `$${(totalValuation / 1000).toFixed(1)}k`,
-      detail: `${totalUnits.toLocaleString()} units • ${totalBranches} branches`,
+      detail: t('home.charts.desktop.unitsCountSuffix', { units: totalUnits.toLocaleString(), branches: totalBranches }),
       valueColor: 'text-stocky-text-main',
       indicatorBg: 'bg-emerald-500',
       action: onOpenStock,
     },
     {
       id: 'velocity',
-      label: 'Turnover Velocity',
-      value: `${totalUnitsMoved.toLocaleString()} units`,
-      detail: `${movementCount} movements recorded`,
+      label: t('home.charts.desktop.kpiVelocity'),
+      value: t('home.charts.desktop.unitsMovedCount', { count: totalUnitsMoved.toLocaleString() }),
+      detail: t('home.charts.desktop.movementsRecorded', { count: movementCount }),
       valueColor: 'text-stocky-primary',
       indicatorBg: 'bg-stocky-primary',
       action: onOpenStock,
     },
     {
       id: 'stagnant',
-      label: 'Dormant Capital',
+      label: t('home.charts.desktop.kpiDormant'),
       value: `$${dormantCapital.toLocaleString()}`,
-      detail: `${dormantSkuCount} slow-moving SKUs`,
+      detail: t('home.charts.desktop.slowMovingSkus', { count: dormantSkuCount }),
       valueColor: dormantCapital > 0 ? 'text-amber-600' : 'text-stocky-text-main',
       indicatorBg: 'bg-amber-500',
       action: onOpenStock,
     },
     {
       id: 'risks',
-      label: 'Inventory Risks',
-      value: `${expiringSkuCount + lowStockCount} SKUs`,
-      detail: `${expiringSkuCount} expiring • ${lowStockCount} low stock`,
+      label: t('home.charts.desktop.kpiRisks'),
+      value: t('home.charts.desktop.skusCount', { count: expiringSkuCount + lowStockCount }),
+      detail: t('home.charts.desktop.riskSkusDetail', { expiring: expiringSkuCount, lowStock: lowStockCount }),
       valueColor: expiringSkuCount > 0 ? 'text-rose-600' : 'text-stocky-text-main',
       indicatorBg: expiringSkuCount > 0 ? 'bg-rose-500' : 'bg-emerald-500',
       action: onOpenExpiry || onOpenStock,
     },
     {
       id: 'attendance',
-      label: 'Staff Presence',
+      label: t('home.charts.desktop.kpiStaff'),
       value: `${attendancePct}%`,
-      detail: `${activeStaffOnDuty} of ${totalStaffCount} on duty today`,
+      detail: t('home.charts.desktop.staffOnDutyDetail', { active: activeStaffOnDuty, total: totalStaffCount }),
       valueColor: attendancePct >= 75 ? 'text-emerald-600' : 'text-amber-600',
       indicatorBg: attendancePct >= 75 ? 'bg-emerald-500' : 'bg-amber-500',
       action: onOpenAttendance,

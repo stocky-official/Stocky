@@ -1307,10 +1307,11 @@ export function PlatformProvider({
       p_location_id: input.locationId,
       p_task_type: input.taskType,
       p_assigned_to_company_user_id: input.assignedToCompanyUserId,
-      p_product_ids: input.productIds,
+      p_product_ids: input.productIds || [],
       p_note: input.note || null,
       p_scheduled_start_at: input.scheduledStartAt || null,
       p_scheduled_end_at: input.scheduledEndAt || null,
+      p_title: input.title || null,
     });
     if (error) throw error;
     refresh();

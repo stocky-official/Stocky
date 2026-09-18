@@ -2,6 +2,7 @@
 
 import type { CompanyUserRole } from '@stocky/types';
 import { getActivePlatformGroup, getPlatformNavigation } from '../platformNavigation';
+import { useTranslation } from '@/lib/i18n';
 
 export interface PlatformContextTabsWidgetProps {
   activeTab: string;
@@ -34,7 +35,8 @@ export function PlatformContextTabsWidget({
   attendanceTab = 'timesheets',
   onAttendanceTabChange,
 }: PlatformContextTabsWidgetProps) {
-  const group = getActivePlatformGroup(getPlatformNavigation(userRole, '/platform', permissions), activeTab);
+  const { t } = useTranslation();
+  const group = getActivePlatformGroup(getPlatformNavigation(userRole, '/platform', permissions, t), activeTab);
 
   if (!group || group.items.length < 2) return null;
 

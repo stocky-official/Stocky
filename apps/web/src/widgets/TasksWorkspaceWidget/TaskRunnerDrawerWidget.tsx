@@ -5,11 +5,13 @@ import {
   BarcodeIcon,
   CheckCircleIcon,
   ClockIcon,
+  ListTodoIcon,
   SearchIcon,
   XIcon,
 } from '@stocky/icons';
 import type { Product, StockTask, StockTaskItem } from '@stocky/types';
 import { SideDrawer } from '@/components/ui/SideDrawer';
+import { useTranslation } from '@/lib/i18n';
 
 type TaskResult = {
   countedQuantity: string;
@@ -35,10 +37,16 @@ export interface TaskRunnerDrawerWidgetProps {
   ) => Promise<void>;
 }
 
-function elapsedLabel(milliseconds: number) {
+function elapsedLabel(milliseconds: number, t: (key: string, params?: Record<string, string | number>) => string) {
   const minutes = Math.max(0, Math.floor(milliseconds / 60000));
   const hours = Math.floor(minutes / 60);
-  return hours > 0 ? `${hours}h ${minutes % 60}m` : `${minutes}m`;
+  if (hours > 0) {
+    return t('tasks.elapsedHoursMinutes', { hours, minutes: minutes % 60 });
+  }
+  if (minutes > 0) {
+    return t('tasks.elapsedMinutes', { minutes });
+  }
+  return t('tasks.elapsedNow');
 }
 
 export function TaskRunnerDrawerWidget({
@@ -50,6 +58,7 @@ export function TaskRunnerDrawerWidget({
   onStartTask,
   onSubmitTask,
 }: TaskRunnerDrawerWidgetProps) {
+  const { t } = useTranslation();
   const lastTaskRef = useRef<StockTask | null>(task);
   if (task) lastTaskRef.current = task;
   const activeTask = task || lastTaskRef.current;
@@ -107,7 +116,7 @@ export function TaskRunnerDrawerWidget({
       setStatus('in_progress');
       setStartedAt((current) => current || new Date().toISOString());
     } catch (err: any) {
-      setError(err?.message || 'Could not start this task.');
+      setError(err?.message || t('tasks.startFailed'));
     } finally {
       setSaving(false);
     }
@@ -143,6 +152,20 @@ export function TaskRunnerDrawerWidget({
     event.preventDefault();
     if (!activeTask) return;
 
+    if (activeTask.taskType === 'open') {
+      setSaving(true);
+      setError(null);
+      try {
+        await onSubmitTask(activeTask.id, []);
+        onClose();
+      } catch (err: any) {
+        setError(err?.message || t('tasks.submitFailed'));
+      } finally {
+        setSaving(false);
+      }
+      return;
+    }
+
     const allItems = taskItems.filter((item) => item.taskId === activeTask.id);
     const payload = allItems.map((item) => {
       const res = results[item.id] || {
@@ -173,16 +196,14 @@ export function TaskRunnerDrawerWidget({
           (item.countedQuantity as number) < 0
       )
     ) {
-      return setError('Enter a whole number for every product.');
+      return setError(t('tasks.errorWholeNumber'));
     }
 
     if (
       activeTask.taskType === 'expiry' &&
       payload.some((item) => !item.observedExpiryDate && !item.note)
     ) {
-      return setError(
-        'Enter an expiry date or a note when the date cannot be read.'
-      );
+      return setError(t('tasks.errorExpiryOrNote'));
     }
 
     setSaving(true);
@@ -191,7 +212,7 @@ export function TaskRunnerDrawerWidget({
       await onSubmitTask(activeTask.id, payload);
       onClose();
     } catch (err: any) {
-      setError(err?.message || 'Could not submit this task.');
+      setError(err?.message || t('tasks.submitFailed'));
     } finally {
       setSaving(false);
     }
@@ -201,7 +222,7 @@ export function TaskRunnerDrawerWidget({
     <SideDrawer
       isOpen={Boolean(task)}
       onClose={() => !saving && onClose()}
-      ariaLabel="Assigned stock task"
+      ariaLabel={t('tasks.title')}
     >
       {activeTask && (
         <div className="flex flex-col h-full">
@@ -213,27 +234,33 @@ export function TaskRunnerDrawerWidget({
                   {activeTask.title}
                 </h2>
                 <p className="mt-1 text-xs text-stocky-text-sub">
-                  {taskItems.filter((item) => item.taskId === activeTask.id).length}{' '}
-                  items · Time since assigned{' '}
-                  {elapsedLabel(
-                    now -
-                      new Date(startedAt || activeTask.createdAt).getTime()
-                  )}
+                  {activeTask.taskType === 'open'
+                    ? t('tasks.directTask')
+                    : `${taskItems.filter((item) => item.taskId === activeTask.id).length} ${t('tasks.itemsCount')}`}
+                  {' · '}
+                  {t('tasks.timeSinceAssigned', {
+                    time: elapsedLabel(
+                      now -
+                        new Date(startedAt || activeTask.createdAt).getTime(),
+                      t
+                    ),
+                  })}
                 </p>
               </div>
               <button
                 type="button"
                 onClick={() => !saving && onClose()}
                 className="flex h-8 w-8 items-center justify-center rounded-full text-stocky-text-sub hover:bg-stocky-bg-global transition-colors cursor-pointer"
-                aria-label="Close"
+                aria-label={t('common.close')}
               >
                 <XIcon size="xs" />
               </button>
             </div>
             {status === 'assigned' && (
               <p className="mt-3 rounded-xl stocky-status-info border px-3 py-2 text-xs">
-                Start when you are ready. Count only what you can physically see,
-                then submit the whole list.
+                {activeTask.taskType === 'open'
+                  ? t('tasks.assignedOpenDesc')
+                  : t('tasks.assignedCountDesc')}
               </p>
             )}
           </div>
@@ -242,15 +269,17 @@ export function TaskRunnerDrawerWidget({
           {['assigned', 'rejected'].includes(status) ? (
             <div className="flex flex-1 flex-col items-center justify-center gap-3 p-6 text-center">
               <div className="flex h-12 w-12 items-center justify-center rounded-full bg-stocky-bg-global text-stocky-primary">
-                <ClockIcon size="lg" />
+                {activeTask.taskType === 'open' ? <ListTodoIcon size="md" /> : <ClockIcon size="md" />}
               </div>
               <h3 className="text-base font-medium text-stocky-text-main">
-                {status === 'rejected' ? 'Correction needed' : 'Ready to begin?'}
+                {status === 'rejected' ? t('tasks.correctionNeeded') : t('tasks.readyToBegin')}
               </h3>
               <p className="max-w-sm text-xs text-stocky-text-sub">
                 {status === 'rejected'
-                  ? 'Your manager sent this task back. Check the list again and resubmit it.'
-                  : 'Use the barcode scanner or search each item below. The expected quantity is not shown during the task.'}
+                  ? t('tasks.rejectedDesc')
+                  : activeTask.taskType === 'open'
+                  ? (activeTask.notes || t('tasks.startTaskInstructions'))
+                  : t('tasks.scannerPrompt')}
               </p>
               <button
                 type="button"
@@ -259,10 +288,10 @@ export function TaskRunnerDrawerWidget({
                 className="h-10 rounded-full bg-stocky-primary hover:bg-stocky-primary-hover px-6 text-xs font-medium text-white transition-colors cursor-pointer disabled:opacity-60"
               >
                 {saving
-                  ? 'Starting...'
+                  ? t('common.loading')
                   : status === 'rejected'
-                  ? 'Start correction'
-                  : 'Start task'}
+                  ? t('tasks.startCorrection')
+                  : t('tasks.startRunner')}
               </button>
               {error && (
                 <p className="rounded-xl stocky-status-critical border px-3 py-2 text-xs">
@@ -272,122 +301,143 @@ export function TaskRunnerDrawerWidget({
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="flex min-h-0 flex-1 flex-col">
-              <div className="border-b border-stocky-border-subtle p-5">
-                <div className="relative">
-                  <SearchIcon
-                    size="xs"
-                    className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-stocky-text-sub"
-                  />
-                  <input
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                    placeholder="Search product or barcode..."
-                    className="h-10 w-full rounded-xl border border-stocky-border-subtle pl-9 pr-3 text-xs text-stocky-text-main placeholder:text-stocky-text-sub focus:border-stocky-primary focus:outline-none transition-colors"
-                  />
+              {activeTask.taskType === 'open' ? (
+                <div className="flex-1 overflow-y-auto p-5 space-y-4">
+                  <div className="rounded-2xl border border-stocky-border-subtle bg-stocky-bg-global/40 p-4">
+                    <h4 className="text-xs font-semibold text-stocky-text-main flex items-center gap-2">
+                      <ListTodoIcon size="xs" className="text-stocky-primary" />
+                      {t('tasks.taskDetails')}
+                    </h4>
+                    <p className="mt-2 text-xs text-stocky-text-main whitespace-pre-wrap leading-relaxed">
+                      {activeTask.notes || t('tasks.noInstructions')}
+                    </p>
+                  </div>
+
+                  <div className="rounded-2xl border border-stocky-border-subtle bg-emerald-500/5 p-4">
+                    <p className="text-xs text-stocky-text-sub">
+                      {t('tasks.workAccomplished')}
+                    </p>
+                  </div>
                 </div>
-                <p className="mt-2 flex items-center gap-1.5 text-[11px] text-stocky-text-sub">
-                  <BarcodeIcon size="xs" />
-                  <span>
-                    Scan a barcode or type it above. Complete every item before
-                    submitting.
-                  </span>
-                </p>
-              </div>
-
-              <div className="flex-1 overflow-y-auto px-5 divide-y divide-stocky-border-subtle">
-                {currentItems.map((item) => {
-                  const product = productMap.get(item.productId);
-                  const result = results[item.id] || {
-                    countedQuantity: '',
-                    observedExpiryDate: '',
-                    note: '',
-                  };
-                  const completed = Boolean(item.completedAt);
-
-                  return (
-                    <div key={item.id} className="py-4">
-                      <div className="flex items-start gap-3">
-                        <span
-                          className={`mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full border ${
-                            completed
-                              ? 'stocky-status-success'
-                              : 'stocky-status-muted'
-                          }`}
-                        >
-                          {completed ? (
-                            <CheckCircleIcon size="xs" />
-                          ) : (
-                            <span className="text-[10px] font-medium">•</span>
-                          )}
-                        </span>
-                        <div className="min-w-0 flex-1">
-                          <p className="text-xs font-medium text-stocky-text-main">
-                            {product?.name || 'Product'}
-                          </p>
-                          <p className="mt-0.5 text-[11px] text-stocky-text-sub">
-                            {product?.barcode || 'No barcode'}
-                            {item.stockLotId
-                              ? ` · Batch ${item.stockLotId.slice(0, 8)}`
-                              : ''}
-                          </p>
-                        </div>
-                      </div>
-
-                      {activeTask.taskType === 'count' ? (
-                        <div className="mt-3 flex items-center gap-2">
-                          <input
-                            type="number"
-                            min="0"
-                            step="1"
-                            required
-                            aria-label={`Count ${product?.name || 'product'}`}
-                            value={result.countedQuantity}
-                            onChange={(e) =>
-                              updateResult(
-                                item.id,
-                                'countedQuantity',
-                                e.target.value
-                              )
-                            }
-                            className="h-10 w-32 rounded-xl border border-stocky-border-subtle px-3 text-xs text-stocky-text-main focus:border-stocky-primary focus:outline-none transition-colors"
-                            placeholder="Quantity"
-                          />
-                          <span className="text-xs text-stocky-text-sub">
-                            {product?.unitName || 'units'}
-                          </span>
-                        </div>
-                      ) : (
-                        <div className="mt-3 grid gap-2">
-                          <label className="text-[11px] font-medium text-stocky-text-sub">
-                            Expiry date
-                            <input
-                              type="date"
-                              required={!result.note}
-                              value={result.observedExpiryDate}
-                              onChange={(e) =>
-                                updateResult(
-                                  item.id,
-                                  'observedExpiryDate',
-                                  e.target.value
-                                )
-                              }
-                              className="mt-1 h-10 w-full rounded-xl border border-stocky-border-subtle px-3 text-xs text-stocky-text-main focus:border-stocky-primary focus:outline-none transition-colors"
-                            />
-                          </label>
-                          <input
-                            value={result.note}
-                            onChange={(e) =>
-                              updateResult(item.id, 'note', e.target.value)
-                            }
-                            placeholder="Note if date is missing or unclear"
-                            className="h-9 w-full rounded-xl border border-stocky-border-subtle px-3 text-xs text-stocky-text-main placeholder:text-stocky-text-sub focus:border-stocky-primary focus:outline-none transition-colors"
-                          />
-                        </div>
-                      )}
+              ) : (
+                <>
+                  <div className="border-b border-stocky-border-subtle p-5">
+                    <div className="relative">
+                      <SearchIcon
+                        size="xs"
+                        className="pointer-events-none absolute start-3 top-1/2 -translate-y-1/2 text-stocky-text-sub"
+                      />
+                      <input
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                        placeholder={t('tasks.searchProducts')}
+                        className="h-10 w-full rounded-xl border border-stocky-border-subtle ps-9 pe-3 text-xs text-stocky-text-main placeholder:text-stocky-text-sub focus:border-stocky-primary focus:outline-none transition-colors"
+                      />
                     </div>
-                  );
-                })}
-              </div>
+                    <p className="mt-2 flex items-center gap-1.5 text-[11px] text-stocky-text-sub">
+                      <BarcodeIcon size="xs" />
+                      <span>
+                        {t('tasks.scanBarcodePrompt')}
+                      </span>
+                    </p>
+                  </div>
+
+                  <div className="flex-1 overflow-y-auto px-5 divide-y divide-stocky-border-subtle">
+                    {currentItems.map((item) => {
+                      const product = productMap.get(item.productId);
+                      const result = results[item.id] || {
+                        countedQuantity: '',
+                        observedExpiryDate: '',
+                        note: '',
+                      };
+                      const completed = Boolean(item.completedAt);
+
+                      return (
+                        <div key={item.id} className="py-4">
+                          <div className="flex items-start gap-3">
+                            <span
+                              className={`mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full border ${
+                                completed
+                                  ? 'stocky-status-success'
+                                  : 'stocky-status-muted'
+                              }`}
+                            >
+                              {completed ? (
+                                <CheckCircleIcon size="xs" />
+                              ) : (
+                                <span className="text-[10px] font-medium">•</span>
+                              )}
+                            </span>
+                            <div className="min-w-0 flex-1">
+                              <p className="text-xs font-medium text-stocky-text-main">
+                                {product?.name || t('inventory.productName')}
+                              </p>
+                              <p className="mt-0.5 text-[11px] text-stocky-text-sub">
+                                {product?.barcode || product?.categoryName || t('drawers.receiveStock.noBarcode')}
+                              </p>
+                            </div>
+                          </div>
+
+                          {activeTask.taskType === 'count' ? (
+                            <div className="mt-3 flex items-center gap-2">
+                              <input
+                                type="number"
+                                min="0"
+                                step="1"
+                                value={result.countedQuantity}
+                                onChange={(e) =>
+                                  updateResult(
+                                    item.id,
+                                    'countedQuantity',
+                                    e.target.value
+                                  )
+                                }
+                                placeholder={t('tasks.quantityCounted')}
+                                className="h-10 flex-1 rounded-xl border border-stocky-border-subtle px-3 text-xs text-stocky-text-main focus:border-stocky-primary focus:outline-none transition-colors"
+                              />
+                              <input
+                                value={result.note}
+                                onChange={(e) =>
+                                  updateResult(item.id, 'note', e.target.value)
+                                }
+                                placeholder={t('tasks.noteOptional')}
+                                className="h-10 flex-1 rounded-xl border border-stocky-border-subtle px-3 text-xs text-stocky-text-main placeholder:text-stocky-text-sub focus:border-stocky-primary focus:outline-none transition-colors"
+                              />
+                            </div>
+                          ) : (
+                            <div className="mt-3 grid gap-2">
+                              <label className="text-[11px] font-medium text-stocky-text-sub">
+                                {t('tasks.expiryDate')}
+                                <input
+                                  type="date"
+                                  required={!result.note}
+                                  value={result.observedExpiryDate}
+                                  onChange={(e) =>
+                                    updateResult(
+                                      item.id,
+                                      'observedExpiryDate',
+                                      e.target.value
+                                    )
+                                  }
+                                  className="mt-1 h-10 w-full rounded-xl border border-stocky-border-subtle px-3 text-xs text-stocky-text-main focus:border-stocky-primary focus:outline-none transition-colors"
+                                />
+                              </label>
+                              <input
+                                value={result.note}
+                                onChange={(e) =>
+                                  updateResult(item.id, 'note', e.target.value)
+                                }
+                                placeholder={t('tasks.noteIfUnclear')}
+                                className="h-9 w-full rounded-xl border border-stocky-border-subtle px-3 text-xs text-stocky-text-main placeholder:text-stocky-text-sub focus:border-stocky-primary focus:outline-none transition-colors"
+                              />
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </>
+              )}
 
               {error && (
                 <p className="mx-5 mb-2 rounded-xl stocky-status-critical border px-3 py-2 text-xs">
@@ -402,14 +452,14 @@ export function TaskRunnerDrawerWidget({
                   onClick={onClose}
                   className="h-10 flex-1 rounded-full border border-stocky-border-subtle px-5 text-xs font-medium text-stocky-text-main hover:bg-stocky-bg-global transition-colors cursor-pointer"
                 >
-                  Save for later
+                  {t('tasks.saveForLater')}
                 </button>
                 <button
                   type="submit"
                   disabled={saving}
                   className="h-10 flex-1 rounded-full bg-stocky-primary hover:bg-stocky-primary-hover px-6 text-xs font-medium text-white transition-colors cursor-pointer disabled:opacity-60 shadow-sm"
                 >
-                  {saving ? 'Submitting...' : 'Submit task'}
+                  {saving ? t('common.loading') : t('tasks.submitTask')}
                 </button>
               </div>
             </form>

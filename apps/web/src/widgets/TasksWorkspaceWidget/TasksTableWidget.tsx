@@ -5,6 +5,7 @@ import {
   CheckCircleIcon,
   ChevronRightIcon,
   ClockIcon,
+  ListTodoIcon,
   PlusIcon,
   WarehouseIcon,
 } from '@stocky/icons';
@@ -16,6 +17,7 @@ import type {
   StockTaskItem,
 } from '@stocky/types';
 import { UserAvatar } from '@/components/ui/UserAvatar';
+import { useTranslation } from '@/lib/i18n';
 
 type TeamMember = {
   id: string;
@@ -43,56 +45,55 @@ export interface TasksTableWidgetProps {
   onOpenDetails: (task: StockTask) => void;
 }
 
-function taskTypeLabel(taskType: StockTask['taskType']) {
-  return taskType === 'count' ? 'Count quantities' : 'Check expiry dates';
+function taskTypeLabel(taskType: StockTask['taskType'], t: (key: string) => string) {
+  if (taskType === 'open') return t('tasks.openTask') || 'Open task';
+  return taskType === 'count'
+    ? (t('tasks.countQuantities') || 'Count quantities')
+    : (t('tasks.checkExpiry') || 'Check expiry dates');
 }
 
-function statusLabel(status: StockTask['status']) {
-  return status.replace('_', ' ');
-}
-
-function getStatusBadge(status: StockTask['status']) {
+function getStatusBadge(status: StockTask['status'], t: (key: string) => string) {
   switch (status) {
     case 'submitted':
       return (
         <span className="inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[10px] font-medium stocky-status-info">
           <span className="w-1.5 h-1.5 rounded-full bg-current animate-pulse" />
-          In review
+          {t('tasks.statusSubmitted') || 'In review'}
         </span>
       );
     case 'in_progress':
       return (
         <span className="inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[10px] font-medium stocky-status-warning">
           <span className="w-1.5 h-1.5 rounded-full bg-current" />
-          In progress
+          {t('tasks.statusInProgress') || 'In progress'}
         </span>
       );
     case 'rejected':
       return (
         <span className="inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[10px] font-medium stocky-status-critical">
           <span className="w-1.5 h-1.5 rounded-full bg-current" />
-          Needs correction
+          {t('tasks.statusRejected') || 'Needs correction'}
         </span>
       );
     case 'approved':
       return (
         <span className="inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[10px] font-medium stocky-status-success">
           <span className="w-1.5 h-1.5 rounded-full bg-current" />
-          Approved
+          {t('tasks.statusApproved') || 'Approved'}
         </span>
       );
     case 'cancelled':
       return (
         <span className="inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[10px] font-medium stocky-status-muted">
           <span className="w-1.5 h-1.5 rounded-full bg-current" />
-          Cancelled
+          {t('tasks.statusCancelled') || 'Cancelled'}
         </span>
       );
     default:
       return (
         <span className="inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[10px] font-medium stocky-status-muted capitalize">
           <span className="w-1.5 h-1.5 rounded-full bg-current" />
-          {status.replace('_', ' ')}
+          {t('tasks.statusAssigned') || 'Assigned'}
         </span>
       );
   }
@@ -122,6 +123,7 @@ export function TasksTableWidget({
   onOpenReview,
   onOpenDetails,
 }: TasksTableWidgetProps) {
+  const { t, isRtl } = useTranslation();
   const locationMap = React.useMemo(
     () => new Map(locations.map((loc) => [loc.id, loc.name])),
     [locations]
@@ -139,35 +141,39 @@ export function TasksTableWidget({
       onOpenRunner(task);
       return;
     }
-    if (task.status === 'submitted' && userRole !== 'staff') {
+    const canReview = userRole !== 'staff' && task.status === 'submitted';
+    if (canReview) {
       onOpenReview(task);
       return;
     }
     onOpenDetails(task);
   };
 
+  // Empty State: No tasks matching current filters
   if (tasks.length === 0) {
     return (
-      <div className="px-5 py-14 text-center">
-        <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-stocky-bg-global text-stocky-text-sub">
-          <CheckCircleIcon size="md" />
+      <div className="flex flex-col items-center justify-center p-12 text-center">
+        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-stocky-bg-global text-stocky-text-sub">
+          <WarehouseIcon size="md" />
         </div>
         <h3 className="mt-3 text-sm font-medium text-stocky-text-main">
-          {searchQuery ? 'No matching tasks' : 'No tasks found'}
+          {searchQuery.trim()
+            ? (t('common.noResults') || 'No tasks found matching your search.')
+            : (t('tasks.noTasksFound') || 'No tasks found.')}
         </h3>
-        <p className="mt-1 max-w-sm mx-auto text-xs text-stocky-text-sub">
-          {searchQuery
-            ? 'Try another search term or reset your filters.'
-            : 'Assign a count or expiry check to a team member to get started.'}
+        <p className="mt-1 max-w-sm text-xs text-stocky-text-sub">
+          {searchQuery.trim()
+            ? 'Try searching with different keywords or reset your filter settings.'
+            : (t('tasks.subtitle') || 'Assign blind stock counts, expiry audits, and operational duties to team members.')}
         </p>
-        {!searchQuery && canAssignTask && (
+        {canAssignTask && !searchQuery.trim() && (
           <button
             type="button"
             onClick={onAssignTask}
-            className="mt-4 stocky-table-toolbar-button stocky-table-toolbar-button--primary h-10 px-4 rounded-full text-xs font-medium inline-flex items-center justify-center gap-1.5 whitespace-nowrap cursor-pointer"
+            className="mt-4 inline-flex h-9 items-center gap-1.5 rounded-full bg-stocky-primary hover:bg-stocky-primary-hover px-4 text-xs font-medium text-white transition-colors cursor-pointer"
           >
             <PlusIcon size="xs" />
-            <span>Assign task</span>
+            <span>{t('tasks.assignTask') || 'Assign task'}</span>
           </button>
         )}
       </div>
@@ -178,22 +184,22 @@ export function TasksTableWidget({
     <div className="w-full">
       {/* 1. Desktop Table View (Hidden on mobile) */}
       <div className="hidden sm:block overflow-x-auto">
-        <table className="w-full min-w-[720px] table-fixed text-left text-xs border-collapse">
+        <table className="w-full min-w-[720px] table-fixed text-start text-xs border-collapse">
           <thead>
             <tr className="h-11 border-b border-stocky-border-subtle bg-stocky-bg-global/40 text-[10px] uppercase tracking-wider text-stocky-text-sub whitespace-nowrap select-none">
-              <th className="w-[28%] px-4 py-3 font-semibold">Task</th>
-              <th className="hidden md:table-cell w-[14%] px-3 py-3 font-semibold">
-                Type
+              <th className="w-[28%] px-4 py-3 font-semibold text-start">{t('tasks.title') || 'Task'}</th>
+              <th className="hidden md:table-cell w-[14%] px-3 py-3 font-semibold text-start">
+                {t('common.type') || 'Type'}
               </th>
-              <th className="hidden sm:table-cell w-[14%] px-3 py-3 font-semibold">
-                Location
+              <th className="hidden sm:table-cell w-[14%] px-3 py-3 font-semibold text-start">
+                {t('common.location') || 'Location'}
               </th>
-              <th className="hidden lg:table-cell w-[16%] px-3 py-3 font-semibold">
-                Assigned to
+              <th className="hidden lg:table-cell w-[16%] px-3 py-3 font-semibold text-start">
+                {t('tasks.assignTo') || 'Assigned to'}
               </th>
-              <th className="w-[10%] px-3 py-3 font-semibold">Items</th>
-              <th className="w-[14%] min-w-[100px] px-3 py-3 font-semibold">Status</th>
-              <th className="w-[14%] min-w-[110px] px-4 py-3 text-right font-semibold">Action</th>
+              <th className="w-[10%] px-3 py-3 font-semibold text-start">{t('common.items') || 'Items'}</th>
+              <th className="w-[14%] min-w-[100px] px-3 py-3 font-semibold text-start">{t('common.status') || 'Status'}</th>
+              <th className="w-[14%] min-w-[110px] px-4 py-3 text-end font-semibold">{t('common.actions') || 'Action'}</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-stocky-border-subtle">
@@ -226,13 +232,17 @@ export function TasksTableWidget({
                         className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full border ${
                           task.taskType === 'count'
                             ? 'stocky-status-info'
-                            : 'stocky-status-warning'
+                            : task.taskType === 'expiry'
+                            ? 'stocky-status-warning'
+                            : 'bg-blue-50 text-blue-600 border-blue-200'
                         }`}
                       >
                         {task.taskType === 'count' ? (
                           <CheckCircleIcon size="xs" />
-                        ) : (
+                        ) : task.taskType === 'expiry' ? (
                           <ClockIcon size="xs" />
+                        ) : (
+                          <ListTodoIcon size="xs" />
                         )}
                       </span>
                       <div className="min-w-0">
@@ -240,7 +250,7 @@ export function TasksTableWidget({
                           {task.title}
                         </p>
                         <p className="mt-0.5 truncate text-[10px] text-stocky-text-sub sm:hidden">
-                          {taskTypeLabel(task.taskType)} · {locationMap.get(task.locationId) || 'Location'}
+                          {taskTypeLabel(task.taskType, t)} · {locationMap.get(task.locationId) || 'Location'}
                         </p>
                         <p className="mt-0.5 truncate text-[10px] text-stocky-text-sub">
                           {formatDate(task.createdAt)}
@@ -253,11 +263,13 @@ export function TasksTableWidget({
                   <td className="hidden md:table-cell px-3 py-3.5 text-xs text-stocky-text-sub">
                     <span className="inline-flex items-center gap-1.5">
                       {task.taskType === 'count' ? (
-                        <CheckCircleIcon size="xs" className="text-stocky-text-sub" />
+                        <CheckCircleIcon size="xs" className="text-stocky-text-sub shrink-0" />
+                      ) : task.taskType === 'expiry' ? (
+                        <ClockIcon size="xs" className="text-stocky-text-sub shrink-0" />
                       ) : (
-                        <ClockIcon size="xs" className="text-stocky-text-sub" />
+                        <ListTodoIcon size="xs" className="text-stocky-text-sub shrink-0" />
                       )}
-                      <span>{taskTypeLabel(task.taskType)}</span>
+                      <span>{taskTypeLabel(task.taskType, t)}</span>
                     </span>
                   </td>
 
@@ -284,18 +296,24 @@ export function TasksTableWidget({
 
                   {/* Items progress */}
                   <td className="px-3 py-3.5 text-xs text-stocky-text-main">
-                    <span className="inline-flex items-center gap-1 rounded-full bg-stocky-bg-global px-2 py-0.5 text-[11px] font-medium text-stocky-text-main">
-                      {completed}/{items.length}
-                    </span>
+                    {task.taskType === 'open' ? (
+                      <span className="inline-flex items-center gap-1 rounded-full bg-stocky-bg-global px-2 py-0.5 text-[11px] font-medium text-stocky-text-sub">
+                        {t('tasks.directTask') || 'Direct task'}
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1 rounded-full bg-stocky-bg-global px-2 py-0.5 text-[11px] font-medium text-stocky-text-main">
+                        {completed}/{items.length}
+                      </span>
+                    )}
                   </td>
 
                   {/* Status Pill */}
                   <td className="px-3 py-3.5 whitespace-nowrap">
-                    {getStatusBadge(task.status)}
+                    {getStatusBadge(task.status, t)}
                   </td>
 
                   {/* Action Button */}
-                  <td className="px-4 py-3.5 text-right whitespace-nowrap">
+                  <td className="px-4 py-3.5 text-end whitespace-nowrap">
                     <div className="flex justify-end">
                       {canRun && (
                         <button
@@ -308,12 +326,12 @@ export function TasksTableWidget({
                         >
                           <span>
                             {task.status === 'assigned'
-                              ? 'Start'
+                              ? (t('attendance.clockIn') ? 'Start' : 'Start')
                               : task.status === 'rejected'
-                              ? 'Correct'
+                              ? (t('tasks.statusRejected') ? 'Correct' : 'Correct')
                               : 'Continue'}
                           </span>
-                          <ChevronRightIcon size="xs" />
+                          <ChevronRightIcon size="xs" className="rtl:rotate-180" />
                         </button>
                       )}
 
@@ -326,8 +344,8 @@ export function TasksTableWidget({
                           }}
                           className="inline-flex h-8 items-center gap-1 rounded-full bg-stocky-primary hover:bg-stocky-primary-hover px-3 text-xs font-medium text-white transition-colors cursor-pointer"
                         >
-                          <span>Review</span>
-                          <ChevronRightIcon size="xs" />
+                          <span>{t('common.review') || 'Review'}</span>
+                          <ChevronRightIcon size="xs" className="rtl:rotate-180" />
                         </button>
                       )}
 
@@ -340,8 +358,8 @@ export function TasksTableWidget({
                           }}
                           className="inline-flex h-8 items-center gap-1 rounded-full border border-stocky-border-subtle hover:border-stocky-primary/40 px-3 text-xs font-medium text-stocky-text-main hover:text-stocky-primary transition-colors cursor-pointer"
                         >
-                          <span>View</span>
-                          <ChevronRightIcon size="xs" />
+                          <span>{t('common.view') || 'View'}</span>
+                          <ChevronRightIcon size="xs" className="rtl:rotate-180" />
                         </button>
                       )}
                     </div>
@@ -359,12 +377,9 @@ export function TasksTableWidget({
           const items = taskItems.filter((item) => item.taskId === task.id);
           const completed = items.filter((item) => item.status !== 'pending').length;
           const assignee = memberMap.get(task.assignedToCompanyUserId);
-          const canRun =
-            task.assignedToCompanyUserId === currentUserId &&
-            ['assigned', 'in_progress', 'rejected'].includes(task.status);
-          const canReview = userRole !== 'staff' && task.status === 'submitted';
           const locationName = locationMap.get(task.locationId) || 'Main Branch';
           const isCount = task.taskType === 'count';
+          const isExpiry = task.taskType === 'expiry';
 
           return (
             <article
@@ -378,7 +393,7 @@ export function TasksTableWidget({
                   handleTaskClick(task);
                 }
               }}
-              className="p-3.5 flex items-center justify-between gap-3 bg-white hover:bg-stocky-bg-global/30 active:bg-stocky-bg-global/60 transition-colors cursor-pointer text-left"
+              className="p-3.5 flex items-center justify-between gap-3 bg-white hover:bg-stocky-bg-global/30 active:bg-stocky-bg-global/60 transition-colors cursor-pointer text-start"
             >
               {/* Left Anchor + Center Info Stack */}
               <div className="flex items-center gap-2.5 min-w-0 flex-1">
@@ -386,13 +401,17 @@ export function TasksTableWidget({
                   className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border ${
                     isCount
                       ? 'stocky-status-info bg-emerald-50 text-emerald-600 border-emerald-200'
-                      : 'stocky-status-warning bg-amber-50 text-amber-600 border-amber-200'
+                      : isExpiry
+                      ? 'stocky-status-warning bg-amber-50 text-amber-600 border-amber-200'
+                      : 'bg-blue-50 text-blue-600 border-blue-200'
                   }`}
                 >
                   {isCount ? (
                     <CheckCircleIcon size="xs" />
-                  ) : (
+                  ) : isExpiry ? (
                     <ClockIcon size="xs" />
+                  ) : (
+                    <ListTodoIcon size="xs" />
                   )}
                 </span>
                 <div className="min-w-0 flex-1">
@@ -404,14 +423,18 @@ export function TasksTableWidget({
                     <span>·</span>
                     <span className="truncate max-w-[100px]">{assignee?.full_name?.split(' ')[0] || assignee?.email?.split('@')[0] || 'Unassigned'}</span>
                     <span>·</span>
-                    <span className="font-medium text-stocky-text-main">{completed}/{items.length} items</span>
+                    <span className="font-medium text-stocky-text-main">
+                      {task.taskType === 'open'
+                        ? (t('tasks.directTask') || 'Direct task')
+                        : `${completed}/${items.length} ${t('tasks.itemsCount') || 'items'}`}
+                    </span>
                   </p>
                 </div>
               </div>
 
               {/* Right Status & Date Stack */}
               <div className="shrink-0 flex flex-col items-end gap-0.5">
-                {getStatusBadge(task.status)}
+                {getStatusBadge(task.status, t)}
                 <span className="text-[10px] text-stocky-text-sub font-normal mt-0.5">
                   {formatDate(task.createdAt)}
                 </span>
@@ -423,7 +446,7 @@ export function TasksTableWidget({
 
       {/* Table Footer / Counter */}
       <div className="flex items-center justify-between border-t border-stocky-border-subtle px-4 py-3 text-xs text-stocky-text-sub bg-white rounded-b-2xl">
-        <span>Showing {tasks.length} tasks</span>
+        <span>{t('common.showing')} {tasks.length} {t('tasks.title')}</span>
       </div>
     </div>
   );

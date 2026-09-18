@@ -15,6 +15,7 @@ import {
 import { supabase } from '@/lib/supabase/client';
 import type { CompanyUserRole, Location, Product, StockLot, Supplier } from '@stocky/types';
 import { SideDrawer } from '@/components/ui/SideDrawer';
+import { useTranslation } from '@/lib/i18n';
 import { BarcodeScannerWidget } from '../BarcodeScannerWidget/BarcodeScannerWidget';
 
 export interface ReceiveStockDrawerWidgetProps {
@@ -68,6 +69,7 @@ function ReceiveSearchSelect({
   emptyMessage,
   onCameraClick,
 }: ReceiveSearchSelectProps) {
+  const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
 
@@ -128,8 +130,8 @@ function ReceiveSearchSelect({
                 }}
                 disabled={disabled}
                 className="stocky-receive-camera-button"
-                title="Scan barcode with camera"
-                aria-label="Scan barcode with camera"
+                title={t('drawers.receiveStock.scanCamera')}
+                aria-label={t('drawers.receiveStock.scanCamera')}
               >
                 <CameraIcon size="xs" />
               </button>
@@ -184,6 +186,7 @@ export function ReceiveStockDrawerWidget({
   defaultLocationId,
   onSaved,
 }: ReceiveStockDrawerWidgetProps) {
+  const { t } = useTranslation();
   const wasOpenRef = useRef(false);
   const [productId, setProductId] = useState(defaultProductId || '');
   const [locationId, setLocationId] = useState(defaultLocationId || locations[0]?.id || '');
@@ -251,25 +254,25 @@ export function ReceiveStockDrawerWidget({
     return matchingProducts.slice(0, 8).map((product) => ({
       id: product.id,
       label: product.name,
-      meta: `${product.barcode || 'No barcode'} · ${product.categoryName}`,
+      meta: `${product.barcode || t('drawers.receiveStock.noBarcode')} · ${product.categoryName}`,
     }));
-  }, [productSearch, products]);
+  }, [productSearch, products, t]);
 
   const filteredSuppliers = useMemo(() => {
     const query = supplierSearch.trim().toLowerCase();
     return suppliers
       .filter((supplier) => !query || [supplier.name, supplier.contactName, supplier.contactEmail].filter(Boolean).some((value) => String(value).toLowerCase().includes(query)))
       .slice(0, 8)
-      .map((supplier) => ({ id: supplier.id, label: supplier.name, meta: supplier.contactName || supplier.contactEmail || 'Supplier contact not recorded' }));
-  }, [supplierSearch, suppliers]);
+      .map((supplier) => ({ id: supplier.id, label: supplier.name, meta: supplier.contactName || supplier.contactEmail || t('drawers.receiveStock.noSupplierContact') }));
+  }, [supplierSearch, suppliers, t]);
 
   const filteredLocations = useMemo(() => {
     const query = locationSearch.trim().toLowerCase();
     return locations
       .filter((location) => !query || [location.name, location.address, location.type].filter(Boolean).some((value) => String(value).toLowerCase().includes(query)))
       .slice(0, 8)
-      .map((location) => ({ id: location.id, label: location.name, meta: location.type === 'warehouse' ? 'Warehouse' : 'Branch' }));
-  }, [locationSearch, locations]);
+      .map((location) => ({ id: location.id, label: location.name, meta: location.type === 'warehouse' ? t('drawers.receiveStock.warehouse') : t('drawers.receiveStock.branch') }));
+  }, [locationSearch, locations, t]);
 
   const chooseProduct = (option: SearchOption) => {
     const product = products.find((candidate) => candidate.id === option.id);
@@ -317,9 +320,9 @@ export function ReceiveStockDrawerWidget({
   const createProduct = async () => {
     const name = newProductName.trim();
     const barcode = newProductBarcode.trim();
-    if (!name) return setError('Enter a product name first.');
-    if (!barcode) return setError('Add the barcode so it is saved to the product record.');
-    if (!companyId) return setError('Your company could not be identified.');
+    if (!name) return setError(t('drawers.receiveStock.errors.enterName'));
+    if (!barcode) return setError(t('drawers.receiveStock.errors.addBarcode'));
+    if (!companyId) return setError(t('drawers.receiveStock.errors.companyMissing'));
 
     setCreatingProduct(true);
     const { data, error: createError } = await supabase.from('products').insert({
@@ -334,7 +337,7 @@ export function ReceiveStockDrawerWidget({
       is_active: true,
     }).select('*').single();
     setCreatingProduct(false);
-    if (createError || !data) return setError(createError?.message || 'Could not create the product.');
+    if (createError || !data) return setError(createError?.message || t('drawers.receiveStock.errors.createFailed'));
 
     const nextProduct: Product = {
       id: data.id,
@@ -365,13 +368,13 @@ export function ReceiveStockDrawerWidget({
     const parsedQuantity = Number(quantity);
     const parsedDays = notificationDays === '' ? null : Number(notificationDays);
 
-    if (!selectedProduct) return setError('Search for a product or scan its barcode first.');
-    if (!locationId) return setError('Choose where this stock will be placed.');
-    if (!supplierId) return setError('Choose the supplier for this delivery.');
-    if (!Number.isInteger(parsedQuantity) || parsedQuantity <= 0) return setError('Quantity must be a whole number greater than zero.');
-    if (!receivedDate) return setError('Add the date this stock was received.');
-    if (!expiryDate && !expiryUnknown) return setError('Add a stock expiry date, or choose “No expiry date”.');
-    if (expiryDate && (parsedDays === null || !Number.isInteger(parsedDays) || parsedDays < 0)) return setError('Enter a valid expiry notification window.');
+    if (!selectedProduct) return setError(t('drawers.receiveStock.errors.selectProduct'));
+    if (!locationId) return setError(t('drawers.receiveStock.errors.chooseLocation'));
+    if (!supplierId) return setError(t('drawers.receiveStock.errors.chooseSupplier'));
+    if (!Number.isInteger(parsedQuantity) || parsedQuantity <= 0) return setError(t('drawers.receiveStock.errors.validQuantity'));
+    if (!receivedDate) return setError(t('drawers.receiveStock.errors.addReceivedDate'));
+    if (!expiryDate && !expiryUnknown) return setError(t('drawers.receiveStock.errors.addExpiryDate'));
+    if (expiryDate && (parsedDays === null || !Number.isInteger(parsedDays) || parsedDays < 0)) return setError(t('drawers.receiveStock.errors.validAlertDays'));
 
     setSaving(true);
     const { data, error: saveError } = await supabase.rpc('receive_stock_with_received_at', {
@@ -387,7 +390,7 @@ export function ReceiveStockDrawerWidget({
       p_received_at: toDateTime(receivedDate),
     });
     setSaving(false);
-    if (saveError) return setError(saveError.message || 'Could not add this stock.');
+    if (saveError) return setError(saveError.message || t('drawers.receiveStock.errors.saveFailed'));
     if (data) onSaved(Array.isArray(data) ? data[0] : data);
     onClose();
   };
@@ -397,13 +400,13 @@ export function ReceiveStockDrawerWidget({
 
   return (
     <>
-      <SideDrawer isOpen={isOpen} onClose={onClose} ariaLabel="Add inventory">
+      <SideDrawer isOpen={isOpen} onClose={onClose} ariaLabel={t('drawers.receiveStock.title')}>
       <div className="stocky-receive-header">
         <div>
-          <h2 className="stocky-receive-title">Add inventory</h2>
-          <p className="stocky-receive-subtitle">Find the product, then record where this delivery belongs.</p>
+          <h2 className="stocky-receive-title">{t('drawers.receiveStock.title')}</h2>
+          <p className="stocky-receive-subtitle">{t('drawers.receiveStock.subtitle')}</p>
         </div>
-        <button type="button" onClick={onClose} className="stocky-receive-close" aria-label="Close">
+        <button type="button" onClick={onClose} className="stocky-receive-close" aria-label={t('common.close')}>
           <XIcon size="xs" />
         </button>
       </div>
@@ -412,48 +415,48 @@ export function ReceiveStockDrawerWidget({
         <section className="stocky-receive-section">
           <div className="stocky-receive-section-heading">
             <span className="stocky-receive-section-number">1</span>
-            <div><h3>Find the product</h3><p>Search by name or scan the barcode.</p></div>
+            <div><h3>{t('drawers.receiveStock.step1Title')}</h3><p>{t('drawers.receiveStock.step1Desc')}</p></div>
           </div>
           <div className="stocky-receive-grid stocky-receive-grid--two">
             <div>
               <ReceiveSearchSelect
-                label="Product / barcode"
-                placeholder="Search or scan barcode..."
+                label={t('drawers.receiveStock.productOrBarcode')}
+                placeholder={t('drawers.receiveStock.searchPlaceholder')}
                 query={productSearch}
                 onQueryChange={handleProductSearchChange}
-                selected={selectedProduct ? { id: selectedProduct.id, label: selectedProduct.name, meta: selectedProduct.barcode || 'Barcode not recorded' } : null}
+                selected={selectedProduct ? { id: selectedProduct.id, label: selectedProduct.name, meta: selectedProduct.barcode || t('drawers.receiveStock.barcodeNotRecorded') } : null}
                 options={filteredProducts}
                 onSelect={chooseProduct}
                 onClear={() => { setProductId(''); setCreatedProduct(null); setProductSearch(''); setSupplierId(''); }}
                 required
                 icon={<BarcodeIcon size="xs" />}
-                emptyMessage="No matching product in your catalog."
+                emptyMessage={t('drawers.receiveStock.noMatchingProduct')}
                 onCameraClick={() => setIsScannerOpen(true)}
               />
-              {selectedProduct ? <p className="stocky-receive-confirmation"><CheckCircleIcon size="xs" /> Product selected · {selectedProduct.categoryName}</p> : null}
+              {selectedProduct ? <p className="stocky-receive-confirmation"><CheckCircleIcon size="xs" /> {t('drawers.receiveStock.productSelected')} · {selectedProduct.categoryName}</p> : null}
               {unknownBarcode ? (
                 <div className="stocky-receive-warning">
                   <AlertTriangleIcon size="xs" />
                   <div>
-                    <strong>Barcode not in your records</strong>
-                    <p>This barcode will be saved as a new product barcode when you create the product.</p>
-                    {userRole !== 'staff' ? <button type="button" onClick={startCreatingProduct} className="stocky-receive-inline-action">Create new product</button> : <p className="stocky-receive-warning__note">Ask a manager to add this product to the catalog.</p>}
+                    <strong>{t('drawers.receiveStock.barcodeWarning')}</strong>
+                    <p>{t('drawers.receiveStock.barcodeWarningDesc')}</p>
+                    {userRole !== 'staff' ? <button type="button" onClick={startCreatingProduct} className="stocky-receive-inline-action">{t('drawers.receiveStock.createProduct')}</button> : <p className="stocky-receive-warning__note">{t('drawers.receiveStock.askManager')}</p>}
                   </div>
                 </div>
               ) : null}
               {isCreatingProduct ? (
                 <div className="stocky-receive-create-product">
-                  <div className="stocky-receive-create-product__heading"><strong>New product details</strong><span>Barcode is required</span></div>
-                  <label className="stocky-receive-label">Product name<input required value={newProductName} onChange={(event) => setNewProductName(event.target.value)} placeholder="e.g. Fresh milk" className="stocky-receive-field stocky-receive-field--plain" /></label>
-                  <label className="stocky-receive-label">Barcode<input required value={newProductBarcode} onChange={(event) => setNewProductBarcode(event.target.value)} placeholder="Scan or type barcode" className="stocky-receive-field stocky-receive-field--plain" /></label>
-                  <label className="stocky-receive-label">Category<input list="stocky-receive-category-options" value={newProductCategory} onChange={(event) => setNewProductCategory(event.target.value)} placeholder="Search or add category" className="stocky-receive-field stocky-receive-field--plain" /><datalist id="stocky-receive-category-options">{Array.from(new Set(products.map((product) => product.categoryName).filter(Boolean))).sort().map((category) => <option key={category} value={category} />)}</datalist></label>
-                  <div className="stocky-receive-create-product__actions"><button type="button" onClick={() => setIsCreatingProduct(false)} className="stocky-receive-secondary-action">Cancel</button><button type="button" onClick={createProduct} disabled={creatingProduct} className="stocky-receive-inline-action">{creatingProduct ? 'Creating...' : 'Create product'}</button></div>
+                  <div className="stocky-receive-create-product__heading"><strong>{t('drawers.receiveStock.newProductDetails')}</strong><span>{t('drawers.receiveStock.barcodeRequired')}</span></div>
+                  <label className="stocky-receive-label">{t('drawers.receiveStock.productName')}<input required value={newProductName} onChange={(event) => setNewProductName(event.target.value)} placeholder={t('drawers.receiveStock.productNamePlaceholder')} className="stocky-receive-field stocky-receive-field--plain" /></label>
+                  <label className="stocky-receive-label">{t('drawers.receiveStock.barcode')}<input required value={newProductBarcode} onChange={(event) => setNewProductBarcode(event.target.value)} placeholder={t('drawers.receiveStock.barcodePlaceholder')} className="stocky-receive-field stocky-receive-field--plain" /></label>
+                  <label className="stocky-receive-label">{t('drawers.receiveStock.category')}<input list="stocky-receive-category-options" value={newProductCategory} onChange={(event) => setNewProductCategory(event.target.value)} placeholder={t('drawers.receiveStock.categoryOptions')} className="stocky-receive-field stocky-receive-field--plain" /><datalist id="stocky-receive-category-options">{Array.from(new Set(products.map((product) => product.categoryName).filter(Boolean))).sort().map((category) => <option key={category} value={category} />)}</datalist></label>
+                  <div className="stocky-receive-create-product__actions"><button type="button" onClick={() => setIsCreatingProduct(false)} className="stocky-receive-secondary-action">{t('drawers.receiveStock.cancel')}</button><button type="button" onClick={createProduct} disabled={creatingProduct} className="stocky-receive-inline-action">{creatingProduct ? t('drawers.receiveStock.creatingProduct') : t('drawers.receiveStock.createProduct')}</button></div>
                 </div>
               ) : null}
             </div>
             <ReceiveSearchSelect
-              label="Supplier"
-              placeholder="Search supplier..."
+              label={t('drawers.receiveStock.supplier')}
+              placeholder={t('drawers.receiveStock.searchSupplier')}
               query={supplierSearch}
               onQueryChange={setSupplierSearch}
               selected={selectedSupplier ? { id: selectedSupplier.id, label: selectedSupplier.name, meta: selectedSupplier.contactName || selectedSupplier.contactEmail || '' } : null}
@@ -463,7 +466,7 @@ export function ReceiveStockDrawerWidget({
               disabled={detailsDisabled}
               required
               icon={<TruckIcon size="xs" />}
-              emptyMessage={suppliers.length ? 'No suppliers match this search.' : 'Add a supplier in Suppliers first.'}
+              emptyMessage={suppliers.length ? t('drawers.receiveStock.noSuppliersFound') : t('drawers.receiveStock.noSuppliersRegistered')}
             />
           </div>
         </section>
@@ -471,25 +474,25 @@ export function ReceiveStockDrawerWidget({
         <section className="stocky-receive-section">
           <div className="stocky-receive-section-heading">
             <span className="stocky-receive-section-number">2</span>
-            <div><h3>Place the stock</h3><p>Tell Stocky where this delivery is going and how much arrived.</p></div>
+            <div><h3>{t('drawers.receiveStock.step2Title')}</h3><p>{t('drawers.receiveStock.step2Desc')}</p></div>
           </div>
           <div className="stocky-receive-grid stocky-receive-grid--two">
             <ReceiveSearchSelect
-              label="Location"
-              placeholder="Search location..."
+              label={t('drawers.receiveStock.location')}
+              placeholder={t('drawers.receiveStock.searchLocation')}
               query={locationSearch}
               onQueryChange={setLocationSearch}
-              selected={selectedLocation ? { id: selectedLocation.id, label: selectedLocation.name, meta: selectedLocation.type === 'warehouse' ? 'Warehouse' : 'Branch' } : null}
+              selected={selectedLocation ? { id: selectedLocation.id, label: selectedLocation.name, meta: selectedLocation.type === 'warehouse' ? t('drawers.receiveStock.warehouse') : t('drawers.receiveStock.branch') } : null}
               options={filteredLocations}
               onSelect={(option) => { setLocationId(option.id); setLocationSearch(''); }}
               onClear={() => { setLocationId(''); setLocationSearch(''); }}
               disabled={detailsDisabled}
               required
               icon={<SearchIcon size="xs" />}
-              emptyMessage="No locations match this search."
+              emptyMessage={t('drawers.receiveStock.noLocationsFound')}
             />
             <label className={`stocky-receive-label ${detailsDisabled ? 'stocky-receive-label--disabled' : ''}`}>
-              <span>Quantity <span aria-hidden="true" className="stocky-receive-required">*</span></span>
+              <span>{t('drawers.receiveStock.quantity')} <span aria-hidden="true" className="stocky-receive-required">*</span></span>
               <input required type="number" min="1" step="1" value={quantity} onChange={(event) => setQuantity(event.target.value)} placeholder="0" disabled={detailsDisabled} className="stocky-receive-field stocky-receive-field--plain" />
             </label>
           </div>
@@ -498,31 +501,31 @@ export function ReceiveStockDrawerWidget({
         <section className="stocky-receive-section">
           <div className="stocky-receive-section-heading">
             <span className="stocky-receive-section-number">3</span>
-            <div><h3>Record the dates</h3><p>Each receipt creates a new stock lot under the selected product.</p></div>
+            <div><h3>{t('drawers.receiveStock.step3Title')}</h3><p>{t('drawers.receiveStock.step3Desc')}</p></div>
           </div>
           <div className="stocky-receive-grid stocky-receive-grid--three">
             <label className={`stocky-receive-label ${detailsDisabled ? 'stocky-receive-label--disabled' : ''}`}>
-              <span>Date received <span aria-hidden="true" className="stocky-receive-required">*</span></span>
+              <span>{t('drawers.receiveStock.receivedDate')} <span aria-hidden="true" className="stocky-receive-required">*</span></span>
               <span className="stocky-receive-date-field"><CalendarIcon size="xs" /><input required type="date" value={receivedDate} onChange={(event) => setReceivedDate(event.target.value)} disabled={detailsDisabled} className="stocky-receive-field stocky-receive-field--date" /></span>
             </label>
             <label className={`stocky-receive-label ${detailsDisabled ? 'stocky-receive-label--disabled' : ''}`}>
-              <span>Stock expiry date {!expiryUnknown ? <span aria-hidden="true" className="stocky-receive-required">*</span> : null}</span>
+              <span>{t('drawers.receiveStock.expiryDate')} {!expiryUnknown ? <span aria-hidden="true" className="stocky-receive-required">*</span> : null}</span>
               <input required={!expiryUnknown} type="date" value={expiryDate} onChange={(event) => setExpiryDate(event.target.value)} disabled={detailsDisabled || expiryUnknown} className="stocky-receive-field stocky-receive-field--plain" />
             </label>
             <label className={`stocky-receive-label ${detailsDisabled || expiryUnknown ? 'stocky-receive-label--disabled' : ''}`}>
-              <span>Notify before (days)</span>
+              <span>{t('drawers.receiveStock.alertDays')}</span>
               <input type="number" min="0" step="1" value={notificationDays} onChange={(event) => setNotificationDays(event.target.value)} disabled={detailsDisabled || expiryUnknown} className="stocky-receive-field stocky-receive-field--plain" />
             </label>
           </div>
-          <label className={`stocky-receive-checkbox ${detailsDisabled ? 'stocky-receive-checkbox--disabled' : ''}`}><input type="checkbox" checked={expiryUnknown} onChange={(event) => { setExpiryUnknown(event.target.checked); if (event.target.checked) { setExpiryDate(''); setNotificationDays(''); } else if (!notificationDays) setNotificationDays(selectedProduct?.defaultExpiryNotificationDays == null ? '30' : String(selectedProduct.defaultExpiryNotificationDays)); }} disabled={detailsDisabled} /> <span>No expiry date available for this product</span></label>
+          <label className={`stocky-receive-checkbox ${detailsDisabled ? 'stocky-receive-checkbox--disabled' : ''}`}><input type="checkbox" checked={expiryUnknown} onChange={(event) => { setExpiryUnknown(event.target.checked); if (event.target.checked) { setExpiryDate(''); setNotificationDays(''); } else if (!notificationDays) setNotificationDays(selectedProduct?.defaultExpiryNotificationDays == null ? '30' : String(selectedProduct.defaultExpiryNotificationDays)); }} disabled={detailsDisabled} /> <span>{t('drawers.receiveStock.noExpiry')}</span></label>
         </section>
 
         {error ? <p className="stocky-receive-error" role="alert">{error}</p> : null}
       </form>
 
       <div className="stocky-receive-footer">
-        <button type="button" onClick={onClose} className="stocky-receive-secondary-action">Cancel</button>
-        <button type="submit" onClick={handleSave} disabled={saving || !selectedProduct} className="stocky-receive-primary-action">{saving ? 'Adding...' : 'Add to inventory'}</button>
+        <button type="button" onClick={onClose} className="stocky-receive-secondary-action">{t('drawers.receiveStock.cancel')}</button>
+        <button type="submit" onClick={handleSave} disabled={saving || !selectedProduct} className="stocky-receive-primary-action">{saving ? t('drawers.receiveStock.receiving') : t('drawers.receiveStock.confirmReceipt')}</button>
       </div>
     </SideDrawer>
 

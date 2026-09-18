@@ -21,6 +21,7 @@ import {
   HomeQuickActionsWidget,
   HomeOperationalHealthWidget,
 } from '@/widgets';
+import { useTranslation } from '@/lib/i18n';
 
 export interface HomeMetrics {
   expiredLots: number;
@@ -120,6 +121,7 @@ export function HomePlatformView({
   activityLogs = [],
   selectedLocationId,
 }: HomePlatformViewProps) {
+  const { t } = useTranslation();
   // Global Location Filter State
   const [locationFilter, setLocationFilter] = useState<string>(
     selectedLocationId && selectedLocationId !== 'all' ? selectedLocationId : 'all'
@@ -127,7 +129,7 @@ export function HomePlatformView({
 
   // Location filter mappings
   const locationMap = useMemo(() => new Map(locations.map((l) => [l.id, l.name])), [locations]);
-  const activeLocationName = locationFilter === 'all' ? 'All Branches' : locationMap.get(locationFilter) || locationName;
+  const activeLocationName = locationFilter === 'all' ? t('home.allBranches') : locationMap.get(locationFilter) || locationName;
 
   // Scoped datasets based on location filter
   const scopedLots = useMemo(() => {
@@ -208,10 +210,10 @@ export function HomePlatformView({
         <section id="home-quick-nav" aria-labelledby="quick-nav-heading" className="flex flex-col gap-3">
           <div className="flex flex-col">
             <h2 id="quick-nav-heading" className="text-base sm:text-lg font-bold text-stocky-text-main tracking-tight">
-              Quick Navigation
+              {t('home.quickNavTitle')}
             </h2>
             <p className="text-xs text-stocky-text-sub mt-0.5">
-              Direct shortcuts to organization settings, team permissions, branch locations, and system activity logs.
+              {t('home.quickNavSubtitle')}
             </p>
           </div>
 
@@ -227,10 +229,10 @@ export function HomePlatformView({
         <section id="home-operational-highlights" aria-labelledby="highlights-heading" className="flex flex-col gap-3">
           <div className="flex flex-col">
             <h2 id="highlights-heading" className="text-base sm:text-lg font-bold text-stocky-text-main tracking-tight">
-              Operational Highlights
+              {t('home.highlightsTitle')}
             </h2>
             <p className="text-xs text-stocky-text-sub mt-0.5">
-              High-priority stock expirations, pending restock orders, task assignments, and active staff presence.
+              {t('home.highlightsSubtitle')}
             </p>
           </div>
 
@@ -252,10 +254,10 @@ export function HomePlatformView({
         <section id="home-operational-health" aria-labelledby="operational-health-heading" className="flex flex-col gap-3">
           <div className="flex flex-col">
             <h2 id="operational-health-heading" className="text-base sm:text-lg font-bold text-stocky-text-main tracking-tight">
-              Operational Health & Analytics
+              {t('home.healthTitle')}
             </h2>
             <p className="text-xs text-stocky-text-sub mt-0.5">
-              Live branch distribution, high-velocity product turnover, dormant inventory detection, and team attendance dynamics.
+              {t('home.healthSubtitle')}
             </p>
           </div>
 

@@ -4,6 +4,7 @@ import React from 'react';
 import { ArrowDownIcon, CloudUploadIcon, PlusIcon } from '@stocky/icons';
 import { StandardToolbarWidget } from '../StandardToolbarWidget/StandardToolbarWidget';
 import type { ActionItem } from '@/components/ui/ActionsBottomSheet';
+import { useTranslation } from '@/lib/i18n';
 
 export interface SuppliersToolbarWidgetProps {
   searchQuery: string;
@@ -35,12 +36,14 @@ export function SuppliersToolbarWidget({
   onExport,
   onAddSupplier,
 }: SuppliersToolbarWidgetProps) {
+  const { t } = useTranslation();
+
   const moreActions: ActionItem[] = [
     ...(canImport && onImport
       ? [
           {
             id: 'import',
-            label: 'Import',
+            label: t('inventory.import') || 'Import',
             description: 'Upload CSV file with supplier contacts and details',
             icon: <CloudUploadIcon size="xs" />,
             onClick: onImport,
@@ -49,7 +52,7 @@ export function SuppliersToolbarWidget({
       : []),
     {
       id: 'export',
-      label: 'Export',
+      label: t('inventory.export') || 'Export',
       description: 'Download supplier directory to Excel spreadsheet',
       icon: <ArrowDownIcon size="xs" />,
       onClick: onExport,
@@ -60,22 +63,22 @@ export function SuppliersToolbarWidget({
     <StandardToolbarWidget
       searchQuery={searchQuery}
       onSearchChange={onSearchChange}
-      searchPlaceholder="Search suppliers, addresses, products..."
+      searchPlaceholder={t('common.search') || 'Search suppliers, addresses, products...'}
       isFilterOpen={filterPanelOpen}
       onToggleFilter={onToggleFilterPanel}
       activeFilterCount={activeFilterCount}
       primaryAction={
         canManageSuppliers
           ? {
-              label: 'Add supplier',
+              label: t('suppliers.addSupplier') || 'Add supplier',
               icon: <PlusIcon size="xs" />,
               onClick: onAddSupplier,
-              title: 'Add new supplier',
+              title: t('suppliers.addSupplier') || 'Add new supplier',
             }
           : undefined
       }
       moreActions={moreActions}
-      moreActionsTitle="Supplier Actions"
+      moreActionsTitle={t('common.actions') || 'Supplier Actions'}
     />
   );
 }

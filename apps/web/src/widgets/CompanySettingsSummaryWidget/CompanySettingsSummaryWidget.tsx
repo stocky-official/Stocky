@@ -1,6 +1,8 @@
 'use client';
 
+import React from 'react';
 import type { CompanyUserRole } from '@stocky/types';
+import { useTranslation } from '@/lib/i18n';
 
 export interface CompanySettingsSummaryWidgetProps {
   companyName?: string | null;
@@ -10,6 +12,7 @@ export interface CompanySettingsSummaryWidgetProps {
 }
 
 export function CompanySettingsSummaryWidget({ companyName, userName, userTitle, userRole = 'owner' }: CompanySettingsSummaryWidgetProps) {
+  const { t } = useTranslation();
   const isStaff = userRole === 'staff';
   const isManager = userRole === 'manager';
   return (
@@ -17,17 +20,17 @@ export function CompanySettingsSummaryWidget({ companyName, userName, userTitle,
       <div className="stocky-surface p-6">
         <h2 className="text-base font-semibold text-stocky-text-main">
           {isStaff
-            ? 'Your access is managed by your branch manager'
+            ? t('settings.staffNoticeTitle')
             : isManager
-              ? 'Keep branch work simple'
-              : 'Keep daily work simple'}
+              ? t('settings.managerNoticeTitle')
+              : t('settings.ownerNoticeTitle')}
         </h2>
         <p className="text-sm text-stocky-text-sub mt-1.5">
           {isStaff
-            ? 'Ask your manager if you need a different branch or permission.'
+            ? t('settings.staffNoticeDesc')
             : isManager
-              ? 'Company-wide settings are managed by the owner or admin.'
-              : 'Advanced company configuration will appear here as it becomes necessary.'}
+              ? t('settings.managerNoticeDesc')
+              : t('settings.ownerNoticeDesc')}
         </p>
       </div>
     </div>

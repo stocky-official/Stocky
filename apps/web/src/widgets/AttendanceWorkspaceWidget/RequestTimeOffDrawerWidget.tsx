@@ -4,6 +4,7 @@ import React, { useState, useMemo } from 'react';
 import type { LeaveType } from '@stocky/types';
 import { SideDrawer } from '@/components/ui/SideDrawer';
 import { CalendarIcon, UsersIcon, AlertCircleIcon, XIcon } from '@stocky/icons';
+import { useTranslation } from '@/lib/i18n';
 
 export interface RequestTimeOffDrawerWidgetProps {
   isOpen: boolean;
@@ -25,11 +26,13 @@ export function RequestTimeOffDrawerWidget({
   members,
   onSubmit,
 }: RequestTimeOffDrawerWidgetProps) {
+  const { t } = useTranslation();
   const [leaveType, setLeaveType] = useState<LeaveType>('pto');
   const [startDate, setStartDate] = useState(new Date().toISOString().slice(0, 10));
   const [endDate, setEndDate] = useState(new Date().toISOString().slice(0, 10));
   const [reason, setReason] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   // Managers/Admins eligible for reviewing
   const managers = useMemo(() => {
@@ -51,10 +54,11 @@ export function RequestTimeOffDrawerWidget({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!managerUserId) {
-      alert('Please select your direct manager');
+      setError(t('drawers.timeOff.errors.managerRequired'));
       return;
     }
     setSubmitting(true);
+    setError(null);
     try {
       await onSubmit({
         leaveType,
@@ -66,9 +70,24 @@ export function RequestTimeOffDrawerWidget({
       });
       onClose();
     } catch (err: any) {
-      alert(err.message || 'Failed to submit leave request');
+      setError(err?.message || t('drawers.timeOff.errors.submitFailed'));
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const getLeaveTypeLabel = (type: LeaveType) => {
+    switch (type) {
+      case 'pto':
+        return t('drawers.timeOff.pto');
+      case 'sick':
+        return t('drawers.timeOff.sick');
+      case 'emergency':
+        return t('drawers.timeOff.emergency');
+      case 'unpaid':
+        return t('drawers.timeOff.unpaid');
+      default:
+        return type;
     }
   };
 
@@ -76,7 +95,7 @@ export function RequestTimeOffDrawerWidget({
     <SideDrawer
       isOpen={isOpen}
       onClose={onClose}
-      ariaLabel="Request Time Off"
+      ariaLabel={t('drawers.timeOff.title')}
     >
       <div className="flex items-start justify-between gap-4 border-b border-stocky-border-subtle px-5 py-4">
         <div className="flex min-w-0 items-start gap-3">
@@ -84,9 +103,9 @@ export function RequestTimeOffDrawerWidget({
             <CalendarIcon size="xs" />
           </span>
           <div className="min-w-0">
-            <h2 className="truncate text-lg font-medium text-stocky-text-main">Request Time Off</h2>
+            <h2 className="truncate text-lg font-medium text-stocky-text-main">{t('drawers.timeOff.title')}</h2>
             <p className="mt-1 text-xs text-stocky-text-sub">
-              Submit a leave request. This will automatically assign a review task to your manager.
+              {t('drawers.timeOff.subtitle')}
             </p>
           </div>
         </div>
@@ -94,7 +113,7 @@ export function RequestTimeOffDrawerWidget({
           type="button"
           onClick={onClose}
           className="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-lg text-stocky-text-sub hover:bg-stocky-bg-global"
-          aria-label="Close"
+          aria-label={t('common.close')}
         >
           <XIcon size="xs" />
         </button>
@@ -102,10 +121,16 @@ export function RequestTimeOffDrawerWidget({
 
       <form onSubmit={handleSubmit} className="flex flex-col h-full justify-between p-6">
         <div className="space-y-5">
+          {error && (
+            <div className="rounded-xl border border-stocky-status-danger-border bg-stocky-status-danger-bg p-3 text-xs text-stocky-status-danger-fg">
+              {error}
+            </div>
+          )}
+
           {/* Leave Type Selector */}
           <div>
             <label className="block text-xs font-semibold text-stocky-text-main mb-2">
-              Leave Type
+              {t('drawers.timeOff.leaveType')}
             </label>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
               {(['pto', 'sick', 'emergency', 'unpaid'] as LeaveType[]).map((type) => (
@@ -119,7 +144,7 @@ export function RequestTimeOffDrawerWidget({
                       : 'border-stocky-border-subtle bg-stocky-bg-widget text-stocky-text-sub hover:border-stocky-primary/50'
                   }`}
                 >
-                  {type === 'pto' ? 'Annual (PTO)' : type}
+                  {getLeaveTypeLabel(type)}
                 </button>
               ))}
             </div>
@@ -129,7 +154,7 @@ export function RequestTimeOffDrawerWidget({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="block text-xs font-semibold text-stocky-text-main mb-1.5">
-                Start Date
+                {t('drawers.timeOff.startDate')}
               </label>
               <input
                 type="date"
@@ -141,7 +166,7 @@ export function RequestTimeOffDrawerWidget({
             </div>
             <div>
               <label className="block text-xs font-semibold text-stocky-text-main mb-1.5">
-                End Date
+                {t('drawers.timeOff.endDate')}
               </label>
               <input
                 type="date"
@@ -155,14 +180,18 @@ export function RequestTimeOffDrawerWidget({
           </div>
 
           <div className="p-3 rounded-widget bg-stocky-bg-global border border-stocky-border-subtle flex items-center justify-between text-xs">
-            <span className="text-stocky-text-sub font-medium">Total Duration:</span>
-            <span className="font-semibold text-stocky-text-main">{daysCount} Day{daysCount !== 1 ? 's' : ''}</span>
+            <span className="text-stocky-text-sub font-medium">{t('drawers.timeOff.totalDuration')}</span>
+            <span className="font-semibold text-stocky-text-main">
+              {daysCount === 1
+                ? t('drawers.timeOff.durationDaysSingular', { count: 1 })
+                : t('drawers.timeOff.durationDaysPlural', { count: daysCount })}
+            </span>
           </div>
 
           {/* Direct Manager Selector */}
           <div>
             <label className="block text-xs font-semibold text-stocky-text-main mb-1.5">
-              Direct Manager (Approver)
+              {t('drawers.timeOff.manager')}
             </label>
             <select
               value={managerUserId}
@@ -180,13 +209,13 @@ export function RequestTimeOffDrawerWidget({
           {/* Reason */}
           <div>
             <label className="block text-xs font-semibold text-stocky-text-main mb-1.5">
-              Reason / Comments
+              {t('drawers.timeOff.reason')}
             </label>
             <textarea
               rows={3}
               value={reason}
               onChange={(e) => setReason(e.target.value)}
-              placeholder="Provide context for your leave request..."
+              placeholder={t('drawers.timeOff.reasonPlaceholder')}
               className="w-full rounded-widget border border-stocky-border-subtle bg-stocky-bg-widget p-3 text-xs text-stocky-text-main focus:border-stocky-primary focus:outline-none resize-none"
             />
           </div>
@@ -195,7 +224,7 @@ export function RequestTimeOffDrawerWidget({
           <div className="p-3.5 rounded-widget stocky-status-info border flex items-start gap-2.5">
             <AlertCircleIcon size="xs" className="shrink-0 mt-0.5 text-stocky-primary" />
             <p className="text-[11px] leading-relaxed">
-              Once submitted, a review task will automatically be created and assigned to your manager in the <strong>Tasks workspace</strong>.
+              {t('drawers.timeOff.automationAlert')}
             </p>
           </div>
         </div>
@@ -207,14 +236,14 @@ export function RequestTimeOffDrawerWidget({
             onClick={onClose}
             className="h-10 rounded-full border border-stocky-border-subtle px-5 text-xs font-medium text-stocky-text-main hover:bg-stocky-bg-global transition-colors cursor-pointer"
           >
-            Cancel
+            {t('common.cancel')}
           </button>
           <button
             type="submit"
             disabled={submitting}
             className="h-10 rounded-full bg-stocky-primary px-6 text-xs font-medium text-white hover:bg-stocky-primary-hover transition-colors cursor-pointer shadow-sm disabled:opacity-50"
           >
-            {submitting ? 'Submitting...' : 'Submit Request'}
+            {submitting ? t('drawers.timeOff.submitting') : t('drawers.timeOff.submit')}
           </button>
         </div>
       </form>

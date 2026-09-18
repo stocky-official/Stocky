@@ -1,5 +1,6 @@
 import React from 'react';
 import type { CompanyUserRole, Location } from '@stocky/types';
+import { useTranslation } from '@/lib/i18n';
 import { PlatformPageLayout } from './PlatformPageLayout';
 import { TeamWorkspaceWidget, type TeamMemberData } from '@/widgets/TeamWorkspaceWidget';
 
@@ -20,10 +21,11 @@ export interface TeamPlatformViewProps {
  * Orchestrates layout, clean 2-tier header, and team management workspace.
  */
 export function TeamPlatformView(props: TeamPlatformViewProps) {
+  const { t } = useTranslation();
   return (
     <PlatformPageLayout
-      title="Team & Organization"
-      subtitle="Manage team roles, job titles, authorizations, and organizational structure."
+      title={t('team.title')}
+      subtitle={t('team.subtitle')}
     >
       <TeamWorkspaceWidget {...props} />
     </PlatformPageLayout>

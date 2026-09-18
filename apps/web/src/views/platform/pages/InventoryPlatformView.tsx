@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from '@/lib/i18n';
 import { PlatformPageLayout } from './PlatformPageLayout';
 import {
   InventoryWorkspaceWidget,
@@ -18,10 +19,11 @@ export interface InventoryPlatformViewProps extends InventoryWorkspaceWidgetProp
  * - Page Vertical Rhythm: var(--stocky-page-gap) (24px)
  */
 export function InventoryPlatformView(props: InventoryPlatformViewProps) {
+  const { t } = useTranslation();
   return (
     <PlatformPageLayout
-      title="Inventory"
-      subtitle="Track active batches, expiry status, and stock levels across your locations."
+      title={t('inventory.title')}
+      subtitle={t('inventory.subtitle')}
     >
       <InventoryWorkspaceWidget {...props} />
     </PlatformPageLayout>

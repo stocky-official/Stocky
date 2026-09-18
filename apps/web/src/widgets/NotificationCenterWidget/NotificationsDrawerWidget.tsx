@@ -10,6 +10,7 @@ import {
   FacebookNotificationFeed,
   type NotificationQueueItem,
 } from './NotificationCenterWidget';
+import { useTranslation } from '@/lib/i18n';
 
 export interface NotificationsDrawerWidgetProps {
   isOpen: boolean;
@@ -24,13 +25,14 @@ export function NotificationsDrawerWidget({
   items,
   onNavigateToLogs,
 }: NotificationsDrawerWidgetProps) {
+  const { t } = useTranslation();
   const unreadCount = items.filter((it) => !it.isRead).length;
 
   return (
     <SideDrawer
       isOpen={isOpen}
       onClose={onClose}
-      ariaLabel="Notifications"
+      ariaLabel={t('notifications.title')}
       panelClassName="md:w-[460px]"
     >
       <div className="flex flex-col h-full bg-stocky-bg-widget select-none">
@@ -42,7 +44,7 @@ export function NotificationsDrawerWidget({
             </div>
             <div className="flex items-center gap-2">
               <h2 className="text-base font-bold text-stocky-text-main">
-                Notifications
+                {t('notifications.title')}
               </h2>
               {unreadCount > 0 && (
                 <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-600 text-white">
@@ -55,7 +57,7 @@ export function NotificationsDrawerWidget({
           <button
             type="button"
             onClick={onClose}
-            aria-label="Close notifications drawer"
+            aria-label={t('common.close')}
             className="flex h-8 w-8 items-center justify-center rounded-full text-stocky-text-sub hover:bg-stocky-bg-global hover:text-stocky-text-main transition-colors cursor-pointer shrink-0"
           >
             <XIcon size="xs" className="w-4 h-4" />

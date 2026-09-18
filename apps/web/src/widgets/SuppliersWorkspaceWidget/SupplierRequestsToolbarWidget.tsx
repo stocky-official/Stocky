@@ -3,6 +3,7 @@
 import React from 'react';
 import { FilterIcon, PlusIcon, SearchIcon, XIcon } from '@stocky/icons';
 import type { SupplierRequest } from '@stocky/types';
+import { useTranslation } from '@/lib/i18n';
 
 export type SupplierRequestStatusFilter = 'all' | SupplierRequest['status'];
 
@@ -29,13 +30,15 @@ export function SupplierRequestsToolbarWidget({
   isFilterActive = false,
   activeFilterCount = 0,
 }: SupplierRequestsToolbarWidgetProps) {
+  const { t } = useTranslation();
+
   const statusTabs: Array<{ id: SupplierRequestStatusFilter; label: string }> = [
-    { id: 'all', label: 'All requests' },
-    { id: 'open', label: 'Open' },
-    { id: 'contacted', label: 'Contacted' },
-    { id: 'ordered', label: 'Ordered' },
-    { id: 'received', label: 'Received' },
-    { id: 'closed', label: 'Closed' },
+    { id: 'all', label: t('suppliers.allRequests') || 'All requests' },
+    { id: 'open', label: t('suppliers.statusOpen') || 'Open' },
+    { id: 'contacted', label: t('suppliers.statusContacted') || 'Contacted' },
+    { id: 'ordered', label: t('suppliers.statusOrdered') || 'Ordered' },
+    { id: 'received', label: t('suppliers.statusReceived') || 'Received' },
+    { id: 'closed', label: t('suppliers.statusClosed') || 'Closed' },
   ];
 
   return (
@@ -50,7 +53,7 @@ export function SupplierRequestsToolbarWidget({
           <input
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
-            placeholder="Search requests by product, supplier, or location..."
+            placeholder={t('common.search') || 'Search requests by product, supplier, or location...'}
             className="w-full h-10 rounded-full border border-stocky-border-subtle bg-stocky-bg-widget pl-9 pr-16 text-xs text-stocky-text-main placeholder:text-stocky-text-sub focus:border-stocky-primary focus:outline-none transition-colors"
           />
           {searchQuery ? (
@@ -58,7 +61,7 @@ export function SupplierRequestsToolbarWidget({
               type="button"
               onClick={() => onSearchChange('')}
               className="absolute right-9 top-1/2 -translate-y-1/2 text-stocky-text-sub hover:text-stocky-text-main transition-colors cursor-pointer"
-              aria-label="Clear search"
+              aria-label={t('common.clear') || 'Clear search'}
             >
               <XIcon size="xs" />
             </button>
@@ -74,7 +77,7 @@ export function SupplierRequestsToolbarWidget({
                   : 'text-stocky-text-sub hover:bg-stocky-bg-hover hover:text-stocky-text-main'
               }`}
               title="Open requests filter panel"
-              aria-label="Filter requests"
+              aria-label={t('common.filter') || 'Filter requests'}
             >
               <FilterIcon size="xs" />
               {activeFilterCount > 0 && (
@@ -94,10 +97,6 @@ export function SupplierRequestsToolbarWidget({
         >
           {statusTabs.map((tab) => {
             const isActive = statusFilter === tab.id;
-            const mobileLabel =
-              tab.id === 'all'
-                ? 'All'
-                : tab.label;
             return (
               <button
                 key={tab.id}
@@ -111,8 +110,7 @@ export function SupplierRequestsToolbarWidget({
                     : 'border border-stocky-border-subtle bg-white text-stocky-text-main hover:border-stocky-primary hover:text-stocky-primary'
                 }`}
               >
-                <span className="sm:hidden">{mobileLabel}</span>
-                <span className="hidden sm:inline">{tab.label}</span>
+                <span>{tab.label}</span>
               </button>
             );
           })}
@@ -124,7 +122,7 @@ export function SupplierRequestsToolbarWidget({
           className="stocky-table-toolbar-button stocky-table-toolbar-button--primary w-full sm:w-auto h-10 px-4 rounded-full text-xs font-semibold inline-flex items-center justify-center gap-1.5 whitespace-nowrap cursor-pointer"
         >
           <PlusIcon size="xs" />
-          <span><span className="sm:hidden">Add</span><span className="hidden sm:inline">New request</span></span>
+          <span>{t('suppliers.newRequest') || 'New request'}</span>
         </button>
       </div>
     </div>

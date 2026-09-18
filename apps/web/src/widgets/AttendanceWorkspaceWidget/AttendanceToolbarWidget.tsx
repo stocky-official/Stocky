@@ -14,6 +14,7 @@ import type { Location } from '@stocky/types';
 import { BottomSheet } from '@/components/ui/BottomSheet';
 import { StandardToolbarWidget } from '../StandardToolbarWidget/StandardToolbarWidget';
 import type { ActionItem } from '@/components/ui/ActionsBottomSheet';
+import { useTranslation } from '@/lib/i18n';
 
 export type AttendanceTab = 'timesheets' | 'calendar' | 'leaves' | 'kiosk';
 
@@ -44,6 +45,7 @@ export function AttendanceToolbarWidget({
   onStatusFilterChange,
   locations = [],
 }: AttendanceToolbarWidgetProps) {
+  const { t } = useTranslation();
   const [isFilterDrawerOpen, setIsFilterDrawerOpen] = useState(false);
   const filterPanelRef = useRef<HTMLDivElement | null>(null);
 
@@ -79,8 +81,8 @@ export function AttendanceToolbarWidget({
   const moreActions: ActionItem[] = [
     {
       id: 'export-excel',
-      label: 'Export Timesheets',
-      description: 'Download timesheet logs and shift records to Excel',
+      label: t('attendance.exportExcel') || 'Export Timesheets',
+      description: t('attendance.exportExcelDesc') || 'Download timesheet logs and shift records to Excel',
       icon: <FileSpreadsheetIcon size="xs" />,
       onClick: onExportExcel,
     },
@@ -246,22 +248,23 @@ export function AttendanceToolbarWidget({
       <StandardToolbarWidget
         searchQuery={search}
         onSearchChange={onSearchChange}
-        searchPlaceholder="Search employee, branch, status..."
+        searchPlaceholder={t('attendance.searchPlaceholder') || "Search employee, branch, status..."}
         isFilterOpen={isFilterDrawerOpen}
         onToggleFilter={onLocationFilterChange ? () => setIsFilterDrawerOpen((prev) => !prev) : undefined}
         activeFilterCount={activeFilterCount}
         primaryAction={
           onRequestLeave
             ? {
-                label: 'Request Leave',
+                label: t('attendance.requestLeave') || 'Request Leave',
+                shortLabel: t('attendance.timeOff') || 'Time Off',
                 icon: <PlusIcon size="xs" />,
                 onClick: onRequestLeave,
-                title: 'Request time off / leave',
+                title: t('attendance.requestLeave') || 'Request time off / leave',
               }
             : undefined
         }
         moreActions={moreActions}
-        moreActionsTitle="Attendance Actions"
+        moreActionsTitle={t('common.actions') || "Attendance Actions"}
       />
 
       {/* Floating Filter Panel (Desktop) */}
@@ -282,8 +285,8 @@ export function AttendanceToolbarWidget({
           mobileOnly
           isOpen={isFilterDrawerOpen}
           onClose={() => setIsFilterDrawerOpen(false)}
-          title="Filter Timesheets"
-          subtitle="Filter shifts by branch location and punch status"
+          title={t('attendance.filterTimesheets') || "Filter Timesheets"}
+          subtitle={t('attendance.filterTimesheetsSubtitle') || "Filter shifts by branch location and punch status"}
           footer={
             <div className="flex items-center justify-between gap-3">
               <button
@@ -292,14 +295,14 @@ export function AttendanceToolbarWidget({
                 disabled={activeFilterCount === 0}
                 className="text-xs font-medium text-stocky-text-sub hover:text-stocky-text-main disabled:opacity-40 cursor-pointer"
               >
-                Reset filters
+                {t('common.resetFilters') || "Reset filters"}
               </button>
               <button
                 type="button"
                 onClick={() => setIsFilterDrawerOpen(false)}
                 className="stocky-table-toolbar-button stocky-table-toolbar-button--primary h-9 px-4 rounded-full text-xs font-semibold cursor-pointer shadow-xs"
               >
-                Apply filters
+                {t('common.apply') || "Apply filters"}
               </button>
             </div>
           }

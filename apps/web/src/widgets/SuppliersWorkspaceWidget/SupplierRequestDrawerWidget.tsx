@@ -9,6 +9,7 @@ import {
 } from '@stocky/icons';
 import type { Location, Product, Supplier } from '@stocky/types';
 import { SideDrawer } from '@/components/ui/SideDrawer';
+import { useTranslation } from '@/lib/i18n';
 
 export interface SupplierRequestDrawerWidgetProps {
   isOpen: boolean;
@@ -30,12 +31,6 @@ export interface SupplierRequestDrawerWidgetProps {
   }) => void;
 }
 
-const REQUEST_TYPES = [
-  { id: 'replenish', label: 'Replenish', description: 'Order new inventory' },
-  { id: 'return', label: 'Return', description: 'Send back excess/damaged' },
-  { id: 'replace', label: 'Replace', description: 'Defective batch swap' },
-] as const;
-
 export function SupplierRequestDrawerWidget({
   isOpen,
   onClose,
@@ -47,6 +42,7 @@ export function SupplierRequestDrawerWidget({
   selectedLocationId,
   onCreate,
 }: SupplierRequestDrawerWidgetProps) {
+  const { t } = useTranslation();
   const [requestType, setRequestType] = useState<'replenish' | 'return' | 'replace'>('replenish');
   const [supplierId, setSupplierId] = useState(defaultSupplierId || '');
   const [productId, setProductId] = useState(defaultProductId || '');
@@ -57,6 +53,12 @@ export function SupplierRequestDrawerWidget({
   const [targetDate, setTargetDate] = useState('');
   const [notes, setNotes] = useState('');
   const [error, setError] = useState<string | null>(null);
+
+  const requestTypes = useMemo(() => [
+    { id: 'replenish' as const, label: t('drawers.supplierRequest.types.replenish.label'), description: t('drawers.supplierRequest.types.replenish.description') },
+    { id: 'return' as const, label: t('drawers.supplierRequest.types.return.label'), description: t('drawers.supplierRequest.types.return.description') },
+    { id: 'replace' as const, label: t('drawers.supplierRequest.types.replace.label'), description: t('drawers.supplierRequest.types.replace.description') },
+  ], [t]);
 
   // Sync defaults when drawer opens or defaults change
   React.useEffect(() => {
@@ -78,7 +80,6 @@ export function SupplierRequestDrawerWidget({
 
   const filteredProducts = useMemo(() => {
     if (!supplierId) return products;
-    // If supplier is selected, products with matching defaultSupplierId appear first
     return [...products].sort((a, b) => {
       const aMatch = a.defaultSupplierId === supplierId ? 1 : 0;
       const bMatch = b.defaultSupplierId === supplierId ? 1 : 0;
@@ -111,13 +112,13 @@ export function SupplierRequestDrawerWidget({
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
     if (!productId || !locationId) {
-      setError('Please select a product and target destination location.');
+      setError(t('drawers.supplierRequest.errors.selectProductAndLocation'));
       return;
     }
 
     const parsedQty = quantity ? parseInt(quantity, 10) : undefined;
     if (parsedQty !== undefined && (isNaN(parsedQty) || parsedQty <= 0)) {
-      setError('Quantity must be a positive whole number.');
+      setError(t('drawers.supplierRequest.errors.positiveQuantity'));
       return;
     }
 
@@ -137,21 +138,21 @@ export function SupplierRequestDrawerWidget({
   const todayIso = new Date().toISOString().split('T')[0];
 
   return (
-    <SideDrawer isOpen={isOpen} onClose={handleClose} ariaLabel="Create supplier request">
+    <SideDrawer isOpen={isOpen} onClose={handleClose} ariaLabel={t('drawers.supplierRequest.title')}>
       <div className="flex h-full flex-col">
         {/* Header */}
         <div className="flex items-center justify-between border-b border-stocky-border-subtle p-5 sm:p-6">
           <div>
-            <h2 className="text-base font-semibold text-stocky-text-main">New supplier request</h2>
+            <h2 className="text-base font-semibold text-stocky-text-main">{t('drawers.supplierRequest.title')}</h2>
             <p className="mt-0.5 text-xs text-stocky-text-sub">
-              Replenish inventory, return items, or request batch replacements.
+              {t('drawers.supplierRequest.subtitle')}
             </p>
           </div>
           <button
             type="button"
             onClick={handleClose}
             className="flex h-8 w-8 items-center justify-center rounded-full text-stocky-text-sub hover:bg-stocky-bg-global hover:text-stocky-text-main transition-colors cursor-pointer"
-            aria-label="Close"
+            aria-label={t('common.close')}
           >
             <XIcon size="xs" />
           </button>
@@ -168,10 +169,10 @@ export function SupplierRequestDrawerWidget({
           {/* 1. Request Type */}
           <div>
             <label className="block text-xs font-medium text-stocky-text-main mb-1.5">
-              1. Request Type <span className="text-stocky-status-danger-fg">*</span>
+              {t('drawers.supplierRequest.step1')} <span className="text-stocky-status-danger-fg">*</span>
             </label>
             <div className="grid grid-cols-3 gap-2">
-              {REQUEST_TYPES.map((type) => {
+              {requestTypes.map((type) => {
                 const isSelected = requestType === type.id;
                 return (
                   <button
@@ -204,7 +205,7 @@ export function SupplierRequestDrawerWidget({
           <div>
             <div className="flex items-center justify-between">
               <label className="block text-xs font-medium text-stocky-text-main">
-                2. Supplier <span className="text-stocky-text-sub font-normal">(optional)</span>
+                {t('drawers.supplierRequest.step2')} <span className="text-stocky-text-sub font-normal">({t('common.optional')})</span>
               </label>
               {supplierId && (
                 <button
@@ -212,7 +213,7 @@ export function SupplierRequestDrawerWidget({
                   onClick={() => setSupplierId('')}
                   className="text-[11px] text-stocky-text-sub hover:text-stocky-primary cursor-pointer"
                 >
-                  Clear supplier
+                  {t('drawers.supplierRequest.clearSupplier')}
                 </button>
               )}
             </div>
@@ -221,7 +222,7 @@ export function SupplierRequestDrawerWidget({
               onChange={(e) => setSupplierId(e.target.value)}
               className="mt-1.5 h-10 w-full rounded-xl border border-stocky-border-subtle bg-stocky-bg-widget px-3 text-xs text-stocky-text-main focus:border-stocky-primary focus:outline-none"
             >
-              <option value="">Choose supplier (or unassigned)</option>
+              <option value="">{t('drawers.supplierRequest.chooseSupplier')}</option>
               {suppliers.map((supplier) => (
                 <option key={supplier.id} value={supplier.id}>
                   {supplier.name}
@@ -233,7 +234,7 @@ export function SupplierRequestDrawerWidget({
           {/* 3. Product Selection */}
           <div>
             <label className="block text-xs font-medium text-stocky-text-main">
-              3. Product Selection <span className="text-stocky-status-danger-fg">*</span>
+              {t('drawers.supplierRequest.step3')} <span className="text-stocky-status-danger-fg">*</span>
             </label>
             <select
               required
@@ -241,13 +242,13 @@ export function SupplierRequestDrawerWidget({
               onChange={(e) => setProductId(e.target.value)}
               className="mt-1.5 h-10 w-full rounded-xl border border-stocky-border-subtle bg-stocky-bg-widget px-3 text-xs text-stocky-text-main focus:border-stocky-primary focus:outline-none"
             >
-              <option value="">Select a product...</option>
+              <option value="">{t('drawers.supplierRequest.selectProduct')}</option>
               {filteredProducts.map((product) => {
                 const isPreferred = supplierId && product.defaultSupplierId === supplierId;
                 return (
                   <option key={product.id} value={product.id}>
                     {product.name} {product.barcode ? `(${product.barcode})` : ''}{' '}
-                    {isPreferred ? '★ Preferred' : ''}
+                    {isPreferred ? t('drawers.supplierRequest.preferred') : ''}
                   </option>
                 );
               })}
@@ -266,7 +267,7 @@ export function SupplierRequestDrawerWidget({
                 </span>
                 {selectedProduct.reorderPoint > 0 && (
                   <span className="text-[10px]">
-                    Reorder point: {selectedProduct.reorderPoint} {selectedProduct.unitName || 'units'}
+                    {t('drawers.supplierRequest.reorderPoint', { count: selectedProduct.reorderPoint, unit: selectedProduct.unitName || t('common.items') })}
                   </span>
                 )}
               </div>
@@ -276,7 +277,7 @@ export function SupplierRequestDrawerWidget({
           {/* 4. Destination Location */}
           <div>
             <label className="block text-xs font-medium text-stocky-text-main">
-              4. Destination Location <span className="text-stocky-status-danger-fg">*</span>
+              {t('drawers.supplierRequest.step4')} <span className="text-stocky-status-danger-fg">*</span>
             </label>
             <select
               required
@@ -284,7 +285,7 @@ export function SupplierRequestDrawerWidget({
               onChange={(e) => setLocationId(e.target.value)}
               className="mt-1.5 h-10 w-full rounded-xl border border-stocky-border-subtle bg-stocky-bg-widget px-3 text-xs text-stocky-text-main focus:border-stocky-primary focus:outline-none"
             >
-              <option value="">Choose receiving location</option>
+              <option value="">{t('drawers.supplierRequest.chooseLocation')}</option>
               {locations.map((loc) => (
                 <option key={loc.id} value={loc.id}>
                   {loc.name} ({loc.type || 'Location'})
@@ -296,13 +297,13 @@ export function SupplierRequestDrawerWidget({
           {/* 5. Quantity & Units */}
           <div>
             <label className="block text-xs font-medium text-stocky-text-main">
-              5. Quantity <span className="text-stocky-text-sub font-normal">({selectedProduct?.unitName || 'units'})</span>
+              {t('drawers.supplierRequest.step5')} <span className="text-stocky-text-sub font-normal">({selectedProduct?.unitName || t('common.items')})</span>
             </label>
             <div className="mt-1.5 flex items-center gap-2">
               <button
                 type="button"
                 onClick={() => handleQuantityStep(-10)}
-                title="Subtract 10"
+                title={t('drawers.supplierRequest.subtract10')}
                 className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-stocky-border-subtle bg-stocky-bg-widget text-xs font-semibold text-stocky-text-main hover:bg-stocky-bg-global active:scale-95 transition-all cursor-pointer"
               >
                 -10
@@ -310,7 +311,7 @@ export function SupplierRequestDrawerWidget({
               <button
                 type="button"
                 onClick={() => handleQuantityStep(-1)}
-                title="Subtract 1"
+                title={t('drawers.supplierRequest.subtract1')}
                 className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-stocky-border-subtle bg-stocky-bg-widget text-stocky-text-main hover:bg-stocky-bg-global active:scale-95 transition-all cursor-pointer"
               >
                 <MinusIcon size="xs" />
@@ -326,7 +327,7 @@ export function SupplierRequestDrawerWidget({
               <button
                 type="button"
                 onClick={() => handleQuantityStep(1)}
-                title="Add 1"
+                title={t('drawers.supplierRequest.add1')}
                 className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-stocky-border-subtle bg-stocky-bg-widget text-stocky-text-main hover:bg-stocky-bg-global active:scale-95 transition-all cursor-pointer"
               >
                 <PlusIcon size="xs" />
@@ -334,7 +335,7 @@ export function SupplierRequestDrawerWidget({
               <button
                 type="button"
                 onClick={() => handleQuantityStep(10)}
-                title="Add 10"
+                title={t('drawers.supplierRequest.add10')}
                 className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-stocky-border-subtle bg-stocky-bg-widget text-xs font-semibold text-stocky-text-main hover:bg-stocky-bg-global active:scale-95 transition-all cursor-pointer"
               >
                 +10
@@ -345,7 +346,7 @@ export function SupplierRequestDrawerWidget({
           {/* 6. Target Delivery Date */}
           <div>
             <label className="block text-xs font-medium text-stocky-text-main">
-              6. Target Delivery Date <span className="text-stocky-text-sub font-normal">(optional)</span>
+              {t('drawers.supplierRequest.step6')} <span className="text-stocky-text-sub font-normal">({t('common.optional')})</span>
             </label>
             <div className="relative mt-1.5">
               <input
@@ -361,13 +362,13 @@ export function SupplierRequestDrawerWidget({
           {/* 7. Notes & Justification */}
           <div>
             <label className="block text-xs font-medium text-stocky-text-main">
-              7. Notes & Justification <span className="text-stocky-text-sub font-normal">(optional)</span>
+              {t('drawers.supplierRequest.step7')} <span className="text-stocky-text-sub font-normal">({t('common.optional')})</span>
             </label>
             <textarea
               rows={3}
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              placeholder="e.g. Urgent reorder due to weekend sales surge or batch recall instructions..."
+              placeholder={t('drawers.supplierRequest.notesPlaceholder')}
               className="mt-1.5 w-full rounded-xl border border-stocky-border-subtle bg-stocky-bg-widget p-3 text-xs text-stocky-text-main placeholder:text-stocky-text-sub/50 focus:border-stocky-primary focus:outline-none resize-none"
             />
           </div>
@@ -379,13 +380,13 @@ export function SupplierRequestDrawerWidget({
               onClick={handleClose}
               className="h-10 rounded-full border border-stocky-border-subtle px-5 text-xs font-medium text-stocky-text-main hover:bg-stocky-bg-global transition-colors cursor-pointer"
             >
-              Cancel
+              {t('common.cancel')}
             </button>
             <button
               type="submit"
               className="h-10 rounded-full bg-stocky-primary px-6 text-xs font-medium text-white hover:bg-stocky-primary-hover transition-colors cursor-pointer shadow-sm"
             >
-              Create request
+              {t('drawers.supplierRequest.save')}
             </button>
           </div>
         </form>

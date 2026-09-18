@@ -16,6 +16,7 @@ import {
   TrashIcon,
   BellIcon,
 } from '@stocky/icons';
+import { useTranslation } from '@/lib/i18n';
 
 export type NotificationType =
   | 'expiry'
@@ -133,6 +134,7 @@ export function FacebookNotificationItem({
   onDismiss,
   onItemClick,
 }: FacebookNotificationItemProps) {
+  const { t } = useTranslation();
   const [imageError, setImageError] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -167,7 +169,7 @@ export function FacebookNotificationItem({
           onItemClick(item);
         }
       }}
-      className={`group relative flex items-start gap-3.5 p-3 sm:p-3.5 rounded-2xl transition-all cursor-pointer select-none text-left w-full outline-none focus-visible:ring-2 focus-visible:ring-stocky-primary ${
+      className={`group relative flex items-start gap-3.5 p-3 sm:p-3.5 rounded-2xl transition-all cursor-pointer select-none text-start w-full outline-none focus-visible:ring-2 focus-visible:ring-stocky-primary ${
         isRead
           ? 'bg-transparent hover:bg-black/[0.03]'
           : 'bg-stocky-primary/[0.04] hover:bg-stocky-primary/[0.08]'
@@ -215,13 +217,13 @@ export function FacebookNotificationItem({
 
         <div className="flex items-center gap-1.5 mt-1.5 text-[11px] font-normal text-stocky-text-sub">
           <ClockIcon size="xs" className="w-3 h-3 opacity-60 shrink-0" />
-          <span>{item.timestamp || 'Just now'}</span>
+          <span>{item.timestamp || t('notifications.justNow')}</span>
           {item.actionLabel && (
             <>
               <span className="opacity-30">·</span>
               <span className="text-stocky-primary font-medium hover:underline inline-flex items-center gap-0.5">
                 {item.actionLabel}
-                <ChevronRightIcon size="xs" className="w-2.5 h-2.5" />
+                <ChevronRightIcon size="xs" className="w-2.5 h-2.5 rtl:rotate-180" />
               </span>
             </>
           )}
@@ -252,17 +254,17 @@ export function FacebookNotificationItem({
 
           {/* Floating Dropdown Menu */}
           {menuOpen && (
-            <div className="absolute right-0 top-9 w-48 bg-white border border-stocky-border-subtle rounded-xl shadow-lg p-1 z-30 flex flex-col text-xs text-stocky-text-main animate-in fade-in zoom-in-95 duration-100">
+            <div className="absolute end-0 top-9 w-48 bg-white border border-stocky-border-subtle rounded-xl shadow-lg p-1 z-30 flex flex-col text-xs text-stocky-text-main animate-in fade-in zoom-in-95 duration-100">
               <button
                 type="button"
                 onClick={() => {
                   onToggleRead(item.id);
                   setMenuOpen(false);
                 }}
-                className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-stocky-bg-global transition-colors cursor-pointer text-left w-full"
+                className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-stocky-bg-global transition-colors cursor-pointer text-start w-full"
               >
                 <CheckIcon size="xs" className="w-3.5 h-3.5 text-stocky-text-sub" />
-                <span>{isRead ? 'Mark as unread' : 'Mark as read'}</span>
+                <span>{isRead ? t('notifications.markUnread') : t('notifications.markRead')}</span>
               </button>
               <button
                 type="button"
@@ -270,10 +272,10 @@ export function FacebookNotificationItem({
                   onDismiss(item.id);
                   setMenuOpen(false);
                 }}
-                className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-rose-50 text-rose-600 transition-colors cursor-pointer text-left w-full"
+                className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-rose-50 text-rose-600 transition-colors cursor-pointer text-start w-full"
               >
                 <TrashIcon size="xs" className="w-3.5 h-3.5 text-rose-500" />
-                <span>Remove notification</span>
+                <span>{t('notifications.remove')}</span>
               </button>
             </div>
           )}
@@ -304,6 +306,7 @@ export function FacebookNotificationFeed({
   className = '',
   isDrawer = false,
 }: FacebookNotificationFeedProps) {
+  const { t } = useTranslation();
   const [filterTab, setFilterTab] = useState<'all' | 'unread'>('all');
   const [readIds, setReadIds] = useState<Set<string>>(new Set());
   const [dismissedIds, setDismissedIds] = useState<Set<string>>(new Set());
@@ -381,7 +384,7 @@ export function FacebookNotificationFeed({
                 : 'bg-stocky-bg-global text-stocky-text-sub hover:text-stocky-text-main'
             }`}
           >
-            All
+            {t('notifications.all')}
           </button>
           <button
             type="button"
@@ -392,7 +395,7 @@ export function FacebookNotificationFeed({
                 : 'bg-stocky-bg-global text-stocky-text-sub hover:text-stocky-text-main'
             }`}
           >
-            <span>Unread</span>
+            <span>{t('notifications.unread')}</span>
             {unreadCount > 0 && (
               <span
                 className={`px-1.5 py-0.2 rounded-full text-[10px] font-bold ${
@@ -414,8 +417,8 @@ export function FacebookNotificationFeed({
             className="inline-flex items-center gap-1 text-xs font-medium text-stocky-primary hover:underline transition-all cursor-pointer py-1 px-2 rounded-lg hover:bg-stocky-primary/[0.06]"
           >
             <CheckIcon size="xs" className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">Mark all as read</span>
-            <span className="sm:hidden">Mark all</span>
+            <span className="hidden sm:inline">{t('notifications.markAllAsRead')}</span>
+            <span className="sm:hidden">{t('notifications.markAll')}</span>
           </button>
         )}
       </div>
@@ -428,12 +431,12 @@ export function FacebookNotificationFeed({
               <CheckCircleIcon size="md" className="w-7 h-7 stroke-[2]" />
             </div>
             <h3 className="text-sm font-semibold text-stocky-text-main">
-              {filterTab === 'unread' ? 'No unread notifications' : 'You are all caught up'}
+              {filterTab === 'unread' ? t('notifications.noUnreadNotifications') : t('notifications.allCaughtUp')}
             </h3>
             <p className="text-xs text-stocky-text-sub max-w-xs mt-1.5 leading-relaxed">
               {filterTab === 'unread'
-                ? 'All notifications have been reviewed. Switch back to "All" to view previous activity.'
-                : 'New expiry alerts, stock transfers, inventory counts, and supplier orders will appear here in real time.'}
+                ? t('notifications.noUnreadDesc')
+                : t('notifications.allCaughtUpDesc')}
             </p>
             {filterTab === 'unread' && (
               <button
@@ -441,7 +444,7 @@ export function FacebookNotificationFeed({
                 onClick={() => setFilterTab('all')}
                 className="mt-4 px-4 py-1.5 rounded-full bg-stocky-bg-global border border-stocky-border-subtle text-xs font-medium text-stocky-text-main hover:bg-stocky-border-subtle/50 transition-colors cursor-pointer"
               >
-                View all notifications
+                {t('notifications.viewAll')}
               </button>
             )}
           </div>
@@ -452,7 +455,7 @@ export function FacebookNotificationFeed({
               <div className="space-y-1">
                 <div className="px-2 pt-1 pb-1">
                   <h4 className="text-xs font-bold text-stocky-text-main tracking-tight uppercase">
-                    New
+                    {t('notifications.newSection')}
                   </h4>
                 </div>
                 <div className="space-y-0.5">
@@ -475,7 +478,7 @@ export function FacebookNotificationFeed({
               <div className="space-y-1 pt-2">
                 <div className="px-2 pt-1 pb-1">
                   <h4 className="text-xs font-bold text-stocky-text-sub tracking-tight uppercase">
-                    Earlier
+                    {t('notifications.earlierSection')}
                   </h4>
                 </div>
                 <div className="space-y-0.5">
@@ -508,7 +511,7 @@ export function FacebookNotificationFeed({
             className="inline-flex items-center gap-1.5 text-xs font-medium text-stocky-text-sub hover:text-stocky-primary transition-colors cursor-pointer"
           >
             <ActivityIcon size="xs" className="w-3.5 h-3.5" />
-            <span>View full activity logs</span>
+            <span>{t('notifications.viewFullActivityLogs')}</span>
           </button>
           {isDrawer && onCloseDrawer && (
             <button
@@ -516,7 +519,7 @@ export function FacebookNotificationFeed({
               onClick={onCloseDrawer}
               className="h-7 px-3 rounded-full border border-stocky-border-subtle bg-white hover:bg-stocky-bg-global text-xs font-medium text-stocky-text-main transition-colors cursor-pointer"
             >
-              Close
+              {t('notifications.close')}
             </button>
           )}
         </div>

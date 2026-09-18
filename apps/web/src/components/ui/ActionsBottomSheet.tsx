@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { BottomSheet } from './BottomSheet';
+import { useTranslation } from '@/lib/i18n';
 
 export interface ActionItem {
   id?: string;
@@ -29,10 +30,13 @@ export interface ActionsBottomSheetProps {
 export function ActionsBottomSheet({
   isOpen,
   onClose,
-  title = 'Actions',
+  title,
   subtitle,
   actions,
 }: ActionsBottomSheetProps) {
+  const { t } = useTranslation();
+  const resolvedTitle = title || t('common.actions');
+
   const handleActionClick = (action: ActionItem) => {
     if (action.disabled) return;
     onClose();
@@ -43,7 +47,7 @@ export function ActionsBottomSheet({
     <BottomSheet
       isOpen={isOpen}
       onClose={onClose}
-      title={title}
+      title={resolvedTitle}
       subtitle={subtitle}
       panelClassName="sm:max-w-sm"
     >
@@ -57,7 +61,7 @@ export function ActionsBottomSheet({
               role="menuitem"
               disabled={action.disabled}
               onClick={() => handleActionClick(action)}
-              className={`w-full flex items-center gap-3 p-2.5 rounded-2xl text-left transition-all duration-150 cursor-pointer select-none ${
+              className={`w-full flex items-center gap-3 p-2.5 rounded-2xl text-start transition-all duration-150 cursor-pointer select-none ${
                 action.disabled
                   ? 'opacity-40 cursor-not-allowed'
                   : isCritical

@@ -15,6 +15,7 @@ import {
 } from 'recharts';
 import { ChartFilterBottomSheet } from './ChartFilterBottomSheet';
 import { exportVisualDataToExcel } from '@/lib/excel/export';
+import { useTranslation } from '@/lib/i18n';
 
 export interface HomeLaggingProductsChartWidgetProps {
   products?: Product[];
@@ -37,6 +38,7 @@ export function HomeLaggingProductsChartWidget({
   externalCategory,
   externalLocationId,
 }: HomeLaggingProductsChartWidgetProps) {
+  const { t } = useTranslation();
   const [internalThresholdDays, setInternalThresholdDays] = useState<number>(30);
   const [internalCategoryFilter, setInternalCategoryFilter] = useState<string>('all');
 
@@ -131,7 +133,7 @@ export function HomeLaggingProductsChartWidget({
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-1.5 min-w-0">
             <h3 className="text-sm sm:text-base font-semibold text-stocky-text-main tracking-tight truncate">
-              Lagging Inventory
+              {t('home.charts.laggingStock.title')}
             </h3>
             <button
               type="button"
@@ -156,7 +158,7 @@ export function HomeLaggingProductsChartWidget({
                     : 'text-stocky-text-sub hover:text-stocky-text-main'
                 }`}
               >
-                Chart
+                {t('home.charts.topMovers.chart')}
               </button>
               <button
                 type="button"
@@ -168,7 +170,7 @@ export function HomeLaggingProductsChartWidget({
                     : 'text-stocky-text-sub hover:text-stocky-text-main'
                 }`}
               >
-                Table
+                {t('home.charts.topMovers.table')}
               </button>
             </div>
 
@@ -181,7 +183,7 @@ export function HomeLaggingProductsChartWidget({
               title="Extract visual data as Excel (.xlsx)"
             >
               <FileSpreadsheetIcon size="xs" />
-              <span>Excel</span>
+              <span>{t('home.charts.topMovers.excel')}</span>
             </button>
 
             <button
@@ -190,7 +192,7 @@ export function HomeLaggingProductsChartWidget({
               className="h-8 px-3 rounded-full border border-stocky-border-subtle bg-stocky-bg-global hover:bg-stocky-border-subtle text-xs font-semibold text-stocky-text-main flex items-center gap-1.5 cursor-pointer shadow-xs transition-colors"
             >
               <FilterIcon size="xs" />
-              <span>Filter</span>
+              <span>{t('home.charts.topMovers.filter')}</span>
               <span className="px-1.5 py-0.5 rounded-full bg-amber-600 text-white text-[10px] font-bold">
                 &gt;{effectiveThreshold}d
               </span>
@@ -200,13 +202,13 @@ export function HomeLaggingProductsChartWidget({
 
         {/* Subtitle hidden on phone */}
         <p className="hidden sm:block text-[11px] text-stocky-text-sub mt-0.5">
-          Products audited multiple times with stagnant volume and capital tied up.
+          {t('home.charts.laggingStock.subtitle')}
         </p>
 
         {showInfo && (
           <div className="mt-2.5 p-2.5 bg-stocky-bg-global/90 border border-stocky-border-subtle rounded-xl text-xs text-stocky-text-sub flex items-start justify-between gap-2 animate-in fade-in duration-150">
             <span>
-              Identifies inventory lots with zero turnover, inactive cycle audits, and high capital tying up warehouse space beyond your dormancy threshold.
+              {t('home.charts.laggingStock.info')}
             </span>
             <button
               type="button"
@@ -254,16 +256,16 @@ export function HomeLaggingProductsChartWidget({
                       <span className="text-[10px] text-stocky-text-sub block mb-1.5">{data.category}</span>
                       <div className="space-y-0.5 text-[11px]">
                         <div className="text-amber-600 font-semibold">
-                          Capital Tied Up: ${data.tiedUpValue.toLocaleString()}
+                          {t('home.charts.laggingStock.capitalTiedUp', { amount: data.tiedUpValue.toLocaleString() })}
                         </div>
                         <div className="text-stocky-text-main">
-                          Stock on Hand: <span className="font-bold">{data.stockOnHand} units</span>
+                          {t('home.charts.laggingStock.stockOnHand', { count: data.stockOnHand })}
                         </div>
                         <div className="text-stocky-text-sub">
-                          Audits Logged: <span className="font-medium text-stocky-text-main">{data.auditsCount} count cycles</span>
+                          {t('home.charts.laggingStock.auditsLogged', { count: data.auditsCount })}
                         </div>
                         <div className="text-stocky-text-muted text-[10px] mt-1">
-                          Dormant: {data.daysDormant} days without stock movement
+                          {t('home.charts.laggingStock.dormantDays', { days: data.daysDormant })}
                         </div>
                       </div>
                     </div>
@@ -291,14 +293,14 @@ export function HomeLaggingProductsChartWidget({
         </div>
       ) : (
         <div className="w-full flex-1 my-3 min-h-[260px] overflow-y-auto rounded-xl border border-stocky-border-subtle">
-          <table className="w-full text-left text-xs border-collapse">
+          <table className="w-full text-start text-xs border-collapse">
             <thead className="bg-stocky-bg-global sticky top-0 border-b border-stocky-border-subtle text-[11px] font-semibold text-stocky-text-sub">
               <tr>
-                <th className="py-2.5 px-3">Product Name</th>
-                <th className="py-2.5 px-3">Category</th>
-                <th className="py-2.5 px-3 text-right">Units</th>
-                <th className="py-2.5 px-3 text-right">Capital Tied</th>
-                <th className="py-2.5 px-3 text-right">Dormancy</th>
+                <th className="py-2.5 px-3 text-start">{t('inventory.productName')}</th>
+                <th className="py-2.5 px-3 text-start">{t('inventory.category')}</th>
+                <th className="py-2.5 px-3 text-end">{t('common.items')}</th>
+                <th className="py-2.5 px-3 text-end">{t('home.charts.branchMap.valuation')}</th>
+                <th className="py-2.5 px-3 text-end">{t('home.charts.branchComparison.laggingLabel')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-stocky-border-subtle/50 text-stocky-text-main">
@@ -310,9 +312,9 @@ export function HomeLaggingProductsChartWidget({
                 >
                   <td className="py-2.5 px-3 font-medium text-stocky-text-main truncate max-w-[150px]">{item.name}</td>
                   <td className="py-2.5 px-3 text-stocky-text-sub text-[11px]">{item.category}</td>
-                  <td className="py-2.5 px-3 text-right font-medium text-stocky-text-main">{item.stockOnHand.toLocaleString()}</td>
-                  <td className="py-2.5 px-3 text-right font-bold text-amber-600">${item.tiedUpValue.toLocaleString()}</td>
-                  <td className="py-2.5 px-3 text-right">
+                  <td className="py-2.5 px-3 text-end font-medium text-stocky-text-main">{item.stockOnHand.toLocaleString()}</td>
+                  <td className="py-2.5 px-3 text-end font-bold text-amber-600">${item.tiedUpValue.toLocaleString()}</td>
+                  <td className="py-2.5 px-3 text-end">
                     <span className="px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 text-[10px] font-bold border border-amber-200/60">
                       {item.daysDormant}d
                     </span>
@@ -327,16 +329,16 @@ export function HomeLaggingProductsChartWidget({
       {/* 3. Footer Summary */}
       <div className="flex items-center justify-between text-[11px] text-stocky-text-sub pt-2 border-t border-stocky-border-subtle font-medium">
         <span>
-          Total Stagnant Capital: ${chartData.reduce((sum, item) => sum + item.tiedUpValue, 0).toLocaleString()}
+          {t('home.charts.laggingStock.totalStagnantCapital', { amount: chartData.reduce((sum, item) => sum + item.tiedUpValue, 0).toLocaleString() })}
         </span>
-        <span className="text-amber-600 font-semibold">Action Required</span>
+        <span className="text-amber-600 font-semibold">{t('home.charts.laggingStock.actionRequired')}</span>
       </div>
 
       {/* 4. Sliding Window from the Bottom (Filters Bottom Sheet) */}
       <ChartFilterBottomSheet
         isOpen={isFilterSheetOpen}
         onClose={() => setIsFilterSheetOpen(false)}
-        title="Lagging Stock Filters"
+        title={t('home.charts.laggingStock.filterTitle')}
         onReset={() => {
           setInternalThresholdDays(30);
           setInternalCategoryFilter('all');
@@ -345,7 +347,7 @@ export function HomeLaggingProductsChartWidget({
         <div className="space-y-4">
           <div>
             <label className="text-xs font-semibold text-stocky-text-main block mb-2">
-              Inactivity Threshold (Days Dormant)
+              {t('home.charts.laggingStock.inactivityThreshold')}
             </label>
             <div className="grid grid-cols-4 gap-2">
               {[14, 30, 60, 90].map((days) => (
@@ -364,21 +366,21 @@ export function HomeLaggingProductsChartWidget({
               ))}
             </div>
             <p className="text-[11px] text-stocky-text-sub mt-1.5">
-              Filter products that have stayed on shelves with no stock movement for at least this many days.
+              {t('home.charts.laggingStock.inactivityDesc')}
             </p>
           </div>
 
           {categories.length > 0 && (
             <div className="pt-2 border-t border-stocky-border-subtle">
               <label className="text-xs font-semibold text-stocky-text-main block mb-2">
-                Filter by Category
+                {t('home.charts.topMovers.filterCategory')}
               </label>
               <select
                 value={internalCategoryFilter}
                 onChange={(e) => setInternalCategoryFilter(e.target.value)}
                 className="w-full h-10 px-3 rounded-xl text-xs font-medium bg-stocky-bg-global text-stocky-text-main border border-stocky-border-subtle cursor-pointer focus:outline-none"
               >
-                <option value="all">All Categories</option>
+                <option value="all">{t('home.charts.topMovers.allCategories')}</option>
                 {categories.map((cat) => (
                   <option key={cat} value={cat}>
                     {cat}

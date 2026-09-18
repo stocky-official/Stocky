@@ -4,7 +4,7 @@ import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { ActivityIcon, ArrowUpDownIcon, BoxesIcon, ChevronRightIcon, ClockIcon, TruckIcon } from '@stocky/icons';
+import { ActivityIcon, ArrowUpDownIcon, BoxesIcon, ChevronRightIcon, ClockIcon, StockyLogoIcon, TruckIcon } from '@stocky/icons';
 import { supabase } from '@/lib/supabase/client';
 import { signInWithGoogle } from '@/lib/auth';
 
@@ -25,7 +25,7 @@ const faqs = [
 
 function StockSnapshot() {
   return <div className="meridian-stock-snapshot" aria-label="Stocky inventory preview">
-    <div className="meridian-snapshot-top"><div className="meridian-snapshot-brand"><span><BoxesIcon size="xs" /></span><b>Stocky</b></div><span className="meridian-snapshot-user">AB</span></div>
+    <div className="meridian-snapshot-top"><div className="meridian-snapshot-brand"><span><StockyLogoIcon size="xs" /></span><b>Stocky</b></div><span className="meridian-snapshot-user">AB</span></div>
     <div className="meridian-snapshot-heading"><div><small>ALL LOCATIONS</small><h3>Company stock</h3></div><span className="meridian-snapshot-plus">+ Receive</span></div>
     <div className="meridian-snapshot-metrics"><div><small>PRODUCTS</small><strong>248</strong><span>+12.4%</span></div><div><small>AT RISK</small><strong>08</strong><span className="meridian-warning">Needs review</span></div><div><small>INVENTORY VALUE</small><strong>$84k</strong><span>Across 6 sites</span></div></div>
     <div className="meridian-snapshot-table"><div className="meridian-snapshot-table-head"><span>PRODUCT</span><span>LOCATION</span><span>STATUS</span><span>QTY</span></div>{[['Cold brew / 330ml', 'Main branch', 'Healthy', '1,240'], ['Oat milk / 1L', 'Warehouse 02', 'Watch', '386'], ['Paper cups / 12oz', 'Branch 04', 'Healthy', '2,880']].map(([product, location, status, qty]) => <div className="meridian-snapshot-row" key={product}><span><i />{product}</span><span>{location}</span><b className={status === 'Watch' ? 'is-warning' : ''}>{status}</b><strong>{qty}</strong></div>)}</div>
@@ -134,7 +134,7 @@ export function LandingHeroWidget() {
     <section id="top" className="meridian-hero">
       <div className="meridian-hero-photo" aria-hidden="true" /><div className="meridian-hero-overlay" aria-hidden="true" />
       <nav className="meridian-nav" aria-label="Main navigation">
-        <a href="#top" className="meridian-brand"><span className="meridian-brand-mark"><BoxesIcon size="sm" /></span><span>stocky</span></a>
+        <a href="#top" className="meridian-brand"><span className="meridian-brand-mark"><StockyLogoIcon size="sm" /></span><span>stocky</span></a>
         <div className="meridian-nav-links"><a href="#product">Product</a><a href="#workflow">Workflow</a><a href="#teams">Teams</a><a href="#faq">FAQ</a></div>
         <div className="meridian-nav-actions">
           {isAuthenticated ? (
@@ -234,7 +234,7 @@ export function LandingHeroWidget() {
     <section id="faq" className="meridian-section meridian-faq meridian-reveal"><div className="meridian-faq-heading"><p className="meridian-overline">QUESTIONS, RESOLVED</p><h2>Everything you need<br /><span>in one place.</span></h2><button type="button" className="meridian-pill meridian-pill--lime" onClick={() => isAuthenticated ? navigateToWorkspace(nextDestination) : handleAuth(nextDestination)}>{loading ? 'Opening…' : isAuthenticated ? 'Open Workspace' : 'Get Started Free'} <ChevronRightIcon size="xs" /></button></div><div className="meridian-faq-list">{faqs.map(([question, answer], index) => <div className={`meridian-faq-item ${openFaq === index ? 'is-open' : ''}`} key={question}><button type="button" onClick={() => setOpenFaq(openFaq === index ? null : index)}><span>{question}</span><b>+</b></button><div><p>{answer}</p></div></div>)}</div></section>
 
     <section className="meridian-final-cta meridian-reveal"><p className="meridian-overline">BUILT FOR THE WORK THAT MATTERS</p><h2>Make every location<br /><span>feel close.</span></h2><button type="button" className="meridian-pill meridian-pill--lime" onClick={() => isAuthenticated ? navigateToWorkspace(nextDestination) : handleAuth(nextDestination)}>{loading ? 'Opening workspace…' : isAuthenticated ? 'Open Workspace' : 'Get Started Free'}<ChevronRightIcon size="xs" /></button></section>
-    <footer className="meridian-footer"><a href="#top" className="meridian-brand"><span className="meridian-brand-mark"><BoxesIcon size="sm" /></span><span>stocky</span></a><span>Inventory, in the moment.</span><div><a href="#product">Product</a><a href="#workflow">Workflow</a><a href="#teams">Teams</a><a href="#faq">FAQ</a></div></footer>
+    <footer className="meridian-footer"><a href="#top" className="meridian-brand"><span className="meridian-brand-mark"><StockyLogoIcon size="sm" /></span><span>stocky</span></a><span>Inventory, in the moment.</span><div><a href="#product">Product</a><a href="#workflow">Workflow</a><a href="#teams">Teams</a><a href="#faq">FAQ</a></div></footer>
   </main>;
 }
 

@@ -5,7 +5,7 @@ import { locations } from './locations';
 import { products } from './products';
 import { stockLots } from './stockLots';
 
-export const stockTaskTypeEnum = pgEnum('stock_task_type', ['count', 'expiry']);
+export const stockTaskTypeEnum = pgEnum('stock_task_type', ['count', 'expiry', 'open']);
 
 export const stockTaskStatusEnum = pgEnum('stock_task_status', [
   'assigned',

@@ -7,3 +7,4 @@ export * from './BottomSheet';
 export * from './ActionsBottomSheet';
 export * from './UserAvatar';
 export * from './Skeleton';
+export * from './LanguageSwitcher';

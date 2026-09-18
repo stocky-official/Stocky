@@ -5,11 +5,13 @@ import type { CompanyUserRole } from '@stocky/types';
 import {
   ActivityIcon,
   BellIcon,
-  BoxesIcon,
   CheckCircleIcon,
+  StockyLogoIcon,
 } from '@stocky/icons';
 import { PlatformAccountMenuWidget } from '../PlatformAccountMenuWidget/PlatformAccountMenuWidget';
 import { getActivePlatformGroup, getPlatformNavigation } from '../platformNavigation';
+import { LanguageSwitcher } from '@/components/ui';
+import { useTranslation } from '@/lib/i18n';
 
 export interface PlatformTopBarWidgetProps {
   userEmail?: string | null;
@@ -80,6 +82,7 @@ export function PlatformTopBarWidget({
   tasksCount,
   presentCount,
 }: PlatformTopBarWidgetProps) {
+  const { t } = useTranslation();
   const [logoFailed, setLogoFailed] = useState(false);
   const activePillRef = useRef<HTMLButtonElement | null>(null);
 
@@ -88,7 +91,7 @@ export function PlatformTopBarWidget({
   }, [companyLogoUrl]);
 
   const role = (userRole || 'owner') as CompanyUserRole;
-  const groups = useMemo(() => getPlatformNavigation(role, '/platform', permissions), [role, permissions]);
+  const groups = useMemo(() => getPlatformNavigation(role, '/platform', permissions, t), [role, permissions, t]);
 
   const resolvedActiveId = useMemo(() => {
     if (!activeTab) return '';
@@ -165,7 +168,9 @@ export function PlatformTopBarWidget({
   };
 
   const hasSubNav = Boolean(activeGroup && activeGroup.items && activeGroup.items.length > 1);
-  const groupTitle = activeGroup ? (GROUP_TITLES[activeGroup.id] || activeGroup.label) : '';
+  const groupTitle = activeGroup
+    ? (t(`nav.${activeGroup.id}`) !== `nav.${activeGroup.id}` ? t(`nav.${activeGroup.id}`) : (GROUP_TITLES[activeGroup.id] || activeGroup.label))
+    : '';
   const isTasksGroup = activeGroup?.id === 'tasks';
   const isAttendanceGroup = activeGroup?.id === 'attendance';
 
@@ -177,7 +182,7 @@ export function PlatformTopBarWidget({
     >
       {/* 1. Row 1: Brand & User Utility Bar (h-12 / 48px) */}
       <div className="w-full h-12 flex items-center justify-between px-3.5">
-        {/* Left: Account Menu & Notifications Bell */}
+        {/* Left: Account Menu, Language Switcher & Notifications Bell */}
         <div className="flex items-center gap-1.5 min-w-0 shrink-0">
           <PlatformAccountMenuWidget
             userEmail={userEmail}
@@ -191,6 +196,7 @@ export function PlatformTopBarWidget({
             onNavigateToTab={onNavigateToTab}
             className="stocky-topbar-account max-w-[180px]"
           />
+          <LanguageSwitcher variant="compact" />
           {onNotificationsClick && (
             <button
               type="button"
@@ -237,7 +243,7 @@ export function PlatformTopBarWidget({
                 className="w-full h-full bg-stocky-primary text-stocky-text-main flex items-center justify-center font-bold"
                 title={companyName || 'Stocky'}
               >
-                <BoxesIcon size="xs" />
+                <StockyLogoIcon size="xs" />
               </div>
             )}
           </div>

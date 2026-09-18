@@ -74,10 +74,12 @@ export function getTabFromPathname(pathname: string): string {
 export function getPlatformNavigation(
   userRole: CompanyUserRole,
   tenantPrefix = '/platform',
-  permissions?: { pages?: string[]; capabilities?: Record<string, boolean> } | null
+  permissions?: { pages?: string[]; capabilities?: Record<string, boolean> } | null,
+  t?: (key: string) => string
 ): PlatformNavGroup[] {
   const isOwner = userRole === 'owner';
   const allowedPages = isOwner ? null : (permissions?.pages || null);
+  const tr = (key: string, fallback: string) => (t ? t(key) : fallback);
 
   const canAccess = (pageKey: string) => {
     if (isOwner) return true;
@@ -100,41 +102,41 @@ export function getPlatformNavigation(
   };
 
   const dashboardItems: PlatformNavItem[] = [
-    { id: 'home', label: 'Home', icon: <DashboardIcon size="xs" />, href: makeHref('home') },
+    { id: 'home', label: tr('nav.home', 'Home'), icon: <DashboardIcon size="xs" />, href: makeHref('home') },
   ];
 
   const supplyChainItems: PlatformNavItem[] = [
-    ...(canAccess('inventory') ? [{ id: 'stock', label: 'Stock', icon: <BoxesIcon size="xs" />, href: makeHref('stock') }] : []),
-    ...(canAccess('transfers') ? [{ id: 'transfers', label: 'Transfers', icon: <ArrowUpDownIcon size="xs" />, href: makeHref('transfers') }] : []),
+    ...(canAccess('inventory') ? [{ id: 'stock', label: tr('nav.stock', 'Stock'), icon: <BoxesIcon size="xs" />, href: makeHref('stock') }] : []),
+    ...(canAccess('transfers') ? [{ id: 'transfers', label: tr('nav.transfers', 'Transfers'), icon: <ArrowUpDownIcon size="xs" />, href: makeHref('transfers') }] : []),
   ];
 
   const supplierItems: PlatformNavItem[] = canAccess('suppliers') ? [
-    { id: 'suppliers', label: 'Directory', icon: <TruckIcon size="xs" />, href: makeHref('suppliers') },
-    { id: 'supplier-requests', label: 'Requests', icon: <ClockIcon size="xs" />, href: makeHref('suppliers') },
+    { id: 'suppliers', label: tr('suppliers.directory', 'Directory'), icon: <TruckIcon size="xs" />, href: makeHref('suppliers') },
+    { id: 'supplier-requests', label: tr('suppliers.requests', 'Requests'), icon: <ClockIcon size="xs" />, href: makeHref('suppliers') },
   ] : [];
 
   const taskItems: PlatformNavItem[] = canAccess('tasks') ? [
-    { id: 'tasks', label: 'Ongoing', icon: <ActivityIcon size="xs" />, href: makeHref('tasks') },
-    { id: 'tasks-completed', label: 'Completed', icon: <CheckCircleIcon size="xs" />, href: makeHref('tasks') },
+    { id: 'tasks', label: tr('tasks.ongoing', 'Ongoing'), icon: <ActivityIcon size="xs" />, href: makeHref('tasks') },
+    { id: 'tasks-completed', label: tr('tasks.completed', 'Completed'), icon: <CheckCircleIcon size="xs" />, href: makeHref('tasks') },
   ] : [];
 
   const attendanceItems: PlatformNavItem[] = canAccess('attendance') ? [
-    { id: 'attendance', label: 'Timesheets', icon: <ClockIcon size="xs" />, href: makeHref('attendance') },
-    { id: 'attendance-calendar', label: 'Calendar', icon: <CalendarIcon size="xs" />, href: makeHref('attendance') },
+    { id: 'attendance', label: tr('attendance.timesheets', 'Timesheets'), icon: <ClockIcon size="xs" />, href: makeHref('attendance') },
+    { id: 'attendance-calendar', label: tr('attendance.calendar', 'Calendar'), icon: <CalendarIcon size="xs" />, href: makeHref('attendance') },
   ] : [];
 
   const organizationItems: PlatformNavItem[] = [
-    ...(canAccess('locations') ? [{ id: 'locations', label: 'Locations', icon: <WarehouseIcon size="xs" />, href: makeHref('locations') }] : []),
-    ...(canAccess('team') ? [{ id: 'team', label: 'Team', icon: <UsersIcon size="xs" />, href: makeHref('team') }] : []),
+    ...(canAccess('locations') ? [{ id: 'locations', label: tr('nav.locations', 'Locations'), icon: <WarehouseIcon size="xs" />, href: makeHref('locations') }] : []),
+    ...(canAccess('team') ? [{ id: 'team', label: tr('nav.team', 'Team'), icon: <UsersIcon size="xs" />, href: makeHref('team') }] : []),
   ];
 
   return [
-    { id: 'dashboard', label: 'Home', icon: <DashboardIcon size="xs" />, items: dashboardItems },
-    { id: 'supply-chain', label: 'Supply Chain', icon: <BoxesIcon size="xs" />, items: supplyChainItems },
-    ...(!isStaff && supplierItems.length > 0 ? [{ id: 'suppliers', label: 'Suppliers', icon: <TruckIcon size="xs" />, items: supplierItems }] : []),
-    ...(taskItems.length > 0 ? [{ id: 'tasks', label: 'Tasks', icon: <CheckCircleIcon size="xs" />, items: taskItems }] : []),
-    ...(attendanceItems.length > 0 ? [{ id: 'attendance', label: 'Attendance', icon: <CalendarIcon size="xs" />, items: attendanceItems }] : []),
-    ...(organizationItems.length > 0 ? [{ id: 'organization', label: 'Organization', icon: <WarehouseIcon size="xs" />, items: organizationItems }] : []),
+    { id: 'dashboard', label: tr('nav.home', 'Home'), icon: <DashboardIcon size="xs" />, items: dashboardItems },
+    { id: 'supply-chain', label: tr('nav.supplyChain', 'Supply Chain'), icon: <BoxesIcon size="xs" />, items: supplyChainItems },
+    ...(!isStaff && supplierItems.length > 0 ? [{ id: 'suppliers', label: tr('nav.suppliers', 'Suppliers'), icon: <TruckIcon size="xs" />, items: supplierItems }] : []),
+    ...(taskItems.length > 0 ? [{ id: 'tasks', label: tr('nav.tasks', 'Tasks'), icon: <CheckCircleIcon size="xs" />, items: taskItems }] : []),
+    ...(attendanceItems.length > 0 ? [{ id: 'attendance', label: tr('nav.attendance', 'Attendance'), icon: <CalendarIcon size="xs" />, items: attendanceItems }] : []),
+    ...(organizationItems.length > 0 ? [{ id: 'organization', label: tr('nav.organization', 'Organization'), icon: <WarehouseIcon size="xs" />, items: organizationItems }] : []),
   ].filter((group) => group.items.length > 0);
 }
 

@@ -2,7 +2,7 @@
 
 import React, { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { AlertCircleIcon, BoxesIcon, CheckCircleIcon, XIcon } from '@stocky/icons';
+import { AlertCircleIcon, CheckCircleIcon, StockyLogoIcon, XIcon } from '@stocky/icons';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { supabase } from '@/lib/supabase/client';
@@ -123,8 +123,8 @@ export function PlatformVerificationView() {
     return (
       <PageLayout className="flex items-center justify-center p-6">
         <Card className="max-w-md w-full text-center space-y-5 p-8">
-          <div className="w-10 h-10 rounded-widget bg-stocky-primary text-white flex items-center justify-center mx-auto">
-            <BoxesIcon size="sm" />
+          <div className="w-10 h-10 rounded-widget bg-stocky-primary text-stocky-text-main flex items-center justify-center mx-auto">
+            <StockyLogoIcon size="sm" />
           </div>
           <div className="space-y-2">
             <h1 className="text-xl font-medium text-stocky-text-main">Stocky admin sign-in</h1>
@@ -167,8 +167,8 @@ export function PlatformVerificationView() {
     <PageLayout>
       <PageHeader>
         <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-widget bg-stocky-primary text-white flex items-center justify-center">
-            <BoxesIcon size="xs" />
+          <div className="w-8 h-8 rounded-widget bg-stocky-primary text-stocky-text-main flex items-center justify-center">
+            <StockyLogoIcon size="xs" />
           </div>
           <div>
             <span className="text-sm font-medium text-stocky-text-main block">Stocky Admin</span>

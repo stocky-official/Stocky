@@ -15,6 +15,8 @@ import {
 } from '@stocky/icons';
 import { UserAvatar } from '@/components/ui/UserAvatar';
 import { SideDrawer } from '@/components/ui/SideDrawer';
+import { LanguageSwitcher } from '@/components/ui/LanguageSwitcher';
+import { useTranslation } from '@/lib/i18n';
 
 export interface PlatformAccountMenuWidgetProps {
   userEmail?: string | null;
@@ -56,9 +58,10 @@ export function PlatformAccountMenuWidget({
   menuPlacement = 'bottom',
   useDrawer = true,
 }: PlatformAccountMenuWidgetProps) {
+  const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const displayName = userName || formatFallbackName(userEmail);
-  const displayTitle = userTitle || (userRole ? userRole.charAt(0).toUpperCase() + userRole.slice(1) : (userEmail ? 'Team member' : 'Sign in to Stocky'));
+  const displayTitle = userTitle || (userRole ? userRole.charAt(0).toUpperCase() + userRole.slice(1) : (userEmail ? t('team.roleStaff') : t('auth.signIn')));
 
   const handleSignIn = async () => {
     await signInWithGoogle('/platform');
@@ -89,8 +92,8 @@ export function PlatformAccountMenuWidget({
         type="button"
         onClick={handleTriggerClick}
         className={`stocky-account-trigger ${isOpen ? 'stocky-account-trigger--open' : ''}`}
-        title={userEmail ? `Account: ${userEmail}` : 'Sign in'}
-        aria-label={userEmail ? 'Open account and organization menu' : 'Sign in'}
+        title={userEmail ? t('accountMenu.accountUser', { email: userEmail }) : t('auth.signIn')}
+        aria-label={userEmail ? t('accountMenu.openMenu') : t('auth.signIn')}
         aria-expanded={userEmail ? isOpen : undefined}
         aria-haspopup="dialog"
       >
@@ -114,7 +117,7 @@ export function PlatformAccountMenuWidget({
       <SideDrawer
         isOpen={isOpen && Boolean(userEmail)}
         onClose={() => setIsOpen(false)}
-        ariaLabel="Account and Organization Settings"
+        ariaLabel={t('accountMenu.title')}
         zIndex={100}
         panelClassName="max-w-md w-full"
       >
@@ -125,14 +128,14 @@ export function PlatformAccountMenuWidget({
               <BoxesIcon size="xs" />
             </div>
             <div>
-              <h2 className="text-sm font-semibold text-stocky-text-main">Account & Organization</h2>
-              <p className="text-[11px] text-stocky-text-sub">Profile, workspace settings, and session</p>
+              <h2 className="text-sm font-semibold text-stocky-text-main">{t('accountMenu.title')}</h2>
+              <p className="text-[11px] text-stocky-text-sub">{t('accountMenu.subtitle')}</p>
             </div>
           </div>
           <button
             type="button"
             onClick={() => setIsOpen(false)}
-            aria-label="Close drawer"
+            aria-label={t('common.close')}
             className="w-8 h-8 rounded-full flex items-center justify-center text-stocky-text-sub hover:text-stocky-text-main hover:bg-stocky-bg-global transition-colors cursor-pointer"
           >
             <XIcon size="xs" />
@@ -186,7 +189,7 @@ export function PlatformAccountMenuWidget({
                     {companyName}
                   </span>
                   <span className="text-[10px] text-stocky-text-sub">
-                    Active Organization Workspace
+                    {t('nav.organization')}
                   </span>
                 </div>
               </div>
@@ -196,17 +199,20 @@ export function PlatformAccountMenuWidget({
             </div>
           )}
 
+          {/* Language Switcher Setting Card */}
+          <LanguageSwitcher variant="drawerItem" />
+
           {/* Management Navigation Group */}
           <div className="flex flex-col gap-1.5 pt-1">
             <span className="text-[11px] font-semibold text-stocky-text-sub uppercase tracking-wider px-1">
-              Workspace Hub
+              {t('nav.workspace')}
             </span>
 
             {/* 1. Organization Settings */}
             <button
               type="button"
               onClick={() => handleNavAction(() => (onSettingsClick ? onSettingsClick() : onNavigateToTab?.('settings')))}
-              className="w-full p-3 rounded-xl border border-stocky-border-subtle bg-white hover:bg-stocky-bg-global active:scale-[0.99] transition-all flex items-center justify-between gap-3 text-left cursor-pointer group shadow-2xs"
+              className="w-full p-3 rounded-xl border border-stocky-border-subtle bg-white hover:bg-stocky-bg-global active:scale-[0.99] transition-all flex items-center justify-between gap-3 text-start cursor-pointer group shadow-2xs"
             >
               <div className="flex items-center gap-3 min-w-0">
                 <div className="w-9 h-9 rounded-xl bg-stocky-bg-global border border-stocky-border-subtle flex items-center justify-center text-stocky-text-main group-hover:border-stocky-primary/40 group-hover:text-stocky-primary transition-colors shrink-0">
@@ -214,21 +220,21 @@ export function PlatformAccountMenuWidget({
                 </div>
                 <div className="flex flex-col min-w-0">
                   <span className="text-xs font-semibold text-stocky-text-main group-hover:text-stocky-primary transition-colors">
-                    Organization Settings
+                    {t('nav.settings')}
                   </span>
                   <span className="text-[10px] text-stocky-text-sub">
-                    Company profile, preferences, and workspace setup
+                    {t('accountMenu.settingsDesc')}
                   </span>
                 </div>
               </div>
-              <ChevronRightIcon size="xs" className="text-stocky-text-sub group-hover:text-stocky-primary group-hover:translate-x-0.5 transition-all shrink-0" />
+              <ChevronRightIcon size="xs" className="text-stocky-text-sub group-hover:text-stocky-primary group-hover:translate-x-0.5 transition-all shrink-0 rtl:rotate-180" />
             </button>
 
             {/* 2. Team & Permissions */}
             <button
               type="button"
               onClick={() => handleNavAction(() => onNavigateToTab?.('team'))}
-              className="w-full p-3 rounded-xl border border-stocky-border-subtle bg-white hover:bg-stocky-bg-global active:scale-[0.99] transition-all flex items-center justify-between gap-3 text-left cursor-pointer group shadow-2xs"
+              className="w-full p-3 rounded-xl border border-stocky-border-subtle bg-white hover:bg-stocky-bg-global active:scale-[0.99] transition-all flex items-center justify-between gap-3 text-start cursor-pointer group shadow-2xs"
             >
               <div className="flex items-center gap-3 min-w-0">
                 <div className="w-9 h-9 rounded-xl bg-stocky-bg-global border border-stocky-border-subtle flex items-center justify-center text-stocky-text-main group-hover:border-stocky-primary/40 group-hover:text-stocky-primary transition-colors shrink-0">
@@ -236,21 +242,21 @@ export function PlatformAccountMenuWidget({
                 </div>
                 <div className="flex flex-col min-w-0">
                   <span className="text-xs font-semibold text-stocky-text-main group-hover:text-stocky-primary transition-colors">
-                    Team Directory & Roles
+                    {t('team.title')}
                   </span>
                   <span className="text-[10px] text-stocky-text-sub">
-                    Staff members, supervisor tree, and permission access
+                    {t('accountMenu.teamDesc')}
                   </span>
                 </div>
               </div>
-              <ChevronRightIcon size="xs" className="text-stocky-text-sub group-hover:text-stocky-primary group-hover:translate-x-0.5 transition-all shrink-0" />
+              <ChevronRightIcon size="xs" className="text-stocky-text-sub group-hover:text-stocky-primary group-hover:translate-x-0.5 transition-all shrink-0 rtl:rotate-180" />
             </button>
 
             {/* 3. Locations & Attendance QR */}
             <button
               type="button"
               onClick={() => handleNavAction(() => onNavigateToTab?.('locations'))}
-              className="w-full p-3 rounded-xl border border-stocky-border-subtle bg-white hover:bg-stocky-bg-global active:scale-[0.99] transition-all flex items-center justify-between gap-3 text-left cursor-pointer group shadow-2xs"
+              className="w-full p-3 rounded-xl border border-stocky-border-subtle bg-white hover:bg-stocky-bg-global active:scale-[0.99] transition-all flex items-center justify-between gap-3 text-start cursor-pointer group shadow-2xs"
             >
               <div className="flex items-center gap-3 min-w-0">
                 <div className="w-9 h-9 rounded-xl bg-stocky-bg-global border border-stocky-border-subtle flex items-center justify-center text-stocky-text-main group-hover:border-stocky-primary/40 group-hover:text-stocky-primary transition-colors shrink-0">
@@ -258,21 +264,21 @@ export function PlatformAccountMenuWidget({
                 </div>
                 <div className="flex flex-col min-w-0">
                   <span className="text-xs font-semibold text-stocky-text-main group-hover:text-stocky-primary transition-colors">
-                    Locations & Attendance QR
+                    {t('locations.title')}
                   </span>
                   <span className="text-[10px] text-stocky-text-sub">
-                    Branch facilities, warehouses, and attendance posters
+                    {t('accountMenu.locationsDesc')}
                   </span>
                 </div>
               </div>
-              <ChevronRightIcon size="xs" className="text-stocky-text-sub group-hover:text-stocky-primary group-hover:translate-x-0.5 transition-all shrink-0" />
+              <ChevronRightIcon size="xs" className="text-stocky-text-sub group-hover:text-stocky-primary group-hover:translate-x-0.5 transition-all shrink-0 rtl:rotate-180" />
             </button>
 
             {/* 4. Activity Logs */}
             <button
               type="button"
               onClick={() => handleNavAction(() => onNavigateToTab?.('logs'))}
-              className="w-full p-3 rounded-xl border border-stocky-border-subtle bg-white hover:bg-stocky-bg-global active:scale-[0.99] transition-all flex items-center justify-between gap-3 text-left cursor-pointer group shadow-2xs"
+              className="w-full p-3 rounded-xl border border-stocky-border-subtle bg-white hover:bg-stocky-bg-global active:scale-[0.99] transition-all flex items-center justify-between gap-3 text-start cursor-pointer group shadow-2xs"
             >
               <div className="flex items-center gap-3 min-w-0">
                 <div className="w-9 h-9 rounded-xl bg-stocky-bg-global border border-stocky-border-subtle flex items-center justify-center text-stocky-text-main group-hover:border-stocky-primary/40 group-hover:text-stocky-primary transition-colors shrink-0">
@@ -280,14 +286,14 @@ export function PlatformAccountMenuWidget({
                 </div>
                 <div className="flex flex-col min-w-0">
                   <span className="text-xs font-semibold text-stocky-text-main group-hover:text-stocky-primary transition-colors">
-                    Audit & Activity Trail
+                    {t('nav.activity')}
                   </span>
                   <span className="text-[10px] text-stocky-text-sub">
-                    Inventory movements, system scans, and event timeline
+                    {t('accountMenu.logsDesc')}
                   </span>
                 </div>
               </div>
-              <ChevronRightIcon size="xs" className="text-stocky-text-sub group-hover:text-stocky-primary group-hover:translate-x-0.5 transition-all shrink-0" />
+              <ChevronRightIcon size="xs" className="text-stocky-text-sub group-hover:text-stocky-primary group-hover:translate-x-0.5 transition-all shrink-0 rtl:rotate-180" />
             </button>
           </div>
         </div>
@@ -300,7 +306,7 @@ export function PlatformAccountMenuWidget({
             className="w-full h-11 rounded-xl bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 font-medium text-xs flex items-center justify-center gap-2 cursor-pointer transition-all active:scale-[0.99]"
           >
             <LogOutIcon size="xs" />
-            <span>Sign out of Stocky</span>
+            <span>{t('nav.logout')}</span>
           </button>
           <p className="text-center text-[10px] text-stocky-text-sub">
             Stocky v0.1.0 · Powered by Overted Technologies

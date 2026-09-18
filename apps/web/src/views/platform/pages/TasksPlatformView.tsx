@@ -13,6 +13,7 @@ import { PlatformPageLayout } from './PlatformPageLayout';
 import { TasksWorkspaceWidget } from '@/widgets';
 
 import { useOptionalPlatform } from '@/views/platform/PlatformContext';
+import { useTranslation } from '@/lib/i18n';
 
 export interface TasksPlatformViewProps {
   tasks: StockTask[];
@@ -50,6 +51,7 @@ export interface TasksPlatformViewProps {
  * Orchestrates layout, header, ongoing badge, and task center queue.
  */
 export function TasksPlatformView(props: TasksPlatformViewProps) {
+  const { t } = useTranslation();
   const platform = useOptionalPlatform();
   const activeTaskTab = props.activeTaskTab ?? platform?.taskTab;
   const onTaskTabChange = props.onTaskTabChange ?? platform?.setTaskTab;
@@ -61,13 +63,13 @@ export function TasksPlatformView(props: TasksPlatformViewProps) {
 
   return (
     <PlatformPageLayout
-      title="Stock tasks"
-      subtitle="Assigned counts and expiry checks stay here. Permanent actions are recorded in Logs."
+      title={t('tasks.title')}
+      subtitle={t('tasks.subtitle')}
       hideHeaderOnMobile={true}
       actions={
         <span className="inline-flex items-center gap-1.5 rounded-full stocky-status-info border px-2.5 py-1 text-[11px]">
           <ActivityIcon size="xs" />
-          <span>{ongoingCount} ongoing</span>
+          <span>{ongoingCount} {t('tasks.ongoing')}</span>
         </span>
       }
     >

@@ -5,6 +5,7 @@ import { PlatformPageLayout } from './PlatformPageLayout';
 import { SuppliersWorkspaceWidget } from '@/widgets';
 
 import { useOptionalPlatform } from '@/views/platform/PlatformContext';
+import { useTranslation } from '@/lib/i18n';
 
 export interface SuppliersPlatformViewProps {
   requests: SupplierRequest[];
@@ -34,6 +35,7 @@ export interface SuppliersPlatformViewProps {
  * Orchestrates layout, header, and the supplier management / requests workspace.
  */
 export function SuppliersPlatformView(props: SuppliersPlatformViewProps) {
+  const { t } = useTranslation();
   const platform = useOptionalPlatform();
   const activeSupplierTab = props.activeSupplierTab ?? platform?.supplierTab;
   const onSupplierTabChange = props.onSupplierTabChange ?? platform?.setSupplierTab;
@@ -42,12 +44,8 @@ export function SuppliersPlatformView(props: SuppliersPlatformViewProps) {
 
   return (
     <PlatformPageLayout
-      title={isRequests ? 'Supplier Requests' : 'Suppliers'}
-      subtitle={
-        isRequests
-          ? 'Track purchase requests, restocking orders, and vendor fulfillment status across your locations.'
-          : 'Manage supplier contacts, catalog links, and replenishment requests.'
-      }
+      title={isRequests ? t('suppliers.requests') : t('suppliers.title')}
+      subtitle={t('suppliers.subtitle')}
     >
       <SuppliersWorkspaceWidget
         {...props}

@@ -2,7 +2,7 @@
 
 import React, { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { AlertCircleIcon, BoxesIcon, CheckCircleIcon } from '@stocky/icons';
+import { AlertCircleIcon, CheckCircleIcon, StockyLogoIcon } from '@stocky/icons';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { supabase } from '@/lib/supabase/client';
@@ -124,8 +124,8 @@ export function VerificationPendingView() {
     <PageLayout className="flex flex-col">
       <PageHeader>
         <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-widget bg-stocky-primary text-white flex items-center justify-center">
-            <BoxesIcon size="xs" />
+          <div className="w-8 h-8 rounded-widget bg-stocky-primary text-stocky-text-main flex items-center justify-center">
+            <StockyLogoIcon size="xs" />
           </div>
           <span className="text-sm font-medium text-stocky-text-main">Stocky</span>
         </div>

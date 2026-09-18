@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { BoxesIcon, XIcon, ArrowDownIcon } from '@stocky/icons';
+import { ArrowDownIcon, StockyLogoIcon, XIcon } from '@stocky/icons';
 
 export function PWARegistration() {
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
@@ -98,7 +98,7 @@ export function PWARegistration() {
             className="fixed bottom-4 left-4 right-4 md:left-auto md:right-4 md:w-96 z-50 bg-stocky-bg-widget/95 backdrop-blur-md border border-stocky-border-subtle rounded-widget p-4 shadow-2xl flex items-center gap-3"
           >
             <div className="w-10 h-10 rounded-lg bg-stocky-primary flex items-center justify-center shrink-0 shadow-md">
-              <BoxesIcon size="sm" className="text-white" />
+              <StockyLogoIcon size="sm" className="text-[#11120F]" />
             </div>
 
             <div className="flex-1 min-w-0">

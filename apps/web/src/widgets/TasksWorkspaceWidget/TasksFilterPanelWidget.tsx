@@ -1,11 +1,12 @@
 'use client';
 
 import React, { useEffect, useRef } from 'react';
-import { CheckCircleIcon, ClockIcon, RotateCcwIcon, XIcon } from '@stocky/icons';
+import { CheckCircleIcon, ClockIcon, ListTodoIcon, RotateCcwIcon, XIcon } from '@stocky/icons';
 import type { Location, StockTask } from '@stocky/types';
+import { useTranslation } from '@/lib/i18n';
 
 export interface TasksFilterState {
-  taskType: 'all' | 'count' | 'expiry';
+  taskType: 'all' | 'count' | 'expiry' | 'open';
   locationId: string;
   assigneeId: string;
   status: StockTask['status'] | 'all';
@@ -38,6 +39,7 @@ export function TasksFilterPanelWidget({
   className,
   isMobile = false,
 }: TasksFilterPanelWidgetProps) {
+  const { t } = useTranslation();
   const panelRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -81,17 +83,17 @@ export function TasksFilterPanelWidget({
         <div className="flex items-center justify-between border-b border-stocky-border-subtle pb-3">
           <div className="flex items-center gap-2">
             <span className="text-xs font-semibold uppercase tracking-wider text-stocky-text-sub">
-              Filter Tasks
+              {t('common.filter') || 'Filter'}
             </span>
             <span className="rounded-full bg-stocky-bg-global px-2 py-0.5 text-[11px] font-medium text-stocky-text-main">
-              {matchingCount} of {totalCount} matching
+              {matchingCount} of {totalCount}
             </span>
           </div>
           <button
             type="button"
             onClick={onClose}
             className="flex h-7 w-7 items-center justify-center rounded-full text-stocky-text-sub hover:bg-stocky-bg-global hover:text-stocky-text-main transition-colors cursor-pointer"
-            aria-label="Close filters"
+            aria-label={t('common.close') || 'Close filters'}
           >
             <XIcon size="xs" />
           </button>
@@ -103,7 +105,7 @@ export function TasksFilterPanelWidget({
         {/* Task Type */}
         <div>
           <label className="block text-[11px] font-medium text-stocky-text-sub mb-1.5">
-            Task Type
+            {t('common.type') || 'Task Type'}
           </label>
           <div className="flex flex-col gap-1">
             <button
@@ -115,7 +117,7 @@ export function TasksFilterPanelWidget({
                   : 'text-stocky-text-main hover:bg-stocky-bg-global'
               }`}
             >
-              <span>All types</span>
+              <span>{t('inventory.allCategories') || 'All types'}</span>
               {filters.taskType === 'all' && <CheckCircleIcon size="xs" />}
             </button>
             <button
@@ -128,8 +130,8 @@ export function TasksFilterPanelWidget({
               }`}
             >
               <span className="flex items-center gap-1.5">
-                <CheckCircleIcon size="xs" className="text-stocky-text-sub" />
-                Count quantities
+                <CheckCircleIcon size="xs" className="text-stocky-text-sub shrink-0" />
+                {t('tasks.countQuantities') || 'Count quantities'}
               </span>
               {filters.taskType === 'count' && <CheckCircleIcon size="xs" />}
             </button>
@@ -143,10 +145,25 @@ export function TasksFilterPanelWidget({
               }`}
             >
               <span className="flex items-center gap-1.5">
-                <ClockIcon size="xs" className="text-stocky-text-sub" />
-                Check expiry dates
+                <ClockIcon size="xs" className="text-stocky-text-sub shrink-0" />
+                {t('tasks.checkExpiry') || 'Check expiry dates'}
               </span>
               {filters.taskType === 'expiry' && <CheckCircleIcon size="xs" />}
+            </button>
+            <button
+              type="button"
+              onClick={() => onFilterChange({ ...filters, taskType: 'open' })}
+              className={`flex h-8 items-center justify-between rounded-lg px-2.5 text-xs font-medium transition-colors cursor-pointer ${
+                filters.taskType === 'open'
+                  ? 'bg-stocky-primary/10 text-stocky-primary font-semibold'
+                  : 'text-stocky-text-main hover:bg-stocky-bg-global'
+              }`}
+            >
+              <span className="flex items-center gap-1.5">
+                <ListTodoIcon size="xs" className="text-stocky-text-sub shrink-0" />
+                {t('tasks.openTask') || 'Open task'}
+              </span>
+              {filters.taskType === 'open' && <CheckCircleIcon size="xs" />}
             </button>
           </div>
         </div>
@@ -192,20 +209,20 @@ export function TasksFilterPanelWidget({
         {/* Status */}
         <div>
           <label className="block text-[11px] font-medium text-stocky-text-sub mb-1.5">
-            Status
+            {t('common.status') || 'Status'}
           </label>
           <select
             value={filters.status}
             onChange={(e) => onFilterChange({ ...filters, status: e.target.value as any })}
             className="w-full h-9 rounded-xl border border-stocky-border-subtle bg-white px-3 text-xs text-stocky-text-main capitalize focus:border-stocky-primary focus:outline-none transition-colors"
           >
-            <option value="all">All statuses</option>
-            <option value="assigned">Assigned</option>
-            <option value="in_progress">In progress</option>
-            <option value="submitted">Submitted</option>
-            <option value="rejected">Rejected</option>
-            <option value="approved">Approved</option>
-            <option value="cancelled">Cancelled</option>
+            <option value="all">{t('inventory.allStatuses') || 'All statuses'}</option>
+            <option value="assigned">{t('tasks.statusAssigned') || 'Assigned'}</option>
+            <option value="in_progress">{t('tasks.statusInProgress') || 'In progress'}</option>
+            <option value="submitted">{t('tasks.statusSubmitted') || 'In review'}</option>
+            <option value="rejected">{t('tasks.statusRejected') || 'Needs correction'}</option>
+            <option value="approved">{t('tasks.statusApproved') || 'Approved'}</option>
+            <option value="cancelled">{t('tasks.statusCancelled') || 'Cancelled'}</option>
           </select>
         </div>
       </div>
@@ -218,7 +235,7 @@ export function TasksFilterPanelWidget({
           className="inline-flex items-center gap-1 text-xs font-medium text-stocky-text-sub hover:text-stocky-text-main transition-colors cursor-pointer"
         >
           <RotateCcwIcon size="xs" />
-          <span>Reset all</span>
+          <span>{t('inventory.resetFilters') || 'Reset all'}</span>
         </button>
 
         <button
@@ -226,7 +243,7 @@ export function TasksFilterPanelWidget({
           onClick={onClose}
           className="h-9 px-5 rounded-full bg-stocky-text-main text-xs font-medium text-white hover:bg-black transition-colors cursor-pointer"
         >
-          Done
+          {t('common.done') || 'Done'}
         </button>
       </div>
     </div>

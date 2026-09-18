@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { FilterIcon, PlusIcon, SearchIcon, XIcon } from '@stocky/icons';
+import { useTranslation } from '@/lib/i18n';
 
 export type TransferQueue = 'all' | 'action' | 'incoming' | 'outgoing';
 
@@ -28,11 +29,12 @@ export function TransfersToolbarWidget({
   isFilterActive = false,
   activeFilterCount = 0,
 }: TransfersToolbarWidgetProps) {
-  const queueTabs: Array<{ id: TransferQueue; label: string }> = [
-    { id: 'action', label: 'Needs action' },
-    { id: 'incoming', label: 'Incoming' },
-    { id: 'outgoing', label: 'Outgoing' },
-    { id: 'all', label: 'All transfers' },
+  const { t } = useTranslation();
+  const queueTabs: Array<{ id: TransferQueue; label: string; mobileLabel: string }> = [
+    { id: 'action', label: t('transfers.needsAction'), mobileLabel: t('transfers.needsAction') },
+    { id: 'incoming', label: t('transfers.incoming'), mobileLabel: t('transfers.incoming') },
+    { id: 'outgoing', label: t('transfers.outgoing'), mobileLabel: t('transfers.outgoing') },
+    { id: 'all', label: t('transfers.allQueues'), mobileLabel: t('common.all') },
   ];
 
   return (
@@ -47,7 +49,7 @@ export function TransfersToolbarWidget({
           <input
             value={search}
             onChange={(event) => onSearchChange(event.target.value)}
-            placeholder="Search transfers, locations, or products..."
+            placeholder={t('transfers.searchPlaceholder')}
             className="w-full h-10 rounded-full border border-stocky-border-subtle bg-stocky-bg-widget pl-9 pr-16 text-xs text-stocky-text-main placeholder:text-stocky-text-sub focus:border-stocky-primary focus:outline-none transition-colors"
           />
           {search && (
@@ -55,7 +57,7 @@ export function TransfersToolbarWidget({
               type="button"
               onClick={() => onSearchChange('')}
               className="absolute right-9 top-1/2 -translate-y-1/2 text-stocky-text-sub hover:text-stocky-text-main transition-colors cursor-pointer"
-              aria-label="Clear search"
+              aria-label={t('common.close')}
             >
               <XIcon size="xs" />
             </button>
@@ -90,12 +92,6 @@ export function TransfersToolbarWidget({
         >
           {queueTabs.map((tab) => {
             const isActive = queue === tab.id;
-            const mobileLabel =
-              tab.id === 'action'
-                ? 'Action'
-                : tab.id === 'all'
-                ? 'All'
-                : tab.label;
             return (
               <button
                 key={tab.id}
@@ -109,7 +105,7 @@ export function TransfersToolbarWidget({
                     : 'border border-stocky-border-subtle bg-white text-stocky-text-main hover:border-stocky-primary hover:text-stocky-primary'
                 }`}
               >
-                <span className="sm:hidden">{mobileLabel}</span>
+                <span className="sm:hidden">{tab.mobileLabel}</span>
                 <span className="hidden sm:inline">{tab.label}</span>
               </button>
             );
@@ -121,7 +117,7 @@ export function TransfersToolbarWidget({
           onClick={onRequestStock}
           className="stocky-table-toolbar-button stocky-table-toolbar-button--primary w-full sm:w-auto h-10 px-4 rounded-full text-xs font-semibold inline-flex items-center justify-center gap-1.5 whitespace-nowrap cursor-pointer"
         >
-          <PlusIcon size="xs" /> <span><span className="sm:hidden">Request</span><span className="hidden sm:inline">Request stock</span></span>
+          <PlusIcon size="xs" /> <span>{t('transfers.requestStock')}</span>
         </button>
       </div>
     </div>

@@ -15,6 +15,7 @@ import {
 } from 'recharts';
 import { ChartFilterBottomSheet } from './ChartFilterBottomSheet';
 import { exportVisualDataToExcel } from '@/lib/excel/export';
+import { useTranslation } from '@/lib/i18n';
 
 export interface HomeTeamAttendanceChartWidgetProps {
   shifts?: AttendanceShift[];
@@ -35,6 +36,7 @@ export function HomeTeamAttendanceChartWidget({
   externalTimeframe,
   externalLocationId,
 }: HomeTeamAttendanceChartWidgetProps) {
+  const { t } = useTranslation();
   const [analysisMode, setAnalysisMode] = useState<'branch' | 'person'>('branch');
   const [selectedBranchId, setSelectedBranchId] = useState<string>('all');
   const [selectedPersonId, setSelectedPersonId] = useState<string>('all');
@@ -164,7 +166,7 @@ export function HomeTeamAttendanceChartWidget({
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-1.5 min-w-0">
             <h3 className="text-sm sm:text-base font-semibold text-stocky-text-main tracking-tight truncate">
-              Team Attendance Dynamics
+              {t('home.charts.teamAttendance.title')}
             </h3>
             <button
               type="button"
@@ -189,7 +191,7 @@ export function HomeTeamAttendanceChartWidget({
                     : 'text-stocky-text-sub hover:text-stocky-text-main'
                 }`}
               >
-                Chart
+                {t('home.charts.topMovers.chart')}
               </button>
               <button
                 type="button"
@@ -201,7 +203,7 @@ export function HomeTeamAttendanceChartWidget({
                     : 'text-stocky-text-sub hover:text-stocky-text-main'
                 }`}
               >
-                Table
+                {t('home.charts.topMovers.table')}
               </button>
             </div>
 
@@ -214,7 +216,7 @@ export function HomeTeamAttendanceChartWidget({
               title="Extract visual data as Excel (.xlsx)"
             >
               <FileSpreadsheetIcon size="xs" />
-              <span>Excel</span>
+              <span>{t('home.charts.topMovers.excel')}</span>
             </button>
 
             <button
@@ -223,9 +225,9 @@ export function HomeTeamAttendanceChartWidget({
               className="h-8 px-3 rounded-full border border-stocky-border-subtle bg-stocky-bg-global hover:bg-stocky-border-subtle text-xs font-semibold text-stocky-text-main flex items-center gap-1.5 cursor-pointer shadow-xs transition-colors shrink-0"
             >
               <FilterIcon size="xs" />
-              <span>Filter</span>
+              <span>{t('home.charts.topMovers.filter')}</span>
               <span className="px-1.5 py-0.5 rounded-full bg-stocky-primary text-white text-[10px] font-bold">
-                {analysisMode === 'branch' ? 'Branch' : 'Person'} • {effectiveDays}D
+                {analysisMode === 'branch' ? t('home.charts.teamAttendance.byBranch') : t('home.charts.teamAttendance.byPerson')} • {effectiveDays}D
               </span>
             </button>
           </div>
@@ -233,13 +235,13 @@ export function HomeTeamAttendanceChartWidget({
 
         {/* Subtitle hidden on phone */}
         <p className="hidden sm:block text-[11px] text-stocky-text-sub mt-0.5">
-          Attendance distribution and punctuality over time by branch or individual staff.
+          {t('home.charts.teamAttendance.subtitle')}
         </p>
 
         {showInfo && (
           <div className="mt-2.5 p-2.5 bg-stocky-bg-global/90 border border-stocky-border-subtle rounded-xl text-xs text-stocky-text-sub flex items-start justify-between gap-2 animate-in fade-in duration-150">
             <span>
-              Daily breakdown of employee attendance showing on-time check-ins, late arrivals, and approved time off. Filter by specific branch locations or individual staff profiles.
+              {t('home.charts.teamAttendance.info')}
             </span>
             <button
               type="button"
@@ -255,7 +257,7 @@ export function HomeTeamAttendanceChartWidget({
       {/* 2. Sub-metric Status Bar */}
       <div className="flex items-center justify-between gap-2 pt-2 text-xs">
         <span className="text-[11px] text-stocky-text-sub font-medium">
-          Overall Attendance: <strong className="text-stocky-text-main">{overallPct}%</strong>
+          {t('home.charts.teamAttendance.overallAttendance', { pct: overallPct })}
         </span>
 
         {onOpenAttendance && (
@@ -264,7 +266,7 @@ export function HomeTeamAttendanceChartWidget({
             onClick={onOpenAttendance}
             className="text-[11px] font-semibold text-stocky-primary hover:underline cursor-pointer"
           >
-            Manage Attendance &rarr;
+            {t('home.charts.teamAttendance.manageAttendance')}
           </button>
         )}
       </div>
@@ -299,16 +301,16 @@ export function HomeTeamAttendanceChartWidget({
                       <span className="font-bold text-stocky-text-main block">{label}</span>
                       <div className="space-y-1 mt-1 text-[11px]">
                         <div className="text-emerald-600 font-medium">
-                          Present on Duty: {data.Present}
+                          {t('home.charts.teamAttendance.presentOnDuty', { count: data.Present })}
                         </div>
                         <div className="text-amber-600 font-medium">
-                          Late Arrival: {data.Late}
+                          {t('home.charts.teamAttendance.lateArrival', { count: data.Late })}
                         </div>
                         <div className="text-stocky-text-muted font-medium">
-                          Off / Leave: {data['Off / Leave']}
+                          {t('home.charts.teamAttendance.offLeave', { count: data['Off / Leave'] })}
                         </div>
                         <div className="text-stocky-text-main font-semibold pt-1 border-t border-stocky-border-subtle">
-                          Total Hours Logged: {data.hoursLogged} hrs
+                          {t('home.charts.teamAttendance.totalHoursLogged', { hours: data.hoursLogged })}
                         </div>
                       </div>
                     </div>
@@ -327,15 +329,15 @@ export function HomeTeamAttendanceChartWidget({
         </div>
       ) : (
         <div className="w-full flex-1 my-3 min-h-[260px] overflow-y-auto rounded-xl border border-stocky-border-subtle">
-          <table className="w-full text-left text-xs border-collapse">
+          <table className="w-full text-start text-xs border-collapse">
             <thead className="bg-stocky-bg-global sticky top-0 border-b border-stocky-border-subtle text-[11px] font-semibold text-stocky-text-sub">
               <tr>
-                <th className="py-2.5 px-3">Date / Day</th>
-                <th className="py-2.5 px-3 text-center">Present</th>
-                <th className="py-2.5 px-3 text-center">Late</th>
-                <th className="py-2.5 px-3 text-center">Off / Leave</th>
-                <th className="py-2.5 px-3 text-right">Hours</th>
-                <th className="py-2.5 px-3 text-right">Turnout</th>
+                <th className="py-2.5 px-3 text-start">{t('home.charts.teamAttendance.dateDay')}</th>
+                <th className="py-2.5 px-3 text-center">{t('attendance.statusWorking')}</th>
+                <th className="py-2.5 px-3 text-center">{t('attendance.statusLate')}</th>
+                <th className="py-2.5 px-3 text-center">{t('attendance.timeOff')}</th>
+                <th className="py-2.5 px-3 text-end">{t('attendance.duration')}</th>
+                <th className="py-2.5 px-3 text-end">{t('home.charts.teamAttendance.turnout')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-stocky-border-subtle font-mono text-[11px]">
@@ -344,15 +346,15 @@ export function HomeTeamAttendanceChartWidget({
                 const turnout = total > 0 ? Math.round(((row.Present + row.Late) / total) * 100) : 0;
                 return (
                   <tr key={row.date} className="hover:bg-stocky-bg-global/50 transition-colors">
-                    <td className="py-2 px-3 font-sans font-medium text-stocky-text-main">
+                    <td className="py-2 px-3 text-start font-sans font-medium text-stocky-text-main">
                       {row.label}
                       <span className="block text-[10px] text-stocky-text-sub font-mono">{row.date}</span>
                     </td>
                     <td className="py-2 px-3 text-center text-emerald-600 font-semibold">{row.Present}</td>
                     <td className="py-2 px-3 text-center text-amber-600 font-semibold">{row.Late}</td>
                     <td className="py-2 px-3 text-center text-stocky-text-muted">{row['Off / Leave']}</td>
-                    <td className="py-2 px-3 text-right font-medium text-stocky-text-main">{row.hoursLogged}h</td>
-                    <td className="py-2 px-3 text-right">
+                    <td className="py-2 px-3 text-end font-medium text-stocky-text-main">{row.hoursLogged}h</td>
+                    <td className="py-2 px-3 text-end">
                       <span className={`px-1.5 py-0.5 rounded text-[10px] font-semibold ${
                         turnout >= 80 ? 'bg-emerald-50 text-emerald-700' : turnout >= 60 ? 'bg-amber-50 text-amber-700' : 'bg-rose-50 text-rose-700'
                       }`}>
@@ -369,9 +371,9 @@ export function HomeTeamAttendanceChartWidget({
 
       {/* 4. Footer Summary */}
       <div className="flex items-center justify-between text-[11px] text-stocky-text-sub pt-2 border-t border-stocky-border-subtle font-medium">
-        <span>Showing {effectiveDays}-day attendance trend</span>
+        <span>{t('home.charts.teamAttendance.showingTrend', { days: effectiveDays })}</span>
         <span className="text-emerald-600 font-semibold">
-          Total Present: {totalPresent} shifts
+          {t('home.charts.teamAttendance.totalPresentShifts', { count: totalPresent })}
         </span>
       </div>
 
@@ -379,7 +381,7 @@ export function HomeTeamAttendanceChartWidget({
       <ChartFilterBottomSheet
         isOpen={isFilterSheetOpen}
         onClose={() => setIsFilterSheetOpen(false)}
-        title="Attendance Filters"
+        title={t('home.charts.teamAttendance.filterTitle')}
         onReset={() => {
           setAnalysisMode('branch');
           setSelectedBranchId('all');
@@ -390,7 +392,7 @@ export function HomeTeamAttendanceChartWidget({
         <div className="space-y-4">
           <div>
             <label className="text-xs font-semibold text-stocky-text-main block mb-2">
-              Breakdown Mode
+              {t('home.charts.teamAttendance.breakdownMode')}
             </label>
             <div className="grid grid-cols-2 gap-2">
               <button
@@ -402,7 +404,7 @@ export function HomeTeamAttendanceChartWidget({
                     : 'bg-stocky-bg-global text-stocky-text-sub border border-stocky-border-subtle'
                 }`}
               >
-                By Branch
+                {t('home.charts.teamAttendance.byBranch')}
               </button>
               <button
                 type="button"
@@ -413,14 +415,14 @@ export function HomeTeamAttendanceChartWidget({
                     : 'bg-stocky-bg-global text-stocky-text-sub border border-stocky-border-subtle'
                 }`}
               >
-                By Person
+                {t('home.charts.teamAttendance.byPerson')}
               </button>
             </div>
           </div>
 
           <div className="pt-2 border-t border-stocky-border-subtle">
             <label className="text-xs font-semibold text-stocky-text-main block mb-2">
-              {analysisMode === 'branch' ? 'Select Branch' : 'Select Team Member'}
+              {analysisMode === 'branch' ? t('home.charts.teamAttendance.selectBranch') : t('home.charts.teamAttendance.selectMember')}
             </label>
             {analysisMode === 'branch' ? (
               <select
@@ -428,7 +430,7 @@ export function HomeTeamAttendanceChartWidget({
                 onChange={(e) => setSelectedBranchId(e.target.value)}
                 className="w-full h-10 px-3 rounded-xl text-xs font-medium bg-stocky-bg-global text-stocky-text-main border border-stocky-border-subtle cursor-pointer focus:outline-none"
               >
-                <option value="all">All Branches</option>
+                <option value="all">{t('home.charts.teamAttendance.allBranches')}</option>
                 {locations.map((loc) => (
                   <option key={loc.id} value={loc.id}>
                     {loc.name}
@@ -441,7 +443,7 @@ export function HomeTeamAttendanceChartWidget({
                 onChange={(e) => setSelectedPersonId(e.target.value)}
                 className="w-full h-10 px-3 rounded-xl text-xs font-medium bg-stocky-bg-global text-stocky-text-main border border-stocky-border-subtle cursor-pointer focus:outline-none"
               >
-                <option value="all">All Team Members</option>
+                <option value="all">{t('home.charts.teamAttendance.allMembers')}</option>
                 {memberList.map((m) => (
                   <option key={m.id} value={m.id}>
                     {m.name} ({m.role})
@@ -453,7 +455,7 @@ export function HomeTeamAttendanceChartWidget({
 
           <div className="pt-2 border-t border-stocky-border-subtle">
             <label className="text-xs font-semibold text-stocky-text-main block mb-2">
-              Timeframe Presets
+              {t('home.charts.teamAttendance.timeframePresets')}
             </label>
             <div className="grid grid-cols-3 gap-2">
               {[7, 14, 30].map((days) => (
@@ -467,7 +469,7 @@ export function HomeTeamAttendanceChartWidget({
                       : 'bg-stocky-bg-global text-stocky-text-sub border border-stocky-border-subtle'
                   }`}
                 >
-                  {days} Days
+                  {t('home.charts.teamAttendance.daysPreset', { days })}
                 </button>
               ))}
             </div>

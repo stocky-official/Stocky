@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { XIcon } from '@stocky/icons';
 import type { Product, Supplier, SupplierProduct } from '@stocky/types';
 import { SideDrawer } from '@/components/ui/SideDrawer';
+import { useTranslation } from '@/lib/i18n';
 
 export interface SupplierProductLinkDrawerWidgetProps {
   isOpen: boolean;
@@ -27,6 +28,7 @@ export function SupplierProductLinkDrawerWidget({
   supplierProducts,
   onLinkProduct,
 }: SupplierProductLinkDrawerWidgetProps) {
+  const { t } = useTranslation();
   const [productId, setProductId] = useState('');
   const [supplierSku, setSupplierSku] = useState('');
   const [unitCost, setUnitCost] = useState('');
@@ -58,17 +60,17 @@ export function SupplierProductLinkDrawerWidget({
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     if (!supplier) {
-      setError('No supplier selected.');
+      setError(t('drawers.supplierProductLink.errors.noSupplier'));
       return;
     }
     if (!productId) {
-      setError('Please select a product to link.');
+      setError(t('drawers.supplierProductLink.errors.chooseProduct'));
       return;
     }
 
     const parsedCost = unitCost ? parseFloat(unitCost) : undefined;
     if (parsedCost !== undefined && (isNaN(parsedCost) || parsedCost < 0)) {
-      setError('Unit cost must be a non-negative number.');
+      setError(t('drawers.supplierProductLink.errors.costNonNegative'));
       return;
     }
 
@@ -83,14 +85,14 @@ export function SupplierProductLinkDrawerWidget({
       });
       handleClose();
     } catch (err: any) {
-      setError(err?.message || 'Could not link product to this supplier.');
+      setError(err?.message || t('drawers.supplierProductLink.errors.linkFailed'));
     } finally {
       setIsSaving(false);
     }
   };
 
   return (
-    <SideDrawer isOpen={isOpen} onClose={handleClose} ariaLabel="Link catalog product">
+    <SideDrawer isOpen={isOpen} onClose={handleClose} ariaLabel={t('drawers.supplierProductLink.title')}>
       <div className="flex h-full flex-col">
         {/* Header */}
         <div className="flex items-center justify-between border-b border-stocky-border-subtle p-5 sm:p-6 shrink-0 bg-white">
@@ -113,10 +115,10 @@ export function SupplierProductLinkDrawerWidget({
             </div>
             <div className="min-w-0">
               <h2 className="text-base font-semibold text-stocky-text-main tracking-tight leading-snug">
-                Link catalog product
+                {t('drawers.supplierProductLink.title')}
               </h2>
               <p className="mt-0.5 text-xs text-stocky-text-sub truncate">
-                Assign a product to <strong className="text-stocky-text-main font-semibold">{supplier?.name || 'Supplier'}</strong>.
+                {t('drawers.supplierProductLink.subtitle', { name: supplier?.name || '' })}
               </p>
             </div>
           </div>
@@ -124,7 +126,7 @@ export function SupplierProductLinkDrawerWidget({
             type="button"
             onClick={handleClose}
             className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-stocky-text-sub hover:bg-stocky-bg-global hover:text-stocky-text-main transition-colors cursor-pointer"
-            aria-label="Close"
+            aria-label={t('common.close')}
           >
             <XIcon size="xs" />
           </button>
@@ -140,7 +142,7 @@ export function SupplierProductLinkDrawerWidget({
 
           <div>
             <label className="block text-xs font-medium text-stocky-text-main">
-              Product <span className="text-red-500">*</span>
+              {t('drawers.supplierProductLink.product')} <span className="text-red-500">*</span>
             </label>
             <select
               required
@@ -149,7 +151,7 @@ export function SupplierProductLinkDrawerWidget({
               onChange={(e) => setProductId(e.target.value)}
               className="mt-1.5 h-10 w-full rounded-xl border border-stocky-border-subtle bg-stocky-bg-widget px-3 text-xs text-stocky-text-main focus:border-stocky-primary focus:outline-none"
             >
-              <option value="">Choose an unassigned product</option>
+              <option value="">{t('drawers.supplierProductLink.chooseProduct')}</option>
               {availableProducts.map((product) => (
                 <option key={product.id} value={product.id}>
                   {product.name} {product.barcode ? `(${product.barcode})` : ''}
@@ -160,19 +162,19 @@ export function SupplierProductLinkDrawerWidget({
 
           <div>
             <label className="block text-xs font-medium text-stocky-text-main">
-              Supplier SKU <span className="text-stocky-text-sub font-normal">(optional)</span>
+              {t('drawers.supplierProductLink.supplierSku')} <span className="text-stocky-text-sub font-normal">({t('common.optional')})</span>
             </label>
             <input
               value={supplierSku}
               onChange={(e) => setSupplierSku(e.target.value)}
-              placeholder="e.g. SUP-98402"
+              placeholder={t('drawers.supplierProductLink.supplierSkuPlaceholder')}
               className="mt-1.5 h-10 w-full rounded-xl border border-stocky-border-subtle bg-stocky-bg-widget px-3 text-xs text-stocky-text-main placeholder:text-stocky-text-sub/50 focus:border-stocky-primary focus:outline-none"
             />
           </div>
 
           <div>
             <label className="block text-xs font-medium text-stocky-text-main">
-              Unit cost <span className="text-stocky-text-sub font-normal">(optional agreed price)</span>
+              {t('drawers.supplierProductLink.unitCost')} <span className="text-stocky-text-sub font-normal">({t('drawers.supplierProductLink.agreedPriceHint')})</span>
             </label>
             <input
               type="number"
@@ -180,7 +182,7 @@ export function SupplierProductLinkDrawerWidget({
               step="0.01"
               value={unitCost}
               onChange={(e) => setUnitCost(e.target.value)}
-              placeholder="e.g. 14.50"
+              placeholder={t('drawers.supplierProductLink.unitCostPlaceholder')}
               className="mt-1.5 h-10 w-full rounded-xl border border-stocky-border-subtle bg-stocky-bg-widget px-3 text-xs text-stocky-text-main placeholder:text-stocky-text-sub/50 focus:border-stocky-primary focus:outline-none"
             />
           </div>
@@ -193,14 +195,14 @@ export function SupplierProductLinkDrawerWidget({
               disabled={isSaving}
               className="h-10 rounded-full border border-stocky-border-subtle px-5 text-xs font-medium text-stocky-text-main hover:bg-stocky-bg-global transition-colors cursor-pointer disabled:opacity-50"
             >
-              Cancel
+              {t('common.cancel')}
             </button>
             <button
               type="submit"
               disabled={isSaving}
               className="h-10 rounded-full bg-stocky-primary px-6 text-xs font-medium text-white hover:bg-stocky-primary-hover transition-colors cursor-pointer shadow-sm disabled:opacity-50"
             >
-              {isSaving ? 'Linking…' : 'Link product'}
+              {isSaving ? t('drawers.supplierProductLink.saving') : t('drawers.supplierProductLink.save')}
             </button>
           </div>
         </form>

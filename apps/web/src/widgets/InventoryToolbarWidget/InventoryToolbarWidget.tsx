@@ -10,6 +10,7 @@ import {
 } from '@stocky/icons';
 import { StandardToolbarWidget } from '../StandardToolbarWidget/StandardToolbarWidget';
 import type { ActionItem } from '@/components/ui/ActionsBottomSheet';
+import { useTranslation } from '@/lib/i18n';
 
 export interface InventoryToolbarWidgetProps {
   searchQuery: string;
@@ -48,12 +49,14 @@ export function InventoryToolbarWidget({
   onResupply,
   onReceive,
 }: InventoryToolbarWidgetProps) {
+  const { t } = useTranslation();
+
   const moreActions: ActionItem[] = [
     ...(canImport && onImport
       ? [
           {
             id: 'import',
-            label: 'Import',
+            label: t('inventory.import') || 'Import',
             description: 'Upload CSV or Excel file to batch update stock',
             icon: <CloudUploadIcon size="xs" />,
             onClick: onImport,
@@ -64,7 +67,7 @@ export function InventoryToolbarWidget({
       ? [
           {
             id: 'export',
-            label: 'Export',
+            label: t('inventory.export') || 'Export',
             description: 'Download current inventory as Excel spreadsheet',
             icon: <CloudDownloadIcon size="xs" />,
             onClick: onExport,
@@ -75,7 +78,7 @@ export function InventoryToolbarWidget({
       ? [
           {
             id: 'audit',
-            label: 'Audit',
+            label: t('inventory.audit') || 'Audit',
             description: 'Create a physical count or expiry inspection task',
             icon: <CheckCircleIcon size="xs" />,
             onClick: onAudit,
@@ -86,7 +89,7 @@ export function InventoryToolbarWidget({
       ? [
           {
             id: 'resupply',
-            label: 'Resupply',
+            label: t('inventory.resupply') || 'Resupply',
             description: 'Send purchase resupply orders to default suppliers',
             icon: <MailIcon size="xs" />,
             onClick: onResupply,
@@ -99,18 +102,18 @@ export function InventoryToolbarWidget({
     <StandardToolbarWidget
       searchQuery={searchQuery}
       onSearchChange={onSearchChange}
-      searchPlaceholder="Search product or barcode..."
+      searchPlaceholder={t('inventory.searchPlaceholder') || 'Search product or barcode...'}
       isFilterOpen={filterPanelOpen}
       onToggleFilter={onToggleFilterPanel}
       activeFilterCount={activeFilterCount || (isFilterActive ? 1 : 0)}
       primaryAction={{
-        label: 'Add inventory',
+        label: t('inventory.addInventory') || 'Add inventory',
         icon: <PlusIcon size="xs" />,
         onClick: onReceive,
-        title: 'Add inventory / Receive stock',
+        title: t('inventory.addInventory') || 'Add inventory / Receive stock',
       }}
       moreActions={moreActions}
-      moreActionsTitle="Inventory Actions"
+      moreActionsTitle={t('common.actions') || 'Inventory Actions'}
     />
   );
 }

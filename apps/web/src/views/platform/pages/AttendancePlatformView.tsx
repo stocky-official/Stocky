@@ -15,6 +15,7 @@ import { CalendarIcon, CheckCircleIcon } from '@stocky/icons';
 
 import { useOptionalPlatform } from '@/views/platform/PlatformContext';
 import { PlatformContextTabsWidget } from '@/widgets/PlatformContextTabsWidget/PlatformContextTabsWidget';
+import { useTranslation } from '@/lib/i18n';
 
 export interface AttendancePlatformViewProps {
   shifts: AttendanceShift[];
@@ -45,6 +46,7 @@ export interface AttendancePlatformViewProps {
 }
 
 export function AttendancePlatformView(props: AttendancePlatformViewProps) {
+  const { t } = useTranslation();
   const platform = useOptionalPlatform();
   const activeTab = props.activeTab ?? platform?.attendanceTab ?? 'timesheets';
   const onTabChange = props.onTabChange ?? platform?.setAttendanceTab;
@@ -56,8 +58,8 @@ export function AttendancePlatformView(props: AttendancePlatformViewProps) {
 
   return (
     <PlatformPageLayout
-      title="Attendance & Timesheets"
-      subtitle="Track employee shifts, punch-ins, Google-style calendar attendance, and PTO requests."
+      title={t('attendance.title')}
+      subtitle={t('attendance.subtitle')}
       navigation={
         <PlatformContextTabsWidget
           activeTab={platform?.activeTab || 'attendance'}
@@ -72,7 +74,7 @@ export function AttendancePlatformView(props: AttendancePlatformViewProps) {
         <div className="inline-flex items-center gap-2">
           <span className="inline-flex items-center gap-1.5 rounded-full stocky-status-info border px-3 py-1 text-xs font-medium">
             <CheckCircleIcon size="xs" />
-            <span>{presentToday} staff present today</span>
+            <span>{presentToday} {t('dashboard.presentToday')}</span>
           </span>
         </div>
       }

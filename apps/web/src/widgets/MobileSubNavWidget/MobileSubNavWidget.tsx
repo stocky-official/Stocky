@@ -4,6 +4,7 @@ import React, { useEffect, useMemo, useRef } from 'react';
 import type { CompanyUserRole } from '@stocky/types';
 import { ActivityIcon, CheckCircleIcon } from '@stocky/icons';
 import { getActivePlatformGroup, getPlatformNavigation } from '../platformNavigation';
+import { useTranslation } from '@/lib/i18n';
 
 export interface MobileSubNavWidgetProps {
   activeTab: string;
@@ -22,15 +23,6 @@ export interface MobileSubNavWidgetProps {
   presentCount?: number;
 }
 
-const GROUP_TITLES: Record<string, string> = {
-  dashboard: 'Home',
-  'supply-chain': 'Inventory',
-  suppliers: 'Suppliers',
-  tasks: 'Tasks',
-  attendance: 'Attendance',
-  organization: 'Organization',
-};
-
 export function MobileSubNavWidget({
   activeTab,
   userRole,
@@ -47,8 +39,18 @@ export function MobileSubNavWidget({
   tasksCount,
   presentCount,
 }: MobileSubNavWidgetProps) {
-  const groups = useMemo(() => getPlatformNavigation(userRole, '/platform', permissions), [userRole, permissions]);
+  const { t } = useTranslation();
+  const groups = useMemo(() => getPlatformNavigation(userRole, '/platform', permissions, t), [userRole, permissions, t]);
   const activePillRef = useRef<HTMLButtonElement | null>(null);
+
+  const groupTitles: Record<string, string> = {
+    dashboard: t('nav.overview') || 'Home',
+    'supply-chain': t('nav.inventory') || 'Inventory',
+    suppliers: t('nav.suppliers') || 'Suppliers',
+    tasks: t('nav.tasks') || 'Tasks',
+    attendance: t('nav.attendance') || 'Attendance',
+    organization: t('nav.team') || 'Organization',
+  };
 
   const resolvedActiveId = useMemo(() => {
     if (activeTab === 'suppliers' || activeTab === 'supplier-requests') {
@@ -121,7 +123,7 @@ export function MobileSubNavWidget({
     onTabChange(itemId);
   };
 
-  const groupTitle = GROUP_TITLES[activeGroup.id] || activeGroup.label;
+  const groupTitle = groupTitles[activeGroup.id] || activeGroup.label;
   const isTasksGroup = activeGroup.id === 'tasks';
   const isAttendanceGroup = activeGroup.id === 'attendance';
 
@@ -133,7 +135,7 @@ export function MobileSubNavWidget({
       } ${className}`.trim()}
     >
       <div className="stocky-mobile-pill-rail flex items-center gap-1.5 overflow-x-auto w-full h-full px-3 py-0">
-        <div className="flex items-center gap-2 shrink-0 pr-1">
+        <div className="flex items-center gap-2 shrink-0 pr-1 rtl:pr-0 rtl:pl-1">
           <span className="text-xs font-bold text-stocky-text-main">{groupTitle}</span>
           {activeGroup.items.length > 0 && (
             <span className="h-3.5 w-px bg-stocky-border-subtle" />
@@ -164,15 +166,15 @@ export function MobileSubNavWidget({
           );
         })}
         {isTasksGroup && typeof tasksCount === 'number' && (
-          <span className="shrink-0 inline-flex items-center gap-1 rounded-full stocky-status-info border px-2 py-0.5 text-[10px] font-medium ml-auto">
+          <span className="shrink-0 inline-flex items-center gap-1 rounded-full stocky-status-info border px-2 py-0.5 text-[10px] font-medium ms-auto">
             <ActivityIcon size="xs" />
-            <span>{tasksCount} ongoing</span>
+            <span>{tasksCount} {t('tasks.ongoing')}</span>
           </span>
         )}
         {isAttendanceGroup && typeof presentCount === 'number' && (
-          <span className="shrink-0 inline-flex items-center gap-1 rounded-full stocky-status-info border px-2 py-0.5 text-[10px] font-medium ml-auto">
+          <span className="shrink-0 inline-flex items-center gap-1 rounded-full stocky-status-info border px-2 py-0.5 text-[10px] font-medium ms-auto">
             <CheckCircleIcon size="xs" />
-            <span>{presentCount} present</span>
+            <span>{presentCount} {t('attendance.present')}</span>
           </span>
         )}
       </div>

@@ -3,6 +3,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { ArrowDownIcon, ArrowUpDownIcon, ArrowUpIcon, BarcodeIcon, CheckIcon, EditIcon, FilterIcon, MoreHorizontalIcon, PlusIcon, SearchIcon, TrashIcon, XIcon } from '@stocky/icons';
 import type { Location, Product, StockLot, Supplier } from '@stocky/types';
+import { useTranslation } from '@/lib/i18n';
 import { InventoryTableColumnFilterPopover } from './InventoryTableColumnFilterPopover';
 
 export interface InventoryTableRow {
@@ -69,16 +70,17 @@ const COLUMN_LABELS: Record<SortKey, string> = {
   audit: 'Last Audit Date',
 };
 
-function getLotState(lot: StockLot | null) {
-  if (lot?.status === 'on_hold') return { label: 'On hold', tone: 'warning', category: 'healthy' as ExpiryFilter };
-  if (lot?.status === 'returned') return { label: 'Returned', tone: 'critical', category: 'healthy' as ExpiryFilter };
-  if (lot?.status === 'disposed') return { label: 'Removed', tone: 'critical', category: 'healthy' as ExpiryFilter };
-  if (lot?.quantityOnHand === 0 || lot?.status === 'depleted') return { label: 'Out of stock', tone: 'critical', category: 'healthy' as ExpiryFilter };
-  if (!lot || !lot.expiryDate) return { label: 'Missing expiry', tone: 'critical', category: 'missing' as ExpiryFilter };
+function getLotState(lot: StockLot | null, t?: (key: string) => string) {
+  if (lot?.status === 'on_hold') return { label: t ? t('inventory.onHold') : 'On hold', tone: 'warning', category: 'healthy' as ExpiryFilter };
+  if (lot?.status === 'returned') return { label: t ? t('inventory.returned') : 'Returned', tone: 'critical', category: 'healthy' as ExpiryFilter };
+  if (lot?.status === 'disposed') return { label: t ? t('inventory.disposed') : 'Removed', tone: 'critical', category: 'healthy' as ExpiryFilter };
+  if (lot?.quantityOnHand === 0 || lot?.status === 'depleted') return { label: t ? t('inventory.outOfStock') : 'Out of stock', tone: 'critical', category: 'healthy' as ExpiryFilter };
+  if (!lot || !lot.expiryDate) return { label: t ? t('inventory.missingExpiry') : 'Missing expiry', tone: 'critical', category: 'missing' as ExpiryFilter };
   const days = Math.ceil((new Date(lot.expiryDate).getTime() - Date.now()) / 86400000);
-  if (days < 0) return { label: 'Expired', tone: 'critical', category: 'expired' as ExpiryFilter };
-  if (days <= (lot.expiryNotificationDays ?? 0)) return { label: `${days} day${days === 1 ? '' : 's'} left`, tone: 'warning', category: 'soon' as ExpiryFilter };
-  return { label: `${days} day${days === 1 ? '' : 's'} left`, tone: 'success', category: 'healthy' as ExpiryFilter };
+  if (days < 0) return { label: t ? t('inventory.expired') : 'Expired', tone: 'critical', category: 'expired' as ExpiryFilter };
+  const daysText = t ? `${days} ${t('inventory.daysLeft')}` : `${days} day${days === 1 ? '' : 's'} left`;
+  if (days <= (lot.expiryNotificationDays ?? 0)) return { label: daysText, tone: 'warning', category: 'soon' as ExpiryFilter };
+  return { label: daysText, tone: 'success', category: 'healthy' as ExpiryFilter };
 }
 
 function formatDate(value?: string | null) {
@@ -96,6 +98,17 @@ function compareValues(left: string | number, right: string | number) {
 }
 
 export function InventoryTableWidget({ rows = [], locations = [], suppliers = [], onReceive, onEdit, onDelete, selectedProductId: controlledSelectedProductId = null, onSelectProduct, canSelect = false, selectedProductIds = [], onToggleProduct, onToggleAll, lastAuditByProduct = {} }: InventoryTableWidgetProps) {
+  const { t, isRtl } = useTranslation();
+  const columnLabels: Record<SortKey, string> = {
+    product: t('inventory.productName'),
+    barcode: t('inventory.barcode'),
+    category: t('inventory.category'),
+    locations: t('inventory.location'),
+    quantity: t('inventory.totalQuantity'),
+    price: t('inventory.price'),
+    expiry: t('inventory.expiryDate'),
+    audit: t('inventory.lastAuditDate'),
+  };
   const [internalSelectedProductId, setInternalSelectedProductId] = useState<string | null>(null);
   const [openFilter, setOpenFilter] = useState<SortKey | null>(null);
   const [filterMenuPosition, setFilterMenuPosition] = useState({ top: 0, left: 0 });
@@ -491,22 +504,22 @@ export function InventoryTableWidget({ rows = [], locations = [], suppliers = []
                   />
                 </th>
               )}
-              {header('Product', 'product')}
-              {header('Barcode', 'barcode')}
-              {header('Category', 'category')}
-              {header('Locations', 'locations')}
-              {header('Total quantity', 'quantity', 'left')}
-              {header('Price', 'price', 'left')}
-              {header('Next expiry date', 'expiry')}
-              {header('Last audit date', 'audit')}
+              {header(columnLabels.product, 'product')}
+              {header(columnLabels.barcode, 'barcode')}
+              {header(columnLabels.category, 'category')}
+              {header(columnLabels.locations, 'locations')}
+              {header(columnLabels.quantity, 'quantity', isRtl ? 'right' : 'left')}
+              {header(columnLabels.price, 'price', isRtl ? 'right' : 'left')}
+              {header(columnLabels.expiry, 'expiry')}
+              {header(columnLabels.audit, 'audit')}
               <th className="stocky-board-table__header-cell px-4 py-3 text-center align-middle" aria-label="Row actions">
-                <span className="stocky-table-header-label font-medium text-[10px] uppercase tracking-wide text-stocky-text-sub">Actions</span>
+                <span className="stocky-table-header-label font-medium text-[10px] uppercase tracking-wide text-stocky-text-sub">{t('common.actions')}</span>
               </th>
             </tr>
           </thead>
           <tbody className="divide-y divide-stocky-border-subtle">
             {pageRows.map((row) => {
-              const expiryState = getLotState(row.earliestExpiry);
+              const expiryState = getLotState(row.earliestExpiry, t);
               const auditDate = lastAuditByProduct[row.product.id];
               const totalValue = row.product.unitCost * row.totalQuantity;
               const supplierName = row.product.defaultSupplierId
@@ -536,33 +549,33 @@ export function InventoryTableWidget({ rows = [], locations = [], suppliers = []
                           {row.product.name}
                         </span>
                         <span className="block truncate text-[10px] text-stocky-text-sub">
-                          {supplierName || 'No supplier'}
+                          {supplierName || (t('common.unassigned') || 'No supplier')}
                         </span>
                       </div>
                     </div>
                   </td>
-                  <td className="px-4 py-3"><div className="stocky-board-barcode"><BarcodeIcon size="xs" className="stocky-board-barcode__icon" /><span className="truncate text-xs text-stocky-text-main">{row.product.barcode || 'No barcode'}</span></div></td>
+                  <td className="px-4 py-3"><div className="stocky-board-barcode"><BarcodeIcon size="xs" className="stocky-board-barcode__icon" /><span className="truncate text-xs text-stocky-text-main">{row.product.barcode || t('inventory.noBarcode')}</span></div></td>
                   <td className="px-4 py-3"><span className="block truncate text-xs text-stocky-text-sub">{row.product.categoryName || 'General'}</span></td>
                   <td className="px-4 py-3"><div className="stocky-board-location-tags">{locationTags(row)}</div></td>
-                  <td className="px-4 py-3 text-left"><span className="stocky-board-total block text-xs font-medium text-stocky-text-main">{row.totalQuantity.toLocaleString()}</span><span className="mt-0.5 block text-[10px] text-stocky-text-sub">{row.product.unitName}{row.totalQuantity === 1 ? '' : 's'}</span></td>
-                  <td className="px-4 py-3 text-left"><div className="stocky-board-value-stack"><span className="stocky-board-value-main">{formatCurrency(row.product.unitCost)}</span><span className="stocky-board-value-sub">{formatCurrency(totalValue)} total</span></div></td>
+                  <td className="px-4 py-3 text-start"><span className="stocky-board-total block text-xs font-medium text-stocky-text-main">{row.totalQuantity.toLocaleString()}</span><span className="mt-0.5 block text-[10px] text-stocky-text-sub">{row.product.unitName}{row.totalQuantity === 1 ? '' : 's'}</span></td>
+                  <td className="px-4 py-3 text-start"><div className="stocky-board-value-stack"><span className="stocky-board-value-main">{formatCurrency(row.product.unitCost)}</span><span className="stocky-board-value-sub">{formatCurrency(totalValue)} {t('inventory.total')}</span></div></td>
                   <td className="px-4 py-3"><div className="stocky-board-date-stack"><span className="stocky-board-date-main">{formatDate(row.earliestExpiry?.expiryDate)}</span><span className={`stocky-board-date-tag ${expiryState.tone === 'critical' ? 'stocky-status-critical' : expiryState.tone === 'warning' ? 'stocky-status-warning' : 'stocky-status-success'}`}>{expiryState.label}</span></div></td>
-                  <td className="px-4 py-3"><div className="stocky-board-date-stack"><span className="stocky-board-date-main">{auditDate ? formatDate(auditDate) : 'No audit date'}</span><span className={`stocky-board-date-tag ${auditDate ? 'stocky-status-muted' : 'stocky-status-warning'}`}>{auditDate ? 'Audited' : 'Never audited'}</span></div></td>
+                  <td className="px-4 py-3"><div className="stocky-board-date-stack"><span className="stocky-board-date-main">{auditDate ? formatDate(auditDate) : t('common.notRecorded')}</span><span className={`stocky-board-date-tag ${auditDate ? 'stocky-status-muted' : 'stocky-status-warning'}`}>{auditDate ? t('inventory.audited') : t('inventory.neverAudited')}</span></div></td>
                   {rowActions(row)}
                 </tr>
             })}
-            {pageRows.length === 0 && <tr><td colSpan={canSelect ? 10 : 9} className="px-4 py-12 text-center text-xs text-stocky-text-sub">No products match these filters.</td></tr>}
+            {pageRows.length === 0 && <tr><td colSpan={canSelect ? 10 : 9} className="px-4 py-12 text-center text-xs text-stocky-text-sub">{t('inventory.noProductsFound')}</td></tr>}
           </tbody>
         </table>
       </div>
-      <footer className="stocky-board-table__footer"><div className="flex flex-wrap items-center gap-3 text-[11px] text-stocky-text-sub"><span>Showing {firstRowNumber.toLocaleString()}–{lastRowNumber.toLocaleString()} of {sortedRows.length.toLocaleString()} products</span><span>Rows per page <select value={pageSize} onChange={(event) => { setPageSize(Number(event.target.value)); setPage(0); }} className="stocky-table-page-size"><option value={25}>25</option><option value={50}>50</option><option value={100}>100</option></select></span>{hasActiveFilters && <span className="flex items-center gap-1.5"><span>{activeFilterCount} filter{activeFilterCount === 1 ? '' : 's'} active</span><button type="button" onClick={clearAllFilters} className="stocky-table-clear-button"><XIcon size="xs" /> Clear</button></span>}</div><div className="flex items-center gap-2"><span className="text-[11px] text-stocky-text-sub">Page {currentPage + 1} of {pageCount}</span><button type="button" onClick={() => setPage((current) => Math.max(0, current - 1))} disabled={currentPage === 0} className="stocky-table-page-button" aria-label="Previous page">‹</button><button type="button" onClick={() => setPage((current) => Math.min(pageCount - 1, current + 1))} disabled={currentPage >= pageCount - 1} className="stocky-table-page-button" aria-label="Next page">›</button></div></footer>
+      <footer className="stocky-board-table__footer"><div className="flex flex-wrap items-center gap-3 text-[11px] text-stocky-text-sub"><span>{t('common.showing')} {firstRowNumber.toLocaleString()}–{lastRowNumber.toLocaleString()} {t('common.of')} {sortedRows.length.toLocaleString()} {t('inventory.productName').toLowerCase()}</span><span>{t('inventory.rowsPerPage')} <select value={pageSize} onChange={(event) => { setPageSize(Number(event.target.value)); setPage(0); }} className="stocky-table-page-size"><option value={25}>25</option><option value={50}>50</option><option value={100}>100</option></select></span>{hasActiveFilters && <span className="flex items-center gap-1.5"><span>{activeFilterCount} {t('inventory.filtersActive')}</span><button type="button" onClick={clearAllFilters} className="stocky-table-clear-button"><XIcon size="xs" /> {t('inventory.clear')}</button></span>}</div><div className="flex items-center gap-2"><span className="text-[11px] text-stocky-text-sub">{t('common.page')} {currentPage + 1} {t('common.of')} {pageCount}</span><button type="button" onClick={() => setPage((current) => Math.max(0, current - 1))} disabled={currentPage === 0} className="stocky-table-page-button" aria-label="Previous page">‹</button><button type="button" onClick={() => setPage((current) => Math.min(pageCount - 1, current + 1))} disabled={currentPage >= pageCount - 1} className="stocky-table-page-button" aria-label="Next page">›</button></div></footer>
       {openFilter && (
         <InventoryTableColumnFilterPopover
           isOpen={Boolean(openFilter)}
           onClose={() => setOpenFilter(null)}
           position={filterMenuPosition}
           columnKey={openFilter}
-          columnLabel={COLUMN_LABELS[openFilter]}
+          columnLabel={columnLabels[openFilter]}
           filters={filters}
           onUpdateFilter={updateFilter}
           onResetColumn={resetColumnFilter}

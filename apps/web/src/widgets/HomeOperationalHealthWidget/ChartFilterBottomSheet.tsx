@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { XIcon } from '@stocky/icons';
+import { useTranslation } from '@/lib/i18n';
 
 export interface ChartFilterBottomSheetProps {
   isOpen: boolean;
@@ -22,6 +23,7 @@ export function ChartFilterBottomSheet({
   onReset,
   children,
 }: ChartFilterBottomSheetProps) {
+  const { t } = useTranslation();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -82,7 +84,7 @@ export function ChartFilterBottomSheet({
                   {title}
                 </h3>
                 <p className="text-[11px] text-stocky-text-sub mt-0.5">
-                  Customize date ranges, categories, and metrics.
+                  {t('home.charts.filterBottomSheetSubtitle')}
                 </p>
               </div>
 
@@ -108,7 +110,7 @@ export function ChartFilterBottomSheet({
                   onClick={onReset}
                   className="h-10 px-4 rounded-xl text-xs font-semibold text-stocky-text-sub hover:text-stocky-text-main transition-colors cursor-pointer"
                 >
-                  Reset
+                  {t('common.reset')}
                 </button>
               ) : (
                 <div />
@@ -122,7 +124,7 @@ export function ChartFilterBottomSheet({
                 }}
                 className="h-10 px-6 rounded-xl bg-stocky-primary hover:bg-stocky-primary-hover text-white text-xs font-semibold transition-all shadow-sm active:scale-[0.98] cursor-pointer"
               >
-                Apply Filters
+                {t('filters.apply')}
               </button>
             </div>
           </motion.div>

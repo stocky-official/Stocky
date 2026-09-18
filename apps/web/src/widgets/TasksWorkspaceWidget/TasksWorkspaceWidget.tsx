@@ -24,6 +24,7 @@ import { TaskDetailsDrawerWidget } from './TaskDetailsDrawerWidget';
 import { TaskAssignmentDrawerWidget } from './TaskAssignmentDrawerWidget';
 import { BottomSheet } from '@/components/ui';
 import { useOptionalPlatform } from '@/views/platform/PlatformContext';
+import { useTranslation } from '@/lib/i18n';
 
 export interface TasksWorkspaceWidgetProps {
   tasks: StockTask[];
@@ -88,6 +89,7 @@ export function TasksWorkspaceWidget({
   onReviewTask,
   onCreateTask,
 }: TasksWorkspaceWidgetProps) {
+  const { t } = useTranslation();
   const platform = useOptionalPlatform();
   const effectiveTaskTab = controlledTab ?? platform?.taskTab ?? 'ongoing';
   const effectiveCreateTask = onCreateTask ?? platform?.createStockTask;
@@ -387,8 +389,8 @@ export function TasksWorkspaceWidget({
             mobileOnly
             isOpen={filterPanelOpen}
             onClose={() => setFilterPanelOpen(false)}
-            title="Task Filters"
-            subtitle={`Showing ${filteredTasks.length} of ${sortedTasks.length} tasks`}
+            title={t('common.filter') || 'Task Filters'}
+            subtitle={`${t('inventory.showing')} ${filteredTasks.length} ${t('common.of')} ${sortedTasks.length} ${t('tasks.title')}`}
           >
             <TasksFilterPanelWidget
               isOpen={filterPanelOpen}

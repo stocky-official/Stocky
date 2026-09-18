@@ -4,6 +4,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { EditIcon, MailIcon, MessageCircleIcon, PlusIcon, SearchIcon, TrashIcon, XIcon } from '@stocky/icons';
 import type { Product, Supplier, SupplierContact, SupplierProduct } from '@stocky/types';
 import { SideDrawer } from '@/components/ui/SideDrawer';
+import { useTranslation } from '@/lib/i18n';
 
 export interface SupplierContactInput {
   supplierId: string;
@@ -59,6 +60,7 @@ function splitPhone(phone: string) {
 }
 
 export function SupplierContactsDrawerWidget({ supplier, contacts, products, supplierProducts, canManage, onClose, onCreate, onUpdate, onDelete, onSetPrimary, onLinkProduct, onUnlinkProduct }: SupplierContactsDrawerWidgetProps) {
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<'contacts' | 'products'>('contacts');
   const [editingContact, setEditingContact] = useState<SupplierContact | null>(null);
   const [showForm, setShowForm] = useState(false);
@@ -80,7 +82,9 @@ export function SupplierContactsDrawerWidget({ supplier, contacts, products, sup
   const [emailBcc, setEmailBcc] = useState('');
   const [emailSubject, setEmailSubject] = useState('');
   const [emailBody, setEmailBody] = useState('');
-  const contactCountLabel = `${contacts.length} contact${contacts.length === 1 ? '' : 's'}`;
+  const contactCountLabel = contacts.length === 1
+    ? t('drawers.supplierContacts.contactsCountSingular', { count: 1 })
+    : t('drawers.supplierContacts.contactsCountPlural', { count: contacts.length });
   const primaryContact = useMemo(() => contacts.find((contact) => contact.isPrimary), [contacts]);
   const linkedSupplierProducts = useMemo(() => supplierProducts.filter((link) => link.supplierId === supplier?.id), [supplier?.id, supplierProducts]);
   const productMap = useMemo(() => new Map(products.map((product) => [product.id, product])), [products]);
@@ -148,7 +152,7 @@ export function SupplierContactsDrawerWidget({ supplier, contacts, products, sup
   const save = async (event: React.FormEvent) => {
     event.preventDefault();
     if (!supplier || !name.trim() || !phoneNumber.trim()) {
-      setError('A contact name and phone number are required.');
+      setError(t('drawers.supplierContacts.errors.nameAndPhoneRequired'));
       return;
     }
     setSaving(true);
@@ -166,7 +170,7 @@ export function SupplierContactsDrawerWidget({ supplier, contacts, products, sup
       else await onCreate(input);
       resetForm();
     } catch (saveError: any) {
-      setError(saveError?.message || 'The contact could not be saved.');
+      setError(saveError?.message || t('drawers.supplierContacts.errors.saveFailed'));
     } finally {
       setSaving(false);
     }
@@ -183,7 +187,7 @@ export function SupplierContactsDrawerWidget({ supplier, contacts, products, sup
       await onDelete(contact);
       setConfirmDeleteId(null);
     } catch (deleteError: any) {
-      setError(deleteError?.message || 'The contact could not be deleted.');
+      setError(deleteError?.message || t('drawers.supplierContacts.errors.deleteFailed'));
     } finally {
       setSaving(false);
     }
@@ -199,7 +203,7 @@ export function SupplierContactsDrawerWidget({ supplier, contacts, products, sup
       setProductQuery('');
     } catch (linkError: any) {
       setPendingProductIds((current) => current.filter((id) => id !== product.id));
-      setError(linkError?.message || 'The product could not be added.');
+      setError(linkError?.message || t('drawers.supplierContacts.errors.productAddFailed'));
     } finally {
       setPendingProductLinkIds((current) => current.filter((id) => id !== product.id));
     }
@@ -213,7 +217,7 @@ export function SupplierContactsDrawerWidget({ supplier, contacts, products, sup
       await onUnlinkProduct(link.id);
       setPendingProductIds((current) => current.filter((id) => id !== link.productId));
     } catch (unlinkError: any) {
-      setError(unlinkError?.message || 'The product could not be removed.');
+      setError(unlinkError?.message || t('drawers.supplierContacts.errors.productRemoveFailed'));
     } finally {
       setPendingProductLinkIds((current) => current.filter((id) => id !== link.id));
     }
@@ -255,7 +259,7 @@ export function SupplierContactsDrawerWidget({ supplier, contacts, products, sup
   const activeSupplier = supplier || lastSupplierRef.current;
 
   return (
-    <SideDrawer isOpen={Boolean(supplier)} onClose={onClose} ariaLabel={activeSupplier ? `${activeSupplier.name} details` : 'Supplier details'} panelClassName="stocky-supplier-contacts-drawer">
+    <SideDrawer isOpen={Boolean(supplier)} onClose={onClose} ariaLabel={activeSupplier ? `${activeSupplier.name} - ${t('drawers.supplierContacts.title')}` : t('drawers.supplierContacts.title')} panelClassName="stocky-supplier-contacts-drawer">
       {activeSupplier && <>
         <header className="border-b border-stocky-border-subtle bg-white px-5 py-4 sm:px-6 shrink-0">
           <div className="flex items-start justify-between gap-3">
@@ -288,17 +292,17 @@ export function SupplierContactsDrawerWidget({ supplier, contacts, products, sup
                 </h2>
                 <p className="mt-0.5 text-xs text-stocky-text-sub truncate">
                   {activeTab === 'contacts'
-                    ? `${contactCountLabel}${primaryContact ? ` · Primary: ${primaryContact.name}` : ''}`
-                    : `${linkedSupplierProducts.length + pendingProductIds.length} supplied product${
-                        linkedSupplierProducts.length + pendingProductIds.length === 1 ? '' : 's'
-                      }`}
+                    ? `${contactCountLabel}${primaryContact ? ` · ${t('drawers.supplierContacts.primaryLabel', { name: primaryContact.name })}` : ''}`
+                    : (linkedSupplierProducts.length + pendingProductIds.length === 1
+                        ? t('drawers.supplierContacts.suppliedProductsCountSingular', { count: 1 })
+                        : t('drawers.supplierContacts.suppliedProductsCountPlural', { count: linkedSupplierProducts.length + pendingProductIds.length }))}
                 </p>
               </div>
             </div>
             <button
               type="button"
               onClick={onClose}
-              aria-label="Close supplier details"
+              aria-label={t('common.close')}
               className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-stocky-text-sub hover:bg-stocky-bg-global hover:text-stocky-text-main transition-colors cursor-pointer"
             >
               <XIcon size="xs" />
@@ -306,47 +310,47 @@ export function SupplierContactsDrawerWidget({ supplier, contacts, products, sup
           </div>
         </header>
 
-        <div className="flex border-b border-stocky-border-subtle px-5 sm:px-7" role="tablist" aria-label="Supplier details">
-          <button type="button" role="tab" aria-selected={activeTab === 'contacts'} onClick={() => { setActiveTab('contacts'); setError(null); }} className={`border-b-2 px-1 py-3 text-xs font-medium ${activeTab === 'contacts' ? 'border-stocky-primary text-stocky-primary' : 'border-transparent text-stocky-text-sub hover:text-stocky-text-main'}`}>Contact people <span className="ml-1 text-[10px]">{contacts.length}</span></button>
-          <button type="button" role="tab" aria-selected={activeTab === 'products'} onClick={() => { setActiveTab('products'); setShowForm(false); setError(null); }} className={`ml-5 border-b-2 px-1 py-3 text-xs font-medium ${activeTab === 'products' ? 'border-stocky-primary text-stocky-primary' : 'border-transparent text-stocky-text-sub hover:text-stocky-text-main'}`}>Products <span className="ml-1 text-[10px]">{linkedSupplierProducts.length + pendingProductIds.length}</span></button>
+        <div className="flex border-b border-stocky-border-subtle px-5 sm:px-7" role="tablist" aria-label={t('drawers.supplierContacts.title')}>
+          <button type="button" role="tab" aria-selected={activeTab === 'contacts'} onClick={() => { setActiveTab('contacts'); setError(null); }} className={`border-b-2 px-1 py-3 text-xs font-medium ${activeTab === 'contacts' ? 'border-stocky-primary text-stocky-primary' : 'border-transparent text-stocky-text-sub hover:text-stocky-text-main'}`}>{t('drawers.supplierContacts.contactsTab')} <span className="ms-1 text-[10px]">{contacts.length}</span></button>
+          <button type="button" role="tab" aria-selected={activeTab === 'products'} onClick={() => { setActiveTab('products'); setShowForm(false); setError(null); }} className={`ms-5 border-b-2 px-1 py-3 text-xs font-medium ${activeTab === 'products' ? 'border-stocky-primary text-stocky-primary' : 'border-transparent text-stocky-text-sub hover:text-stocky-text-main'}`}>{t('drawers.supplierContacts.productsTab')} <span className="ms-1 text-[10px]">{linkedSupplierProducts.length + pendingProductIds.length}</span></button>
         </div>
 
         <div className="flex-1 overflow-y-auto px-5 py-4 sm:px-7">
           {activeTab === 'contacts' ? <>
             {canManage && <div className="mb-4 flex items-center justify-between gap-3">
-              <p className="text-xs text-stocky-text-sub">Keep more than one person available for receiving and replenishment.</p>
-              <button type="button" onClick={startCreate} className="h-8 shrink-0 rounded-full border border-stocky-border-subtle bg-white px-3 text-[11px] font-medium text-stocky-text-main cursor-pointer"><PlusIcon size="xs" className="mr-1 inline" />Add contact</button>
+              <p className="text-xs text-stocky-text-sub">{t('drawers.supplierContacts.bannerHint')}</p>
+              <button type="button" onClick={startCreate} className="h-8 shrink-0 rounded-full border border-stocky-border-subtle bg-white px-3 text-[11px] font-medium text-stocky-text-main cursor-pointer"><PlusIcon size="xs" className="me-1 inline" />{t('drawers.supplierContacts.addContact')}</button>
             </div>}
 
             {showForm && canManage && <form onSubmit={save} className="mb-5 grid gap-3 rounded-xl border border-stocky-border-subtle bg-stocky-bg-global/40 p-3">
-              <div className="flex items-center justify-between"><p className="text-xs font-medium text-stocky-text-main">{editingContact ? 'Edit contact' : 'New contact'}</p><button type="button" onClick={resetForm} className="text-stocky-text-sub cursor-pointer" aria-label="Close contact form"><XIcon size="xs" /></button></div>
-              <label className="text-[11px] font-medium text-stocky-text-main">Name<input required autoFocus value={name} onChange={(event) => setName(event.target.value)} placeholder="Contact name" className="mt-1 h-9 w-full rounded-lg border border-stocky-border-subtle bg-white px-2.5 text-xs font-normal focus:border-stocky-primary focus:outline-none" /></label>
+              <div className="flex items-center justify-between"><p className="text-xs font-medium text-stocky-text-main">{editingContact ? t('drawers.supplierContacts.editContact') : t('drawers.supplierContacts.newContact')}</p><button type="button" onClick={resetForm} className="text-stocky-text-sub cursor-pointer" aria-label={t('common.close')}><XIcon size="xs" /></button></div>
+              <label className="text-[11px] font-medium text-stocky-text-main">{t('drawers.supplierContacts.contactName')}<input required autoFocus value={name} onChange={(event) => setName(event.target.value)} placeholder={t('drawers.supplierContacts.contactNamePlaceholder')} className="mt-1 h-9 w-full rounded-lg border border-stocky-border-subtle bg-white px-2.5 text-xs font-normal focus:border-stocky-primary focus:outline-none" /></label>
               <div className="grid grid-cols-2 gap-2">
-                <label className="text-[11px] font-medium text-stocky-text-main">Role<input value={role} onChange={(event) => setRole(event.target.value)} placeholder="e.g. Sales" className="mt-1 h-9 w-full rounded-lg border border-stocky-border-subtle bg-white px-2.5 text-xs font-normal focus:border-stocky-primary focus:outline-none" /></label>
-                <label className="text-[11px] font-medium text-stocky-text-main">Email<input type="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="name@supplier.com" className="mt-1 h-9 w-full rounded-lg border border-stocky-border-subtle bg-white px-2.5 text-xs font-normal focus:border-stocky-primary focus:outline-none" /></label>
+                <label className="text-[11px] font-medium text-stocky-text-main">{t('drawers.supplierContacts.role')}<input value={role} onChange={(event) => setRole(event.target.value)} placeholder={t('drawers.supplierContacts.rolePlaceholder')} className="mt-1 h-9 w-full rounded-lg border border-stocky-border-subtle bg-white px-2.5 text-xs font-normal focus:border-stocky-primary focus:outline-none" /></label>
+                <label className="text-[11px] font-medium text-stocky-text-main">{t('drawers.supplierContacts.email')}<input type="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder={t('drawers.supplierContacts.emailPlaceholder')} className="mt-1 h-9 w-full rounded-lg border border-stocky-border-subtle bg-white px-2.5 text-xs font-normal focus:border-stocky-primary focus:outline-none" /></label>
               </div>
-              <label className="text-[11px] font-medium text-stocky-text-main">Phone<div className="mt-1 flex gap-1"><select value={countryCode} onChange={(event) => setCountryCode(event.target.value)} aria-label="Country calling code" className="h-9 w-32 sm:w-40 shrink-0 rounded-lg border border-stocky-border-subtle bg-white px-2 text-[11px] font-normal focus:border-stocky-primary focus:outline-none">{phoneCountries.map((country) => <option key={country.code} value={country.code}>{country.label}</option>)}</select><input required type="tel" inputMode="tel" value={phoneNumber} onChange={(event) => setPhoneNumber(event.target.value)} placeholder="Phone number" className="h-9 min-w-0 flex-1 rounded-lg border border-stocky-border-subtle bg-white px-2.5 text-xs font-normal focus:border-stocky-primary focus:outline-none" /></div></label>
-              <label className="flex items-center gap-2 text-[11px] font-normal text-stocky-text-main"><input type="checkbox" checked={isPrimary} onChange={(event) => setIsPrimary(event.target.checked)} className="h-3.5 w-3.5 accent-stocky-primary" />Use as primary contact</label>
+              <label className="text-[11px] font-medium text-stocky-text-main">{t('drawers.supplierContacts.phone')}<div className="mt-1 flex gap-1"><select value={countryCode} onChange={(event) => setCountryCode(event.target.value)} aria-label={t('drawers.supplierContacts.callingCode')} className="h-9 w-32 sm:w-40 shrink-0 rounded-lg border border-stocky-border-subtle bg-white px-2 text-[11px] font-normal focus:border-stocky-primary focus:outline-none">{phoneCountries.map((country) => <option key={country.code} value={country.code}>{country.label}</option>)}</select><input required type="tel" inputMode="tel" value={phoneNumber} onChange={(event) => setPhoneNumber(event.target.value)} placeholder={t('drawers.supplierContacts.phonePlaceholder')} className="h-9 min-w-0 flex-1 rounded-lg border border-stocky-border-subtle bg-white px-2.5 text-xs font-normal focus:border-stocky-primary focus:outline-none" /></div></label>
+              <label className="flex items-center gap-2 text-[11px] font-normal text-stocky-text-main"><input type="checkbox" checked={isPrimary} onChange={(event) => setIsPrimary(event.target.checked)} className="h-3.5 w-3.5 accent-stocky-primary" />{t('drawers.supplierContacts.usePrimary')}</label>
               {error && <p className="rounded-lg border border-stocky-status-danger-border bg-stocky-status-danger-bg px-2.5 py-2 text-[11px] text-stocky-status-danger-fg">{error}</p>}
-              <div className="flex justify-end gap-2"><button type="button" onClick={resetForm} disabled={saving} className="h-8 rounded-full border border-stocky-border-subtle bg-white px-3 text-[11px] cursor-pointer disabled:opacity-50">Cancel</button><button type="submit" disabled={saving} className="h-8 rounded-full bg-stocky-primary px-3 text-[11px] font-medium text-white cursor-pointer disabled:opacity-50">{saving ? 'Saving…' : editingContact ? 'Save changes' : 'Add contact'}</button></div>
+              <div className="flex justify-end gap-2"><button type="button" onClick={resetForm} disabled={saving} className="h-8 rounded-full border border-stocky-border-subtle bg-white px-3 text-[11px] cursor-pointer disabled:opacity-50">{t('common.cancel')}</button><button type="submit" disabled={saving} className="h-8 rounded-full bg-stocky-primary px-3 text-[11px] font-medium text-white cursor-pointer disabled:opacity-50">{saving ? t('drawers.supplierContacts.saving') : editingContact ? t('drawers.supplierContacts.saveChanges') : t('drawers.supplierContacts.addContact')}</button></div>
             </form>}
 
             {error && !showForm && <p className="mb-4 rounded-lg border border-stocky-status-danger-border bg-stocky-status-danger-bg px-2.5 py-2 text-[11px] text-stocky-status-danger-fg">{error}</p>}
-            {contacts.length === 0 ? <div className="rounded-xl border border-dashed border-stocky-border-subtle px-5 py-12 text-center"><p className="text-sm font-medium text-stocky-text-main">No contacts yet</p><p className="mt-1 text-xs text-stocky-text-sub">Add a contact when another person handles this supplier.</p></div> : <div className="overflow-hidden rounded-xl border border-stocky-border-subtle"><div className="divide-y divide-stocky-border-subtle">{contacts.map((contact) => <article key={contact.id} className="p-3.5">
-              <div className="flex items-start justify-between gap-3"><div className="min-w-0"><div className="flex flex-wrap items-center gap-2"><p className="truncate text-xs font-medium text-stocky-text-main">{contact.name}</p>{contact.isPrimary && <span className="rounded-full border border-stocky-status-success-border bg-stocky-status-success-bg px-2 py-0.5 text-[10px] font-medium text-stocky-status-success-fg">Primary</span>}</div><p className="mt-1 text-[11px] text-stocky-text-sub">{contact.role || 'Contact person'}</p></div><div className="flex shrink-0 items-center gap-1">{contact.email && <button type="button" onClick={() => openEmailDraft(contact)} aria-label={`Email ${contact.name}`} title="Draft email" className="stocky-icon-button stocky-icon-button--small"><MailIcon size="xs" /></button>}{contact.phone && <button type="button" onClick={() => openWhatsApp(contact)} aria-label={`Message ${contact.name} on WhatsApp`} title="Open WhatsApp" className="stocky-icon-button stocky-icon-button--small"><MessageCircleIcon size="xs" /></button>}{canManage && <>{!contact.isPrimary && <button type="button" onClick={() => void onSetPrimary(contact)} className="h-7 rounded-full border border-stocky-border-subtle px-2 text-[10px] text-stocky-text-sub cursor-pointer">Set primary</button>}<button type="button" onClick={() => startEdit(contact)} aria-label={`Edit ${contact.name}`} className="stocky-icon-button stocky-icon-button--small"><EditIcon size="xs" /></button>{confirmDeleteId === contact.id ? <button type="button" onClick={() => void remove(contact)} disabled={saving} className="h-7 rounded-full bg-stocky-status-danger-fg px-2 text-[10px] font-medium text-white cursor-pointer disabled:opacity-50">Sure?</button> : <button type="button" onClick={() => void remove(contact)} aria-label={`Delete ${contact.name}`} className="stocky-icon-button stocky-icon-button--small stocky-icon-button--danger"><TrashIcon size="xs" /></button>}</>}</div></div>
-              <div className="mt-3 grid grid-cols-1 gap-2 text-[11px] text-stocky-text-sub sm:grid-cols-2"><a href={`tel:${contact.phone}`} className="truncate hover:text-stocky-primary">{contact.phone}</a>{contact.email ? <a href={`mailto:${contact.email}`} className="truncate hover:text-stocky-primary">{contact.email}</a> : <span>Not recorded</span>}</div>
+            {contacts.length === 0 ? <div className="rounded-xl border border-dashed border-stocky-border-subtle px-5 py-12 text-center"><p className="text-sm font-medium text-stocky-text-main">{t('drawers.supplierContacts.noContacts')}</p><p className="mt-1 text-xs text-stocky-text-sub">{t('drawers.supplierContacts.noContactsDesc')}</p></div> : <div className="overflow-hidden rounded-xl border border-stocky-border-subtle"><div className="divide-y divide-stocky-border-subtle">{contacts.map((contact) => <article key={contact.id} className="p-3.5">
+              <div className="flex items-start justify-between gap-3"><div className="min-w-0"><div className="flex flex-wrap items-center gap-2"><p className="truncate text-xs font-medium text-stocky-text-main">{contact.name}</p>{contact.isPrimary && <span className="rounded-full border border-stocky-status-success-border bg-stocky-status-success-bg px-2 py-0.5 text-[10px] font-medium text-stocky-status-success-fg">{t('drawers.supplierContacts.primary')}</span>}</div><p className="mt-1 text-[11px] text-stocky-text-sub">{contact.role || t('drawers.supplierContacts.role')}</p></div><div className="flex shrink-0 items-center gap-1">{contact.email && <button type="button" onClick={() => openEmailDraft(contact)} aria-label={`Email ${contact.name}`} title={t('drawers.supplierContacts.draftEmail')} className="stocky-icon-button stocky-icon-button--small"><MailIcon size="xs" /></button>}{contact.phone && <button type="button" onClick={() => openWhatsApp(contact)} aria-label={`Message ${contact.name} on WhatsApp`} title={t('drawers.supplierContacts.openWhatsApp')} className="stocky-icon-button stocky-icon-button--small"><MessageCircleIcon size="xs" /></button>}{canManage && <>{!contact.isPrimary && <button type="button" onClick={() => void onSetPrimary(contact)} className="h-7 rounded-full border border-stocky-border-subtle px-2 text-[10px] text-stocky-text-sub cursor-pointer">{t('drawers.supplierContacts.setPrimary')}</button>}<button type="button" onClick={() => startEdit(contact)} aria-label={`Edit ${contact.name}`} className="stocky-icon-button stocky-icon-button--small"><EditIcon size="xs" /></button>{confirmDeleteId === contact.id ? <button type="button" onClick={() => void remove(contact)} disabled={saving} className="h-7 rounded-full bg-stocky-status-danger-fg px-2 text-[10px] font-medium text-white cursor-pointer disabled:opacity-50">{t('drawers.supplierContacts.deleteConfirm')}</button> : <button type="button" onClick={() => void remove(contact)} aria-label={`Delete ${contact.name}`} className="stocky-icon-button stocky-icon-button--small stocky-icon-button--danger"><TrashIcon size="xs" /></button>}</>}</div></div>
+              <div className="mt-3 grid grid-cols-1 gap-2 text-[11px] text-stocky-text-sub sm:grid-cols-2"><a href={`tel:${contact.phone}`} className="truncate hover:text-stocky-primary">{contact.phone}</a>{contact.email ? <a href={`mailto:${contact.email}`} className="truncate hover:text-stocky-primary">{contact.email}</a> : <span>{t('common.notRecorded')}</span>}</div>
             </article>)}</div></div>}
           </> : <>
             <div className="mb-4">
-              <p className="text-xs text-stocky-text-sub">Search the catalogue and select every product this supplier provides.</p>
+              <p className="text-xs text-stocky-text-sub">{t('drawers.supplierContacts.searchCatalogueHint')}</p>
               {canManage && <div className="relative mt-3">
                 <div className="flex h-10 items-center gap-2 rounded-lg border border-stocky-border-subtle bg-white px-3 focus-within:border-stocky-primary">
                   <SearchIcon size="xs" className="shrink-0 text-stocky-text-sub" />
-                  <input value={productQuery} onFocus={() => setProductMenuOpen(true)} onChange={(event) => { setProductQuery(event.target.value); setProductMenuOpen(true); }} placeholder="Search products or barcodes..." aria-label="Search supplier products" className="min-w-0 flex-1 bg-transparent text-xs font-normal text-stocky-text-main outline-none placeholder:text-stocky-text-sub/70" />
-                  {productQuery && <button type="button" onClick={() => setProductQuery('')} aria-label="Clear product search" className="text-stocky-text-sub hover:text-stocky-text-main"><XIcon size="xs" /></button>}
+                  <input value={productQuery} onFocus={() => setProductMenuOpen(true)} onChange={(event) => { setProductQuery(event.target.value); setProductMenuOpen(true); }} placeholder={t('drawers.supplierContacts.searchProducts')} aria-label={t('drawers.supplierContacts.searchProducts')} className="min-w-0 flex-1 bg-transparent text-xs font-normal text-stocky-text-main outline-none placeholder:text-stocky-text-sub/70" />
+                  {productQuery && <button type="button" onClick={() => setProductQuery('')} aria-label={t('drawers.supplierContacts.clearSearch')} className="text-stocky-text-sub hover:text-stocky-text-main"><XIcon size="xs" /></button>}
                 </div>
-                {productMenuOpen && <div className="absolute left-0 right-0 top-full z-30 mt-1 max-h-64 overflow-y-auto rounded-lg border border-stocky-border-subtle bg-white py-1 shadow-lg">
-                  {matchingProducts.length === 0 ? <p className="px-3 py-3 text-[11px] text-stocky-text-sub">{productQuery ? 'No unassigned products found.' : 'All available products are already assigned.'}</p> : matchingProducts.map((product) => <button key={product.id} type="button" onClick={() => void addProduct(product)} disabled={pendingProductLinkIds.includes(product.id)} className="flex w-full items-center justify-between gap-3 px-3 py-2 text-left hover:bg-stocky-bg-global/60 disabled:opacity-50"><span className="min-w-0"><span className="block truncate text-xs font-medium text-stocky-text-main">{product.name}</span><span className="mt-0.5 block truncate text-[10px] text-stocky-text-sub">{product.barcode || 'No barcode'} · {product.categoryName}</span></span><span className="shrink-0 text-[10px] text-stocky-primary">{pendingProductLinkIds.includes(product.id) ? 'Adding…' : 'Add'}</span></button>)}
+                {productMenuOpen && <div className="absolute inset-x-0 top-full z-30 mt-1 max-h-64 overflow-y-auto rounded-lg border border-stocky-border-subtle bg-white py-1 shadow-lg">
+                  {matchingProducts.length === 0 ? <p className="px-3 py-3 text-[11px] text-stocky-text-sub">{productQuery ? t('drawers.supplierContacts.noUnassignedFound') : t('drawers.supplierContacts.allAssigned')}</p> : matchingProducts.map((product) => <button key={product.id} type="button" onClick={() => void addProduct(product)} disabled={pendingProductLinkIds.includes(product.id)} className="flex w-full items-center justify-between gap-3 px-3 py-2 text-start hover:bg-stocky-bg-global/60 disabled:opacity-50"><span className="min-w-0"><span className="block truncate text-xs font-medium text-stocky-text-main">{product.name}</span><span className="mt-0.5 block truncate text-[10px] text-stocky-text-sub">{product.barcode || t('drawers.receiveStock.noBarcode')} · {product.categoryName}</span></span><span className="shrink-0 text-[10px] text-stocky-primary">{pendingProductLinkIds.includes(product.id) ? t('drawers.supplierContacts.adding') : t('drawers.supplierContacts.linkProduct')}</span></button>)}
                 </div>}
               </div>}
             </div>
@@ -354,8 +358,8 @@ export function SupplierContactsDrawerWidget({ supplier, contacts, products, sup
             {error && <p className="mb-4 rounded-lg border border-stocky-status-danger-border bg-stocky-status-danger-bg px-2.5 py-2 text-[11px] text-stocky-status-danger-fg">{error}</p>}
             {linkedSupplierProducts.length === 0 && pendingProductIds.length === 0 ? (
               <div className="rounded-xl border border-dashed border-stocky-border-subtle px-5 py-12 text-center">
-                <p className="text-sm font-medium text-stocky-text-main">No products assigned</p>
-                <p className="mt-1 text-xs text-stocky-text-sub">Use the search field above to link products supplied by this vendor.</p>
+                <p className="text-sm font-medium text-stocky-text-main">{t('drawers.supplierContacts.noProductsAssigned')}</p>
+                <p className="mt-1 text-xs text-stocky-text-sub">{t('drawers.supplierContacts.noProductsAssignedDesc')}</p>
               </div>
             ) : (
               <div className="space-y-2.5">
@@ -403,12 +407,12 @@ export function SupplierContactsDrawerWidget({ supplier, contacts, products, sup
                             type="button"
                             onClick={() => void removeProduct(link)}
                             disabled={pending}
-                            aria-label={`Unlink ${product.name}`}
-                            title="Unlink product"
+                            aria-label={`${t('drawers.supplierContacts.unlink')} ${product.name}`}
+                            title={t('drawers.supplierContacts.unlink')}
                             className="flex h-8 items-center gap-1.5 rounded-lg border border-stocky-border-subtle px-2.5 text-xs text-stocky-status-danger-fg transition-colors hover:border-stocky-status-danger-border hover:bg-stocky-status-danger-bg cursor-pointer disabled:opacity-50"
                           >
                             <TrashIcon size="xs" />
-                            <span className="text-[11px] font-medium">{pending ? 'Removing…' : 'Unlink'}</span>
+                            <span className="text-[11px] font-medium">{pending ? t('drawers.supplierContacts.unlinking') : t('drawers.supplierContacts.unlink')}</span>
                           </button>
                         </div>
                       )}
@@ -428,10 +432,10 @@ export function SupplierContactsDrawerWidget({ supplier, contacts, products, sup
                       >
                         <div className="min-w-0">
                           <p className="truncate text-xs font-medium text-stocky-text-main">{product.name}</p>
-                          <p className="mt-0.5 text-[10px] text-stocky-text-sub">Linking product to supplier…</p>
+                          <p className="mt-0.5 text-[10px] text-stocky-text-sub">{t('drawers.supplierContacts.linkingToSupplier')}</p>
                         </div>
                         <span className="inline-flex items-center gap-1 rounded-full bg-stocky-primary/10 px-2 py-0.5 text-[10px] font-medium text-stocky-primary">
-                          Linking…
+                          {t('drawers.supplierContacts.linkingBadge')}
                         </span>
                       </article>
                     );
@@ -441,20 +445,20 @@ export function SupplierContactsDrawerWidget({ supplier, contacts, products, sup
           </>}
         </div>
       </>}
-      {emailContact && <div className="absolute inset-0 z-20 flex items-center justify-center bg-slate-950/25 p-4" role="dialog" aria-modal="true" aria-label={`Email ${emailContact.name}`}>
+      {emailContact && <div className="absolute inset-0 z-20 flex items-center justify-center bg-slate-950/25 p-4" role="dialog" aria-modal="true" aria-label={`${t('drawers.supplierContacts.emailModal.title')} - ${emailContact.name}`}>
         <form onSubmit={(event) => { event.preventDefault(); sendEmailDraft(); }} className="flex max-h-full w-full max-w-2xl flex-col overflow-hidden rounded-xl border border-stocky-border-subtle bg-white shadow-2xl">
           <header className="flex items-center justify-between border-b border-stocky-border-subtle px-4 py-3">
-            <div className="flex items-center gap-2"><MailIcon size="sm" className="text-stocky-primary" /><p className="text-sm font-medium text-stocky-text-main">New message</p></div>
-            <button type="button" onClick={closeEmailDraft} aria-label="Close email draft" className="stocky-icon-button stocky-icon-button--small"><XIcon size="xs" /></button>
+            <div className="flex items-center gap-2"><MailIcon size="sm" className="text-stocky-primary" /><p className="text-sm font-medium text-stocky-text-main">{t('drawers.supplierContacts.emailModal.title')}</p></div>
+            <button type="button" onClick={closeEmailDraft} aria-label={t('common.close')} className="stocky-icon-button stocky-icon-button--small"><XIcon size="xs" /></button>
           </header>
           <div className="min-h-0 overflow-y-auto px-4 py-2">
-            <label className="flex items-center gap-3 border-b border-stocky-border-subtle py-2 text-[11px] text-stocky-text-sub"><span className="w-8 shrink-0">To</span><input readOnly value={emailContact.email || ''} className="min-w-0 flex-1 bg-transparent text-xs text-stocky-text-main outline-none" /></label>
-            <label className="flex items-center gap-3 border-b border-stocky-border-subtle py-2 text-[11px] text-stocky-text-sub"><span className="w-8 shrink-0">Cc</span><input type="email" multiple value={emailCc} onChange={(event) => setEmailCc(event.target.value)} placeholder="Add recipients" className="min-w-0 flex-1 bg-transparent text-xs text-stocky-text-main outline-none placeholder:text-stocky-text-sub/70" /></label>
-            <label className="flex items-center gap-3 border-b border-stocky-border-subtle py-2 text-[11px] text-stocky-text-sub"><span className="w-8 shrink-0">Bcc</span><input type="email" multiple value={emailBcc} onChange={(event) => setEmailBcc(event.target.value)} placeholder="Add recipients" className="min-w-0 flex-1 bg-transparent text-xs text-stocky-text-main outline-none placeholder:text-stocky-text-sub/70" /></label>
-            <input required value={emailSubject} onChange={(event) => setEmailSubject(event.target.value)} placeholder="Subject" className="w-full border-b border-stocky-border-subtle py-3 text-xs text-stocky-text-main outline-none placeholder:text-stocky-text-sub/70" />
-            <textarea required value={emailBody} onChange={(event) => setEmailBody(event.target.value)} placeholder="Write your message" rows={9} className="w-full resize-none py-3 text-xs leading-5 text-stocky-text-main outline-none placeholder:text-stocky-text-sub/70" />
+            <label className="flex items-center gap-3 border-b border-stocky-border-subtle py-2 text-[11px] text-stocky-text-sub"><span className="w-8 shrink-0">{t('drawers.supplierContacts.emailModal.to')}</span><input readOnly value={emailContact.email || ''} className="min-w-0 flex-1 bg-transparent text-xs text-stocky-text-main outline-none" /></label>
+            <label className="flex items-center gap-3 border-b border-stocky-border-subtle py-2 text-[11px] text-stocky-text-sub"><span className="w-8 shrink-0">{t('drawers.supplierContacts.emailModal.cc')}</span><input type="email" multiple value={emailCc} onChange={(event) => setEmailCc(event.target.value)} placeholder={t('drawers.supplierContacts.emailModal.addRecipients')} className="min-w-0 flex-1 bg-transparent text-xs text-stocky-text-main outline-none placeholder:text-stocky-text-sub/70" /></label>
+            <label className="flex items-center gap-3 border-b border-stocky-border-subtle py-2 text-[11px] text-stocky-text-sub"><span className="w-8 shrink-0">{t('drawers.supplierContacts.emailModal.bcc')}</span><input type="email" multiple value={emailBcc} onChange={(event) => setEmailBcc(event.target.value)} placeholder={t('drawers.supplierContacts.emailModal.addRecipients')} className="min-w-0 flex-1 bg-transparent text-xs text-stocky-text-main outline-none placeholder:text-stocky-text-sub/70" /></label>
+            <input required value={emailSubject} onChange={(event) => setEmailSubject(event.target.value)} placeholder={t('drawers.supplierContacts.emailModal.subject')} className="w-full border-b border-stocky-border-subtle py-3 text-xs text-stocky-text-main outline-none placeholder:text-stocky-text-sub/70" />
+            <textarea required value={emailBody} onChange={(event) => setEmailBody(event.target.value)} placeholder={t('drawers.supplierContacts.emailModal.message')} rows={9} className="w-full resize-none py-3 text-xs leading-5 text-stocky-text-main outline-none placeholder:text-stocky-text-sub/70" />
           </div>
-          <footer className="flex items-center justify-between gap-3 border-t border-stocky-border-subtle px-4 py-3"><p className="text-[10px] text-stocky-text-sub">Your default email app will open with this draft.</p><div className="flex shrink-0 gap-2"><button type="button" onClick={closeEmailDraft} className="h-8 rounded-full border border-stocky-border-subtle px-3 text-[11px] text-stocky-text-main cursor-pointer">Discard</button><button type="submit" className="h-8 rounded-full bg-stocky-primary px-3 text-[11px] font-medium text-white cursor-pointer">Open email app</button></div></footer>
+          <footer className="flex items-center justify-between gap-3 border-t border-stocky-border-subtle px-4 py-3"><p className="text-[10px] text-stocky-text-sub">{t('drawers.supplierContacts.emailModal.appNotice')}</p><div className="flex shrink-0 gap-2"><button type="button" onClick={closeEmailDraft} className="h-8 rounded-full border border-stocky-border-subtle px-3 text-[11px] text-stocky-text-main cursor-pointer">{t('drawers.supplierContacts.emailModal.discard')}</button><button type="submit" className="h-8 rounded-full bg-stocky-primary px-3 text-[11px] font-medium text-white cursor-pointer">{t('drawers.supplierContacts.emailModal.openEmailApp')}</button></div></footer>
         </form>
       </div>}
     </SideDrawer>

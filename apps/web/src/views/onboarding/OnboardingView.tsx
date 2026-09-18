@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase/client';
 import { OrganizationOnboardingWidget } from '@/widgets/OrganizationOnboardingWidget/OrganizationOnboardingWidget';
-import { BoxesIcon } from '@stocky/icons';
+import { StockyLogoIcon } from '@stocky/icons';
 import { PageContent, PageFooter, PageHeader, PageLayout } from '@/components/ui/PageLayout';
 
 /**
@@ -100,8 +100,8 @@ export function OnboardingView() {
       {/* Top Simple Brand Header */}
       <PageHeader>
         <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-widget bg-stocky-primary text-white flex items-center justify-center shrink-0">
-            <BoxesIcon size="xs" />
+          <div className="w-8 h-8 rounded-widget bg-stocky-primary text-stocky-text-main flex items-center justify-center shrink-0">
+            <StockyLogoIcon size="xs" />
           </div>
           <span className="text-sm font-medium text-stocky-text-main tracking-tight">
             Stocky

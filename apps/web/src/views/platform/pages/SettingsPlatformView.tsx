@@ -1,7 +1,10 @@
+'use client';
+
 import React from 'react';
 import type { CompanyUserRole } from '@stocky/types';
 import { PlatformPageLayout } from './PlatformPageLayout';
 import { CompanySettingsSummaryWidget } from '@/widgets';
+import { useTranslation } from '@/lib/i18n';
 
 export interface SettingsPlatformViewProps {
   companyName?: string | null;
@@ -20,14 +23,15 @@ export function SettingsPlatformView({
   userTitle,
   userRole = 'owner',
 }: SettingsPlatformViewProps) {
+  const { t } = useTranslation();
   const isStaff = userRole === 'staff';
   const subtitle = isStaff
-    ? `${userName || 'Your profile'} · ${userTitle || 'Staff member'}.`
-    : `${companyName || 'Your company'} · Workspace preferences and organization setup.`;
+    ? t('settings.staffSubtitle', { name: userName || 'Your profile', title: userTitle || 'Staff member' })
+    : t('settings.subtitle', { company: companyName || 'Your company' });
 
   return (
     <PlatformPageLayout
-      title="Settings"
+      title={t('settings.title')}
       subtitle={subtitle}
     >
       <CompanySettingsSummaryWidget

@@ -7,6 +7,7 @@ import {
   ActivityIcon,
   UsersIcon,
 } from '@stocky/icons';
+import { useTranslation } from '@/lib/i18n';
 
 export interface HomeHighlightsWidgetProps {
   expiringSkuCount?: number;
@@ -44,39 +45,41 @@ export function HomeHighlightsWidget({
   onOpenTasks,
   onOpenAttendance,
 }: HomeHighlightsWidgetProps) {
+  const { t } = useTranslation();
+
   const cards = [
     {
       id: 'expiring-skus',
-      title: 'Expiring SKUs',
+      title: t('home.expiringSkus'),
       value: expiringSkuCount.toString(),
-      subtitle: 'Within 30-day window',
+      subtitle: t('home.expiringDesc'),
       icon: <AlertTriangleIcon size="xs" />,
       badgeBg: 'bg-amber-50 text-amber-600 border border-amber-200/60',
       action: onOpenExpiry,
     },
     {
       id: 'supplier-requests',
-      title: 'Supplier Requests',
+      title: t('home.supplierRequests'),
       value: pendingSupplierRequestsCount.toString(),
-      subtitle: 'Awaiting supplier action',
+      subtitle: t('home.supplierRequestsDesc'),
       icon: <TruckIcon size="xs" />,
       badgeBg: 'bg-blue-50 text-blue-600 border border-blue-200/60',
       action: onOpenSuppliers,
     },
     {
       id: 'assigned-tasks',
-      title: 'Assigned Tasks',
+      title: t('home.assignedTasks'),
       value: assignedTasksCount.toString(),
-      subtitle: 'Audits & cycle counts',
+      subtitle: t('home.assignedTasksDesc'),
       icon: <ActivityIcon size="xs" />,
       badgeBg: 'bg-purple-50 text-purple-600 border border-purple-200/60',
       action: onOpenTasks,
     },
     {
       id: 'attendance-today',
-      title: 'Staff on Duty',
+      title: t('home.staffOnDuty'),
       value: `${attendancePct}%`,
-      subtitle: `${activeStaffPresent} of ${totalStaff} active staff`,
+      subtitle: t('home.activeStaff', { active: activeStaffPresent, total: totalStaff }),
       icon: <UsersIcon size="xs" />,
       badgeBg: 'bg-emerald-50 text-emerald-600 border border-emerald-200/60',
       action: onOpenAttendance,
