@@ -3,7 +3,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { AnimatePresence, motion } from 'framer-motion';
-import { useTranslation } from '@/lib/i18n';
 
 export const STOCKY_DRAWER_TRANSITION = {
   type: 'spring' as const,
@@ -35,7 +34,6 @@ export function SideDrawer({
   zIndex = 50,
   panelClassName = '',
 }: SideDrawerProps) {
-  const { isRtl } = useTranslation();
   const [mounted, setMounted] = useState(false);
   const onCloseRef = useRef(onClose);
   onCloseRef.current = onClose;
@@ -90,12 +88,12 @@ export function SideDrawer({
           <motion.aside
             key="side-drawer-panel"
             variants={{
-              closed: { x: isRtl ? '-100%' : '100%' },
+              closed: { x: '100%' },
               open: { x: '0%' },
             }}
             transition={STOCKY_DRAWER_TRANSITION}
             onClick={(event) => event.stopPropagation()}
-            className={`absolute inset-y-0 end-0 flex h-dvh w-full flex-col overflow-hidden ltr:border-l rtl:border-r border-stocky-border-subtle bg-white shadow-2xl md:w-[50vw] ${panelClassName}`}
+            className={`fixed inset-y-0 right-0 flex h-dvh w-full flex-col overflow-hidden border-l border-stocky-border-subtle bg-white shadow-2xl md:w-[50vw] ${panelClassName}`}
           >
             {children as any}
           </motion.aside>

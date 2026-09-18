@@ -17,6 +17,7 @@ import {
 } from '@stocky/icons';
 import type { Location, Product, StockLot, Supplier } from '@stocky/types';
 import type { StockLotUpdateInput } from '../StockLotEditDrawerWidget/StockLotEditDrawerWidget';
+import { useTranslation } from '@/lib/i18n';
 
 type LotView = 'active' | 'attention' | 'history';
 
@@ -31,25 +32,25 @@ export interface InventoryProductLotsWidgetProps {
 
 export type StockProductLotsWidgetProps = InventoryProductLotsWidgetProps;
 
-function getLotState(lot: StockLot) {
-  if (lot.status === 'disposed') return { label: 'Removed', countdown: null, tone: 'critical' as const, attention: false, history: true };
-  if (lot.status === 'returned') return { label: 'Returned', countdown: null, tone: 'critical' as const, attention: false, history: true };
-  if (lot.quantityOnHand <= 0 || lot.status === 'depleted') return { label: 'Depleted', countdown: null, tone: 'muted' as const, attention: false, history: true };
-  if (lot.status === 'on_hold') return { label: 'On hold', countdown: null, tone: 'hold' as const, attention: true, history: false };
-  if (!lot.expiryDate) return { label: 'No expiry', countdown: null, tone: 'warning' as const, attention: true, history: false };
+function getLotState(lot: StockLot, t: (key: any, params?: any) => string) {
+  if (lot.status === 'disposed') return { label: t('drawers.inventoryLots.states.removed'), countdown: null, tone: 'critical' as const, attention: false, history: true };
+  if (lot.status === 'returned') return { label: t('drawers.inventoryLots.states.returned'), countdown: null, tone: 'critical' as const, attention: false, history: true };
+  if (lot.quantityOnHand <= 0 || lot.status === 'depleted') return { label: t('drawers.inventoryLots.states.depleted'), countdown: null, tone: 'muted' as const, attention: false, history: true };
+  if (lot.status === 'on_hold') return { label: t('drawers.inventoryLots.states.onHold'), countdown: null, tone: 'hold' as const, attention: true, history: false };
+  if (!lot.expiryDate) return { label: t('drawers.inventoryLots.states.noExpiry'), countdown: null, tone: 'warning' as const, attention: true, history: false };
   const days = Math.ceil((new Date(lot.expiryDate).getTime() - Date.now()) / 86400000);
-  if (days < 0) return { label: 'Expired', countdown: `${Math.abs(days)}d ago`, tone: 'critical' as const, attention: true, history: false };
-  if (days <= (lot.expiryNotificationDays ?? 14)) return { label: 'Expiring Soon', countdown: `${days}d left`, tone: 'warning' as const, attention: true, history: false };
-  return { label: 'Valid', countdown: `${days}d left`, tone: 'success' as const, attention: false, history: false };
+  if (days < 0) return { label: t('drawers.inventoryLots.states.expired'), countdown: t('drawers.inventoryLots.states.daysAgo', { days: Math.abs(days) }), tone: 'critical' as const, attention: true, history: false };
+  if (days <= (lot.expiryNotificationDays ?? 14)) return { label: t('drawers.inventoryLots.states.expiringSoon'), countdown: t('drawers.inventoryLots.states.daysLeft', { days }), tone: 'warning' as const, attention: true, history: false };
+  return { label: t('drawers.inventoryLots.states.valid'), countdown: t('drawers.inventoryLots.states.daysLeft', { days }), tone: 'success' as const, attention: false, history: false };
 }
 
-function formatDate(value?: string | null) {
-  if (!value) return 'Not recorded';
-  return new Intl.DateTimeFormat('en', { day: 'numeric', month: 'short', year: 'numeric' }).format(new Date(value));
+function formatDate(value: string | null | undefined, locale: string, notRecordedLabel: string) {
+  if (!value) return notRecordedLabel;
+  return new Intl.DateTimeFormat(locale === 'ar' ? 'ar-EG' : 'en-EG', { day: 'numeric', month: 'short', year: 'numeric' }).format(new Date(value));
 }
 
-function formatCurrency(value: number) {
-  return new Intl.NumberFormat('en-EG', { style: 'currency', currency: 'EGP', minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(value);
+function formatCurrency(value: number, locale: string) {
+  return new Intl.NumberFormat(locale === 'ar' ? 'ar-EG' : 'en-EG', { style: 'currency', currency: 'EGP', minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(value);
 }
 
 type LotDraft = {
@@ -75,6 +76,7 @@ function getLotDraft(lot: StockLot): LotDraft {
 }
 
 export function InventoryProductLotsWidget({ product, lots, locations, suppliers, onSaveLot, onDeleteLot }: InventoryProductLotsWidgetProps) {
+  const { t, locale } = useTranslation();
   const [view, setView] = useState<LotView>('active');
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(0);
@@ -122,10 +124,10 @@ export function InventoryProductLotsWidget({ product, lots, locations, suppliers
     if (!onSaveLot || !editDraft) return;
     const parsedNotificationDays = editDraft.expiryNotificationDays.trim() === '' ? null : Number(editDraft.expiryNotificationDays);
     const parsedUnitCost = Number(editDraft.unitCost);
-    if (!editDraft.receivedDate) return setRowError('Add the received date.');
-    if (editDraft.expiryDate && (parsedNotificationDays === null || !Number.isInteger(parsedNotificationDays) || parsedNotificationDays < 0)) return setRowError('Enter a valid alert window.');
-    if (!editDraft.supplierId) return setRowError('Choose a supplier.');
-    if (!Number.isFinite(parsedUnitCost) || parsedUnitCost < 0) return setRowError('Cost must be zero or more.');
+    if (!editDraft.receivedDate) return setRowError(t('drawers.inventoryLots.errors.addReceivedDate'));
+    if (editDraft.expiryDate && (parsedNotificationDays === null || !Number.isInteger(parsedNotificationDays) || parsedNotificationDays < 0)) return setRowError(t('drawers.inventoryLots.errors.validAlertWindow'));
+    if (!editDraft.supplierId) return setRowError(t('drawers.inventoryLots.errors.chooseSupplier'));
+    if (!Number.isFinite(parsedUnitCost) || parsedUnitCost < 0) return setRowError(t('drawers.inventoryLots.errors.validCost'));
 
     setSavingLotId(lot.id);
     setRowError(null);
@@ -141,7 +143,7 @@ export function InventoryProductLotsWidget({ product, lots, locations, suppliers
       });
       cancelEdit();
     } catch (error: any) {
-      setRowError(error?.message || 'The lot could not be saved.');
+      setRowError(error?.message || t('drawers.inventoryLots.errors.saveFailed'));
     } finally {
       setSavingLotId(null);
     }
@@ -155,23 +157,23 @@ export function InventoryProductLotsWidget({ product, lots, locations, suppliers
       await onDeleteLot(lot);
       setDeleteConfirmLotId(null);
     } catch (error: any) {
-      setRowError(error?.message || 'The lot could not be deleted.');
+      setRowError(error?.message || t('drawers.inventoryLots.errors.deleteFailed'));
     } finally {
       setDeletingLotId(null);
     }
   };
 
   const counts = useMemo(() => lots.reduce((result, lot) => {
-    const state = getLotState(lot);
+    const state = getLotState(lot, t);
     result[state.history ? 'history' : state.attention ? 'attention' : 'active'] += 1;
     return result;
-  }, { active: 0, attention: 0, history: 0 }), [lots]);
+  }, { active: 0, attention: 0, history: 0 }), [lots, t]);
 
   const visibleLots = useMemo(() => {
     const normalized = search.trim().toLowerCase();
     return lots
       .filter((lot) => {
-        const state = getLotState(lot);
+        const state = getLotState(lot, t);
         if (view === 'history' && !state.history) return false;
         if (view === 'attention' && !state.attention) return false;
         if (view === 'active' && state.history) return false;
@@ -186,15 +188,20 @@ export function InventoryProductLotsWidget({ product, lots, locations, suppliers
         if (!right.expiryDate) return -1;
         return new Date(left.expiryDate).getTime() - new Date(right.expiryDate).getTime();
       });
-  }, [locationNames, lots, search, supplierNames, view]);
+  }, [locationNames, lots, search, supplierNames, t, view]);
 
   const pageCount = Math.max(1, Math.ceil(visibleLots.length / pageSize));
   const currentPage = Math.min(page, pageCount - 1);
   const pageLots = visibleLots.slice(currentPage * pageSize, (currentPage + 1) * pageSize);
+
   return (
-    <section className="stocky-product-lots flex flex-col gap-3" aria-label={`${product.name} lots and batches`}>
-      <nav className="stocky-product-lots__tabs" aria-label="Lot views">
-        {([['active', 'Active', counts.active], ['attention', 'Needs attention', counts.attention], ['history', 'History', counts.history]] as const).map(([key, label, count]) => (
+    <section className="stocky-product-lots flex flex-col gap-3 text-start" aria-label={t('drawers.inventoryLots.drawerAria', { name: product.name })}>
+      <nav className="stocky-product-lots__tabs" aria-label={t('drawers.inventoryLots.lotViewsAria')}>
+        {([
+          ['active', t('drawers.inventoryLots.activeTab'), counts.active],
+          ['attention', t('drawers.inventoryLots.attentionTab'), counts.attention],
+          ['history', t('drawers.inventoryLots.historyTab'), counts.history],
+        ] as const).map(([key, label, count]) => (
           <button type="button" key={key} onClick={() => setView(key)} className={view === key ? 'stocky-product-lots__tab stocky-product-lots__tab--active' : 'stocky-product-lots__tab'}>
             {label}<span>{count}</span>
           </button>
@@ -204,18 +211,31 @@ export function InventoryProductLotsWidget({ product, lots, locations, suppliers
       <div className="stocky-product-lots__toolbar">
         <div className="stocky-product-lots__search">
           <SearchIcon size="xs" />
-          <input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search lot, location, or supplier..." aria-label="Search lots" />
-          {search && <button type="button" onClick={() => setSearch('')} aria-label="Clear lot search"><XIcon size="xs" /></button>}
+          <input
+            value={search}
+            onChange={(event) => setSearch(event.target.value)}
+            placeholder={t('drawers.inventoryLots.searchPlaceholder')}
+            aria-label={t('drawers.inventoryLots.searchAria')}
+          />
+          {search && (
+            <button type="button" onClick={() => setSearch('')} aria-label={t('drawers.inventoryLots.clearSearchAria')}>
+              <XIcon size="xs" />
+            </button>
+          )}
         </div>
-        <span className="text-xs text-stocky-text-sub">{visibleLots.length.toLocaleString()} batch{visibleLots.length === 1 ? '' : 'es'}</span>
+        <span className="text-xs text-stocky-text-sub">
+          {visibleLots.length === 1
+            ? t('drawers.inventoryLots.batchCountSingular', { count: visibleLots.length.toLocaleString() })
+            : t('drawers.inventoryLots.batchCountPlural', { count: visibleLots.length.toLocaleString() })}
+        </span>
       </div>
 
       <div className="flex flex-col gap-3 max-h-[calc(100vh-280px)] overflow-y-auto pr-1">
         {pageLots.map((lot) => {
-          const state = getLotState(lot);
-          const lotLabel = lot.lotNumber || `Receipt ${lot.id.slice(0, 8)}`;
-          const supplierName = lot.supplierId ? supplierNames.get(lot.supplierId) || 'Supplier' : 'Not recorded';
-          const locationName = locationNames.get(lot.locationId) || 'Location';
+          const state = getLotState(lot, t);
+          const lotLabel = lot.lotNumber || t('drawers.inventoryLots.receiptBadge', { id: lot.id.slice(0, 8) });
+          const supplierName = lot.supplierId ? supplierNames.get(lot.supplierId) || t('drawers.inventoryLots.defaultSupplier') : t('drawers.inventoryLots.notRecorded');
+          const locationName = locationNames.get(lot.locationId) || t('drawers.inventoryLots.defaultLocation');
           const isEditing = editingLotId === lot.id && editDraft;
           const isConfirmingDelete = deleteConfirmLotId === lot.id;
 
@@ -235,7 +255,7 @@ export function InventoryProductLotsWidget({ product, lots, locations, suppliers
                 <div className="flex items-center gap-2 flex-wrap">
                   <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold bg-stocky-bg-global text-stocky-text-main border border-stocky-border-subtle">
                     <TagIcon size="xs" className="text-stocky-text-sub" />
-                    <span>Batch #{lotLabel}</span>
+                    <span>{t('drawers.inventoryLots.batchBadge', { lotLabel })}</span>
                   </span>
                   <span
                     className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium border ${
@@ -271,24 +291,24 @@ export function InventoryProductLotsWidget({ product, lots, locations, suppliers
                 <div className="flex flex-col gap-3 pt-2 border-t border-stocky-border-subtle">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                     <div>
-                      <label className="block text-[11px] font-medium text-stocky-text-sub mb-1">Lot / Batch Number</label>
+                      <label className="block text-[11px] font-medium text-stocky-text-sub mb-1">{t('drawers.inventoryLots.lotNumberLabel')}</label>
                       <input
                         className="w-full h-8 px-2.5 rounded-lg border border-stocky-border-subtle bg-stocky-bg-global text-xs text-stocky-text-main focus:border-stocky-primary focus:outline-none"
                         value={editDraft.lotNumber}
                         onChange={(event) => setEditDraft({ ...editDraft, lotNumber: event.target.value })}
-                        placeholder="e.g. LOT-2024-001"
-                        aria-label="Lot number"
+                        placeholder={t('drawers.inventoryLots.lotNumberPlaceholder')}
+                        aria-label={t('drawers.inventoryLots.lotNumberLabel')}
                       />
                     </div>
                     <div>
-                      <label className="block text-[11px] font-medium text-stocky-text-sub mb-1">Supplier</label>
+                      <label className="block text-[11px] font-medium text-stocky-text-sub mb-1">{t('drawers.inventoryLots.supplierLabel')}</label>
                       <select
                         className="w-full h-8 px-2 rounded-lg border border-stocky-border-subtle bg-stocky-bg-global text-xs text-stocky-text-main focus:border-stocky-primary focus:outline-none"
                         value={editDraft.supplierId}
                         onChange={(event) => setEditDraft({ ...editDraft, supplierId: event.target.value })}
-                        aria-label="Supplier"
+                        aria-label={t('drawers.inventoryLots.supplierLabel')}
                       >
-                        <option value="">Choose supplier</option>
+                        <option value="">{t('drawers.inventoryLots.chooseSupplier')}</option>
                         {suppliers.map((supplier) => (
                           <option key={supplier.id} value={supplier.id}>
                             {supplier.name}
@@ -297,27 +317,27 @@ export function InventoryProductLotsWidget({ product, lots, locations, suppliers
                       </select>
                     </div>
                     <div>
-                      <label className="block text-[11px] font-medium text-stocky-text-sub mb-1">Received Date</label>
+                      <label className="block text-[11px] font-medium text-stocky-text-sub mb-1">{t('drawers.inventoryLots.receivedDateLabel')}</label>
                       <input
                         className="w-full h-8 px-2.5 rounded-lg border border-stocky-border-subtle bg-stocky-bg-global text-xs text-stocky-text-main focus:border-stocky-primary focus:outline-none"
                         type="date"
                         value={editDraft.receivedDate}
                         onChange={(event) => setEditDraft({ ...editDraft, receivedDate: event.target.value })}
-                        aria-label="Received date"
+                        aria-label={t('drawers.inventoryLots.receivedDateLabel')}
                       />
                     </div>
                     <div>
-                      <label className="block text-[11px] font-medium text-stocky-text-sub mb-1">Expiry Date</label>
+                      <label className="block text-[11px] font-medium text-stocky-text-sub mb-1">{t('drawers.inventoryLots.expiryDateLabel')}</label>
                       <input
                         className="w-full h-8 px-2.5 rounded-lg border border-stocky-border-subtle bg-stocky-bg-global text-xs text-stocky-text-main focus:border-stocky-primary focus:outline-none"
                         type="date"
                         value={editDraft.expiryDate}
                         onChange={(event) => setEditDraft({ ...editDraft, expiryDate: event.target.value })}
-                        aria-label="Expiry date"
+                        aria-label={t('drawers.inventoryLots.expiryDateLabel')}
                       />
                     </div>
                     <div>
-                      <label className="block text-[11px] font-medium text-stocky-text-sub mb-1">Alert Window (Days before)</label>
+                      <label className="block text-[11px] font-medium text-stocky-text-sub mb-1">{t('drawers.inventoryLots.alertWindowLabel')}</label>
                       <input
                         className="w-full h-8 px-2.5 rounded-lg border border-stocky-border-subtle bg-stocky-bg-global text-xs text-stocky-text-main focus:border-stocky-primary focus:outline-none"
                         type="number"
@@ -325,12 +345,12 @@ export function InventoryProductLotsWidget({ product, lots, locations, suppliers
                         step="1"
                         value={editDraft.expiryNotificationDays}
                         onChange={(event) => setEditDraft({ ...editDraft, expiryNotificationDays: event.target.value })}
-                        placeholder="e.g. 14"
-                        aria-label="Expiry alert days"
+                        placeholder={t('drawers.inventoryLots.alertWindowPlaceholder')}
+                        aria-label={t('drawers.inventoryLots.alertWindowLabel')}
                       />
                     </div>
                     <div>
-                      <label className="block text-[11px] font-medium text-stocky-text-sub mb-1">Unit Cost (EGP)</label>
+                      <label className="block text-[11px] font-medium text-stocky-text-sub mb-1">{t('drawers.inventoryLots.unitCostLabel')}</label>
                       <input
                         className="w-full h-8 px-2.5 rounded-lg border border-stocky-border-subtle bg-stocky-bg-global text-xs text-stocky-text-main focus:border-stocky-primary focus:outline-none"
                         type="number"
@@ -338,18 +358,18 @@ export function InventoryProductLotsWidget({ product, lots, locations, suppliers
                         step="0.01"
                         value={editDraft.unitCost}
                         onChange={(event) => setEditDraft({ ...editDraft, unitCost: event.target.value })}
-                        aria-label="Unit cost"
+                        aria-label={t('drawers.inventoryLots.unitCostLabel')}
                       />
                     </div>
                   </div>
                   <div>
-                    <label className="block text-[11px] font-medium text-stocky-text-sub mb-1">Notes</label>
+                    <label className="block text-[11px] font-medium text-stocky-text-sub mb-1">{t('drawers.inventoryLots.notesLabel')}</label>
                     <input
                       className="w-full h-8 px-2.5 rounded-lg border border-stocky-border-subtle bg-stocky-bg-global text-xs text-stocky-text-main focus:border-stocky-primary focus:outline-none"
                       value={editDraft.notes}
                       onChange={(event) => setEditDraft({ ...editDraft, notes: event.target.value })}
-                      placeholder="Optional lot batch notes..."
-                      aria-label="Notes"
+                      placeholder={t('drawers.inventoryLots.notesPlaceholder')}
+                      aria-label={t('drawers.inventoryLots.notesLabel')}
                     />
                   </div>
 
@@ -361,7 +381,7 @@ export function InventoryProductLotsWidget({ product, lots, locations, suppliers
                       className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full border border-stocky-border-subtle text-xs font-normal text-stocky-text-main hover:bg-stocky-bg-global transition-colors cursor-pointer"
                     >
                       <XIcon size="xs" />
-                      Cancel
+                      {t('drawers.inventoryLots.cancel')}
                     </button>
                     <button
                       type="button"
@@ -370,7 +390,7 @@ export function InventoryProductLotsWidget({ product, lots, locations, suppliers
                       className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-stocky-primary text-white text-xs font-medium hover:bg-stocky-primary-hover transition-colors disabled:opacity-50 cursor-pointer"
                     >
                       <CheckIcon size="xs" />
-                      {savingLotId === lot.id ? 'Saving…' : 'Save Batch'}
+                      {savingLotId === lot.id ? t('drawers.inventoryLots.saving') : t('drawers.inventoryLots.saveBatch')}
                     </button>
                   </div>
                 </div>
@@ -378,20 +398,20 @@ export function InventoryProductLotsWidget({ product, lots, locations, suppliers
                 <>
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 py-1 bg-stocky-bg-global/70 p-3 rounded-xl border border-stocky-border-subtle">
                     <div>
-                      <span className="block text-[10px] uppercase font-semibold text-stocky-text-sub tracking-wider">Quantity on hand</span>
+                      <span className="block text-[10px] uppercase font-semibold text-stocky-text-sub tracking-wider">{t('drawers.inventoryLots.quantityOnHand')}</span>
                       <span className="mt-0.5 inline-flex items-center gap-1 text-sm font-semibold text-stocky-text-main">
                         {lot.quantityOnHand.toLocaleString()}
-                        <span className="text-xs font-normal text-stocky-text-sub">{product.unitName || 'units'}</span>
+                        <span className="text-xs font-normal text-stocky-text-sub">{product.unitName || t('common.items')}</span>
                       </span>
                     </div>
                     <div>
-                      <span className="block text-[10px] uppercase font-semibold text-stocky-text-sub tracking-wider">Unit Cost</span>
+                      <span className="block text-[10px] uppercase font-semibold text-stocky-text-sub tracking-wider">{t('drawers.inventoryLots.unitCost')}</span>
                       <span className="mt-0.5 block text-sm font-semibold text-stocky-text-main">
-                        {formatCurrency(lot.unitCost)}
+                        {formatCurrency(lot.unitCost, locale)}
                       </span>
                     </div>
                     <div>
-                      <span className="block text-[10px] uppercase font-semibold text-stocky-text-sub tracking-wider">Expiry</span>
+                      <span className="block text-[10px] uppercase font-semibold text-stocky-text-sub tracking-wider">{t('drawers.inventoryLots.expiry')}</span>
                       <span className={`mt-0.5 block text-xs font-semibold ${
                         state.tone === 'critical'
                           ? 'text-stocky-status-critical-fg'
@@ -399,19 +419,19 @@ export function InventoryProductLotsWidget({ product, lots, locations, suppliers
                           ? 'text-stocky-status-warning-fg'
                           : 'text-stocky-text-main'
                       }`}>
-                        {formatDate(lot.expiryDate)}
+                        {formatDate(lot.expiryDate, locale, t('drawers.inventoryLots.notRecorded'))}
                       </span>
                       <span className="block text-[10px] text-stocky-text-sub">
-                        {lot.expiryNotificationDays != null ? `${lot.expiryNotificationDays}d alert` : 'No alert'}
+                        {lot.expiryNotificationDays != null ? t('drawers.inventoryLots.alertDays', { days: lot.expiryNotificationDays }) : t('drawers.inventoryLots.noAlert')}
                       </span>
                     </div>
                     <div>
-                      <span className="block text-[10px] uppercase font-semibold text-stocky-text-sub tracking-wider">Supplier</span>
+                      <span className="block text-[10px] uppercase font-semibold text-stocky-text-sub tracking-wider">{t('drawers.inventoryLots.supplier')}</span>
                       <span className="mt-0.5 text-xs font-medium text-stocky-text-main truncate block" title={supplierName}>
                         {supplierName}
                       </span>
                       <span className="block text-[10px] text-stocky-text-sub">
-                        Rec: {formatDate(lot.receivedAt)}
+                        {t('drawers.inventoryLots.recDate', { date: formatDate(lot.receivedAt, locale, t('drawers.inventoryLots.notRecorded')) })}
                       </span>
                     </div>
                   </div>
@@ -425,27 +445,27 @@ export function InventoryProductLotsWidget({ product, lots, locations, suppliers
                   {/* Card Actions */}
                   <div className="flex items-center justify-between pt-1 border-t border-stocky-border-subtle text-xs">
                     <span className="text-[11px] text-stocky-text-sub">
-                      Total Value: <strong className="font-semibold text-stocky-text-main">{formatCurrency(lot.quantityOnHand * lot.unitCost)}</strong>
+                      {t('drawers.inventoryLots.totalValue', { value: formatCurrency(lot.quantityOnHand * lot.unitCost, locale) })}
                     </span>
 
                     <div className="flex items-center gap-1.5">
                       {isConfirmingDelete ? (
                         <div className="flex items-center gap-1.5 bg-stocky-status-critical-bg px-2 py-1 rounded-lg border border-stocky-status-critical-border">
-                          <span className="text-xs font-medium text-stocky-status-critical-fg px-1">Delete batch?</span>
+                          <span className="text-xs font-medium text-stocky-status-critical-fg px-1">{t('drawers.inventoryLots.deleteBatchQuestion')}</span>
                           <button
                             type="button"
                             onClick={() => void confirmDelete(lot)}
                             disabled={deletingLotId === lot.id}
                             className="px-2.5 py-0.5 rounded-md bg-red-600 text-white text-xs font-medium hover:bg-red-700 transition-colors cursor-pointer"
                           >
-                            {deletingLotId === lot.id ? 'Deleting…' : 'Yes'}
+                            {deletingLotId === lot.id ? t('drawers.inventoryLots.deleting') : t('drawers.inventoryLots.yes')}
                           </button>
                           <button
                             type="button"
                             onClick={() => setDeleteConfirmLotId(null)}
                             className="px-2.5 py-0.5 rounded-md bg-white text-stocky-text-main border border-stocky-border-subtle text-xs hover:bg-stocky-bg-global transition-colors cursor-pointer"
                           >
-                            Cancel
+                            {t('drawers.inventoryLots.cancel')}
                           </button>
                         </div>
                       ) : (
@@ -455,10 +475,10 @@ export function InventoryProductLotsWidget({ product, lots, locations, suppliers
                               type="button"
                               onClick={() => beginEdit(lot)}
                               className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-stocky-border-subtle bg-white text-xs font-medium text-stocky-text-main hover:border-stocky-primary hover:text-stocky-primary transition-colors cursor-pointer"
-                              aria-label={`Edit ${lotLabel}`}
+                              aria-label={t('drawers.inventoryLots.editAria', { lotLabel })}
                             >
                               <EditIcon size="xs" />
-                              <span>Edit</span>
+                              <span>{t('drawers.inventoryLots.edit')}</span>
                             </button>
                           )}
                           {onDeleteLot && (
@@ -471,7 +491,7 @@ export function InventoryProductLotsWidget({ product, lots, locations, suppliers
                                 setDeleteConfirmLotId(lot.id);
                               }}
                               className="inline-flex items-center gap-1 px-2 py-1 rounded-full border border-stocky-border-subtle text-xs font-normal text-stocky-text-sub hover:border-stocky-status-critical-border hover:text-stocky-status-critical-fg hover:bg-stocky-status-critical-bg transition-colors cursor-pointer"
-                              aria-label={`Delete ${lotLabel}`}
+                              aria-label={t('drawers.inventoryLots.deleteAria', { lotLabel })}
                             >
                               <TrashIcon size="xs" />
                             </button>
@@ -489,17 +509,51 @@ export function InventoryProductLotsWidget({ product, lots, locations, suppliers
         {pageLots.length === 0 && (
           <div className="stocky-product-lots__empty">
             <BoxesIcon size="sm" />
-            <strong>{search ? 'No batches match this search' : view === 'history' ? 'No batch history' : view === 'attention' ? 'Nothing needs attention' : 'No active batches'}</strong>
-            <span>{search ? 'Try another batch number, location, or supplier.' : 'Add a batch when new inventory arrives.'}</span>
+            <strong>
+              {search
+                ? t('drawers.inventoryLots.empty.searchMatch')
+                : view === 'history'
+                ? t('drawers.inventoryLots.empty.history')
+                : view === 'attention'
+                ? t('drawers.inventoryLots.empty.attention')
+                : t('drawers.inventoryLots.empty.active')}
+            </strong>
+            <span>
+              {search
+                ? t('drawers.inventoryLots.empty.searchHint')
+                : t('drawers.inventoryLots.empty.addHint')}
+            </span>
           </div>
         )}
       </div>
 
       <footer className="stocky-product-lots__footer">
-        <span>Showing {visibleLots.length === 0 ? 0 : currentPage * pageSize + 1}–{Math.min((currentPage + 1) * pageSize, visibleLots.length)} of {visibleLots.length}</span>
+        <span>
+          {t('drawers.inventoryLots.showingBatches', {
+            from: visibleLots.length === 0 ? 0 : (currentPage * pageSize + 1).toLocaleString(),
+            to: Math.min((currentPage + 1) * pageSize, visibleLots.length).toLocaleString(),
+            total: visibleLots.length.toLocaleString(),
+          })}
+        </span>
         <div>
-          <button type="button" onClick={() => setPage((current) => Math.max(0, current - 1))} disabled={currentPage === 0} className="stocky-table-page-button" aria-label="Previous lots">‹</button>
-          <button type="button" onClick={() => setPage((current) => Math.min(pageCount - 1, current + 1))} disabled={currentPage >= pageCount - 1} className="stocky-table-page-button" aria-label="Next lots">›</button>
+          <button
+            type="button"
+            onClick={() => setPage((current) => Math.max(0, current - 1))}
+            disabled={currentPage === 0}
+            className="stocky-table-page-button cursor-pointer disabled:opacity-40"
+            aria-label={t('drawers.inventoryLots.previousLots')}
+          >
+            ‹
+          </button>
+          <button
+            type="button"
+            onClick={() => setPage((current) => Math.min(pageCount - 1, current + 1))}
+            disabled={currentPage >= pageCount - 1}
+            className="stocky-table-page-button cursor-pointer disabled:opacity-40"
+            aria-label={t('drawers.inventoryLots.nextLots')}
+          >
+            ›
+          </button>
         </div>
       </footer>
     </section>
@@ -507,3 +561,4 @@ export function InventoryProductLotsWidget({ product, lots, locations, suppliers
 }
 
 export const StockProductLotsWidget = InventoryProductLotsWidget;
+

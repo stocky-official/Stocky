@@ -194,7 +194,7 @@ export function PlatformAccountMenuWidget({
                 </div>
               </div>
               <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-stocky-status-success-bg text-stocky-status-success-fg border border-stocky-status-success-border">
-                Live
+                {t('accountMenu.live')}
               </span>
             </div>
           )}

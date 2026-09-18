@@ -19,6 +19,7 @@ import {
 import type { CompanyUserRole, CreateStockTaskCommand, Location, Product, StockLot, StockTask, StockTaskItem, StockTaskType, Supplier } from '@stocky/types';
 import { SideDrawer, BottomSheet } from '@/components/ui';
 import { AnimatePresence, motion } from 'framer-motion';
+import { useTranslation } from '@/lib/i18n';
 import { InventoryTableWidget, type InventoryTableRow } from '../InventoryTableWidget/InventoryTableWidget';
 import { StockTaskAssignmentWidget } from '../StockTaskAssignmentWidget/StockTaskAssignmentWidget';
 import { InventoryImportModalWidget } from '../InventoryImportModalWidget/InventoryImportModalWidget';
@@ -65,15 +66,15 @@ export interface InventoryWorkspaceWidgetProps {
 
 export type RedesignedStockWorkspaceWidgetProps = InventoryWorkspaceWidgetProps;
 
-function getLotState(lot: StockLot) {
-  if (lot.quantityOnHand <= 0 || lot.status === 'depleted') return { label: 'Out of stock', tone: 'slate' };
-  if (lot.status === 'on_hold') return { label: 'On hold', tone: 'purple' };
-  if (!lot.expiryDate) return { label: 'No expiry date', tone: 'red' };
+function getLotState(lot: StockLot, t?: (key: any, params?: any) => string) {
+  if (lot.quantityOnHand <= 0 || lot.status === 'depleted') return { label: t ? t('drawers.inventoryLots.states.outOfStock') : 'Out of stock', tone: 'slate' };
+  if (lot.status === 'on_hold') return { label: t ? t('drawers.inventoryLots.states.onHold') : 'On hold', tone: 'purple' };
+  if (!lot.expiryDate) return { label: t ? t('drawers.inventoryLots.states.noExpiryDate') : 'No expiry date', tone: 'red' };
 
   const days = Math.ceil((new Date(lot.expiryDate).getTime() - Date.now()) / 86400000);
-  if (days < 0) return { label: 'Expired', tone: 'red' };
-  if (days <= (lot.expiryNotificationDays ?? 0)) return { label: `${days}d left`, tone: 'amber' };
-  return { label: `${days}d left`, tone: 'green' };
+  if (days < 0) return { label: t ? t('drawers.inventoryLots.states.expired') : 'Expired', tone: 'red' };
+  if (days <= (lot.expiryNotificationDays ?? 0)) return { label: t ? t('drawers.inventoryLots.states.daysLeft', { days }) : `${days}d left`, tone: 'amber' };
+  return { label: t ? t('drawers.inventoryLots.states.daysLeft', { days }) : `${days}d left`, tone: 'green' };
 }
 
 export function InventoryWorkspaceWidget({
@@ -102,6 +103,7 @@ export function InventoryWorkspaceWidget({
   canManageTasks = false,
   onCreateTask,
 }: InventoryWorkspaceWidgetProps) {
+  const { t } = useTranslation();
   const [search, setSearch] = useState('');
   const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
   const [detailRow, setDetailRow] = useState<StockRow | null>(null);
@@ -427,17 +429,17 @@ export function InventoryWorkspaceWidget({
           : null);
 
     const earliestState = activeDetailRow.earliestExpiry
-      ? getLotState(activeDetailRow.earliestExpiry)
-      : { label: 'No expiry date', tone: 'red' };
+      ? getLotState(activeDetailRow.earliestExpiry, t)
+      : { label: t('drawers.inventoryLots.states.noExpiryDate'), tone: 'red' };
 
     return (
       <SideDrawer
         isOpen={Boolean(detailRow)}
         onClose={closeLotsDrawer}
-        ariaLabel={`${activeDetailRow.product.name} lots and batches`}
+        ariaLabel={t('drawers.inventoryLots.drawerAria', { name: activeDetailRow.product.name })}
         panelClassName="stocky-stock-lots-drawer"
       >
-        <div className="flex h-full min-h-0 flex-col">
+        <div className="flex h-full min-h-0 flex-col text-start">
           {/* Header with Product Image next to Product Name */}
           <div className="shrink-0 border-b border-stocky-border-subtle bg-white px-5 py-4">
             <div className="flex items-start justify-between gap-3">
@@ -467,7 +469,7 @@ export function InventoryWorkspaceWidget({
                   </h2>
                   <div className="mt-1 flex flex-wrap items-center gap-1.5 text-xs text-stocky-text-sub">
                     <span className="inline-flex items-center rounded-md bg-stocky-bg-global px-2 py-0.5 text-[11px] font-medium text-stocky-text-main border border-stocky-border-subtle">
-                      {activeDetailRow.product.categoryName || 'General'}
+                      {activeDetailRow.product.categoryName || t('drawers.inventoryLots.generalCategory')}
                     </span>
                     {activeDetailRow.product.barcode && (
                       <span className="inline-flex items-center gap-1 font-mono text-[11px] text-stocky-text-sub">
@@ -491,14 +493,14 @@ export function InventoryWorkspaceWidget({
                     onClick={() => onEditProduct(activeDetailRow.product)}
                     className="inline-flex items-center gap-1.5 rounded-lg border border-stocky-border-subtle bg-white px-2.5 py-1.5 text-xs font-medium text-stocky-text-main hover:bg-stocky-bg-global transition-colors cursor-pointer"
                   >
-                    <EditIcon size="xs" /> Edit product
+                    <EditIcon size="xs" /> {t('drawers.inventoryLots.editProduct')}
                   </button>
                 )}
                 <button
                   type="button"
                   onClick={closeLotsDrawer}
                   className="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-lg text-stocky-text-sub hover:bg-stocky-bg-global transition-colors"
-                  aria-label="Close lots drawer"
+                  aria-label={t('drawers.inventoryLots.closeLotsDrawer')}
                 >
                   <XIcon size="xs" />
                 </button>
@@ -512,7 +514,7 @@ export function InventoryWorkspaceWidget({
                   {activeDetailRow.totalQuantity.toLocaleString()}
                 </span>{' '}
                 <span className="text-[11px] text-stocky-text-sub">
-                  {activeDetailRow.product.unitName}{activeDetailRow.totalQuantity === 1 ? '' : 's'} in stock
+                  {t('drawers.inventoryLots.unitsInStock', { unit: activeDetailRow.product.unitName || t('common.items') })}
                 </span>
               </div>
               <div className="h-3 w-px bg-stocky-border-subtle" />
@@ -521,7 +523,9 @@ export function InventoryWorkspaceWidget({
                   {activeDetailRow.lots.length}
                 </span>{' '}
                 <span className="text-[11px] text-stocky-text-sub">
-                  {activeDetailRow.lots.length === 1 ? 'batch' : 'batches'}
+                  {activeDetailRow.lots.length === 1
+                    ? t('drawers.inventoryLots.batchCountSingular', { count: activeDetailRow.lots.length })
+                    : t('drawers.inventoryLots.batchCountPlural', { count: activeDetailRow.lots.length })}
                 </span>
               </div>
               <div className="h-3 w-px bg-stocky-border-subtle" />
@@ -550,8 +554,8 @@ export function InventoryWorkspaceWidget({
 
   const mobileStockList = (
     <div className="stocky-mobile-stock-list">
-      {rows.length === 0 ? <div className="stocky-mobile-stock-empty"><BoxesIcon size="md" className="text-stocky-text-sub/50" /><p>No inventory matches this search.</p><button type="button" onClick={() => onReceive()} className="stocky-table-toolbar-button stocky-table-toolbar-button--primary"><PlusIcon size="xs" /> Add inventory</button></div> : rows.map((row) => {
-        const state = row.earliestExpiry ? getLotState(row.earliestExpiry) : { label: 'No expiry date', tone: 'red' };
+      {rows.length === 0 ? <div className="stocky-mobile-stock-empty"><BoxesIcon size="md" className="text-stocky-text-sub/50" /><p>{t('inventory.noProductsFound')}</p><button type="button" onClick={() => onReceive()} className="stocky-table-toolbar-button stocky-table-toolbar-button--primary"><PlusIcon size="xs" /> {t('inventory.receiveStock')}</button></div> : rows.map((row) => {
+        const state = row.earliestExpiry ? getLotState(row.earliestExpiry, t) : { label: t('drawers.inventoryLots.states.noExpiryDate'), tone: 'red' };
         const isSelected = selectedProductIds.includes(row.product.id);
         const supplierName = row.product.defaultSupplierId
           ? supplierNames.get(row.product.defaultSupplierId)
@@ -569,17 +573,17 @@ export function InventoryWorkspaceWidget({
           </div>
           <span className="stocky-mobile-stock-row__body min-w-0 flex-1">
             <strong>{row.product.name}</strong>
-            <small>{supplierName ? `${supplierName} · ` : ''}{row.product.categoryName || 'General'} · <span className="stocky-mobile-stock-row__barcode">{row.product.barcode || 'No barcode'}</span></small>
+            <small>{supplierName ? `${supplierName} · ` : ''}{row.product.categoryName || t('drawers.inventoryLots.generalCategory')} · <span className="stocky-mobile-stock-row__barcode">{row.product.barcode || t('drawers.receiveStock.noBarcode')}</span></small>
           </span>
           <span className="stocky-mobile-stock-row__summary">
             <strong>
               {row.totalQuantity.toLocaleString()}{' '}
               <span className="text-[11px] font-normal text-stocky-text-sub">
-                {row.product.unitName ? (row.totalQuantity === 1 ? row.product.unitName : `${row.product.unitName}s`) : 'units'}
+                {row.product.unitName || t('common.items')}
               </span>
             </strong>
             <small className={state.tone === 'red' ? 'stocky-text-critical font-medium' : state.tone === 'amber' ? 'stocky-text-warning font-medium' : 'stocky-text-success font-medium'}>
-              {state.label === 'No expiry date' ? 'No expiry' : `Exp: ${state.label}`}
+              {state.label}
             </small>
           </span>
         </div>;

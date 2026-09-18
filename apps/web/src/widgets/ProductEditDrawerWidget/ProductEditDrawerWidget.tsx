@@ -117,7 +117,7 @@ export function ProductEditDrawerWidget({ isOpen, product, categories = [], supp
               {imageUrl.trim() ? (
                 <img
                   src={imageUrl.trim()}
-                  alt="Product preview"
+                  alt={t('drawers.productEdit.imagePreview')}
                   className="h-full w-full object-cover"
                   onError={(e) => {
                     (e.target as HTMLElement).style.display = 'none';
