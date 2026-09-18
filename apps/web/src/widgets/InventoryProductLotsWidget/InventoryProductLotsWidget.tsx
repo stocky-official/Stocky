@@ -75,7 +75,7 @@ function getLotDraft(lot: StockLot): LotDraft {
   };
 }
 
-function LotEditForm({
+export function LotEditForm({
   lot,
   editDraft,
   setEditDraft,
