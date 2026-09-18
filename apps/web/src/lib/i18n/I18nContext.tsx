@@ -14,7 +14,7 @@ export interface I18nProviderProps {
   initialLocale?: Locale;
 }
 
-export function I18nProvider({ children, initialLocale = 'en' }: I18nProviderProps) {
+export function I18nProvider({ children, initialLocale = 'ar' }: I18nProviderProps) {
   const [locale, setLocaleState] = useState<Locale>(initialLocale);
 
   // Initialize from cookie or localStorage on mount
@@ -34,7 +34,12 @@ export function I18nProvider({ children, initialLocale = 'en' }: I18nProviderPro
         setLocaleState(cookieLocale);
         document.documentElement.lang = cookieLocale;
         document.documentElement.dir = cookieLocale === 'ar' ? 'rtl' : 'ltr';
+        return;
       }
+      // Default to Arabic
+      setLocaleState('ar');
+      document.documentElement.lang = 'ar';
+      document.documentElement.dir = 'rtl';
     } catch {
       // Fallback gracefully in restricted environments
     }
@@ -118,10 +123,10 @@ export function useTranslation(): I18nContextValue {
   if (!context) {
     // Fallback if rendered outside provider
     return {
-      locale: 'en',
+      locale: 'ar',
       setLocale: () => {},
-      dir: 'ltr',
-      isRtl: false,
+      dir: 'rtl',
+      isRtl: true,
       t: (key: string) => key,
     };
   }

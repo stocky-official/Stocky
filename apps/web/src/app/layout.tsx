@@ -59,7 +59,7 @@ export default async function RootLayout({
 }) {
   const cookieStore = await cookies();
   const localeCookie = cookieStore.get('stocky_locale')?.value;
-  const initialLocale: Locale = localeCookie === 'ar' ? 'ar' : 'en';
+  const initialLocale: Locale = localeCookie === 'en' ? 'en' : 'ar';
   const dir = initialLocale === 'ar' ? 'rtl' : 'ltr';
 
   return (
