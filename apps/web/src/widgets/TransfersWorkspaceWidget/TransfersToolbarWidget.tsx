@@ -9,8 +9,8 @@ export type TransferQueue = 'all' | 'action' | 'incoming' | 'outgoing';
 export interface TransfersToolbarWidgetProps {
   search: string;
   onSearchChange: (value: string) => void;
-  queue: TransferQueue;
-  onQueueChange: (queue: TransferQueue) => void;
+  queue?: TransferQueue;
+  onQueueChange?: (queue: TransferQueue) => void;
   onRequestStock: () => void;
   filterPanelOpen?: boolean;
   onToggleFilterPanel?: () => void;
@@ -21,8 +21,6 @@ export interface TransfersToolbarWidgetProps {
 export function TransfersToolbarWidget({
   search,
   onSearchChange,
-  queue,
-  onQueueChange,
   onRequestStock,
   filterPanelOpen = false,
   onToggleFilterPanel,
@@ -30,12 +28,6 @@ export function TransfersToolbarWidget({
   activeFilterCount = 0,
 }: TransfersToolbarWidgetProps) {
   const { t } = useTranslation();
-  const queueTabs: Array<{ id: TransferQueue; label: string; mobileLabel: string }> = [
-    { id: 'action', label: t('transfers.needsAction'), mobileLabel: t('transfers.needsAction') },
-    { id: 'incoming', label: t('transfers.incoming'), mobileLabel: t('transfers.incoming') },
-    { id: 'outgoing', label: t('transfers.outgoing'), mobileLabel: t('transfers.outgoing') },
-    { id: 'all', label: t('transfers.allQueues'), mobileLabel: t('common.all') },
-  ];
 
   return (
     <div className="stocky-stock-table-toolbar relative">
@@ -83,35 +75,8 @@ export function TransfersToolbarWidget({
         </div>
       </div>
 
-      {/* Queue Tabs & Primary Action */}
-      <div className="stocky-stock-table-toolbar__actions flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto sm:ml-auto">
-        <div
-          className="grid grid-cols-4 gap-1 w-full sm:flex sm:items-center sm:gap-1.5 sm:w-auto"
-          role="tablist"
-          aria-label="Transfer queues"
-        >
-          {queueTabs.map((tab) => {
-            const isActive = queue === tab.id;
-            return (
-              <button
-                key={tab.id}
-                type="button"
-                role="tab"
-                aria-selected={isActive}
-                onClick={() => onQueueChange(tab.id)}
-                className={`stocky-table-toolbar-button w-full sm:w-auto h-10 px-1 sm:px-4 rounded-full text-xs font-medium inline-flex items-center justify-center whitespace-nowrap cursor-pointer transition-colors ${
-                  isActive
-                    ? 'stocky-table-toolbar-button--active border-stocky-primary bg-stocky-primary/10 text-stocky-primary font-semibold'
-                    : 'border border-stocky-border-subtle bg-white text-stocky-text-main hover:border-stocky-primary hover:text-stocky-primary'
-                }`}
-              >
-                <span className="sm:hidden">{tab.mobileLabel}</span>
-                <span className="hidden sm:inline">{tab.label}</span>
-              </button>
-            );
-          })}
-        </div>
-
+      {/* Primary Action */}
+      <div className="stocky-stock-table-toolbar__actions flex items-center gap-2 w-full sm:w-auto sm:ml-auto">
         <button
           type="button"
           onClick={onRequestStock}

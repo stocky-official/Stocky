@@ -69,7 +69,7 @@ export function TransfersWorkspaceWidget({
 }: TransfersWorkspaceWidgetProps) {
   const [isRequestDrawerOpen, setIsRequestDrawerOpen] = useState(Boolean(defaultProductId));
   const [receivingTransfer, setReceivingTransfer] = useState<InventoryTransfer | null>(null);
-  const [queue, setQueue] = useState<TransferQueue>('action');
+  const [queue, setQueue] = useState<TransferQueue>('all');
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(25);
