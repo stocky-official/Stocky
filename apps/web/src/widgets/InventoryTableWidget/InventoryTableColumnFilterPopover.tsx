@@ -47,7 +47,7 @@ export function InventoryTableColumnFilterPopover({
   options,
   optionCounts = {},
 }: StockTableColumnFilterPopoverProps) {
-  const { t } = useTranslation();
+  const { t, isRtl } = useTranslation();
   const [searchValue, setSearchValue] = useState('');
 
   const isTextFilter =
@@ -183,6 +183,7 @@ export function InventoryTableColumnFilterPopover({
           key="stock-column-filter-popover"
           data-stock-column-filter
           role="dialog"
+          dir={isRtl ? 'rtl' : 'ltr'}
           aria-label={t('inventory.filterColumnTitle', { column: columnLabel })}
           initial={{ opacity: 0, y: -6, scale: 0.98 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}

@@ -421,21 +421,56 @@ export function InventoryTableWidget({ rows = [], locations = [], suppliers = []
   }, [lastAuditByProduct, locationNames, rows]);
 
   const openColumnFilter = (key: SortKey, event: React.MouseEvent<HTMLButtonElement>) => {
+    event.stopPropagation();
     const triggerBounds = event.currentTarget.getBoundingClientRect();
-    const menuWidth = 320;
-    const menuHeight = 400;
-    const sidebarBounds = document.querySelector<HTMLElement>('.stocky-workspace-sidebar')?.getBoundingClientRect();
-    const sidebarInset = sidebarBounds && sidebarBounds.width > 0 ? sidebarBounds.right + 16 : 16;
-    const maxLeft = Math.max(sidebarInset, window.innerWidth - menuWidth - 16);
-    const left = Math.min(Math.max(sidebarInset, triggerBounds.right - menuWidth + 24), maxLeft);
+    const menuWidth = Math.min(320, window.innerWidth - 32);
+    const menuHeight = 420;
+    const sidebar = document.querySelector<HTMLElement>('.stocky-workspace-sidebar');
+    const sidebarBounds = sidebar?.getBoundingClientRect();
+
+    let minLeft = 16;
+    let maxLeft = window.innerWidth - menuWidth - 16;
+
+    if (sidebarBounds && sidebarBounds.width > 0 && sidebarBounds.width < window.innerWidth) {
+      const isSidebarOnRight = sidebarBounds.left > window.innerWidth / 2;
+      if (isSidebarOnRight) {
+        // Arabic / RTL: Sidebar is on the right side of the screen
+        maxLeft = Math.min(maxLeft, Math.max(16, sidebarBounds.left - menuWidth - 16));
+      } else {
+        // English / LTR: Sidebar is on the left side of the screen
+        minLeft = Math.max(minLeft, sidebarBounds.right + 16);
+      }
+    }
+
+    if (minLeft > maxLeft) {
+      minLeft = 16;
+      maxLeft = window.innerWidth - menuWidth - 16;
+    }
+
+    let targetLeft: number;
+    if (isRtl) {
+      // In RTL, align right edge of popover with column header cell's right edge
+      const thBounds = event.currentTarget.closest('th')?.getBoundingClientRect() ?? triggerBounds;
+      const idealLeft = thBounds.right - menuWidth;
+      targetLeft = Math.max(minLeft, Math.min(idealLeft, maxLeft));
+    } else {
+      // In LTR, align popover with the trigger
+      const idealLeft = triggerBounds.right - menuWidth + 24;
+      targetLeft = Math.max(minLeft, Math.min(idealLeft, maxLeft));
+    }
+
+    const left = Math.max(16, Math.min(targetLeft, Math.max(16, window.innerWidth - menuWidth - 16)));
     const belowTop = triggerBounds.bottom + 8;
-    const top = belowTop + menuHeight <= window.innerHeight ? belowTop : Math.max(16, triggerBounds.top - menuHeight - 8);
+    const top = belowTop + menuHeight <= window.innerHeight
+      ? belowTop
+      : Math.max(16, triggerBounds.top - menuHeight - 8);
+
     setFilterMenuPosition({ top, left });
     setOpenFilter((current) => (current === key ? null : key));
   };
 
-  const header = (label: string, key: SortKey, align = 'left') => (
-    <th className={`stocky-board-table__header-cell px-4 py-3 align-middle ${align === 'right' ? 'text-right' : 'text-left'}`}>
+  const header = (label: string, key: SortKey, align: 'start' | 'end' = 'start') => (
+    <th className={`stocky-board-table__header-cell px-4 py-3 align-middle ${align === 'end' ? 'text-end' : 'text-start'}`}>
       <div className="stocky-table-header-content" data-stock-column-filter>
         <button type="button" onClick={() => sortBy(key)} className="stocky-table-sort-button" aria-label={`Sort by ${label}`}>
           <span className="stocky-table-header-label">{label}</span>
@@ -508,8 +543,8 @@ export function InventoryTableWidget({ rows = [], locations = [], suppliers = []
               {header(columnLabels.barcode, 'barcode')}
               {header(columnLabels.category, 'category')}
               {header(columnLabels.locations, 'locations')}
-              {header(columnLabels.quantity, 'quantity', isRtl ? 'right' : 'left')}
-              {header(columnLabels.price, 'price', isRtl ? 'right' : 'left')}
+              {header(columnLabels.quantity, 'quantity')}
+              {header(columnLabels.price, 'price')}
               {header(columnLabels.expiry, 'expiry')}
               {header(columnLabels.audit, 'audit')}
               <th className="stocky-board-table__header-cell px-4 py-3 text-center align-middle" aria-label="Row actions">

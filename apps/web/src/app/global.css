@@ -1347,6 +1347,26 @@ html[lang="ar"] label,
 .stocky-table-filter-trigger:hover,
 .stocky-table-filter-trigger--active { background: var(--stocky-status-info-bg); color: var(--stocky-primary); }
 
+[dir="rtl"] .stocky-board-table__header-cell {
+  border-right: 0;
+  border-left: 1px solid var(--stocky-border-subtle);
+  text-align: right;
+}
+[dir="rtl"] .stocky-board-table__header-cell:last-child {
+  border-left: 0;
+}
+[dir="rtl"] .stocky-table-header-content {
+  justify-content: flex-start;
+  text-align: right;
+}
+[dir="rtl"] .stocky-table-sort-button {
+  justify-content: flex-start;
+  text-align: right;
+}
+[dir="rtl"] .stocky-table-header-label {
+  text-align: right;
+}
+
 .stocky-board-table__filter-row th { background: var(--stocky-bg-widget); border-bottom: 1px solid var(--stocky-border-subtle); padding: 0.45rem 0.75rem; }
 .stocky-table-column-filter { background: var(--stocky-bg-global); border: 1px solid var(--stocky-border-subtle); border-radius: var(--stocky-radius-menu-item); color: var(--stocky-text-main); font-size: var(--stocky-font-2xs); height: 2rem; min-width: 7rem; padding: 0 0.6rem; width: 100%; }
 .stocky-table-column-filter--number { text-align: right; }

@@ -102,7 +102,7 @@ export function TransfersTableWidget({
   };
 
   const header = (label: string, key: TransferSortKey, className = '') => (
-    <th className={`stocky-board-table__header-cell px-4 py-3 align-middle text-left whitespace-nowrap ${className}`}>
+    <th className={`stocky-board-table__header-cell px-4 py-3 align-middle text-start whitespace-nowrap ${className}`}>
       <button
         type="button"
         onClick={() => onSort(key)}
@@ -191,7 +191,7 @@ export function TransfersTableWidget({
                   {header(t('common.status'), 'status')}
                   {header(t('transfers.statusRequested'), 'requested', 'stocky-transfer-secondary-column')}
                   <th
-                    className="stocky-board-table__header-cell px-4 py-3 text-right rtl:text-left align-middle whitespace-nowrap"
+                    className="stocky-board-table__header-cell px-4 py-3 text-end align-middle whitespace-nowrap"
                     aria-label="Transfer actions"
                   >
                     <span className="sr-only">{t('common.actions')}</span>
