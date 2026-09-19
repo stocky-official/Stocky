@@ -17,6 +17,7 @@ import { AttendanceKioskWidget } from './AttendanceKioskWidget';
 import { RequestTimeOffDrawerWidget } from './RequestTimeOffDrawerWidget';
 import { ShiftDetailsDrawerWidget } from './ShiftDetailsDrawerWidget';
 import { TimesheetsExportModalWidget } from './TimesheetsExportModalWidget';
+import { LogAttendanceDrawerWidget } from './LogAttendanceDrawerWidget';
 
 export interface AttendanceWorkspaceWidgetProps {
   shifts: AttendanceShift[];
@@ -44,6 +45,15 @@ export interface AttendanceWorkspaceWidgetProps {
   }) => Promise<void>;
   onReviewLeave: (requestId: string, approve: boolean, note?: string) => Promise<void>;
   canManageAttendance?: boolean;
+  onRecordManualAttendance?: (input: {
+    companyUserId: string;
+    locationId: string;
+    shiftDate: string;
+    clockInAt: string;
+    clockOutAt?: string | null;
+    status?: string;
+    notes?: string;
+  }) => Promise<AttendanceShift>;
 }
 
 export function AttendanceWorkspaceWidget({
@@ -60,6 +70,7 @@ export function AttendanceWorkspaceWidget({
   onPunchAttendance,
   onSubmitLeave,
   onReviewLeave,
+  onRecordManualAttendance,
 }: AttendanceWorkspaceWidgetProps) {
   const [internalTab, setInternalTab] = useState<AttendanceTab>(controlledTab ?? 'timesheets');
   const activeTab = controlledTab ?? internalTab;
@@ -71,6 +82,7 @@ export function AttendanceWorkspaceWidget({
   const [locationFilter, setLocationFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
   const [isLeaveDrawerOpen, setIsLeaveDrawerOpen] = useState(false);
+  const [isLogAttendanceOpen, setIsLogAttendanceOpen] = useState(false);
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
   const [selectedShift, setSelectedShift] = useState<AttendanceShift | null>(null);
 
@@ -121,6 +133,8 @@ export function AttendanceWorkspaceWidget({
               activeTab={activeTab}
               onTabChange={setActiveTab}
               onExportExcel={() => setIsExportModalOpen(true)}
+              onLogAttendance={() => setIsLogAttendanceOpen(true)}
+              onRequestLeave={() => setIsLeaveDrawerOpen(true)}
               userRole={userRole}
               locationFilter={locationFilter}
               onLocationFilterChange={setLocationFilter}
@@ -171,6 +185,21 @@ export function AttendanceWorkspaceWidget({
       </div>
 
       {/* Drawers */}
+      <LogAttendanceDrawerWidget
+        isOpen={isLogAttendanceOpen}
+        onClose={() => setIsLogAttendanceOpen(false)}
+        members={members}
+        locations={locations}
+        currentUserId={currentUserId}
+        userRole={userRole}
+        canManageAttendance={canManageAttendance}
+        onSubmit={async (input) => {
+          if (onRecordManualAttendance) {
+            await onRecordManualAttendance(input);
+          }
+        }}
+      />
+
       <RequestTimeOffDrawerWidget
         isOpen={isLeaveDrawerOpen}
         onClose={() => setIsLeaveDrawerOpen(false)}

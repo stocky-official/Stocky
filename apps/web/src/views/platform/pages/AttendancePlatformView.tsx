@@ -43,6 +43,15 @@ export interface AttendancePlatformViewProps {
   }) => Promise<void>;
   onReviewLeave: (requestId: string, approve: boolean, note?: string) => Promise<void>;
   canManageAttendance?: boolean;
+  onRecordManualAttendance?: (input: {
+    companyUserId: string;
+    locationId: string;
+    shiftDate: string;
+    clockInAt: string;
+    clockOutAt?: string | null;
+    status?: string;
+    notes?: string;
+  }) => Promise<AttendanceShift>;
 }
 
 export function AttendancePlatformView(props: AttendancePlatformViewProps) {
@@ -83,6 +92,7 @@ export function AttendancePlatformView(props: AttendancePlatformViewProps) {
         {...props}
         activeTab={activeTab}
         onTabChange={onTabChange}
+        onRecordManualAttendance={props.onRecordManualAttendance ?? platform?.recordManualAttendance}
       />
     </PlatformPageLayout>
   );

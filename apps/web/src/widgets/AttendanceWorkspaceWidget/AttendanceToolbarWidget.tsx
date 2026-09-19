@@ -25,6 +25,7 @@ export interface AttendanceToolbarWidgetProps {
   onTabChange?: (tab: AttendanceTab) => void;
   onExportExcel: () => void;
   onRequestLeave?: () => void;
+  onLogAttendance?: () => void;
   userRole?: string;
   locationFilter?: string;
   onLocationFilterChange?: (locationId: string) => void;
@@ -39,6 +40,7 @@ export function AttendanceToolbarWidget({
   activeTab = 'timesheets',
   onExportExcel,
   onRequestLeave,
+  onLogAttendance,
   locationFilter = 'all',
   onLocationFilterChange,
   statusFilter = 'all',
@@ -79,6 +81,17 @@ export function AttendanceToolbarWidget({
   }, [isFilterDrawerOpen]);
 
   const moreActions: ActionItem[] = [
+    ...(onLogAttendance && onRequestLeave
+      ? [
+          {
+            id: 'request-leave',
+            label: t('attendance.requestLeave') || 'Request Leave',
+            description: t('attendance.timeOff') || 'Submit a time-off or leave request',
+            icon: <PlusIcon size="xs" />,
+            onClick: onRequestLeave,
+          },
+        ]
+      : []),
     {
       id: 'export-excel',
       label: t('attendance.exportExcel') || 'Export Timesheets',
@@ -253,7 +266,15 @@ export function AttendanceToolbarWidget({
         onToggleFilter={onLocationFilterChange ? () => setIsFilterDrawerOpen((prev) => !prev) : undefined}
         activeFilterCount={activeFilterCount}
         primaryAction={
-          onRequestLeave
+          onLogAttendance
+            ? {
+                label: t('attendance.recordAttendance') || 'Log attendance',
+                shortLabel: t('attendance.log') || 'Log',
+                icon: <PlusIcon size="xs" />,
+                onClick: onLogAttendance,
+                title: t('attendance.logAttendance') || 'Log attendance for team member',
+              }
+            : onRequestLeave
             ? {
                 label: t('attendance.requestLeave') || 'Request Leave',
                 shortLabel: t('attendance.timeOff') || 'Time Off',

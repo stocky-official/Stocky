@@ -6,5 +6,6 @@ export * from './AttendanceKioskWidget';
 export * from './RequestTimeOffDrawerWidget';
 export * from './ShiftDetailsDrawerWidget';
 export * from './TimesheetsExportModalWidget';
+export * from './LogAttendanceDrawerWidget';
 export * from './AttendanceWorkspaceWidget';
 export * from './AttendanceQrScannerModal';

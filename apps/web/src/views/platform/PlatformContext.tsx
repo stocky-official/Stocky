@@ -255,6 +255,15 @@ export interface PlatformContextValue {
   leaveRequests: LeaveRequest[];
   leaveBalances: LeaveBalance[];
   punchAttendance: (input: { locationId: string; method?: PunchMethod; qrToken?: string; notes?: string }) => Promise<AttendanceShift>;
+  recordManualAttendance: (input: {
+    companyUserId: string;
+    locationId: string;
+    shiftDate: string;
+    clockInAt: string;
+    clockOutAt?: string | null;
+    status?: string;
+    notes?: string;
+  }) => Promise<AttendanceShift>;
   submitLeaveRequest: (input: { leaveType: LeaveType; startDate: string; endDate: string; daysCount: number; managerUserId: string; reason?: string }) => Promise<void>;
   reviewLeaveRequest: (requestId: string, approve: boolean, note?: string) => Promise<void>;
 }
@@ -1351,6 +1360,54 @@ export function PlatformProvider({
     return mapAttendanceShift(data);
   };
 
+  const recordManualAttendance = async (input: {
+    companyUserId: string;
+    locationId: string;
+    shiftDate: string;
+    clockInAt: string;
+    clockOutAt?: string | null;
+    status?: string;
+    notes?: string;
+  }): Promise<AttendanceShift> => {
+    const { data, error } = await supabase.rpc('record_manual_attendance', {
+      p_company_user_id: input.companyUserId,
+      p_location_id: input.locationId,
+      p_shift_date: input.shiftDate,
+      p_clock_in_at: input.clockInAt,
+      p_clock_out_at: input.clockOutAt || null,
+      p_status: input.status || 'present',
+      p_notes: input.notes || null,
+    });
+    if (error) {
+      console.warn('RPC record_manual_attendance failed, trying direct insert', error);
+      const startMs = new Date(input.clockInAt).getTime();
+      const endMs = input.clockOutAt ? new Date(input.clockOutAt).getTime() : null;
+      const totalMinutes = endMs && endMs > startMs ? Math.round((endMs - startMs) / 60000) : null;
+      const { data: inserted, error: insertError } = await supabase
+        .from('attendance_shifts')
+        .insert({
+          company_id: companyId,
+          location_id: input.locationId,
+          company_user_id: input.companyUserId,
+          shift_date: input.shiftDate,
+          clock_in_at: input.clockInAt,
+          clock_out_at: input.clockOutAt || null,
+          total_minutes: totalMinutes,
+          status: input.status || 'present',
+          punch_in_method: 'manual',
+          punch_out_method: input.clockOutAt ? 'manual' : null,
+          notes: input.notes || null,
+        })
+        .select()
+        .single();
+      if (insertError) throw insertError;
+      refresh();
+      return mapAttendanceShift(inserted);
+    }
+    refresh();
+    return mapAttendanceShift(data);
+  };
+
   const submitLeaveRequest = async (input: { leaveType: LeaveType; startDate: string; endDate: string; daysCount: number; managerUserId: string; reason?: string }) => {
     const { error } = await supabase.rpc('submit_leave_request', {
       p_leave_type: input.leaveType,
@@ -1486,6 +1543,7 @@ export function PlatformProvider({
     leaveRequests,
     leaveBalances,
     punchAttendance,
+    recordManualAttendance,
     submitLeaveRequest,
     reviewLeaveRequest,
   };

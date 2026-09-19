@@ -27,6 +27,7 @@ export default function AttendanceRoutePage() {
       onPunchAttendance={platform.punchAttendance}
       onSubmitLeave={platform.submitLeaveRequest}
       onReviewLeave={platform.reviewLeaveRequest}
+      onRecordManualAttendance={platform.recordManualAttendance}
     />
   );
 }
