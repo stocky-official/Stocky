@@ -87,6 +87,8 @@ export const ar: typeof en = {
     organization: 'المؤسسة',
     supplyChain: 'سلسلة الإمداد',
     operations: 'العمليات',
+    dashboard: 'لوحة القيادة',
+    companies: 'الشركات',
   },
   dashboard: {
     welcomeBack: 'مرحباً بك مجدداً',

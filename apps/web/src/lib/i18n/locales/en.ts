@@ -85,6 +85,8 @@ export const en = {
     organization: 'Organization',
     supplyChain: 'Supply Chain',
     operations: 'Operations',
+    dashboard: 'Dashboard',
+    companies: 'Companies',
   },
   dashboard: {
     welcomeBack: 'Welcome back',

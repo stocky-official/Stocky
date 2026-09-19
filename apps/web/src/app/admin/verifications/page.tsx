@@ -1,5 +1,5 @@
-import { PlatformVerificationView } from '@/views/admin/PlatformVerificationView';
+import { redirect } from 'next/navigation';
 
 export default function PlatformVerificationsPage() {
-  return <PlatformVerificationView />;
+  redirect('/admin/companies?status=pending');
 }

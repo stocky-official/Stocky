@@ -54,4 +54,7 @@ export * from './InventoryToolbarWidget/InventoryToolbarWidget';
 export * from './AttendanceWorkspaceWidget';
 export * from './StandardToolbarWidget/StandardToolbarWidget';
 export * from './MobileFloatingActionsWidget/MobileFloatingActionsWidget';
+export * from './AdminSidebarNavWidget/AdminSidebarNavWidget';
+export * from './AdminTopBarWidget/AdminTopBarWidget';
+export * from './AdminCompanyProfileDrawerWidget/AdminCompanyProfileDrawerWidget';
 
