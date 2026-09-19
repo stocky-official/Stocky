@@ -51,7 +51,7 @@ export function AdminTopBarWidget({ pendingCount = 0 }: AdminTopBarWidgetProps) 
       {/* Mobile TopBar */}
       <header className="md:hidden sticky top-0 z-30 flex h-14 w-full items-center justify-between border-b border-stocky-border-subtle bg-white/95 px-4 backdrop-blur-md">
         <div className="flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-stocky-primary text-stocky-text-main shadow-2xs">
+          <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-stocky-accent text-stocky-text-main shadow-2xs">
             <StockyLogoIcon size="xs" />
           </div>
           <span className="text-sm font-bold text-stocky-text-main">

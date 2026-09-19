@@ -955,14 +955,14 @@ html[lang="ar"] label,
 .stocky-workspace-sidebar:has(:focus-visible) .stocky-workspace-sidebar__surface {
   box-shadow: var(--stocky-shadow-float);
 }
-.stocky-workspace-sidebar__brand { align-items: center; border-bottom: 1px solid var(--stocky-border-subtle); display: flex; gap: 0; height: 3rem; justify-content: center; min-width: 0; overflow: hidden; padding: 0 0.4rem; transition: gap var(--stocky-sidebar-motion), justify-content var(--stocky-sidebar-motion); }
-.stocky-workspace-sidebar__brand > img,
-.stocky-workspace-sidebar__brand-mark { align-items: center; background: var(--stocky-primary); border-radius: 0.45rem; color: #11120F; display: inline-flex; flex: 0 0 1.75rem; height: 1.75rem; justify-content: center; object-fit: contain; overflow: hidden; width: 1.75rem; }
+.stocky-workspace-sidebar__brand { align-items: center; border-bottom: 1px solid var(--stocky-border-subtle); display: flex; gap: 0; height: 3.25rem; justify-content: center; min-width: 0; overflow: hidden; padding: 0; transition: gap var(--stocky-sidebar-motion), justify-content var(--stocky-sidebar-motion), padding var(--stocky-sidebar-motion); }
+.stocky-workspace-sidebar__brand > img { align-items: center; border-radius: 0.5rem; display: inline-flex; flex: 0 0 1.85rem; height: 1.85rem; justify-content: center; object-fit: contain; overflow: hidden; width: 1.85rem; }
+.stocky-workspace-sidebar__brand-mark { align-items: center; background: var(--stocky-accent); border-radius: 0.55rem; color: #11120F; display: inline-flex; flex: 0 0 1.85rem; height: 1.85rem; justify-content: center; object-fit: contain; overflow: hidden; width: 1.85rem; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08); }
 .stocky-workspace-sidebar__brand-copy { display: flex; flex: 1 1 auto; flex-direction: column; line-height: 1.1; max-width: 0; min-width: 0; opacity: 0; overflow: hidden; transform: translateX(-0.25rem); transition: max-width var(--stocky-sidebar-motion), opacity var(--stocky-sidebar-motion), transform var(--stocky-sidebar-motion); width: 0; }
-.stocky-workspace-sidebar__brand-copy strong { color: var(--stocky-text-main); font-size: var(--stocky-font-xs); font-weight: 500; white-space: nowrap; }
+.stocky-workspace-sidebar__brand-copy strong { color: var(--stocky-text-main); font-size: var(--stocky-font-xs); font-weight: 600; white-space: nowrap; }
 .stocky-workspace-sidebar__brand-copy small { color: var(--stocky-text-sub); font-size: 0.625rem; margin-top: 0.18rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .stocky-workspace-sidebar:hover .stocky-workspace-sidebar__brand,
-.stocky-workspace-sidebar:has(:focus-visible) .stocky-workspace-sidebar__brand { gap: 0.55rem; justify-content: flex-start; }
+.stocky-workspace-sidebar:has(:focus-visible) .stocky-workspace-sidebar__brand { gap: 0.65rem; justify-content: flex-start; padding: 0 0.85rem; }
 .stocky-workspace-sidebar:hover .stocky-workspace-sidebar__brand-copy,
 .stocky-workspace-sidebar:has(:focus-visible) .stocky-workspace-sidebar__brand-copy { max-width: 12rem; opacity: 1; transform: translateX(0); width: auto; }
 .stocky-workspace-sidebar__search {
@@ -974,17 +974,20 @@ html[lang="ar"] label,
   display: flex;
   gap: 0.45rem;
   height: 2rem;
-  margin: 0.75rem 0.4rem 0.65rem;
+  justify-content: center;
+  margin: 0.75rem auto 0.65rem;
   min-width: 0;
   overflow: hidden;
   padding: 0 0.55rem;
-  transition: border-color var(--stocky-transition), margin var(--stocky-transition), width var(--stocky-transition);
+  transition: border-color var(--stocky-transition), margin var(--stocky-transition), width var(--stocky-transition), justify-content var(--stocky-sidebar-motion);
   width: 2.2rem;
 }
 .stocky-workspace-sidebar:hover .stocky-workspace-sidebar__search,
 .stocky-workspace-sidebar:has(:focus-visible) .stocky-workspace-sidebar__search {
   border-color: var(--stocky-border-focus);
-  width: calc(100% - 0.8rem);
+  justify-content: flex-start;
+  margin: 0.75rem 0.5rem 0.65rem;
+  width: calc(100% - 1rem);
 }
 .stocky-workspace-sidebar__search input {
   background: transparent;

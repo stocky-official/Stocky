@@ -21,6 +21,70 @@ import {
   AdminCompanyProfileDrawerWidget,
 } from '@/widgets/AdminCompanyProfileDrawerWidget/AdminCompanyProfileDrawerWidget';
 
+function CompanyLogoAvatar({
+  logoUrl,
+  name,
+  size = 'md',
+}: {
+  logoUrl?: string | null;
+  name: string;
+  size?: 'sm' | 'md' | 'lg';
+}) {
+  const [resolvedUrl, setResolvedUrl] = useState<string | null>(logoUrl || null);
+  const [imgFailed, setImgFailed] = useState(false);
+  const initials = (name || 'C').trim().slice(0, 2).toUpperCase();
+
+  const sizeClass =
+    size === 'lg'
+      ? 'h-12 w-12 rounded-2xl text-base'
+      : size === 'sm'
+      ? 'h-7 w-7 rounded-lg text-[10px]'
+      : 'h-9 w-9 rounded-xl text-xs';
+
+  useEffect(() => {
+    let isCancelled = false;
+    setImgFailed(false);
+    if (logoUrl && !logoUrl.startsWith('http://') && !logoUrl.startsWith('https://')) {
+      supabase.storage
+        .from('stocky-private')
+        .createSignedUrl(logoUrl.replace(/^\/+/, ''), 60 * 60 * 24)
+        .then(({ data }) => {
+          if (!isCancelled && data?.signedUrl) {
+            setResolvedUrl(data.signedUrl);
+          }
+        })
+        .catch(() => {
+          if (!isCancelled) setResolvedUrl(null);
+        });
+    } else {
+      setResolvedUrl(logoUrl || null);
+    }
+    return () => {
+      isCancelled = true;
+    };
+  }, [logoUrl]);
+
+  if (resolvedUrl && !imgFailed) {
+    return (
+      <img
+        src={resolvedUrl}
+        alt={name}
+        referrerPolicy="no-referrer"
+        onError={() => setImgFailed(true)}
+        className={`${sizeClass} object-cover border border-stocky-border-subtle shrink-0 bg-white shadow-2xs`}
+      />
+    );
+  }
+
+  return (
+    <div
+      className={`flex ${sizeClass} items-center justify-center bg-stocky-bg-global text-stocky-primary border border-stocky-border-subtle shrink-0 font-bold select-none`}
+    >
+      {initials}
+    </div>
+  );
+}
+
 export function AdminCompaniesView() {
   const searchParams = useSearchParams();
   const initialStatusParam = searchParams.get('status');
@@ -100,6 +164,40 @@ export function AdminCompaniesView() {
           });
         }
       });
+
+      // Batch create signed URLs for private storage logo paths
+      const pathsToSign = items
+        .map((it) => it.logoUrl)
+        .filter((url): url is string => Boolean(url && !url.startsWith('http://') && !url.startsWith('https://')));
+
+      if (pathsToSign.length > 0) {
+        const uniquePaths = Array.from(new Set(pathsToSign.map((p) => p.replace(/^\/+/, ''))));
+        try {
+          const { data: signedResults } = await supabase.storage
+            .from('stocky-private')
+            .createSignedUrls(uniquePaths, 60 * 60 * 24);
+
+          if (signedResults) {
+            const signedMap = new Map<string, string>();
+            for (const res of signedResults) {
+              if (res.signedUrl && !res.error) {
+                signedMap.set(res.path || '', res.signedUrl);
+              }
+            }
+
+            for (const it of items) {
+              if (it.logoUrl) {
+                const clean = it.logoUrl.replace(/^\/+/, '');
+                if (signedMap.has(clean)) {
+                  it.logoUrl = signedMap.get(clean)!;
+                }
+              }
+            }
+          }
+        } catch (storageErr) {
+          console.warn('Failed to batch sign company logo URLs:', storageErr);
+        }
+      }
 
       setCompanies(items);
 
@@ -354,18 +452,7 @@ export function AdminCompaniesView() {
                       {/* Company Name & Slug */}
                       <td className="py-3.5 px-4 min-w-[200px]">
                         <div className="flex items-center gap-3">
-                          {company.logoUrl ? (
-                            <img
-                              src={company.logoUrl}
-                              alt={company.name}
-                              referrerPolicy="no-referrer"
-                              className="h-9 w-9 rounded-xl object-cover border border-stocky-border-subtle shrink-0"
-                            />
-                          ) : (
-                            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-stocky-bg-global text-stocky-primary border border-stocky-border-subtle shrink-0 font-bold">
-                              {company.name.charAt(0).toUpperCase()}
-                            </div>
-                          )}
+                          <CompanyLogoAvatar logoUrl={company.logoUrl} name={company.name} size="md" />
                           <div className="min-w-0">
                             <span className="font-semibold text-stocky-text-main group-hover:text-stocky-primary transition-colors block truncate">
                               {company.name}

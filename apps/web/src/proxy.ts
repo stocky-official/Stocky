@@ -59,7 +59,8 @@ export async function proxy(req: NextRequest) {
   // 2. Identify Public vs Protected Routes
   const isAuthRoute = pathname.startsWith('/auth');
   const isRootOnMainHost = !subdomain && (pathname === '/' || pathname === '');
-  const isPublicRoute = isAuthRoute || isRootOnMainHost;
+  const isAdminLoginRoute = pathname === '/admin/login';
+  const isPublicRoute = isAuthRoute || isRootOnMainHost || isAdminLoginRoute;
 
   // 3. Inspect Supabase Authentication Session via SSR
   let user = null;

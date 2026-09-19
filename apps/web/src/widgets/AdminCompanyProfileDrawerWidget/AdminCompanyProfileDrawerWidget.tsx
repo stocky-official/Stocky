@@ -38,6 +38,59 @@ export interface AdminCompanyItem {
   productsCount?: number;
 }
 
+function DrawerCompanyLogoAvatar({
+  logoUrl,
+  name,
+}: {
+  logoUrl?: string | null;
+  name: string;
+}) {
+  const [resolvedUrl, setResolvedUrl] = useState<string | null>(logoUrl || null);
+  const [failed, setFailed] = useState(false);
+  const initials = (name || 'C').trim().slice(0, 2).toUpperCase();
+
+  useEffect(() => {
+    let isCancelled = false;
+    setFailed(false);
+    if (logoUrl && !logoUrl.startsWith('http://') && !logoUrl.startsWith('https://')) {
+      supabase.storage
+        .from('stocky-private')
+        .createSignedUrl(logoUrl.replace(/^\/+/, ''), 60 * 60 * 24)
+        .then(({ data }) => {
+          if (!isCancelled && data?.signedUrl) {
+            setResolvedUrl(data.signedUrl);
+          }
+        })
+        .catch(() => {
+          if (!isCancelled) setResolvedUrl(null);
+        });
+    } else {
+      setResolvedUrl(logoUrl || null);
+    }
+    return () => {
+      isCancelled = true;
+    };
+  }, [logoUrl]);
+
+  if (resolvedUrl && !failed) {
+    return (
+      <img
+        src={resolvedUrl}
+        alt={name}
+        referrerPolicy="no-referrer"
+        onError={() => setFailed(true)}
+        className="h-12 w-12 rounded-2xl object-cover border border-stocky-border-subtle shrink-0 bg-white shadow-2xs"
+      />
+    );
+  }
+
+  return (
+    <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-stocky-bg-global text-stocky-primary border border-stocky-border-subtle shrink-0 font-bold text-base select-none">
+      {initials}
+    </div>
+  );
+}
+
 export interface AdminCompanyProfileDrawerWidgetProps {
   company: AdminCompanyItem | null;
   isOpen: boolean;
@@ -186,18 +239,7 @@ export function AdminCompanyProfileDrawerWidget({
         {/* Drawer Header */}
         <div className="p-5 border-b border-stocky-border-subtle flex items-start justify-between gap-4 bg-stocky-bg-global/50">
           <div className="flex items-start gap-3.5 min-w-0">
-            {company.logoUrl ? (
-              <img
-                src={company.logoUrl}
-                alt={company.name}
-                referrerPolicy="no-referrer"
-                className="h-12 w-12 rounded-2xl object-cover border border-stocky-border-subtle shrink-0"
-              />
-            ) : (
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-stocky-primary/10 text-stocky-primary border border-stocky-border-subtle shrink-0 font-bold text-base">
-                {company.name.charAt(0).toUpperCase()}
-              </div>
-            )}
+            <DrawerCompanyLogoAvatar logoUrl={company.logoUrl} name={company.name} />
 
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-2">

@@ -44,7 +44,7 @@ function AdminShellContent({ children }: { children: React.ReactNode }) {
     return (
       <div className="min-h-screen bg-stocky-bg-global flex items-center justify-center p-6 text-stocky-text-sub text-xs">
         <div className="flex flex-col items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-stocky-primary text-stocky-text-main shadow-sm animate-pulse">
+          <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-stocky-accent text-stocky-text-main shadow-sm animate-pulse">
             <StockyLogoIcon size="sm" />
           </div>
           <span>Verifying administrator credentials...</span>
