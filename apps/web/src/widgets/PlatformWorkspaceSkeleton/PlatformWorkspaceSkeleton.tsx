@@ -472,8 +472,8 @@ export function PlatformWorkspaceSkeleton({
             queueTabs={['All Facilities', 'Branches', 'Warehouses']}
             actionButtonsCount={2}
           />
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {Array.from({ length: 6 }).map((_, i) => (
+          <div className="flex flex-col gap-3.5">
+            {Array.from({ length: 4 }).map((_, i) => (
               <SkeletonCard key={i} variant="location" />
             ))}
           </div>

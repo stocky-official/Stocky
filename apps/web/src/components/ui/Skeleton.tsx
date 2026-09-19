@@ -155,29 +155,40 @@ export function SkeletonCard({
   if (variant === 'location') {
     return (
       <div
-        className={`bg-white border border-stocky-border-subtle rounded-2xl overflow-hidden shadow-card flex flex-col ${className}`}
+        className={`bg-white border border-stocky-border-subtle rounded-2xl p-4 sm:p-5 shadow-2xs flex flex-col gap-3.5 ${className}`}
       >
-        {/* Banner placeholder */}
-        <div className="h-32 w-full bg-stocky-bg-global/50 relative">
-          <Skeleton variant="rectangular" className="w-full h-full" animation="shimmer-subtle" />
-          <div className="absolute top-3 right-3">
-            <Skeleton variant="rounded" width={68} height={22} className="rounded-full" />
+        {/* Header: Avatar + Title/Sub + Actions */}
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex items-start gap-3.5 min-w-0 flex-1">
+            <Skeleton variant="rounded" width={52} height={52} className="rounded-xl shrink-0" />
+            <div className="flex flex-col gap-1.5 min-w-0 flex-1">
+              <div className="flex items-center gap-2">
+                <Skeleton variant="text" width={140} height={18} />
+                <Skeleton variant="rounded" width={60} height={20} className="rounded-full" animation="shimmer-subtle" />
+                <Skeleton variant="rounded" width={50} height={20} className="rounded-full" animation="shimmer-subtle" />
+              </div>
+              <Skeleton variant="text" width={180} height={12} animation="shimmer-subtle" />
+            </div>
+          </div>
+          <div className="hidden sm:flex items-center gap-2 shrink-0">
+            <Skeleton variant="rounded" width={68} height={34} className="rounded-full" animation="shimmer-subtle" />
+            <Skeleton variant="rounded" width={100} height={34} className="rounded-full" animation="shimmer-subtle" />
+            <Skeleton variant="rounded" width={110} height={34} className="rounded-full" />
           </div>
         </div>
-        {/* Content body */}
-        <div className="p-4 flex flex-col gap-3 flex-1">
-          <div className="flex flex-col gap-1.5 min-w-0">
-            <Skeleton variant="text" width={130} height={18} />
-            <Skeleton variant="text" width={100} animation="shimmer-subtle" />
+
+        {/* Middle: Operations & Metrics Bar */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-3 border-t border-stocky-border-subtle/70">
+          <Skeleton variant="rounded" height={36} className="w-full sm:w-80 rounded-xl" animation="shimmer-subtle" />
+          <div className="flex items-center gap-2">
+            <Skeleton variant="rounded" width={120} height={36} className="rounded-xl" animation="shimmer-subtle" />
+            <Skeleton variant="rounded" width={80} height={24} className="rounded-full" animation="shimmer-subtle" />
           </div>
-          <div className="grid grid-cols-2 gap-2 pt-2 border-t border-stocky-border-subtle/70">
-            <Skeleton variant="text" width={70} animation="shimmer-subtle" />
-            <Skeleton variant="text" width={70} animation="shimmer-subtle" />
-          </div>
-          <div className="flex items-center justify-between pt-2 border-t border-stocky-border-subtle/70 mt-auto">
-            <Skeleton variant="rounded" width={84} height={28} className="rounded-full" />
-            <Skeleton variant="rounded" width={84} height={28} className="rounded-full" />
-          </div>
+        </div>
+
+        {/* Bottom: Last Count */}
+        <div className="pt-2 border-t border-stocky-border-subtle/50 flex items-center justify-between">
+          <Skeleton variant="text" width={130} height={12} animation="shimmer-subtle" />
         </div>
       </div>
     );

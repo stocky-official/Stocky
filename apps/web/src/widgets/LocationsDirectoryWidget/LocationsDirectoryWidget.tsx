@@ -799,191 +799,251 @@ export function LocationsDirectoryWidget({
                         onOpenStock(location.id);
                       }
                     }}
-                    className="group flex flex-col md:flex-row items-stretch rounded-2xl bg-white border border-stocky-border-subtle shadow-2xs hover:border-stocky-border-strong hover:shadow-xs transition-all duration-200 cursor-pointer overflow-hidden text-start"
+                    className="group relative flex flex-col rounded-2xl bg-white border border-stocky-border-subtle p-4 sm:p-5 shadow-2xs hover:border-stocky-border-strong hover:shadow-xs transition-all duration-200 cursor-pointer text-start gap-3.5"
                   >
-                    {/* Left: Landscape Thumbnail Banner */}
-                    <div className="relative w-full md:w-56 lg:w-64 h-36 md:h-auto shrink-0 bg-stocky-bg-subtle overflow-hidden border-b md:border-b-0 md:border-r rtl:md:border-r-0 rtl:md:border-l border-stocky-border-subtle">
-                      {location.imageUrl ? (
-                        <img
-                          src={location.imageUrl}
-                          alt={location.name}
-                          referrerPolicy="no-referrer"
-                          className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-500"
-                          onError={(e) => {
-                            (e.currentTarget as HTMLElement).style.display = 'none';
-                          }}
-                        />
-                      ) : (
-                        <div className="h-full w-full flex flex-col items-center justify-center p-4 bg-gradient-to-br from-stocky-bg-global via-stocky-bg-widget to-stocky-border-subtle/30 text-stocky-text-sub">
-                          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white border border-stocky-border-subtle shadow-2xs text-stocky-primary mb-1.5">
-                            {location.type === 'warehouse' ? <WarehouseIcon size="md" /> : <BoxIcon size="md" />}
+                    {/* Header: Facility Identity & Quick Actions */}
+                    <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+                      {/* Left: Avatar/Icon + Facility Info */}
+                      <div className="flex items-start gap-3.5 min-w-0 flex-1">
+                        {/* Avatar / Thumbnail */}
+                        {location.imageUrl ? (
+                          <div
+                            className="relative h-12 w-12 sm:h-13 sm:w-13 shrink-0 rounded-xl overflow-hidden border border-stocky-border-subtle bg-stocky-bg-subtle group/thumb"
+                            onClick={canManage ? (e) => { e.stopPropagation(); openEditDrawer(location); } : undefined}
+                            title={canManage ? t('locations.editLocationTitle') : undefined}
+                          >
+                            <img
+                              src={location.imageUrl}
+                              alt={location.name}
+                              referrerPolicy="no-referrer"
+                              className="h-full w-full object-cover group-hover/thumb:scale-105 transition-transform duration-300"
+                              onError={(e) => {
+                                (e.currentTarget as HTMLElement).style.display = 'none';
+                              }}
+                            />
+                            {canManage && (
+                              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/thumb:opacity-100 transition-opacity flex items-center justify-center text-white">
+                                <CameraIcon size="xs" />
+                              </div>
+                            )}
                           </div>
-                          <span className="text-[10px] font-medium text-stocky-text-sub">{t('locations.noImage')}</span>
-                        </div>
-                      )}
+                        ) : (
+                          <div
+                            className="relative flex h-12 w-12 sm:h-13 sm:w-13 shrink-0 items-center justify-center rounded-xl bg-stocky-bg-global border border-stocky-border-subtle text-stocky-primary shadow-2xs group/thumb"
+                            onClick={canManage ? (e) => { e.stopPropagation(); openEditDrawer(location); } : undefined}
+                            title={canManage ? t('locations.editLocationTitle') : undefined}
+                          >
+                            {location.type === 'warehouse' ? <WarehouseIcon size="md" /> : <BoxIcon size="md" />}
+                            {canManage && (
+                              <div className="absolute inset-0 rounded-xl bg-stocky-primary/10 opacity-0 group-hover/thumb:opacity-100 transition-opacity flex items-center justify-center text-stocky-primary">
+                                <CameraIcon size="xs" />
+                              </div>
+                            )}
+                          </div>
+                        )}
 
-                      {/* Top Floating Badge */}
-                      <div className="absolute top-2.5 start-2.5 flex items-center gap-1.5">
-                        <span className="inline-flex items-center gap-1 rounded-full bg-white/95 backdrop-blur-md px-2.5 py-0.5 text-[10px] font-semibold text-stocky-text-main shadow-2xs border border-stocky-border-subtle">
-                          {location.type === 'warehouse' ? <WarehouseIcon size="xs" /> : <BoxIcon size="xs" />}
-                          <span>{location.type === 'warehouse' ? t('locations.warehouse') : t('locations.branch')}</span>
-                        </span>
+                        {/* Identity, Tags, Address */}
+                        <div className="min-w-0 flex-1">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <h3 className="text-base font-semibold text-stocky-text-main group-hover:text-stocky-primary transition-colors truncate">
+                              {location.name}
+                            </h3>
+
+                            {/* Type Badge */}
+                            <span className="inline-flex items-center gap-1 rounded-full bg-stocky-bg-global px-2.5 py-0.5 text-[10px] font-semibold text-stocky-text-sub border border-stocky-border-subtle">
+                              {location.type === 'warehouse' ? <WarehouseIcon size="xs" /> : <BoxIcon size="xs" />}
+                              <span>{location.type === 'warehouse' ? t('locations.warehouse') : t('locations.branch')}</span>
+                            </span>
+
+                            {/* Status Badge */}
+                            <span
+                              className={`inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[10px] font-medium border ${
+                                location.isActive ? 'stocky-status-success' : 'stocky-status-muted'
+                              }`}
+                            >
+                              <span className={`w-1.5 h-1.5 rounded-full ${location.isActive ? 'bg-emerald-500' : 'bg-neutral-400'}`} />
+                              <span>{location.isActive ? t('locations.active') : t('locations.archived')}</span>
+                            </span>
+                          </div>
+
+                          {/* Address & Phone */}
+                          <p className="text-xs text-stocky-text-sub truncate mt-1 flex items-center gap-2">
+                            <span>{location.address || t('locations.addressNotRegistered')}</span>
+                            {location.phone && (
+                              <>
+                                <span className="text-stocky-border-strong">·</span>
+                                <span>{location.phone}</span>
+                              </>
+                            )}
+                          </p>
+                        </div>
                       </div>
 
-                      {/* Edit photo shortcut */}
-                      {canManage && (
+                      {/* Right: Desktop Action Controls */}
+                      <div className="hidden sm:flex items-center gap-2 shrink-0 self-start">
+                        {canManage && (
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              openEditDrawer(location);
+                            }}
+                            className="h-8.5 px-3 rounded-full border border-stocky-border-subtle bg-white text-xs font-medium text-stocky-text-main hover:bg-stocky-bg-global hover:border-stocky-border-strong transition-colors cursor-pointer inline-flex items-center gap-1.5 shadow-2xs"
+                            title={t('locations.editLocationTitle')}
+                          >
+                            <EditIcon size="xs" />
+                            <span>{t('locations.edit')}</span>
+                          </button>
+                        )}
                         <button
                           type="button"
                           onClick={(e) => {
                             e.stopPropagation();
-                            openEditDrawer(location);
+                            setQrLocation(location);
                           }}
-                          className="absolute top-2.5 end-2.5 flex h-7 w-7 items-center justify-center rounded-full bg-white/90 backdrop-blur-md text-stocky-text-sub hover:text-stocky-primary hover:bg-white shadow-2xs border border-stocky-border-subtle transition-colors cursor-pointer"
-                          title={t('locations.editLocationTitle')}
+                          className="h-8.5 px-3 rounded-full border border-stocky-border-subtle bg-white text-xs font-medium text-stocky-text-main hover:border-stocky-primary hover:text-stocky-primary transition-colors cursor-pointer inline-flex items-center gap-1.5 shadow-2xs"
+                          title={t('locations.attendanceQrTitle')}
                         >
-                          <CameraIcon size="xs" />
+                          <QrCodeIcon size="xs" />
+                          <span>{t('locations.attendanceQr')}</span>
                         </button>
-                      )}
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onOpenStock(location.id);
+                          }}
+                          className="h-8.5 px-3.5 rounded-full border border-stocky-border-subtle bg-stocky-bg-global hover:bg-stocky-primary/10 hover:border-stocky-primary hover:text-stocky-primary text-xs font-medium text-stocky-text-main transition-colors cursor-pointer inline-flex items-center gap-1.5 shadow-2xs"
+                        >
+                          <span>{t('locations.viewInventory')}</span>
+                          <ChevronRightIcon size="xs" className="rtl:rotate-180" />
+                        </button>
+                      </div>
                     </div>
 
-                    {/* Center: Core Details & Staffing */}
-                    <div className="flex-1 p-4 sm:p-5 flex flex-col justify-between min-w-0">
-                      <div>
-                        <div className="flex items-start justify-between gap-3">
+                    {/* Middle: Operations & Inventory Health Bar */}
+                    <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 pt-3 border-t border-stocky-border-subtle/70">
+                      {/* Left: Operational & Staffing Strip */}
+                      <div className="flex flex-wrap items-center gap-x-4 gap-y-2.5 py-2 px-3 sm:px-3.5 rounded-xl bg-stocky-bg-global/70 border border-stocky-border-subtle text-xs">
+                        {/* Manager */}
+                        <div className="flex items-center gap-2 min-w-0">
+                          {manager ? (
+                            <UserAvatar
+                              src={manager.avatar_url}
+                              name={manager.full_name}
+                              email={manager.email}
+                              size="xs"
+                              className="ring-1 ring-white shrink-0"
+                            />
+                          ) : (
+                            <div className="flex h-5 w-5 items-center justify-center rounded-full bg-amber-50 text-amber-600 border border-amber-200 text-[9px] shrink-0">
+                              <UsersIcon size="xs" />
+                            </div>
+                          )}
                           <div className="min-w-0">
-                            <div className="flex items-center gap-2">
-                              <h2 className="text-base font-semibold text-stocky-text-main truncate">{location.name}</h2>
-                              <span
-                                className={`inline-flex rounded-full px-2 py-0.5 text-[10px] font-medium border ${location.isActive ? 'stocky-status-success' : 'stocky-status-muted'}`}
-                              >
-                                {location.isActive ? t('locations.active') : t('locations.archived')}
-                              </span>
-                            </div>
-                            <p className="text-xs text-stocky-text-sub truncate mt-1">
-                              {location.address || t('locations.addressNotRegistered')}
-                              {location.phone ? ` · ${location.phone}` : ''}
-                            </p>
+                            <span className="text-[10px] uppercase font-bold tracking-wider text-stocky-text-sub block leading-tight">
+                              {t('locations.branchManager')}
+                            </span>
+                            <span className="text-xs font-medium text-stocky-text-main truncate block">
+                              {manager ? (
+                                manager.full_name || manager.email
+                              ) : (
+                                <span className="text-amber-700">{t('locations.notAssigned')}</span>
+                              )}
+                            </span>
                           </div>
+                          {canManage && !manager && (
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                openEditDrawer(location);
+                              }}
+                              className="text-[11px] font-medium text-stocky-primary hover:underline ms-1 cursor-pointer"
+                            >
+                              {t('locations.assignBtn')}
+                            </button>
+                          )}
                         </div>
 
-                        {/* Staff & Manager Info Cardlet */}
-                        <div className="mt-3.5 flex flex-wrap items-center gap-3 py-2 px-3 rounded-xl bg-stocky-bg-global border border-stocky-border-subtle text-xs">
-                          <div className="flex items-center gap-2 min-w-0">
-                            {manager ? (
-                              <UserAvatar
-                                src={manager.avatar_url}
-                                name={manager.full_name}
-                                email={manager.email}
-                                size="sm"
-                                className="ring-1 ring-white shrink-0"
-                              />
-                            ) : (
-                              <div className="flex h-6 w-6 items-center justify-center rounded-full bg-amber-50 text-amber-600 border border-amber-200 text-[10px] shrink-0">
-                                <UsersIcon size="xs" />
-                              </div>
-                            )}
-                            <div className="min-w-0">
-                              <span className="text-[10px] uppercase font-bold tracking-wider text-stocky-text-sub block">
-                                {t('locations.branchManager')}
-                              </span>
-                              <span className="text-xs font-medium text-stocky-text-main truncate block">
-                                {manager ? (
-                                  manager.full_name || manager.email
-                                ) : (
-                                  <span className="text-amber-700">{t('locations.notAssigned')}</span>
+                        <div className="h-4 w-px bg-stocky-border-subtle hidden sm:block" />
+
+                        {/* Staff members */}
+                        <div className="flex items-center gap-2">
+                          <span className="text-[10px] uppercase font-bold tracking-wider text-stocky-text-sub">
+                            {t('locations.staffLabel')}
+                          </span>
+                          {assignedStaff.length > 0 ? (
+                            <div className="flex items-center gap-1.5">
+                              <div className="flex items-center -space-x-1.5 rtl:space-x-reverse shrink-0" title={assignedStaff.map((s) => s.full_name || s.email).join(', ')}>
+                                {assignedStaff.slice(0, 3).map((member) => (
+                                  <UserAvatar
+                                    key={member.id}
+                                    src={member.avatar_url}
+                                    name={member.full_name}
+                                    email={member.email}
+                                    size="xs"
+                                    className="ring-1 ring-white"
+                                  />
+                                ))}
+                                {assignedStaff.length > 3 && (
+                                  <span className="flex h-5 w-5 items-center justify-center rounded-full bg-white ring-1 ring-stocky-border-subtle text-[8px] font-bold text-stocky-text-sub">
+                                    +{assignedStaff.length - 3}
+                                  </span>
                                 )}
+                              </div>
+                              <span className="text-xs font-medium text-stocky-text-main">
+                                ({assignedStaff.length})
                               </span>
                             </div>
-                            {canManage && !manager && (
-                              <button
-                                type="button"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  openEditDrawer(location);
-                                }}
-                                className="text-[11px] font-medium text-stocky-primary hover:underline ms-1 cursor-pointer"
-                              >
-                                {t('locations.assignBtn')}
-                              </button>
-                            )}
-                          </div>
+                          ) : (
+                            <span className="text-xs text-stocky-text-sub italic">{t('locations.noneAssigned')}</span>
+                          )}
+                        </div>
 
-                          <div className="h-4 w-px bg-stocky-border-subtle hidden sm:block" />
+                        <div className="h-4 w-px bg-stocky-border-subtle hidden sm:block" />
 
-                          {/* Staff count & avatars */}
-                          <div className="flex items-center gap-2">
-                            <span className="text-[10px] uppercase font-bold tracking-wider text-stocky-text-sub">
-                              {t('locations.staffLabel')}
+                        {/* Live Shifts */}
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-[10px] uppercase font-bold tracking-wider text-stocky-text-sub">
+                            {t('locations.onDutyNow')}:
+                          </span>
+                          {activeShiftsNow > 0 ? (
+                            <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200/80 px-2 py-0.5 rounded-full">
+                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                              <span>{t('locations.workingCount', { count: activeShiftsNow })}</span>
                             </span>
-                            {assignedStaff.length > 0 ? (
-                              <div className="flex items-center gap-1.5">
-                                <div className="flex items-center -space-x-1.5 rtl:space-x-reverse shrink-0" title={assignedStaff.map((s) => s.full_name || s.email).join(', ')}>
-                                  {assignedStaff.slice(0, 3).map((member) => (
-                                    <div key={member.id} className="relative">
-                                      <UserAvatar
-                                        src={member.avatar_url}
-                                        name={member.full_name}
-                                        email={member.email}
-                                        size="xs"
-                                        className="ring-1 ring-white"
-                                      />
-                                    </div>
-                                  ))}
-                                  {assignedStaff.length > 3 && (
-                                    <span className="flex h-5 w-5 items-center justify-center rounded-full bg-white ring-1 ring-stocky-border-subtle text-[8px] font-bold text-stocky-text-sub">
-                                      +{assignedStaff.length - 3}
-                                    </span>
-                                  )}
-                                </div>
-                                <span className="text-xs font-medium text-stocky-text-main">
-                                  ({assignedStaff.length})
-                                </span>
-                              </div>
-                            ) : (
-                              <span className="text-xs text-stocky-text-sub italic">{t('locations.noneAssigned')}</span>
-                            )}
-                          </div>
-
-                          <div className="h-4 w-px bg-stocky-border-subtle hidden sm:block" />
-
-                          {/* Active Shifts Today */}
-                          <div className="flex items-center gap-1.5">
-                            <span className="text-[10px] uppercase font-bold tracking-wider text-stocky-text-sub">
-                              {t('locations.onDutyNow')}:
-                            </span>
-                            {activeShiftsNow > 0 ? (
-                              <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200/80 px-2 py-0.5 rounded-full">
-                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                                <span>{t('locations.workingCount', { count: activeShiftsNow })}</span>
-                              </span>
-                            ) : (
-                              <span className="text-[11px] text-stocky-text-sub">{t('locations.zeroClockedIn')}</span>
-                            )}
-                          </div>
+                          ) : (
+                            <span className="text-[11px] text-stocky-text-sub">{t('locations.zeroClockedIn')}</span>
+                          )}
                         </div>
                       </div>
 
-                      <div className="mt-2 text-[11px] text-stocky-text-sub truncate">
-                        {t('locations.lastCount', { date: lastCompletedCount ? new Date(lastCompletedCount).toLocaleDateString() : t('locations.notRecorded') })}
-                      </div>
-                    </div>
-
-                    {/* Right: Operational Health Metrics & Action Triggers */}
-                    <div className="p-4 sm:p-5 md:w-72 lg:w-80 shrink-0 flex flex-col justify-between border-t md:border-t-0 md:border-l rtl:md:border-l-0 rtl:md:border-r border-stocky-border-subtle bg-stocky-bg-subtle/30">
-                      <div>
-                        <div className="grid grid-cols-2 gap-2">
-                          <div className="rounded-xl bg-white p-2 border border-stocky-border-subtle">
-                            <span className="text-[10px] uppercase font-semibold text-stocky-text-sub block">{t('locations.activeSkus')}</span>
-                            <span className="text-sm font-semibold text-stocky-text-main">{skuCount}</span>
+                      {/* Right: Stock Metrics & Health Indicators */}
+                      <div className="flex flex-wrap items-center justify-between lg:justify-end gap-3 sm:gap-4 shrink-0">
+                        {/* SKUs & Units Numbers */}
+                        <div className="flex items-center gap-3 bg-stocky-bg-global/50 border border-stocky-border-subtle rounded-xl px-3 py-1.5">
+                          <div className="text-start">
+                            <span className="text-[9px] uppercase font-bold tracking-wider text-stocky-text-sub block leading-tight">
+                              {t('locations.activeSkus')}
+                            </span>
+                            <span className="text-sm font-bold text-stocky-text-main">
+                              {skuCount}
+                            </span>
                           </div>
-                          <div className="rounded-xl bg-white p-2 border border-stocky-border-subtle">
-                            <span className="text-[10px] uppercase font-semibold text-stocky-text-sub block">{t('locations.totalUnits')}</span>
-                            <span className="text-sm font-semibold text-stocky-text-main">{units.toLocaleString()}</span>
+                          <div className="h-5 w-px bg-stocky-border-subtle" />
+                          <div className="text-start">
+                            <span className="text-[9px] uppercase font-bold tracking-wider text-stocky-text-sub block leading-tight">
+                              {t('locations.totalUnits')}
+                            </span>
+                            <span className="text-sm font-bold text-stocky-text-main">
+                              {units.toLocaleString()}
+                            </span>
                           </div>
                         </div>
 
-                        {/* Operational Alerts */}
-                        <div className="mt-2 flex flex-wrap items-center gap-1.5">
+                        {/* Operational Health Badges */}
+                        <div className="flex flex-wrap items-center gap-1.5">
                           {expiring > 0 ? (
                             <span className="inline-flex items-center gap-1 rounded-full border stocky-status-hold px-2.5 py-0.5 text-[10px] font-medium">
                               <ClockIcon size="xs" /> {t('locations.expiringCount', { count: expiring })}
@@ -1007,45 +1067,52 @@ export function LocationsDirectoryWidget({
                           )}
                         </div>
                       </div>
+                    </div>
 
-                      {/* Action Triggers */}
-                      <div className="mt-4 pt-3 border-t border-stocky-border-subtle flex flex-wrap sm:flex-nowrap items-center justify-end gap-2 w-full">
-                        <div className="flex items-center gap-2 w-full sm:w-auto">
-                          {canManage && (
-                            <button
-                              type="button"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                openEditDrawer(location);
-                              }}
-                              className="h-10 px-3.5 flex-1 sm:flex-initial rounded-full border border-stocky-border-subtle bg-white text-xs font-medium text-stocky-text-main hover:bg-stocky-bg-global hover:border-stocky-border-strong transition-colors cursor-pointer inline-flex items-center justify-center gap-1.5"
-                              title={t('locations.edit')}
-                            >
-                              <EditIcon size="xs" />
-                              <span>{t('locations.edit')}</span>
-                            </button>
-                          )}
+                    {/* Bottom: Last Physical Count & Mobile Action Row */}
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-2 border-t border-stocky-border-subtle/50 text-[11px] text-stocky-text-sub">
+                      <div className="flex items-center gap-1.5 truncate">
+                        <ClockIcon size="xs" className="text-stocky-text-sub/60 shrink-0" />
+                        <span className="truncate">
+                          {t('locations.lastCount', {
+                            date: lastCompletedCount ? new Date(lastCompletedCount).toLocaleDateString() : t('locations.notRecorded'),
+                          })}
+                        </span>
+                      </div>
+
+                      {/* Mobile-only Action Buttons */}
+                      <div className="flex sm:hidden items-center gap-2 pt-2 border-t border-stocky-border-subtle/40 w-full">
+                        {canManage && (
                           <button
                             type="button"
                             onClick={(e) => {
                               e.stopPropagation();
-                              setQrLocation(location);
+                              openEditDrawer(location);
                             }}
-                            className="h-10 px-3.5 flex-1 sm:flex-initial rounded-full border border-stocky-border-subtle bg-white text-xs font-medium text-stocky-text-main hover:border-stocky-primary hover:text-stocky-primary transition-colors cursor-pointer inline-flex items-center justify-center gap-1.5 shadow-2xs"
-                            title={t('locations.attendanceQrTitle')}
+                            className="h-9 px-3 flex-1 rounded-full border border-stocky-border-subtle bg-white text-xs font-medium text-stocky-text-main inline-flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs"
                           >
-                            <QrCodeIcon size="xs" />
-                            <span className="hidden sm:inline">{t('locations.attendanceQr')}</span>
-                            <span className="sm:hidden">{t('locations.qrPoster')}</span>
+                            <EditIcon size="xs" />
+                            <span>{t('locations.edit')}</span>
                           </button>
-                        </div>
+                        )}
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setQrLocation(location);
+                          }}
+                          className="h-9 px-3 flex-1 rounded-full border border-stocky-border-subtle bg-white text-xs font-medium text-stocky-text-main inline-flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs"
+                        >
+                          <QrCodeIcon size="xs" />
+                          <span>{t('locations.qrPoster')}</span>
+                        </button>
                         <button
                           type="button"
                           onClick={(e) => {
                             e.stopPropagation();
                             onOpenStock(location.id);
                           }}
-                          className="h-10 px-4 w-full sm:w-auto rounded-full border border-stocky-border-subtle bg-white text-xs font-medium text-stocky-text-main hover:border-stocky-primary hover:text-stocky-primary transition-colors cursor-pointer inline-flex items-center justify-center gap-1.5 shadow-2xs sm:flex-1"
+                          className="h-9 px-3.5 flex-1 rounded-full border border-stocky-border-subtle bg-stocky-bg-global text-xs font-medium text-stocky-text-main inline-flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs"
                         >
                           <span>{t('locations.viewInventory')}</span>
                           <ChevronRightIcon size="xs" className="rtl:rotate-180" />
