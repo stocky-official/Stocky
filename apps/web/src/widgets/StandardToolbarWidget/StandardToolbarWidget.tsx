@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
 import { FilterIcon, MoreHorizontalIcon, PlusIcon, SearchIcon, XIcon } from '@stocky/icons';
 import { ActionsBottomSheet, type ActionItem } from '@/components/ui/ActionsBottomSheet';
 import { useTranslation } from '@/lib/i18n';
@@ -28,6 +29,7 @@ export interface StandardToolbarWidgetProps {
 
   // Actions
   primaryAction?: StandardToolbarAction;
+  secondaryActions?: StandardToolbarAction[];
   moreActions?: ActionItem[];
   moreActionsTitle?: string;
 
@@ -42,11 +44,12 @@ export interface StandardToolbarWidgetProps {
  *
  * Mobile (< 640px):
  *   - Strictly a single 40px row:
- *     [ Search ... | ⚙ Filter ] (flex-1) + [ Optional Switcher ] + [ + Action ] + [ ••• More ]
- *   - Secondary actions collapse into the ActionsBottomSheet (slide from bottom).
+ *     [ Search ... | ⚙ Filter ] (flex-1) + [ Optional Switcher ] + [ ••• More ] + [ + Action ]
+ *   - Secondary / more actions open from the bottom in ActionsBottomSheet drawer.
  *
  * Desktop (>= 640px):
- *   - Full spacious row with search input on left and inline pill buttons on right.
+ *   - Full spacious row with search input on left and actions on right.
+ *   - Clicking '••• More' opens a floating hovering menu popover anchored to the button.
  */
 export function StandardToolbarWidget({
   searchQuery,
@@ -56,15 +59,68 @@ export function StandardToolbarWidget({
   onToggleFilter,
   activeFilterCount = 0,
   primaryAction,
+  secondaryActions = [],
   moreActions = [],
   moreActionsTitle,
   viewSwitcher,
   children,
   className = '',
 }: StandardToolbarWidgetProps) {
-  const { t } = useTranslation();
+  const { t, isRtl } = useTranslation();
   const [isActionsDrawerOpen, setIsActionsDrawerOpen] = useState(false);
-  const hasMoreActions = moreActions && moreActions.length > 0;
+  const [isDesktopMenuOpen, setIsDesktopMenuOpen] = useState(false);
+  const moreMenuRef = useRef<HTMLDivElement>(null);
+
+  const hasMoreActions = Boolean(moreActions && moreActions.length > 0);
+  const hasSecondaryActions = Boolean(secondaryActions && secondaryActions.length > 0);
+
+  // Dismiss desktop hovering menu on click outside or Escape key
+  useEffect(() => {
+    if (!isDesktopMenuOpen) return;
+
+    const handleClickOutside = (e: MouseEvent) => {
+      if (moreMenuRef.current && !moreMenuRef.current.contains(e.target as Node)) {
+        setIsDesktopMenuOpen(false);
+      }
+    };
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setIsDesktopMenuOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isDesktopMenuOpen]);
+
+  // For phone viewports: combine secondaryActions (if any) and moreActions into the bottom drawer
+  const allMobileActions: ActionItem[] = [
+    ...secondaryActions.map((action, idx) => ({
+      id: `sec-${idx}`,
+      label: action.label,
+      icon: action.icon,
+      onClick: action.onClick,
+      disabled: action.disabled,
+      description: action.title,
+    })),
+    ...moreActions,
+  ];
+  const hasMobileActions = allMobileActions.length > 0;
+
+  const handleMoreButtonClick = () => {
+    if (typeof window !== 'undefined' && window.innerWidth < 640) {
+      setIsActionsDrawerOpen(true);
+    } else {
+      setIsDesktopMenuOpen((prev) => !prev);
+    }
+  };
+
   const resolvedSearchPlaceholder = searchPlaceholder ?? t('toolbar.searchPlaceholder');
   const resolvedMoreActionsTitle = moreActionsTitle ?? t('toolbar.actions');
 
@@ -139,30 +195,107 @@ export function StandardToolbarWidget({
             </div>
           )}
 
-          {/* ••• More Actions Trigger: Perfect 40x40 circle, positioned as the leftmost action button */}
-          {hasMoreActions && (
-            <button
-              type="button"
-              onClick={() => setIsActionsDrawerOpen(true)}
-              aria-label={t('toolbar.moreActions')}
-              title={t('toolbar.moreActions')}
-              className="stocky-standard-toolbar__circle-btn stocky-standard-toolbar__circle-btn--secondary text-xs cursor-pointer active:scale-95 shrink-0"
-            >
-              <MoreHorizontalIcon size="xs" />
-            </button>
+          {/* ••• More Actions Trigger Container (anchors hovering menu on desktop) */}
+          {(hasMoreActions || hasMobileActions) && (
+            <div className="relative shrink-0" ref={moreMenuRef}>
+              <button
+                type="button"
+                onClick={handleMoreButtonClick}
+                aria-label={t('toolbar.moreActions') || 'More actions'}
+                title={t('toolbar.moreActions') || 'More actions'}
+                aria-expanded={isDesktopMenuOpen}
+                aria-haspopup="menu"
+                className={`stocky-standard-toolbar__circle-btn stocky-standard-toolbar__circle-btn--secondary text-xs cursor-pointer active:scale-95 shrink-0 ${
+                  isDesktopMenuOpen ? 'stocky-standard-toolbar__circle-btn--active bg-stocky-bg-global border-stocky-border-default' : ''
+                } ${hasMoreActions ? '' : 'sm:hidden'}`}
+              >
+                <MoreHorizontalIcon size="xs" />
+              </button>
+
+              {/* Desktop Hovering Menu Popover */}
+              {hasMoreActions && (
+                <AnimatePresence>
+                  {isDesktopMenuOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -4, scale: 0.98 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: -4, scale: 0.98 }}
+                      transition={{ duration: 0.15, ease: [0.16, 1, 0.3, 1] }}
+                      className="hidden sm:flex absolute top-[calc(100%+6px)] right-0 z-50 min-w-[220px] max-w-xs flex-col p-1.5 bg-stocky-bg-widget border border-stocky-border-subtle rounded-2xl shadow-bevel-float"
+                      role="menu"
+                      aria-orientation="vertical"
+                      dir={isRtl ? 'rtl' : 'ltr'}
+                    >
+                      {moreActions.map((action, idx) => {
+                        const isCritical = action.tone === 'critical';
+                        return (
+                          <button
+                            key={action.id || action.label || idx}
+                            type="button"
+                            role="menuitem"
+                            disabled={action.disabled}
+                            onClick={() => {
+                              if (action.disabled) return;
+                              setIsDesktopMenuOpen(false);
+                              action.onClick();
+                            }}
+                            className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-start transition-colors cursor-pointer select-none ${
+                              action.disabled
+                                ? 'opacity-40 cursor-not-allowed'
+                                : isCritical
+                                ? 'hover:bg-red-50 active:bg-red-100/70 text-red-600'
+                                : 'hover:bg-stocky-bg-global active:bg-stocky-border-subtle/50 text-stocky-text-main'
+                            }`}
+                          >
+                            {action.icon && (
+                              <div
+                                className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 transition-colors ${
+                                  isCritical
+                                    ? 'bg-red-100 text-red-600'
+                                    : 'bg-stocky-bg-global text-stocky-text-main border border-stocky-border-subtle'
+                                }`}
+                              >
+                                {action.icon}
+                              </div>
+                            )}
+
+                            <div className="flex-1 min-w-0">
+                              <div
+                                className={`text-xs font-semibold truncate ${
+                                  isCritical ? 'text-red-600' : 'text-stocky-text-main'
+                                }`}
+                              >
+                                {action.label}
+                              </div>
+                              {action.description && (
+                                <div className="text-[11px] text-stocky-text-sub truncate mt-0.5">
+                                  {action.description}
+                                </div>
+                              )}
+                            </div>
+                          </button>
+                        );
+                      })}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              )}
+            </div>
           )}
 
-          {/* Desktop Only: Secondary Action Pills (Inline) */}
-          {hasMoreActions && (
+          {/* Desktop Only: Explicit Secondary Action Pills (Inline) */}
+          {hasSecondaryActions && (
             <div className="hidden sm:flex items-center gap-1.5 sm:gap-2 shrink-0">
-              {moreActions.map((action) => (
+              {secondaryActions.map((action, idx) => (
                 <button
-                  key={action.id}
+                  key={action.title || action.label || idx}
                   type="button"
                   disabled={action.disabled}
                   onClick={action.onClick}
-                  className="stocky-table-toolbar-button h-10 px-4 rounded-full text-xs font-medium inline-flex items-center justify-center gap-1.5 whitespace-nowrap cursor-pointer transition-colors"
-                  title={action.description || action.label}
+                  className={`stocky-table-toolbar-button h-10 px-4 rounded-full text-xs font-medium inline-flex items-center justify-center gap-1.5 whitespace-nowrap cursor-pointer transition-colors ${
+                    action.className || ''
+                  }`.trim()}
+                  title={action.title || action.label}
                 >
                   {action.icon && <span className="shrink-0">{action.icon}</span>}
                   <span>{action.label}</span>
@@ -197,14 +330,16 @@ export function StandardToolbarWidget({
       </div>
 
       {/* Mobile Actions Bottom Sheet Drawer */}
-      {hasMoreActions && (
+      {hasMobileActions && (
         <ActionsBottomSheet
           isOpen={isActionsDrawerOpen}
           onClose={() => setIsActionsDrawerOpen(false)}
           title={resolvedMoreActionsTitle}
-          actions={moreActions}
+          actions={allMobileActions}
+          mobileOnly
         />
       )}
     </>
   );
 }
+

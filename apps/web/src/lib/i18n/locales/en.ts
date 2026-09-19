@@ -2068,6 +2068,7 @@ export const en = {
     openFilters: 'Open filters',
     filter: 'Filter',
     actions: 'Actions',
+    moreActions: 'More actions',
   },
   floatingActions: {
     clockInAria: 'Tap to Scan QR and Clock In',

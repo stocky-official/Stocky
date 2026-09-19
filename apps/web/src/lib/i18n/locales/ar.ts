@@ -2070,6 +2070,7 @@ export const ar: typeof en = {
     openFilters: 'فتح عوامل التصفية',
     filter: 'تصفية',
     actions: 'الإجراءات',
+    moreActions: 'المزيد من الإجراءات',
   },
   floatingActions: {
     clockInAria: 'اضغط لمسح الرمز وتسجيل الحضور',

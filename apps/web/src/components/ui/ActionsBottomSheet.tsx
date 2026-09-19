@@ -20,6 +20,7 @@ export interface ActionsBottomSheetProps {
   title?: string;
   subtitle?: string;
   actions: ActionItem[];
+  mobileOnly?: boolean;
 }
 
 /**
@@ -33,6 +34,7 @@ export function ActionsBottomSheet({
   title,
   subtitle,
   actions,
+  mobileOnly = false,
 }: ActionsBottomSheetProps) {
   const { t } = useTranslation();
   const resolvedTitle = title || t('common.actions');
@@ -50,6 +52,7 @@ export function ActionsBottomSheet({
       title={resolvedTitle}
       subtitle={subtitle}
       panelClassName="sm:max-w-sm"
+      mobileOnly={mobileOnly}
     >
       <div className="flex flex-col gap-1 py-1" role="menu">
         {actions.map((action, idx) => {
