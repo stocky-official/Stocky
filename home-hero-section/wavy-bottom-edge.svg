@@ -1,0 +1,18 @@
+<svg
+  viewBox="0 0 1440 64"
+  fill="none"
+  xmlns="http://www.w3.org/2000/svg"
+  preserveAspectRatio="none"
+  width="100%"
+  height="100%"
+>
+  <!--
+    Talabat-style organic wave transition:
+    Transitions from the solid luxury forest hero background (#14261C)
+    into the page canvas background (var(--stocky-bg-global, #FAFAFA)).
+  -->
+  <path
+    d="M0,18 C220,38 460,38 720,22 C980,6 1220,20 1440,24 L1440,64 L0,64 Z"
+    fill="#FAFAFA"
+  />
+</svg>
