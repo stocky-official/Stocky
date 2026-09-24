@@ -131,5 +131,7 @@ _technical_support/scripts/verify_*
 _technical_support/scripts/warehouse_staffer_inspection.py
 *.xlsx
 ORIGINAL_REQUEST.md
+_redact_tree.py
+
 
 
