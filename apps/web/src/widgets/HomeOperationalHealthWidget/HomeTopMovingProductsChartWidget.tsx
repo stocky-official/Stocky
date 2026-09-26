@@ -25,6 +25,7 @@ export interface HomeTopMovingProductsChartWidgetProps {
   externalTimeframe?: '7D' | '14D' | '30D' | '90D' | 'YTD';
   externalCategory?: string;
   externalLocationId?: string;
+  canExport?: boolean;
 }
 
 export function HomeTopMovingProductsChartWidget({
@@ -35,11 +36,12 @@ export function HomeTopMovingProductsChartWidget({
   externalTimeframe,
   externalCategory,
   externalLocationId,
+  canExport = true,
 }: HomeTopMovingProductsChartWidgetProps) {
-  const { t } = useTranslation();
+  const { t, isRtl } = useTranslation();
   const [internalTimeframe, setInternalTimeframe] = useState<'7D' | '14D' | '30D' | '90D'>('30D');
   const [internalCategoryFilter, setInternalCategoryFilter] = useState<string>('all');
-  const effectiveTimeframe = (externalTimeframe && externalTimeframe !== 'YTD' ? externalTimeframe : internalTimeframe) as '7D' | '14D' | '30D' | '90D';
+  const effectiveTimeframe = externalTimeframe || internalTimeframe;
   const effectiveCategory = externalCategory !== undefined && externalCategory !== 'all' ? externalCategory : internalCategoryFilter;
 
   // UI state for bottom sheet filter & info popover
@@ -56,7 +58,12 @@ export function HomeTopMovingProductsChartWidget({
   }, [products]);
 
   const chartData = useMemo(() => {
-    const days = effectiveTimeframe === '7D' ? 7 : effectiveTimeframe === '14D' ? 14 : effectiveTimeframe === '30D' ? 30 : 90;
+    const days = effectiveTimeframe === 'YTD'
+      ? (() => {
+          const now = new Date();
+          return Math.floor((now.getTime() - new Date(now.getFullYear(), 0, 1).getTime()) / 86400000) + 1;
+        })()
+      : effectiveTimeframe === '7D' ? 7 : effectiveTimeframe === '14D' ? 14 : effectiveTimeframe === '30D' ? 30 : 90;
     const cutoffDate = new Date(Date.now() - days * 86400000).toISOString();
 
     const volumeByProduct = new Map<string, { totalMoved: number; movementCount: number }>();
@@ -81,23 +88,14 @@ export function HomeTopMovingProductsChartWidget({
       }
     });
 
-    const fallbackProducts = products.length > 0 ? products : [
-      { id: 'p1', name: 'Whole Milk 1L', categoryName: 'Dairy & Fresh', unitCost: 3.5, reorderPoint: 50, companyId: '', unitName: 'unit', isActive: true, createdAt: '', updatedAt: '' },
-      { id: 'p2', name: 'Fresh Orange Juice 500ml', categoryName: 'Beverages', unitCost: 4.2, reorderPoint: 40, companyId: '', unitName: 'unit', isActive: true, createdAt: '', updatedAt: '' },
-      { id: 'p3', name: 'Arabic Pita Bread 6pk', categoryName: 'Bakery', unitCost: 1.8, reorderPoint: 80, companyId: '', unitName: 'unit', isActive: true, createdAt: '', updatedAt: '' },
-      { id: 'p4', name: 'Greek Yogurt 150g', categoryName: 'Dairy & Fresh', unitCost: 2.2, reorderPoint: 35, companyId: '', unitName: 'unit', isActive: true, createdAt: '', updatedAt: '' },
-      { id: 'p5', name: 'Sparkling Mineral Water', categoryName: 'Beverages', unitCost: 2.5, reorderPoint: 60, companyId: '', unitName: 'unit', isActive: true, createdAt: '', updatedAt: '' },
-      { id: 'p6', name: 'Salted Butter 200g', categoryName: 'Dairy & Fresh', unitCost: 5.0, reorderPoint: 25, companyId: '', unitName: 'unit', isActive: true, createdAt: '', updatedAt: '' },
-    ];
-
-    const filtered = fallbackProducts.filter(
+    const filtered = products.filter(
       (p) => effectiveCategory === 'all' || p.categoryName === effectiveCategory
     );
 
-    const scored = filtered.map((p, index) => {
+    const scored = filtered.map((p) => {
       const stats = volumeByProduct.get(p.id);
-      const unitsMoved = stats?.totalMoved || Math.max(80, (fallbackProducts.length - index) * 240 + (index * 37) % 110);
-      const batches = stats?.movementCount || Math.max(3, (fallbackProducts.length - index) * 3);
+      const unitsMoved = stats?.totalMoved || 0;
+      const batches = stats?.movementCount || 0;
       const velocityScore = Math.round(unitsMoved / Math.max(1, days / 7));
 
       return {
@@ -111,7 +109,10 @@ export function HomeTopMovingProductsChartWidget({
       };
     });
 
-    return scored.sort((a, b) => b.unitsMoved - a.unitsMoved).slice(0, 6);
+    return scored
+      .filter((item) => item.unitsMoved > 0)
+      .sort((a, b) => b.unitsMoved - a.unitsMoved)
+      .slice(0, 6);
   }, [products, lots, movements, effectiveTimeframe, effectiveCategory, externalLocationId]);
 
   const handleExportExcel = () => {
@@ -184,7 +185,7 @@ export function HomeTopMovingProductsChartWidget({
             </div>
 
             {/* Excel (.xlsx) Extract Button */}
-            <button
+            {canExport && <button
               type="button"
               data-testid="export-excel-top-movers-btn"
               onClick={handleExportExcel}
@@ -193,7 +194,7 @@ export function HomeTopMovingProductsChartWidget({
             >
               <FileSpreadsheetIcon size="xs" />
               <span>{t('home.charts.topMovers.excel')}</span>
-            </button>
+            </button>}
 
             <button
               type="button"
@@ -237,7 +238,7 @@ export function HomeTopMovingProductsChartWidget({
             <BarChart
               data={chartData}
               layout="vertical"
-              margin={{ top: 10, right: 24, left: 10, bottom: 5 }}
+              margin={isRtl ? { top: 10, right: 10, left: 24, bottom: 5 } : { top: 10, right: 24, left: 10, bottom: 5 }}
             >
               <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="var(--stocky-border-subtle)" />
               <XAxis
@@ -254,6 +255,7 @@ export function HomeTopMovingProductsChartWidget({
                 axisLine={{ stroke: 'var(--stocky-border-subtle)' }}
                 tickLine={false}
                 width={110}
+                orientation={isRtl ? 'right' : 'left'}
               />
               <Tooltip
                 content={({ active, payload }) => {
@@ -280,7 +282,7 @@ export function HomeTopMovingProductsChartWidget({
               />
               <Bar
                 dataKey="unitsMoved"
-                radius={[0, 6, 6, 0]}
+                radius={isRtl ? [6, 0, 0, 6] : [0, 6, 6, 0]}
                 cursor="pointer"
                 onClick={(entry: any) => {
                   if (entry?.id && onOpenProduct) onOpenProduct(String(entry.id));

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useMemo, useState } from 'react';
-import type { Product, StockLot, StockTask, StockTaskItem } from '@stocky/types';
+import type { Product, StockLot, StockMovement, StockTask, StockTaskItem } from '@stocky/types';
 import { FilterIcon, InfoIcon, XIcon, FileSpreadsheetIcon } from '@stocky/icons';
 import {
   ResponsiveContainer,
@@ -20,23 +20,29 @@ import { useTranslation } from '@/lib/i18n';
 export interface HomeLaggingProductsChartWidgetProps {
   products?: Product[];
   lots?: StockLot[];
+  movements?: StockMovement[];
   tasks?: StockTask[];
   taskItems?: StockTaskItem[];
   onOpenProduct?: (productId: string) => void;
   externalTimeframe?: '7D' | '14D' | '30D' | '90D' | 'YTD';
   externalCategory?: string;
   externalLocationId?: string;
+  canViewCommercials?: boolean;
+  canExport?: boolean;
 }
 
 export function HomeLaggingProductsChartWidget({
   products = [],
   lots = [],
+  movements = [],
   tasks = [],
   taskItems = [],
   onOpenProduct,
   externalTimeframe,
   externalCategory,
   externalLocationId,
+  canViewCommercials = true,
+  canExport = true,
 }: HomeLaggingProductsChartWidgetProps) {
   const { t } = useTranslation();
   const [internalThresholdDays, setInternalThresholdDays] = useState<number>(30);
@@ -66,24 +72,29 @@ export function HomeLaggingProductsChartWidget({
       auditCountByProduct.set(item.productId, (auditCountByProduct.get(item.productId) || 0) + 1);
     });
 
-    const fallbackProducts = products.length > 0 ? products : [
-      { id: 'lag-1', name: 'Spiced Canned Tuna 185g', categoryName: 'Canned Goods', unitCost: 6.5, reorderPoint: 30, companyId: '', unitName: 'can', isActive: true, createdAt: '', updatedAt: '' },
-      { id: 'lag-2', name: 'Almond Milk Unsweetened 1L', categoryName: 'Dairy & Fresh', unitCost: 12.0, reorderPoint: 20, companyId: '', unitName: 'bottle', isActive: true, createdAt: '', updatedAt: '' },
-      { id: 'lag-3', name: 'Organic Honey 250g', categoryName: 'Pantry', unitCost: 24.5, reorderPoint: 15, companyId: '', unitName: 'jar', isActive: true, createdAt: '', updatedAt: '' },
-      { id: 'lag-4', name: 'Sparkling Lemonade 330ml', categoryName: 'Beverages', unitCost: 4.5, reorderPoint: 40, companyId: '', unitName: 'can', isActive: true, createdAt: '', updatedAt: '' },
-      { id: 'lag-5', name: 'Whole Wheat Crackers', categoryName: 'Snacks', unitCost: 8.0, reorderPoint: 25, companyId: '', unitName: 'box', isActive: true, createdAt: '', updatedAt: '' },
-    ];
-
-    const filtered = fallbackProducts.filter(
+    const filtered = products.filter(
       (p) => effectiveCategory === 'all' || p.categoryName === effectiveCategory
     );
 
-    const scored = filtered.map((p, index) => {
+    const scored = filtered.map((p) => {
       const productLots = lots.filter((l) => l.productId === p.id && (!externalLocationId || externalLocationId === 'all' || l.locationId === externalLocationId) && (l.quantityOnHand || 0) > 0);
-      const stockOnHand = productLots.reduce((acc, l) => acc + (l.quantityOnHand || 0), 0) || Math.max(45, 120 - index * 18);
-      const tiedUpValue = stockOnHand * (p.unitCost || 5);
-      const auditsCount = auditCountByProduct.get(p.id) || Math.max(2, (index * 2 + 3) % 5);
-      const daysDormant = Math.max(effectiveThreshold + 5, effectiveThreshold + (index * 14 + 10) % 45);
+      const stockOnHand = productLots.reduce((acc, l) => acc + (l.quantityOnHand || 0), 0);
+      const tiedUpValue = canViewCommercials ? stockOnHand * (p.unitCost || 0) : 0;
+      const auditsCount = auditCountByProduct.get(p.id) || 0;
+      const dates = [
+        ...productLots.map((lot) => lot.receivedAt).filter(Boolean),
+        ...movements
+          .filter((movement) =>
+            movement.productId === p.id &&
+            (!externalLocationId || externalLocationId === 'all' || movement.locationId === externalLocationId)
+          )
+          .map((movement) => movement.createdAt)
+          .filter(Boolean),
+      ] as string[];
+      const latestDate = dates.sort().at(-1);
+      const daysDormant = latestDate
+        ? Math.max(0, Math.floor((Date.now() - new Date(latestDate).getTime()) / 86400000))
+        : 0;
 
       return {
         id: p.id,
@@ -102,7 +113,7 @@ export function HomeLaggingProductsChartWidget({
       .filter((item) => item.daysDormant >= effectiveThreshold)
       .sort((a, b) => b.tiedUpValue - a.tiedUpValue)
       .slice(0, 5);
-  }, [products, lots, taskItems, effectiveThreshold, effectiveCategory, externalLocationId]);
+  }, [products, lots, movements, taskItems, effectiveThreshold, effectiveCategory, externalLocationId, canViewCommercials]);
 
   const handleExportExcel = () => {
     exportVisualDataToExcel({
@@ -175,7 +186,7 @@ export function HomeLaggingProductsChartWidget({
             </div>
 
             {/* Excel (.xlsx) Extract Button */}
-            <button
+            {canExport && <button
               type="button"
               data-testid="export-excel-lagging-btn"
               onClick={handleExportExcel}
@@ -184,7 +195,7 @@ export function HomeLaggingProductsChartWidget({
             >
               <FileSpreadsheetIcon size="xs" />
               <span>{t('home.charts.topMovers.excel')}</span>
-            </button>
+            </button>}
 
             <button
               type="button"
@@ -329,7 +340,7 @@ export function HomeLaggingProductsChartWidget({
       {/* 3. Footer Summary */}
       <div className="flex items-center justify-between text-[11px] text-stocky-text-sub pt-2 border-t border-stocky-border-subtle font-medium">
         <span>
-          {t('home.charts.laggingStock.totalStagnantCapital', { amount: chartData.reduce((sum, item) => sum + item.tiedUpValue, 0).toLocaleString() })}
+          {canViewCommercials && t('home.charts.laggingStock.totalStagnantCapital', { amount: chartData.reduce((sum, item) => sum + item.tiedUpValue, 0).toLocaleString() })}
         </span>
         <span className="text-amber-600 font-semibold">{t('home.charts.laggingStock.actionRequired')}</span>
       </div>

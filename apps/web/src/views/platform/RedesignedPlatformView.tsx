@@ -155,7 +155,7 @@ export function RedesignedPlatformView() {
         supabase.from('locations').select('*').eq('company_id', profile.company_id).eq('is_active', true).order('name'),
         supabase.from('user_locations').select('location_id').eq('user_id', profile.id),
         supabase.from('products').select('*').eq('company_id', profile.company_id).eq('is_active', true).order('name'),
-        supabase.from('stock_lots').select('*').eq('company_id', profile.company_id).order('expiry_date', { ascending: true, nullsFirst: false }),
+        supabase.from('stock_lots_visible').select('*').eq('company_id', profile.company_id).order('expiry_date', { ascending: true, nullsFirst: false }),
         // Load the source table directly. Supplier creation writes to `suppliers`,
         // and relying on the optional summary view here could make a successful
         // insert disappear again when the view is unavailable in a local schema.

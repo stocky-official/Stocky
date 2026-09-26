@@ -21,7 +21,7 @@ export interface TransferRequestDrawerWidgetProps {
     destinationLocationId: string;
     lines: Array<{ productId: string; quantity: number }>;
     note?: string;
-  }) => void;
+  }) => void | Promise<void>;
 }
 
 export function TransferRequestDrawerWidget({
@@ -124,7 +124,7 @@ export function TransferRequestDrawerWidget({
     setLines((current) => current.filter((_, lineIndex) => lineIndex !== index));
   };
 
-  const handleSubmit = (event: React.FormEvent) => {
+  const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     setError(null);
 
@@ -169,12 +169,17 @@ export function TransferRequestDrawerWidget({
       }
     }
 
-    onCreate({
-      sourceLocationId,
-      destinationLocationId,
-      lines: normalized,
-      note: requestNote.trim() || undefined,
-    });
+    try {
+      await onCreate({
+        sourceLocationId,
+        destinationLocationId,
+        lines: normalized,
+        note: requestNote.trim() || undefined,
+      });
+    } catch (error) {
+      setError(error instanceof Error ? error.message : t('common.error'));
+      return;
+    }
 
     onClose();
     setLines([{ productId: '', quantity: '' }]);
@@ -388,10 +393,19 @@ export function TransferRequestDrawerWidget({
                           <input
                             required
                             type="number"
+                            inputMode="numeric"
+                            pattern="[0-9]*"
                             min="1"
                             max={available || undefined}
                             value={line.quantity}
-                            onChange={(event) => updateLine(index, 'quantity', event.target.value)}
+                            onKeyDown={(event) => {
+                              if (['e', 'E', '+', '-', '.', ','].includes(event.key)) event.preventDefault();
+                            }}
+                            onChange={(event) => {
+                              const digitsOnly = event.target.value.replace(/\D/g, '');
+                              const nextValue = available > 0 ? digitsOnly.slice(0, String(available).length) : digitsOnly;
+                              updateLine(index, 'quantity', nextValue);
+                            }}
                             placeholder="0"
                             className="w-16 h-8 text-center text-xs font-bold text-stocky-text-main bg-transparent outline-none"
                           />

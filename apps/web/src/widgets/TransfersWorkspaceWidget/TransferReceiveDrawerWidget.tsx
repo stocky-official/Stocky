@@ -16,7 +16,7 @@ export interface TransferReceiveDrawerWidgetProps {
     transfer: InventoryTransfer,
     lines?: Array<{ lineId: string; quantityReceived: number }>,
     note?: string
-  ) => void;
+  ) => void | Promise<void>;
 }
 
 export function TransferReceiveDrawerWidget({
@@ -68,7 +68,7 @@ export function TransferReceiveDrawerWidget({
     }
   }, [activeTransfer?.id, activeLines.length]);
 
-  const handleSubmit = (event: React.FormEvent) => {
+  const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     if (!activeTransfer) return;
     setError(null);
@@ -92,11 +92,16 @@ export function TransferReceiveDrawerWidget({
       return;
     }
 
-    onReceive(
-      activeTransfer,
-      rows.map(({ lineId, quantityReceived }) => ({ lineId, quantityReceived })),
-      receiptNote.trim() || undefined
-    );
+    try {
+      await onReceive(
+        activeTransfer,
+        rows.map(({ lineId, quantityReceived }) => ({ lineId, quantityReceived })),
+        receiptNote.trim() || undefined
+      );
+    } catch (error) {
+      setError(error instanceof Error ? error.message : t('common.error'));
+      return;
+    }
     onClose();
   };
 

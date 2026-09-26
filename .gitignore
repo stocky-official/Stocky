@@ -82,6 +82,7 @@ service_account*.json
 
 # Temporary audit artifacts, spreadsheets, and scratch inspection files
 .agents/*
+*.inspect.ndjson
 !.agents/skills/
 !.agents/skills/**
 __pycache__/
@@ -133,5 +134,12 @@ _technical_support/scripts/warehouse_staffer_inspection.py
 ORIGINAL_REQUEST.md
 _redact_tree.py
 
+# Release-only exclusions
+_*/
+.agents/
+outputs/
+home-hero-section/
+apps/mobile/tsconfig.tsbuildinfo
+apps/mobile/android/app/debug.keystore
 
 

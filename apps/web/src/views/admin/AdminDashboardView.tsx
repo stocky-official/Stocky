@@ -78,7 +78,7 @@ export function AdminDashboardView() {
         supabase.from('company_users').select('*', { count: 'exact', head: true }),
         supabase.from('locations').select('*', { count: 'exact', head: true }),
         supabase.from('products').select('*', { count: 'exact', head: true }),
-        supabase.from('stock_lots').select('*', { count: 'exact', head: true }),
+        supabase.from('stock_lots_visible').select('id', { count: 'exact', head: true }),
       ]);
 
       setStats({

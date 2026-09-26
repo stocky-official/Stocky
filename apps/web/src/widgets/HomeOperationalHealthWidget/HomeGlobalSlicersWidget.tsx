@@ -124,6 +124,8 @@ export function HomeGlobalSlicersWidget({
           </label>
           <div className="relative">
             <select
+              id="home-location-slicer"
+              aria-label={t('home.charts.desktop.branchLocation')}
               data-testid="location-slicer"
               value={selectedLocationId}
               onChange={(e) => onSelectLocation(e.target.value)}
@@ -154,6 +156,9 @@ export function HomeGlobalSlicersWidget({
                 <button
                   key={tf}
                   type="button"
+                  role="tab"
+                  aria-selected={active}
+                  aria-pressed={active}
                   data-testid={`timeframe-slicer-${tf}`}
                   onClick={() => onChangeTimeframe(tf)}
                   className={`flex-1 h-full rounded-lg text-[11px] font-bold transition-all cursor-pointer ${
@@ -176,6 +181,8 @@ export function HomeGlobalSlicersWidget({
           </label>
           <div className="relative">
             <select
+              id="home-category-slicer"
+              aria-label={t('home.charts.desktop.productCategory')}
               data-testid="category-slicer"
               value={selectedCategory}
               onChange={(e) => onSelectCategory(e.target.value)}
@@ -201,6 +208,8 @@ export function HomeGlobalSlicersWidget({
           </label>
           <div className="relative">
             <select
+              id="home-risk-slicer"
+              aria-label={t('home.charts.desktop.riskHealth')}
               data-testid="risk-slicer"
               value={selectedRiskFilter}
               onChange={(e) => onSelectRiskFilter(e.target.value as RiskFilterOption)}

@@ -12,10 +12,12 @@ import React, {
 import { usePathname, useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase/client';
 import { parseTenantDomain } from '@/lib/domain';
+import * as XLSX from 'xlsx';
 import type {
   CompanyUserRole,
   CreateStockTaskCommand,
   InventoryTransfer,
+  InventoryTransferLine,
   Location,
   NotificationTask,
   Product,
@@ -112,6 +114,7 @@ function mapRequest(row: any): SupplierRequest { return { id: row.id, companyId:
 function mapSupplierProduct(row: any): SupplierProduct { return { id: row.id, companyId: row.company_id, supplierId: row.supplier_id, productId: row.product_id, supplierSku: row.supplier_sku, unitCost: row.unit_cost == null ? null : Number(row.unit_cost), notes: row.notes, createdAt: row.created_at, updatedAt: row.updated_at }; }
 function mapNotification(row: any): NotificationTask { return { id: row.id, companyId: row.company_id, recipientCompanyUserId: row.recipient_company_user_id, notificationType: row.notification_type, severity: row.severity, title: row.title, message: row.message, referenceType: row.reference_type, referenceId: row.reference_id, isRead: Boolean(row.is_read), isResolved: Boolean(row.is_resolved), createdAt: row.created_at, resolvedAt: row.resolved_at }; }
 function mapTransfer(row: any): InventoryTransfer { return { id: row.id, companyId: row.company_id, sourceLocationId: row.source_location_id, destinationLocationId: row.destination_location_id, status: row.status, requestedByCompanyUserId: row.requested_by_company_user_id, reviewedByCompanyUserId: row.reviewed_by_company_user_id, receivedByCompanyUserId: row.received_by_company_user_id, note: row.note, decisionNote: row.decision_note, requestedAt: row.requested_at, approvedAt: row.approved_at, receivedAt: row.received_at, createdAt: row.created_at, updatedAt: row.updated_at }; }
+function mapTransferLine(row: any): InventoryTransferLine { return { id: row.id, transferId: row.transfer_id, productId: row.product_id, sourceLotId: row.source_lot_id, quantityRequested: Number(row.quantity_requested || 0), quantityApproved: row.quantity_approved == null ? null : Number(row.quantity_approved), quantityReceived: Number(row.quantity_received || 0), createdAt: row.created_at }; }
 function mapMovement(row: any): StockMovement { return { id: row.id, companyId: row.company_id, productId: row.product_id, stockLotId: row.stock_lot_id, locationId: row.location_id, movementType: row.movement_type, quantityDelta: Number(row.quantity_delta || 0), referenceType: row.reference_type, referenceId: row.reference_id, reason: row.reason, createdByAuthUserId: row.created_by_auth_user_id, createdAt: row.created_at }; }
 function mapTask(row: any): StockTask { return { id: row.id, companyId: row.company_id, locationId: row.location_id, taskType: row.task_type, title: row.title, status: row.status, assignedToCompanyUserId: row.assigned_to_company_user_id, createdByCompanyUserId: row.created_by_company_user_id, notes: row.notes, scheduledStartAt: row.scheduled_start_at, scheduledEndAt: row.scheduled_end_at, startedAt: row.started_at, submittedAt: row.submitted_at, reviewedAt: row.reviewed_at, createdAt: row.created_at, updatedAt: row.updated_at }; }
 function mapTaskItem(row: any): StockTaskItem { return { id: row.id, taskId: row.task_id, productId: row.product_id, stockLotId: row.stock_lot_id, countedQuantity: row.counted_quantity == null ? null : Number(row.counted_quantity), observedExpiryDate: row.observed_expiry_date, note: row.note, status: row.status, completedAt: row.completed_at, createdAt: row.created_at, updatedAt: row.updated_at }; }
@@ -151,6 +154,7 @@ export interface PlatformContextValue {
   supplierProducts: SupplierProduct[];
   requests: SupplierRequest[];
   transfers: InventoryTransfer[];
+  transferLines: InventoryTransferLine[];
   counts: any[];
   movements: StockMovement[];
   teamMembers: any[];
@@ -359,6 +363,7 @@ export function PlatformProvider({
   const [supplierProducts, setSupplierProducts] = useState<SupplierProduct[]>([]);
   const [requests, setRequests] = useState<SupplierRequest[]>([]);
   const [transfers, setTransfers] = useState<InventoryTransfer[]>([]);
+  const [transferLines, setTransferLines] = useState<InventoryTransferLine[]>([]);
   const [counts, setCounts] = useState<any[]>([]);
   const [movements, setMovements] = useState<StockMovement[]>([]);
   const [teamMembers, setTeamMembers] = useState<any[]>([]);
@@ -590,16 +595,27 @@ export function PlatformProvider({
       setUserTitle(profile.job_title || roleTitles[role] || 'Team member');
       setUserAvatarUrl(profile.avatar_url || user.user_metadata?.avatar_url || null);
       setUserPermissions(profile.permissions || null);
+      const canViewCommercials = role !== 'staff';
+      const productSelect = canViewCommercials
+        ? '*'
+        : 'id,company_id,name,barcode,category_id,category_name,unit_name,reorder_point,default_expiry_notification_days,default_supplier_id,image_url,is_active,created_at,updated_at';
+      const lotSelect = canViewCommercials
+        ? '*'
+        : 'id,company_id,product_id,location_id,supplier_id,lot_number,received_at,manufactured_at,expiry_date,expiry_notification_days,quantity_on_hand,status,notes,created_at,updated_at';
+      const supplierProductSelect = canViewCommercials
+        ? '*'
+        : 'id,company_id,supplier_id,product_id,supplier_sku,notes,created_at,updated_at';
 
       const { data: comp } = await supabase.from('companies').select('*').eq('id', profile.company_id).maybeSingle();
       if (comp) {
-        if (comp.status && comp.status !== 'verified') { router.replace('/verification-pending'); return; }
-        let companyLogoUrl = comp.logo_url;
-        if (companyLogoUrl && !companyLogoUrl.startsWith('http')) {
-          const { data: signedLogo } = await supabase.storage.from('stocky-private').createSignedUrl(companyLogoUrl, 60 * 60);
-          companyLogoUrl = signedLogo?.signedUrl || null;
+        if (comp.status && comp.status !== 'verified') { setLoading(false); router.replace('/verification-pending'); return; }
+        const companyLogoPath = comp.logo_url;
+        setCompany({ ...comp, logo_url: companyLogoPath?.startsWith('http') ? companyLogoPath : null });
+        if (companyLogoPath && !companyLogoPath.startsWith('http')) {
+          void supabase.storage.from('stocky-private').createSignedUrl(companyLogoPath, 60 * 60).then(({ data: signedLogo }) => {
+            if (!cancelled && signedLogo?.signedUrl) setCompany((current: any) => current ? { ...current, logo_url: signedLogo.signedUrl } : current);
+          });
         }
-        setCompany({ ...comp, logo_url: companyLogoUrl });
 
         // Automatically upgrade generic /platform URL to the company's tenant path in the address bar
         if (comp.code) {
@@ -617,10 +633,6 @@ export function PlatformProvider({
           }
         }
       }
-
-      const { data: syncedNotifications, error: notificationSyncError } = await supabase.rpc('sync_stocky_notifications');
-      if (notificationSyncError) console.warn('Notification sync unavailable; using live action queue', notificationSyncError.message);
-      setNotificationSyncAvailable(!notificationSyncError);
 
       const [
         { data: dbLocations },
@@ -643,14 +655,15 @@ export function PlatformProvider({
         { data: dbAttendanceShifts },
         { data: dbLeaveRequests },
         { data: dbLeaveBalances },
+        { data: dbAssignments },
       ] = await Promise.all([
         supabase.from('locations').select('*').eq('company_id', profile.company_id).eq('is_active', true).order('name'),
         supabase.from('user_locations').select('location_id').eq('user_id', profile.id),
-        supabase.from('products').select('*').eq('company_id', profile.company_id).eq('is_active', true).order('name'),
-        supabase.from('stock_lots').select('*').eq('company_id', profile.company_id).order('expiry_date', { ascending: true, nullsFirst: false }),
+        supabase.from('products').select(productSelect).eq('company_id', profile.company_id).eq('is_active', true).order('name'),
+        supabase.from('stock_lots_visible').select(lotSelect).eq('company_id', profile.company_id).order('expiry_date', { ascending: true, nullsFirst: false }),
         supabase.from('suppliers').select('*').eq('company_id', profile.company_id).order('name'),
         supabase.from('supplier_contacts').select('*').eq('company_id', profile.company_id).order('is_primary', { ascending: false }).order('name'),
-        supabase.from('supplier_products').select('*').eq('company_id', profile.company_id),
+        supabase.from('supplier_products').select(supplierProductSelect).eq('company_id', profile.company_id),
         supabase.from('supplier_requests').select('*').eq('company_id', profile.company_id).order('created_at', { ascending: false }),
         supabase.from('stock_transfers').select('*').eq('company_id', profile.company_id).order('requested_at', { ascending: false }),
         supabase.from('stock_count_sessions').select('*').eq('company_id', profile.company_id).order('created_at', { ascending: false }),
@@ -664,28 +677,22 @@ export function PlatformProvider({
         supabase.from('attendance_shifts').select('*').eq('company_id', profile.company_id).order('clock_in_at', { ascending: false }).limit(500),
         supabase.from('leave_requests').select('*').eq('company_id', profile.company_id).order('created_at', { ascending: false }),
         supabase.from('leave_balances').select('*').eq('company_id', profile.company_id),
+        supabase.from('user_locations').select('id,user_id,location_id'),
       ]);
 
+      const { data: dbTransferLines } = dbTransfers && dbTransfers.length > 0
+        ? await supabase
+            .from('stock_transfer_lines')
+            .select('id,transfer_id,product_id,source_lot_id,quantity_requested,quantity_approved,quantity_received,created_at')
+            .in('transfer_id', dbTransfers.map((transfer: any) => transfer.id))
+            .order('created_at', { ascending: true })
+        : { data: [] };
+
       if (cancelled) return;
-      const nextLocations = await Promise.all(
-        (dbLocations || []).map(async (row: any) => {
-          let imageUrl = row.image_url || null;
-          if (imageUrl && !imageUrl.startsWith('http')) {
-            try {
-              const { data: signed } = await supabase.storage
-                .from('stocky-private')
-                .createSignedUrl(imageUrl, 60 * 60 * 24 * 365);
-              if (signed?.signedUrl) {
-                imageUrl = signed.signedUrl;
-              }
-            } catch {
-              // Ignore signing error and fallback to stored path
-            }
-          }
-          return { ...mapLocation(row), imageUrl };
-        })
-      );
-      const { data: dbAssignments } = await supabase.from('user_locations').select('id,user_id,location_id');
+      const nextLocations = (dbLocations || []).map((row: any) => {
+        const location = mapLocation(row);
+        return { ...location, imageUrl: location.imageUrl?.startsWith('http') ? location.imageUrl : null };
+      });
       const nextAssigned = Array.from(new Set([...(userLocations || []).map((row: any) => row.location_id), ...nextLocations.filter((location) => location.managerUserId === profile.id).map((location) => location.id)]));
       const countLinesBySession = new Map<string, any[]>();
       (dbCountLines || []).forEach((line: any) => {
@@ -696,24 +703,10 @@ export function PlatformProvider({
 
       setAssignedLocationIds(nextAssigned);
       setLocations(nextLocations);
-      const nextProducts = await Promise.all(
-        (dbProducts || []).map(async (row: any) => {
-          let imageUrl = row.image_url || null;
-          if (imageUrl && !imageUrl.startsWith('http')) {
-            try {
-              const { data: signed } = await supabase.storage
-                .from('stocky-private')
-                .createSignedUrl(imageUrl, 60 * 60 * 24 * 365);
-              if (signed?.signedUrl) {
-                imageUrl = signed.signedUrl;
-              }
-            } catch {
-              // fallback
-            }
-          }
-          return { ...mapProduct(row), imageUrl };
-        })
-      );
+      const nextProducts = (dbProducts || []).map((row: any) => {
+        const product = mapProduct(row);
+        return { ...product, imageUrl: product.imageUrl?.startsWith('http') ? product.imageUrl : null };
+      });
       setProducts(nextProducts);
       setLots((dbLots || []).map(mapLot));
       setSuppliers((dbSuppliers || []).map(mapSupplier));
@@ -721,6 +714,7 @@ export function PlatformProvider({
       setSupplierProducts((dbSupplierProducts || []).map(mapSupplierProduct));
       setRequests((dbRequests || []).map(mapRequest));
       setTransfers((dbTransfers || []).map(mapTransfer));
+      setTransferLines((dbTransferLines || []).map(mapTransferLine));
       setCounts((dbCounts || []).map((count: any) => ({ ...count, lines: countLinesBySession.get(count.id) || [] })));
       setTeamMembers(dbTeam || []);
       setTeamAssignments(dbAssignments || []);
@@ -729,7 +723,8 @@ export function PlatformProvider({
       setTaskItems((dbTaskItems || []).map(mapTaskItem));
       setTaskExpected((dbTaskExpected || []).map(mapTaskExpected));
       setActivityLogs((dbActivityLogs || []).map(mapActivityLog));
-      setPersistedNotifications((syncedNotifications || []).map(mapNotification));
+       setNotificationSyncAvailable(false);
+       setPersistedNotifications([]);
       setAttendanceShifts((dbAttendanceShifts || []).map(mapAttendanceShift));
       setLeaveRequests((dbLeaveRequests || []).map(mapLeaveRequest));
       setLeaveBalances((dbLeaveBalances || []).map(mapLeaveBalance));
@@ -741,7 +736,43 @@ export function PlatformProvider({
       if (adminRoles.includes(role)) {
         setSelectedLocationId((current) => current || 'all');
       }
-      setLoading(false);
+       setLoading(false);
+
+       // Images and notifications are secondary data. Resolve them after the
+       // workspace is usable so private storage latency cannot block hydration.
+       const privateLocationRows = (dbLocations || []).filter((row: any) => row.image_url && !row.image_url.startsWith('http'));
+       const privateProductRows = (dbProducts || []).filter((row: any) => row.image_url && !row.image_url.startsWith('http'));
+       void Promise.all([
+         Promise.all(privateLocationRows.map(async (row: any) => {
+           try {
+             const { data: signed } = await supabase.storage.from('stocky-private').createSignedUrl(row.image_url, 60 * 60 * 24 * 365);
+             return signed?.signedUrl ? { id: row.id, url: signed.signedUrl } : null;
+           } catch { return null; }
+         })),
+         Promise.all(privateProductRows.map(async (row: any) => {
+           try {
+             const { data: signed } = await supabase.storage.from('stocky-private').createSignedUrl(row.image_url, 60 * 60 * 24 * 365);
+             return signed?.signedUrl ? { id: row.id, url: signed.signedUrl } : null;
+           } catch { return null; }
+         })),
+       ]).then(([locationImages, productImages]) => {
+         if (cancelled) return;
+         const locationUrlById = new Map(locationImages.filter(Boolean).map((item: any) => [item.id, item.url]));
+         const productUrlById = new Map(productImages.filter(Boolean).map((item: any) => [item.id, item.url]));
+         if (locationUrlById.size) setLocations((current) => current.map((location) => locationUrlById.has(location.id) ? { ...location, imageUrl: locationUrlById.get(location.id) } : location));
+         if (productUrlById.size) setProducts((current) => current.map((product) => productUrlById.has(product.id) ? { ...product, imageUrl: productUrlById.get(product.id) } : product));
+       });
+
+       void supabase.rpc('sync_stocky_notifications').then(({ data: syncedNotifications, error: notificationSyncError }) => {
+         if (notificationSyncError) {
+           console.warn('Notification sync unavailable; using live action queue', notificationSyncError.message);
+           return;
+         }
+         if (!cancelled) {
+           setNotificationSyncAvailable(true);
+           setPersistedNotifications((syncedNotifications || []).map(mapNotification));
+         }
+       });
     }
 
     load().catch((error) => {
@@ -1135,19 +1166,39 @@ export function PlatformProvider({
   const exportStock = () => {
     const productMap = new Map(products.map((product) => [product.id, product]));
     const locationMap = new Map(visibleLocations.map((location) => [location.id, location]));
-    const escape = (value: unknown) => `"${String(value ?? '').replace(/"/g, '""')}"`;
-    const header = ['Product', 'Barcode', 'Category', 'Location', 'Batch / lot', 'Quantity', 'Unit', 'Expiry date', 'Notify before (days)', 'Unit cost', 'Status'];
-    const rows = lots.filter((lot) => locationScope === 'all' || lot.locationId === locationScope).map((lot) => {
+    const isArabic = typeof document !== 'undefined' && document.documentElement.lang === 'ar';
+    const headers = isArabic
+      ? ['المنتج', 'الباركود', 'الفئة', 'الموقع', 'الدفعة', 'الكمية', 'الوحدة', 'تاريخ الانتهاء', 'التنبيه قبل (يوم)', 'تكلفة الوحدة', 'حد إعادة الطلب', 'قيمة المخزون', 'الحالة']
+      : ['Product', 'Barcode', 'Category', 'Location', 'Batch / lot', 'Quantity', 'Unit', 'Expiry date', 'Notify before (days)', 'Unit cost', 'Reorder point', 'Inventory value', 'Status'];
+    const dataRows = lots.filter((lot) => locationScope === 'all' || lot.locationId === locationScope).map((lot) => {
       const product = productMap.get(lot.productId);
-      return [product?.name, product?.barcode, product?.categoryName, locationMap.get(lot.locationId)?.name, lot.lotNumber, lot.quantityOnHand, product?.unitName, lot.expiryDate, lot.expiryNotificationDays, lot.unitCost, lot.status].map(escape).join(',');
+      return [
+        product?.name || '',
+        product?.barcode || '',
+        product?.categoryName || '',
+        locationMap.get(lot.locationId)?.name || '',
+        lot.lotNumber || '',
+        lot.quantityOnHand || 0,
+        product?.unitName || '',
+        lot.expiryDate || '',
+        lot.expiryNotificationDays ?? '',
+        userRole === 'staff' ? '' : lot.unitCost || 0,
+        product?.reorderPoint ?? '',
+        '',
+        lot.status || '',
+      ];
     });
-    const blob = new Blob([[header.map(escape).join(','), ...rows].join('\n')], { type: 'text/csv;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `stocky-stock-${new Date().toISOString().slice(0, 10)}.csv`;
-    link.click();
-    URL.revokeObjectURL(url);
+    const worksheet = XLSX.utils.aoa_to_sheet([headers, ...dataRows]);
+    dataRows.forEach((_, index) => {
+      const excelRow = index + 2;
+      worksheet[`L${excelRow}`] = userRole === 'staff'
+        ? { t: 'n', v: 0 }
+        : { t: 'n', f: `F${excelRow}*J${excelRow}` };
+    });
+    worksheet['!cols'] = headers.map((header) => ({ wch: Math.min(Math.max(header.length + 3, 12), 28) }));
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, isArabic ? 'مخزون' : 'Stock Inventory');
+    XLSX.writeFile(workbook, `Stocky_Stock_${new Date().toISOString().slice(0, 10)}.xlsx`);
   };
 
   const updateSupplierRequest = async (request: SupplierRequest, status: SupplierRequest['status']) => {
@@ -1158,22 +1209,22 @@ export function PlatformProvider({
 
   const createTransfer = async (input: { sourceLocationId: string; destinationLocationId: string; lines: Array<{ productId: string; quantity: number }>; note?: string }) => {
     const { error } = await supabase.rpc('create_stock_transfer_multi', { p_source_location_id: input.sourceLocationId, p_destination_location_id: input.destinationLocationId, p_lines: input.lines.map((line) => ({ product_id: line.productId, quantity: line.quantity })), p_note: input.note || null });
-    if (error) alert(error.message);
-    else refresh();
+    if (error) throw error;
+    refresh();
   };
 
   const approveTransfer = async (transfer: InventoryTransfer) => {
     const { error } = await supabase.rpc('approve_stock_transfer', { p_transfer_id: transfer.id, p_approve: true, p_note: null });
-    if (error) alert(error.message);
-    else refresh();
+    if (error) throw error;
+    refresh();
   };
 
   const receiveTransfer = async (transfer: InventoryTransfer, lines?: Array<{ lineId: string; quantityReceived: number }>, note?: string) => {
     const { error } = lines
       ? await supabase.rpc('receive_stock_transfer_partial', { p_transfer_id: transfer.id, p_lines: lines.map((line) => ({ line_id: line.lineId, quantity_received: line.quantityReceived })), p_note: note || null })
       : await supabase.rpc('receive_stock_transfer', { p_transfer_id: transfer.id });
-    if (error) alert(error.message);
-    else refresh();
+    if (error) throw error;
+    refresh();
   };
 
   const createLocation = async (input: { name: string; type: 'branch' | 'warehouse'; address?: string; phone?: string; managerUserId?: string; imageUrl?: string }) => {
@@ -1456,6 +1507,7 @@ export function PlatformProvider({
     supplierProducts,
     requests,
     transfers,
+    transferLines,
     counts,
     movements,
     teamMembers,
@@ -1485,8 +1537,11 @@ export function PlatformProvider({
     userPermissions,
     canManage: adminRoles.includes(userRole) || Boolean(userPermissions?.capabilities?.can_manage_team),
     canManageTasks: adminRoles.includes(userRole) || userRole === 'manager' || Boolean(userPermissions?.capabilities?.can_manage_attendance),
-    canEditStock: adminRoles.includes(userRole) || Boolean(userPermissions?.capabilities?.can_edit_stock),
-    canApproveTransfers: adminRoles.includes(userRole) || userRole === 'manager' || Boolean(userPermissions?.capabilities?.can_approve_transfers),
+    canEditStock:
+      adminRoles.includes(userRole) ||
+      (userRole === 'manager' && userPermissions?.capabilities?.can_edit_stock !== false) ||
+      Boolean(userPermissions?.capabilities?.can_edit_stock),
+    canApproveTransfers: adminRoles.includes(userRole) || (userRole === 'manager' && userPermissions?.capabilities?.can_approve_transfers !== false) || Boolean(userPermissions?.capabilities?.can_approve_transfers),
     canManageAttendance: adminRoles.includes(userRole) || userRole === 'manager' || Boolean(userPermissions?.capabilities?.can_manage_attendance),
     canManageTeam: adminRoles.includes(userRole) || Boolean(userPermissions?.capabilities?.can_manage_team),
     navigateToTab,

@@ -117,8 +117,8 @@ export function OnboardingView() {
       <PageContent className="flex-1 flex items-center justify-center py-10">
         <OrganizationOnboardingWidget
           userEmail={userEmail}
-          onSuccess={() => {
-            router.push('/verification-pending');
+          onSuccess={(companyCode) => {
+            router.push(companyCode ? `/${companyCode.toLowerCase()}` : '/platform');
           }}
         />
       </PageContent>

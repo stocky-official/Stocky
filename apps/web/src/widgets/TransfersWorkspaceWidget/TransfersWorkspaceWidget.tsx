@@ -3,13 +3,13 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { CompanyUserRole, InventoryTransfer, InventoryTransferLine, Location, Product, StockLot } from '@stocky/types';
-import { supabase } from '@/lib/supabase/client';
 import { CheckIcon, FilterIcon, WarehouseIcon, XIcon } from '@stocky/icons';
 import { BottomSheet } from '@/components/ui/BottomSheet';
 import { TransfersToolbarWidget, type TransferQueue } from './TransfersToolbarWidget';
 import { TransfersTableWidget, type TransferSortKey, type TransferSortDirection } from './TransfersTableWidget';
 import { TransferRequestDrawerWidget } from './TransferRequestDrawerWidget';
 import { TransferReceiveDrawerWidget } from './TransferReceiveDrawerWidget';
+import { useTranslation } from '@/lib/i18n';
 
 export interface TransfersWorkspaceWidgetProps {
   transfers: InventoryTransfer[];
@@ -20,33 +20,23 @@ export interface TransfersWorkspaceWidgetProps {
   selectedLocationId: string;
   defaultProductId?: string;
   userRole: CompanyUserRole;
+  receiveLocationId?: string;
   onCreate: (input: {
     sourceLocationId: string;
     destinationLocationId: string;
     lines: Array<{ productId: string; quantity: number }>;
     note?: string;
-  }) => void;
+  }) => void | Promise<void>;
   canApprove?: boolean;
-  onApprove: (transfer: InventoryTransfer) => void;
+  onApprove: (transfer: InventoryTransfer) => void | Promise<void>;
   onReceive: (
     transfer: InventoryTransfer,
     lines?: Array<{ lineId: string; quantityReceived: number }>,
     note?: string
-  ) => void;
+  ) => void | Promise<void>;
 }
 
 export type RedesignedTransfersWidgetProps = TransfersWorkspaceWidgetProps;
-
-const statusLabels: Record<InventoryTransfer['status'], string> = {
-  draft: 'Draft',
-  requested: 'Requested',
-  approved: 'Approved',
-  in_transit: 'In transit',
-  partially_received: 'Partially received',
-  received: 'Received',
-  rejected: 'Rejected',
-  cancelled: 'Cancelled',
-};
 
 function compareValues(left: string | number, right: string | number) {
   if (typeof left === 'number' && typeof right === 'number') return left - right;
@@ -62,15 +52,28 @@ export function TransfersWorkspaceWidget({
   selectedLocationId,
   defaultProductId,
   userRole,
+  receiveLocationId,
   canApprove,
   onCreate,
   onApprove,
   onReceive,
 }: TransfersWorkspaceWidgetProps) {
+  const { t } = useTranslation();
+  const statusLabels: Record<InventoryTransfer['status'], string> = {
+    draft: t('transfers.statusDraft'),
+    requested: t('transfers.statusRequested'),
+    approved: t('transfers.statusApproved'),
+    in_transit: t('transfers.statusInTransit'),
+    partially_received: t('transfers.statusPartiallyReceived'),
+    received: t('transfers.statusReceived'),
+    rejected: t('transfers.statusRejected'),
+    cancelled: t('transfers.statusCancelled'),
+  };
   const [isRequestDrawerOpen, setIsRequestDrawerOpen] = useState(Boolean(defaultProductId));
   const [receivingTransfer, setReceivingTransfer] = useState<InventoryTransfer | null>(null);
   const [queue, setQueue] = useState<TransferQueue>('all');
   const [search, setSearch] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(25);
   const [sort, setSort] = useState<{ key: TransferSortKey; direction: TransferSortDirection }>({
@@ -82,6 +85,7 @@ export function TransfersWorkspaceWidget({
   const [filterStatuses, setFilterStatuses] = useState<InventoryTransfer['status'][]>([]);
   const [filterOriginId, setFilterOriginId] = useState<string>('');
   const [filterDestinationId, setFilterDestinationId] = useState<string>('');
+  const [operationError, setOperationError] = useState<string | null>(null);
 
   const activeFilterCount = useMemo(() => {
     let count = 0;
@@ -120,37 +124,18 @@ export function TransfersWorkspaceWidget({
     };
   }, [isFilterDrawerOpen]);
 
-  const [loadedTransferLines, setLoadedTransferLines] = useState<InventoryTransferLine[]>([]);
-  const allTransferLines = transferLines.length > 0 ? transferLines : loadedTransferLines;
+  const allTransferLines = transferLines;
+
+  useEffect(() => {
+    const timeoutId = window.setTimeout(() => setDebouncedSearch(search), 150);
+    return () => window.clearTimeout(timeoutId);
+  }, [search]);
 
   useEffect(() => {
     if (defaultProductId) {
       setIsRequestDrawerOpen(true);
     }
   }, [defaultProductId]);
-
-  useEffect(() => {
-    if (transferLines.length > 0 || transfers.length === 0) return;
-    supabase
-      .from('stock_transfer_lines')
-      .select('*')
-      .in('transfer_id', transfers.map((transfer) => transfer.id))
-      .then(({ data }) => {
-        setLoadedTransferLines(
-          (data || []).map((row: any) => ({
-            id: row.id,
-            transferId: row.transfer_id,
-            productId: row.product_id,
-            sourceLotId: row.source_lot_id,
-            quantityRequested: Number(row.quantity_requested || 0),
-            quantityApproved:
-              row.quantity_approved == null ? null : Number(row.quantity_approved),
-            quantityReceived: Number(row.quantity_received || 0),
-            createdAt: row.created_at,
-          }))
-        );
-      });
-  }, [transferLines.length, transfers]);
 
   const locationMap = useMemo(
     () => new Map(locations.map((location) => [location.id, location])),
@@ -190,7 +175,7 @@ export function TransfersWorkspaceWidget({
     }`;
 
   const filteredTransfers = useMemo(() => {
-    const searchText = search.trim().toLowerCase();
+    const searchText = debouncedSearch.trim().toLowerCase();
     const activeTransfers = scopedTransfers.filter(
       (transfer) => !['received', 'rejected', 'cancelled'].includes(transfer.status)
     );
@@ -244,7 +229,7 @@ export function TransfersWorkspaceWidget({
         const result = compareValues(values[sort.key], rightValues[sort.key]);
         return sort.direction === 'asc' ? result : -result;
       });
-  }, [allTransferLines, locationMap, productMap, queue, scopedTransfers, search, selectedLocationId, sort]);
+  }, [allTransferLines, debouncedSearch, locationMap, productMap, queue, scopedTransfers, selectedLocationId, sort]);
 
   const handleSort = (key: TransferSortKey) => {
     setPage(0);
@@ -255,12 +240,27 @@ export function TransfersWorkspaceWidget({
     );
   };
 
-  const handleOpenReceipt = (transfer: InventoryTransfer) => {
+  const handleOpenReceipt = async (transfer: InventoryTransfer) => {
     const rows = linesForTransfer(transfer.id);
     if (rows.length === 0) {
-      return onReceive(transfer);
+      try {
+        setOperationError(null);
+        await onReceive(transfer);
+      } catch (error) {
+        setOperationError(error instanceof Error ? error.message : t('common.error'));
+      }
+      return;
     }
     setReceivingTransfer(transfer);
+  };
+
+  const handleApprove = async (transfer: InventoryTransfer) => {
+    try {
+      setOperationError(null);
+      await onApprove(transfer);
+    } catch (error) {
+      setOperationError(error instanceof Error ? error.message : t('common.error'));
+    }
   };
 
   const transferFilterContent = (isMobile = false) => (
@@ -270,7 +270,7 @@ export function TransfersWorkspaceWidget({
       exit={isMobile ? undefined : { opacity: 0, y: -6, scale: 0.99 }}
       transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
       role="dialog"
-      aria-label="Transfer filters"
+      aria-label={t('transfers.filterTransfers')}
       className={
         isMobile
           ? "flex flex-col min-h-0 bg-white"
@@ -286,20 +286,20 @@ export function TransfersWorkspaceWidget({
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h2 className="text-sm font-semibold text-stocky-text-main">Filter Transfers</h2>
+                <h2 className="text-sm font-semibold text-stocky-text-main">{t('transfers.filterTransfers')}</h2>
                 {activeFilterCount > 0 && (
                   <span className="rounded-full bg-stocky-primary px-2 py-0.5 text-[10px] font-semibold text-white">
-                    {activeFilterCount} active
+                    {t('transfers.activeFilters', { count: activeFilterCount })}
                   </span>
                 )}
               </div>
-              <p className="text-xs text-stocky-text-sub mt-0.5">Filter by transfer status and routing locations</p>
+              <p className="text-xs text-stocky-text-sub mt-0.5">{t('transfers.filterTransfersDescription')}</p>
             </div>
           </div>
           <button
             type="button"
             onClick={() => setIsFilterDrawerOpen(false)}
-            aria-label="Close transfer filters"
+            aria-label={t('common.close')}
             className="w-8 h-8 rounded-full flex items-center justify-center text-stocky-text-sub hover:text-stocky-text-main hover:bg-stocky-bg-global transition-colors cursor-pointer"
           >
             <XIcon size="xs" />
@@ -312,14 +312,14 @@ export function TransfersWorkspaceWidget({
         {/* Status Section */}
         <div>
           <div className="flex items-center justify-between mb-2.5">
-            <label className="text-xs font-semibold text-stocky-text-main">Transfer Status</label>
+            <label className="text-xs font-semibold text-stocky-text-main">{t('transfers.transferStatus')}</label>
             {filterStatuses.length > 0 && (
               <button
                 type="button"
                 onClick={() => setFilterStatuses([])}
                 className="text-[11px] text-stocky-text-sub hover:text-red-500 cursor-pointer"
               >
-                Clear
+                {t('common.clear')}
               </button>
             )}
           </div>
@@ -364,7 +364,7 @@ export function TransfersWorkspaceWidget({
           <div className="flex items-center justify-between mb-2">
             <label className="text-xs font-semibold text-stocky-text-main flex items-center gap-1.5">
               <WarehouseIcon size="xs" className="text-stocky-primary" />
-              Origin Location (From)
+              {t('transfers.originLocation')}
             </label>
             {filterOriginId && (
               <button
@@ -372,7 +372,7 @@ export function TransfersWorkspaceWidget({
                 onClick={() => setFilterOriginId('')}
                 className="text-[11px] text-stocky-text-sub hover:text-red-500 cursor-pointer"
               >
-                Clear
+                {t('common.clear')}
               </button>
             )}
           </div>
@@ -381,7 +381,7 @@ export function TransfersWorkspaceWidget({
             onChange={(e) => setFilterOriginId(e.target.value)}
             className="w-full h-10 px-3 rounded-xl bg-white border border-stocky-border-subtle text-xs text-stocky-text-main focus:border-stocky-primary focus:outline-none cursor-pointer"
           >
-            <option value="">All origin locations</option>
+            <option value="">{t('transfers.allOriginLocations')}</option>
             {locations.map((loc) => (
               <option key={loc.id} value={loc.id}>
                 {loc.name}
@@ -395,7 +395,7 @@ export function TransfersWorkspaceWidget({
           <div className="flex items-center justify-between mb-2">
             <label className="text-xs font-semibold text-stocky-text-main flex items-center gap-1.5">
               <WarehouseIcon size="xs" className="text-stocky-primary" />
-              Destination Location (To)
+              {t('transfers.destinationLocationFilter')}
             </label>
             {filterDestinationId && (
               <button
@@ -403,7 +403,7 @@ export function TransfersWorkspaceWidget({
                 onClick={() => setFilterDestinationId('')}
                 className="text-[11px] text-stocky-text-sub hover:text-red-500 cursor-pointer"
               >
-                Clear
+                {t('common.clear')}
               </button>
             )}
           </div>
@@ -412,7 +412,7 @@ export function TransfersWorkspaceWidget({
             onChange={(e) => setFilterDestinationId(e.target.value)}
             className="w-full h-10 px-3 rounded-xl bg-white border border-stocky-border-subtle text-xs text-stocky-text-main focus:border-stocky-primary focus:outline-none cursor-pointer"
           >
-            <option value="">All destination locations</option>
+            <option value="">{t('transfers.allDestinationLocations')}</option>
             {locations.map((loc) => (
               <option key={loc.id} value={loc.id}>
                 {loc.name}
@@ -425,7 +425,7 @@ export function TransfersWorkspaceWidget({
       {/* Footer */}
       <div className={`px-5 py-3.5 border-t border-stocky-border-subtle bg-white flex items-center justify-between shrink-0 ${isMobile ? 'mt-auto' : ''}`}>
         <span className="text-xs text-stocky-text-sub">
-          Showing <strong className="font-semibold text-stocky-text-main">{filteredTransfers.length}</strong> transfers
+          {t('transfers.showingTransfers', { count: filteredTransfers.length })}
         </span>
         <div className="flex items-center gap-2">
           {activeFilterCount > 0 && (
@@ -434,7 +434,7 @@ export function TransfersWorkspaceWidget({
               onClick={handleResetFilters}
               className="h-8 px-3 rounded-full text-xs font-medium text-stocky-text-sub hover:text-red-600 hover:bg-red-50 transition-colors cursor-pointer"
             >
-              Reset
+              {t('common.reset')}
             </button>
           )}
           <button
@@ -442,7 +442,7 @@ export function TransfersWorkspaceWidget({
             onClick={() => setIsFilterDrawerOpen(false)}
             className="h-8 px-5 rounded-full bg-stocky-text-main text-white text-xs font-semibold hover:opacity-90 transition-opacity cursor-pointer shadow-sm"
           >
-            Done
+            {t('transfers.done')}
           </button>
         </div>
       </div>
@@ -451,8 +451,16 @@ export function TransfersWorkspaceWidget({
 
   return (
     <div className="stocky-transfers-workspace flex flex-col gap-4">
+      {operationError && (
+        <div className="flex items-start justify-between gap-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700" role="alert">
+          <span>{operationError}</span>
+          <button type="button" onClick={() => setOperationError(null)} className="text-xs font-semibold underline">
+            {t('common.close')}
+          </button>
+        </div>
+      )}
       {/* Unified Table Workspace Card (stocky-page-redesign standard) */}
-      <div className="stocky-stock-unified-card rounded-2xl bg-white border border-stocky-border-subtle shadow-sm flex flex-col relative z-20 overflow-visible">
+      <div className="stocky-stock-unified-card rounded-xl bg-white border border-stocky-border-subtle shadow-none flex flex-col relative z-20 overflow-visible">
         {/* 1. Integrated Toolbar Header */}
         <div className="p-3 sm:p-3.5 border-b border-stocky-border-subtle relative z-30">
           <TransfersToolbarWidget
@@ -501,7 +509,8 @@ export function TransfersWorkspaceWidget({
             onPageChange={setPage}
             onPageSizeChange={setPageSize}
             canApprove={canApprove}
-            onApprove={onApprove}
+            receiveLocationId={receiveLocationId}
+            onApprove={handleApprove}
             onOpenReceipt={handleOpenReceipt}
             onRequestStock={() => setIsRequestDrawerOpen(true)}
             queue={queue}
@@ -515,8 +524,8 @@ export function TransfersWorkspaceWidget({
           mobileOnly
           isOpen={isFilterDrawerOpen}
           onClose={() => setIsFilterDrawerOpen(false)}
-          title="Filter Transfers"
-          subtitle={`Showing ${filteredTransfers.length} of ${transfers.length} transfers`}
+          title={t('transfers.filterTransfers')}
+          subtitle={t('transfers.showingTransfers', { count: filteredTransfers.length })}
         >
           {transferFilterContent(true)}
         </BottomSheet>

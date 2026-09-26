@@ -14,32 +14,28 @@ export interface I18nProviderProps {
   initialLocale?: Locale;
 }
 
-export function I18nProvider({ children, initialLocale = 'ar' }: I18nProviderProps) {
+export function I18nProvider({ children, initialLocale = 'en' }: I18nProviderProps) {
   const [locale, setLocaleState] = useState<Locale>(initialLocale);
 
-  // Initialize from cookie or localStorage on mount
+  // Server-provided locale and the explicit URL/cookie value take precedence
+  // over stale client storage so hydration cannot silently flip the page.
   useEffect(() => {
     try {
-      const stored = localStorage.getItem('stocky_locale') as Locale | null;
-      if (stored === 'en' || stored === 'ar') {
-        setLocaleState(stored);
-        document.documentElement.lang = stored;
-        document.documentElement.dir = stored === 'ar' ? 'rtl' : 'ltr';
-        return;
-      }
-      // Check cookies
+      const queryLocale = new URLSearchParams(window.location.search).get('stocky_locale');
       const match = document.cookie.match(/(?:^|;\s*)stocky_locale=([^;]+)/);
-      if (match && (match[1] === 'en' || match[1] === 'ar')) {
-        const cookieLocale = match[1] as Locale;
-        setLocaleState(cookieLocale);
-        document.documentElement.lang = cookieLocale;
-        document.documentElement.dir = cookieLocale === 'ar' ? 'rtl' : 'ltr';
-        return;
+      const cookieLocale = match?.[1] === 'en' || match?.[1] === 'ar' ? match[1] as Locale : null;
+      const stored = localStorage.getItem('stocky_locale') as Locale | null;
+      const storedLocale = stored === 'en' || stored === 'ar' ? stored : null;
+      const nextLocale: Locale = queryLocale === 'en' || queryLocale === 'ar'
+        ? queryLocale
+        : cookieLocale || initialLocale || storedLocale || 'en';
+      setLocaleState(nextLocale);
+      document.documentElement.lang = nextLocale;
+      document.documentElement.dir = nextLocale === 'ar' ? 'rtl' : 'ltr';
+      if (queryLocale === 'en' || queryLocale === 'ar') {
+        localStorage.setItem('stocky_locale', queryLocale);
+        document.cookie = `stocky_locale=${queryLocale}; path=/; max-age=31536000; SameSite=Lax`;
       }
-      // Default to Arabic
-      setLocaleState('ar');
-      document.documentElement.lang = 'ar';
-      document.documentElement.dir = 'rtl';
     } catch {
       // Fallback gracefully in restricted environments
     }
@@ -123,10 +119,10 @@ export function useTranslation(): I18nContextValue {
   if (!context) {
     // Fallback if rendered outside provider
     return {
-      locale: 'ar',
+    locale: 'en',
       setLocale: () => {},
-      dir: 'rtl',
-      isRtl: true,
+      dir: 'ltr',
+      isRtl: false,
       t: (key: string) => key,
     };
   }

@@ -12,7 +12,6 @@ import {
   FilterIcon,
   MailIcon,
   PlusIcon,
-  SearchIcon,
   TruckIcon,
   XIcon,
 } from '@stocky/icons';
@@ -112,10 +111,7 @@ export function InventoryWorkspaceWidget({
   const [taskAssignmentOpen, setTaskAssignmentOpen] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
   const isStaff = userRole === 'staff';
-  const canChooseLocation = userRole === 'owner' || userRole === 'admin';
-  const isCompanyView = canChooseLocation && selectedLocationId === 'all';
-  const isManagerView = userRole === 'manager';
-  const isTableView = isCompanyView || isManagerView;
+  const isTableView = true;
   const canImport = userRole !== 'staff';
 
   // Full-Width Filter Workspace Panel state
@@ -547,6 +543,7 @@ export function InventoryWorkspaceWidget({
               lots={activeDetailRow.lots}
               locations={locations}
               suppliers={suppliers}
+              canViewCommercials={!isStaff}
               onSaveLot={isStaff ? undefined : onSaveLot}
               onDeleteLot={isStaff ? undefined : onDeleteLot}
             />
@@ -566,8 +563,9 @@ export function InventoryWorkspaceWidget({
           : (row.lots.find((lot) => lot.supplierId && supplierNames.has(lot.supplierId))?.supplierId
               ? supplierNames.get(row.lots.find((lot) => lot.supplierId && supplierNames.has(lot.supplierId))!.supplierId!)
               : null);
-        return <div key={row.product.id} role="button" tabIndex={0} onClick={() => setSelectedProductId(row.product.id)} onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); setSelectedProductId(row.product.id); } }} className={`stocky-mobile-stock-row ${isSelected ? 'stocky-mobile-stock-row--selected' : ''}`}>
+        return <div key={row.product.id} className={`stocky-mobile-stock-row ${isSelected ? 'stocky-mobile-stock-row--selected' : ''}`}>
           {canManageTasks && <input type="checkbox" checked={isSelected} onClick={(event) => event.stopPropagation()} onChange={() => setSelectedProductIds((current) => current.includes(row.product.id) ? current.filter((id) => id !== row.product.id) : [...current, row.product.id])} aria-label={`Select ${row.product.name}`} className="stocky-mobile-stock-row__checkbox" />}
+          <button type="button" onClick={() => setSelectedProductId(row.product.id)} aria-label={row.product.name} className="min-w-0 flex flex-1 items-center gap-2.5 bg-transparent p-0 text-start text-inherit">
           <div className="relative flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-stocky-border-subtle bg-stocky-bg-global text-stocky-text-sub select-none">
             {row.product.imageUrl ? (
               <img src={row.product.imageUrl} alt={row.product.name} className="h-full w-full object-cover" />
@@ -590,6 +588,7 @@ export function InventoryWorkspaceWidget({
               {state.label}
             </small>
           </span>
+          </button>
         </div>;
       })}
     </div>
@@ -616,6 +615,7 @@ export function InventoryWorkspaceWidget({
       onAudit={() => openTaskAssignment('count', [])}
       onResupply={() => setResupplyModalOpen(true)}
       onReceive={() => onReceive()}
+      primaryActionLabel={isStaff ? t('common.receiveStock') : undefined}
     />
   );
 
@@ -699,7 +699,7 @@ export function InventoryWorkspaceWidget({
       </section>}
 
       {/* Unified Table Workspace Card */}
-      <div className="stocky-stock-unified-card rounded-2xl bg-white border border-stocky-border-subtle shadow-sm flex flex-col relative z-20 overflow-visible">
+      <div className="stocky-stock-unified-card rounded-xl bg-white border border-stocky-border-subtle shadow-none flex flex-col relative z-20 overflow-visible">
         {/* 1. Integrated Toolbar Header */}
         <div ref={filterBarRef} className="p-3 sm:p-3.5 border-b border-stocky-border-subtle relative z-30">
           {stockToolbarContent}
@@ -718,14 +718,14 @@ export function InventoryWorkspaceWidget({
           {rows.length === 0 ? (
             <div className="px-6 py-16 text-center">
               <BoxesIcon size="md" className="mx-auto text-stocky-text-sub/50" />
-              <h2 className="mt-3 text-base font-medium text-stocky-text-main">No inventory found</h2>
-              <p className="mt-1 text-sm text-stocky-text-sub">Try another search or receive your first delivery.</p>
-              <button type="button" onClick={() => onReceive()} className="mt-4 h-9 px-4 rounded-lg bg-stocky-primary text-white text-xs font-medium cursor-pointer">Receive inventory</button>
+              <h2 className="mt-3 text-base font-medium text-stocky-text-main">{t('inventory.noProductsFound')}</h2>
+              <p className="mt-1 text-sm text-stocky-text-sub">{t('inventory.tryAdjustingSearch')}</p>
+              <button type="button" onClick={() => onReceive()} className="mt-4 stocky-table-toolbar-button stocky-table-toolbar-button--primary h-10 px-4 rounded-full text-xs font-medium inline-flex items-center justify-center gap-1.5 whitespace-nowrap cursor-pointer"><PlusIcon size="xs" /> {t('inventory.receiveStock')}</button>
             </div>
           ) : isTableView ? (
             <>
               <div className="stocky-stock-desktop-view">
-                <InventoryTableWidget rows={rows} locations={locations} suppliers={suppliers} onReceive={onReceive} onEdit={onEditProduct} onDelete={onDeleteProduct} selectedProductId={selectedProductId} onSelectProduct={(productId) => setSelectedProductId(productId)} canSelect={canManageTasks} selectedProductIds={selectedProductIds} onToggleProduct={(productId) => setSelectedProductIds((current) => current.includes(productId) ? current.filter((id) => id !== productId) : [...current, productId])} onToggleAll={(productIds) => setSelectedProductIds(productIds)} lastAuditByProduct={lastAuditByProduct} />
+                <InventoryTableWidget rows={rows} locations={locations} suppliers={suppliers} onReceive={onReceive} onTransfer={onTransfer} onEdit={onEditProduct} onDelete={onDeleteProduct} selectedProductId={selectedProductId} onSelectProduct={(productId) => setSelectedProductId(productId)} canSelect={canManageTasks} selectedProductIds={selectedProductIds} onToggleProduct={(productId) => setSelectedProductIds((current) => current.includes(productId) ? current.filter((id) => id !== productId) : [...current, productId])} onToggleAll={(productIds) => setSelectedProductIds(productIds)} lastAuditByProduct={lastAuditByProduct} />
               </div>
               <div className="stocky-stock-mobile-view">
                 {mobileStockList}
@@ -768,4 +768,3 @@ export function InventoryWorkspaceWidget({
 }
 
 export const RedesignedStockWorkspaceWidget = InventoryWorkspaceWidget;
-

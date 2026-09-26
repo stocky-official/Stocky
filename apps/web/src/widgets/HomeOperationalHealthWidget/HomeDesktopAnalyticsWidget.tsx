@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import type {
   AttendanceShift,
   Location,
@@ -33,6 +33,10 @@ export interface HomeDesktopAnalyticsWidgetProps {
   onOpenProduct?: (productId: string) => void;
   onOpenAttendance?: () => void;
   onOpenExpiry?: () => void;
+  canExport?: boolean;
+  canViewCommercials?: boolean;
+  initialLocationId?: string;
+  onLocationChange?: (locationId: string) => void;
 }
 
 export function HomeDesktopAnalyticsWidget({
@@ -49,13 +53,26 @@ export function HomeDesktopAnalyticsWidget({
   onOpenProduct,
   onOpenAttendance,
   onOpenExpiry,
+  canExport = true,
+  canViewCommercials = true,
+  initialLocationId = 'all',
+  onLocationChange,
 }: HomeDesktopAnalyticsWidgetProps) {
   // 1. Dashboard Global Slicers State (Power BI style cross-filtering)
   const [timeframe, setTimeframe] = useState<TimeframeOption>('30D');
-  const [selectedLocationId, setSelectedLocationId] = useState<string>('all');
+  const [selectedLocationId, setSelectedLocationId] = useState<string>(initialLocationId);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [selectedRiskFilter, setSelectedRiskFilter] = useState<RiskFilterOption>('all');
   const [isExportingAll, setIsExportingAll] = useState(false);
+
+  useEffect(() => {
+    setSelectedLocationId(initialLocationId || 'all');
+  }, [initialLocationId]);
+
+  const handleLocationChange = (locationId: string) => {
+    setSelectedLocationId(locationId);
+    onLocationChange?.(locationId);
+  };
 
   // Available categories across active catalog
   const categories = useMemo(() => {
@@ -85,8 +102,11 @@ export function HomeDesktopAnalyticsWidget({
         return 30;
       case '90D':
         return 90;
-      case 'YTD':
-        return 180;
+      case 'YTD': {
+        const now = new Date();
+        const startOfYear = new Date(now.getFullYear(), 0, 1);
+        return Math.floor((now.getTime() - startOfYear.getTime()) / 86400000) + 1;
+      }
       default:
         return 30;
     }
@@ -104,9 +124,13 @@ export function HomeDesktopAnalyticsWidget({
       return (lot.quantityOnHand || 0) > 0;
     });
 
-    const totalUnits = filteredLots.reduce((acc, l) => acc + (l.quantityOnHand || 0), 0) || (selectedLocationId === 'all' ? 16220 : 4850);
-    const totalValuation = filteredLots.reduce((acc, l) => acc + (l.quantityOnHand || 0) * (l.unitCost || 0), 0) || (totalUnits * 7.8);
-    const totalBranches = selectedLocationId === 'all' ? (locations.length || 4) : 1;
+    const totalUnits = filteredLots.reduce((acc, l) => acc + (l.quantityOnHand || 0), 0);
+    const totalValuation = canViewCommercials
+      ? filteredLots.reduce((acc, l) => acc + (l.quantityOnHand || 0) * (l.unitCost || 0), 0)
+      : 0;
+    const totalBranches = selectedLocationId === 'all'
+      ? locations.length
+      : locations.some((location) => location.id === selectedLocationId) ? 1 : 0;
 
     // Movement volume
     const cutoffDate = new Date(Date.now() - daysInTimeframe * 86400000).toISOString();
@@ -115,22 +139,60 @@ export function HomeDesktopAnalyticsWidget({
       if (m.createdAt && m.createdAt < cutoffDate) return false;
       return true;
     });
+    const scopedMovements = movements.filter(
+      (movement) => selectedLocationId === 'all' || movement.locationId === selectedLocationId
+    );
 
-    const totalUnitsMoved = filteredMovements.reduce((acc, m) => acc + Math.abs(m.quantityDelta || 0), 0) || Math.round(totalUnits * 0.28);
-    const movementCount = filteredMovements.length || (daysInTimeframe * 2);
+    const totalUnitsMoved = filteredMovements.reduce((acc, m) => acc + Math.abs(m.quantityDelta || 0), 0);
+    const movementCount = filteredMovements.length;
 
     // Dormant / Stagnant Capital
-    const dormantCapital = Math.round(totalValuation * 0.12) || 14200;
-    const dormantSkuCount = Math.max(3, Math.round(products.length * 0.15) || 5);
+    const dormantCutoff = new Date(Date.now() - 90 * 86400000).toISOString();
+    const latestMovementByLot = new Map<string, string>();
+    scopedMovements.forEach((movement) => {
+      const key = `${movement.productId}:${movement.locationId}`;
+      if (!movement.createdAt) return;
+      const current = latestMovementByLot.get(key);
+      if (!current || movement.createdAt > current) latestMovementByLot.set(key, movement.createdAt);
+    });
+    const dormantLots = filteredLots.filter((lot) => {
+      const latestMovement = latestMovementByLot.get(`${lot.productId}:${lot.locationId}`);
+      return !latestMovement || latestMovement < dormantCutoff;
+    });
+    const dormantCapital = canViewCommercials
+      ? Math.round(dormantLots.reduce((acc, lot) => acc + (lot.quantityOnHand || 0) * (lot.unitCost || 0), 0))
+      : 0;
+    const dormantSkuCount = new Set(dormantLots.map((lot) => lot.productId)).size;
 
     // Risks
-    const expiringSkuCount = Math.max(2, Math.round(products.length * 0.08) || 3);
-    const lowStockCount = Math.max(1, Math.round(products.length * 0.1) || 4);
+    const next30 = new Date(Date.now() + 30 * 86400000).toISOString().split('T')[0];
+    const today = new Date().toISOString().split('T')[0];
+    const expiringSkuCount = new Set(
+      filteredLots
+        .filter((lot) => lot.expiryDate && lot.expiryDate >= today && lot.expiryDate <= next30)
+        .map((lot) => lot.productId)
+    ).size;
+    const unitsByProduct = new Map<string, number>();
+    filteredLots.forEach((lot) => unitsByProduct.set(lot.productId, (unitsByProduct.get(lot.productId) || 0) + (lot.quantityOnHand || 0)));
+    const lowStockCount = products.filter((product) => {
+      if (selectedCategory !== 'all' && product.categoryName !== selectedCategory) return false;
+      const units = unitsByProduct.get(product.id) || 0;
+      return product.reorderPoint != null && units <= product.reorderPoint;
+    }).length;
 
     // Workforce
-    const totalStaffCount = teamMembers.length || 12;
-    const activeStaffOnDuty = Math.max(2, Math.round(totalStaffCount * 0.8));
-    const attendancePct = 92;
+    const totalStaffCount = teamMembers.length;
+    const activeStaffOnDuty = new Set(
+      shifts.filter((shift) => {
+        const shiftDate = shift.shiftDate || shift.clockInAt?.slice(0, 10);
+        return Boolean(shiftDate && shiftDate >= cutoffDate.slice(0, 10));
+      })
+        .filter((shift) => ['present', 'late'].includes(shift.status))
+        .map((shift) => shift.companyUserId)
+    ).size;
+    const attendancePct = totalStaffCount > 0
+      ? Math.round((Math.min(totalStaffCount, activeStaffOnDuty) / totalStaffCount) * 100)
+      : 0;
 
     return {
       totalValuation: Math.round(totalValuation),
@@ -146,10 +208,12 @@ export function HomeDesktopAnalyticsWidget({
       activeStaffOnDuty,
       totalStaffCount,
     };
-  }, [lots, products, locations, movements, teamMembers, daysInTimeframe, selectedLocationId, selectedCategory]);
+  }, [lots, products, locations, movements, shifts, teamMembers, daysInTimeframe, selectedLocationId, selectedCategory, canViewCommercials]);
 
   // Full Multi-Sheet Dashboard Export Handler
   const handleExportAllWorkbook = () => {
+    if (!canExport) return;
+
     try {
       setIsExportingAll(true);
 
@@ -169,54 +233,111 @@ export function HomeDesktopAnalyticsWidget({
         { Metric: 'Staff On Duty', Value: `${kpiData.activeStaffOnDuty} / ${kpiData.totalStaffCount}` },
       ];
 
-      // Sheet 2: Branch Network
-      const branchRows = (locations.length > 0 ? locations : [
-        { id: 'loc-1', name: 'Olaya Central', type: 'branch', address: 'Riyadh' },
-        { id: 'loc-2', name: 'Corniche Retail', type: 'branch', address: 'Jeddah' },
-        { id: 'loc-3', name: 'Eastern Warehouse', type: 'warehouse', address: 'Dammam' },
-        { id: 'loc-4', name: 'Madinah Branch', type: 'branch', address: 'Madinah' },
-      ]).map((loc, idx) => ({
-        'Location Name': loc.name,
-        'Type': (loc.type || 'branch').toUpperCase(),
-        'Address': loc.address || 'Saudi Arabia',
-        'Estimated Units': idx === 0 ? 4850 : idx === 1 ? 3120 : idx === 2 ? 6400 : 1850,
-        'Estimated Value ($)': idx === 0 ? 38800 : idx === 1 ? 24960 : idx === 2 ? 51200 : 14800,
-        'Staff Assigned': Math.max(2, (idx * 2 + 3) % 7),
-      }));
+      const scopedLocations = selectedLocationId === 'all'
+        ? locations
+        : locations.filter((location) => location.id === selectedLocationId);
+      const exportCutoff = new Date(Date.now() - daysInTimeframe * 86400000).toISOString();
+      const scopedMovements = movements.filter((movement) => {
+        if (selectedLocationId !== 'all' && movement.locationId !== selectedLocationId) return false;
+        return !movement.createdAt || movement.createdAt >= exportCutoff;
+      });
 
-      // Sheet 3: Top Movers
-      const topMoverRows = (products.length > 0 ? products.slice(0, 6) : [
-        { name: 'Whole Milk 1L', categoryName: 'Dairy & Fresh' },
-        { name: 'Fresh Orange Juice 500ml', categoryName: 'Beverages' },
-        { name: 'Arabic Pita Bread 6pk', categoryName: 'Bakery' },
-        { name: 'Greek Yogurt 150g', categoryName: 'Dairy & Fresh' },
-        { name: 'Sparkling Mineral Water', categoryName: 'Beverages' },
-        { name: 'Salted Butter 200g', categoryName: 'Dairy & Fresh' },
-      ]).map((p, idx) => ({
-        'Product Name': p.name,
-        'Category': p.categoryName || 'General',
-        'Units Moved': Math.max(120, (6 - idx) * 240 + 45),
-        'Active Batches': Math.max(3, (6 - idx) * 3),
-        'Run-Rate Score': Math.max(25, (6 - idx) * 55),
-      }));
+      // Sheet 2: Branch Network (only real locations and measured values)
+      const branchRows = scopedLocations.map((location) => {
+        const branchLots = lots.filter((lot) => lot.locationId === location.id && (lot.quantityOnHand || 0) > 0);
+        const assignedStaff = new Set([
+          ...teamAssignments.filter((assignment) => assignment.location_id === location.id).map((assignment) => assignment.user_id),
+          ...teamMembers.filter((member) => member.branchIds?.includes(location.id)).map((member) => member.id),
+        ]);
+        return {
+          'Location Name': location.name,
+          'Type': (location.type || 'branch').toUpperCase(),
+          'Address': location.address || '',
+          'Inventory Units': branchLots.reduce((sum, lot) => sum + (lot.quantityOnHand || 0), 0),
+          'Inventory Value ($)': canViewCommercials
+            ? branchLots.reduce((sum, lot) => sum + (lot.quantityOnHand || 0) * (lot.unitCost || 0), 0)
+            : null,
+          'Staff Assigned': assignedStaff.size,
+        };
+      });
 
-      // Sheet 4: Lagging Inventory
-      const laggingRows = [
-        { 'Product Name': 'Spiced Canned Tuna 185g', Category: 'Canned Goods', 'Stock Units': 95, 'Capital Tied ($)': 617, 'Days Dormant': 45 },
-        { 'Product Name': 'Almond Milk Unsweetened 1L', Category: 'Dairy & Fresh', 'Stock Units': 82, 'Capital Tied ($)': 984, 'Days Dormant': 52 },
-        { 'Product Name': 'Organic Honey 250g', Category: 'Pantry', 'Stock Units': 64, 'Capital Tied ($)': 1568, 'Days Dormant': 60 },
-        { 'Product Name': 'Sparkling Lemonade 330ml', Category: 'Beverages', 'Stock Units': 70, 'Capital Tied ($)': 315, 'Days Dormant': 38 },
-        { 'Product Name': 'Whole Wheat Crackers', Category: 'Snacks', 'Stock Units': 50, 'Capital Tied ($)': 400, 'Days Dormant': 42 },
-      ];
+      // Sheet 3: Top Movers (movement facts from the selected scope/timeframe)
+      const movementByProduct = new Map<string, { unitsMoved: number; batches: number }>();
+      scopedMovements.forEach((movement) => {
+        const current = movementByProduct.get(movement.productId) || { unitsMoved: 0, batches: 0 };
+        current.unitsMoved += Math.abs(movement.quantityDelta || 0);
+        current.batches += 1;
+        movementByProduct.set(movement.productId, current);
+      });
+      const topMoverRows = products
+        .filter((product) => selectedCategory === 'all' || product.categoryName === selectedCategory)
+        .map((product) => {
+          const stats = movementByProduct.get(product.id) || { unitsMoved: 0, batches: 0 };
+          return {
+            'Product Name': product.name,
+            'Category': product.categoryName || 'General',
+            'Units Moved': stats.unitsMoved,
+            'Active Batches': stats.batches,
+            'Run-Rate Score': Math.round(stats.unitsMoved / Math.max(1, daysInTimeframe / 7)),
+          };
+        })
+        .filter((row) => row['Units Moved'] > 0)
+        .sort((a, b) => b['Units Moved'] - a['Units Moved'])
+        .slice(0, 6);
 
-      // Sheet 5: Team Attendance
-      const attendanceRows = [
-        { Date: '2026-09-15', 'Present Staff': 10, 'Late Arrivals': 1, 'Off Duty': 1, 'Hours Logged': 84.5 },
-        { Date: '2026-09-14', 'Present Staff': 9, 'Late Arrivals': 2, 'Off Duty': 1, 'Hours Logged': 82.0 },
-        { Date: '2026-09-13', 'Present Staff': 11, 'Late Arrivals': 0, 'Off Duty': 1, 'Hours Logged': 88.0 },
-        { Date: '2026-09-12', 'Present Staff': 6, 'Late Arrivals': 0, 'Off Duty': 6, 'Hours Logged': 48.0 },
-        { Date: '2026-09-11', 'Present Staff': 5, 'Late Arrivals': 1, 'Off Duty': 6, 'Hours Logged': 44.0 },
-      ];
+      // Sheet 4: Lagging Inventory (derived from last received/movement timestamps)
+      const laggingRows = products
+        .filter((product) => selectedCategory === 'all' || product.categoryName === selectedCategory)
+        .map((product) => {
+          const productLots = lots.filter((lot) =>
+            lot.productId === product.id &&
+            (selectedLocationId === 'all' || lot.locationId === selectedLocationId) &&
+            (lot.quantityOnHand || 0) > 0
+          );
+          const productDates = [
+            ...productLots.map((lot) => lot.receivedAt).filter(Boolean),
+            ...movements
+              .filter((movement) => movement.productId === product.id && (selectedLocationId === 'all' || movement.locationId === selectedLocationId))
+              .map((movement) => movement.createdAt)
+              .filter(Boolean),
+          ] as string[];
+          const latestDate = productDates.sort().at(-1);
+          const daysDormant = latestDate ? Math.max(0, Math.floor((Date.now() - new Date(latestDate).getTime()) / 86400000)) : 0;
+          const stockUnits = productLots.reduce((sum, lot) => sum + (lot.quantityOnHand || 0), 0);
+          return {
+            'Product Name': product.name,
+            Category: product.categoryName || 'General',
+            'Stock Units': stockUnits,
+            'Capital Tied ($)': canViewCommercials ? Math.round(stockUnits * (product.unitCost || 0)) : null,
+            'Days Dormant': daysDormant,
+          };
+        })
+        .filter((row) => row['Stock Units'] > 0 && row['Days Dormant'] > 0)
+        .sort((a, b) => Number(b['Capital Tied ($)'] || 0) - Number(a['Capital Tied ($)'] || 0))
+        .slice(0, 5);
+
+      // Sheet 5: Team Attendance (only recorded shifts in the selected timeframe)
+      const attendanceByDate = new Map<string, { present: number; late: number; offDuty: number; hours: number }>();
+      shifts.forEach((shift) => {
+        const date = shift.shiftDate || shift.clockInAt?.slice(0, 10);
+        if (!date || date < exportCutoff.slice(0, 10)) return;
+        if (selectedLocationId !== 'all' && shift.locationId !== selectedLocationId) return;
+        const current = attendanceByDate.get(date) || { present: 0, late: 0, offDuty: 0, hours: 0 };
+        if (shift.status === 'present') current.present += 1;
+        else if (shift.status === 'late') current.late += 1;
+        else current.offDuty += 1;
+        current.hours += shift.totalMinutes ? shift.totalMinutes / 60 : 0;
+        attendanceByDate.set(date, current);
+      });
+      const attendanceRows = Array.from(attendanceByDate.entries())
+        .sort(([a], [b]) => b.localeCompare(a))
+        .map(([date, value]) => ({
+          Date: date,
+          'Present Staff': value.present,
+          'Late Arrivals': value.late,
+          'Off Duty': value.offDuty,
+          'Hours Logged': Number(value.hours.toFixed(1)),
+        }));
 
       exportFullDashboardToExcel({
         dashboardName: 'Stocky_Command_Center_Dashboard',
@@ -240,7 +361,7 @@ export function HomeDesktopAnalyticsWidget({
         locations={locations}
         categories={categories}
         selectedLocationId={selectedLocationId}
-        onSelectLocation={setSelectedLocationId}
+        onSelectLocation={handleLocationChange}
         timeframe={timeframe}
         onChangeTimeframe={setTimeframe}
         selectedCategory={selectedCategory}
@@ -248,7 +369,7 @@ export function HomeDesktopAnalyticsWidget({
         selectedRiskFilter={selectedRiskFilter}
         onSelectRiskFilter={setSelectedRiskFilter}
         onResetFilters={handleResetFilters}
-        onExportAll={handleExportAllWorkbook}
+        onExportAll={canExport ? handleExportAllWorkbook : undefined}
         isExporting={isExportingAll}
       />
 
@@ -266,6 +387,7 @@ export function HomeDesktopAnalyticsWidget({
         attendancePct={kpiData.attendancePct}
         activeStaffOnDuty={kpiData.activeStaffOnDuty}
         totalStaffCount={kpiData.totalStaffCount}
+        canViewCommercials={canViewCommercials}
         onOpenStock={() => onOpenStock && onOpenStock(selectedLocationId !== 'all' ? selectedLocationId : undefined)}
         onOpenExpiry={onOpenExpiry}
         onOpenAttendance={onOpenAttendance}
@@ -281,6 +403,7 @@ export function HomeDesktopAnalyticsWidget({
             teamMembers={teamMembers}
             teamAssignments={teamAssignments}
             shifts={shifts}
+            canViewCommercials={canViewCommercials}
             onSelectLocation={onOpenStock}
           />
         </div>
@@ -297,6 +420,8 @@ export function HomeDesktopAnalyticsWidget({
             onSelectLocation={onOpenStock}
             externalTimeframe={timeframe}
             externalLocationId={selectedLocationId}
+            canViewCommercials={canViewCommercials}
+            canExport={canExport}
           />
         </div>
       </div>
@@ -313,6 +438,7 @@ export function HomeDesktopAnalyticsWidget({
             externalTimeframe={timeframe}
             externalCategory={selectedCategory}
             externalLocationId={selectedLocationId}
+            canExport={canExport}
           />
         </div>
 
@@ -321,12 +447,15 @@ export function HomeDesktopAnalyticsWidget({
           <HomeLaggingProductsChartWidget
             products={products}
             lots={lots}
+            movements={movements}
             tasks={tasks}
             taskItems={taskItems}
             onOpenProduct={onOpenProduct}
             externalTimeframe={timeframe}
             externalCategory={selectedCategory}
             externalLocationId={selectedLocationId}
+            canViewCommercials={canViewCommercials}
+            canExport={canExport}
           />
         </div>
       </div>
@@ -342,6 +471,7 @@ export function HomeDesktopAnalyticsWidget({
             onOpenAttendance={onOpenAttendance}
             externalTimeframe={timeframe}
             externalLocationId={selectedLocationId}
+            canExport={canExport}
           />
         </div>
       </div>

@@ -5,10 +5,12 @@ import {
   BarcodeIcon,
   BellIcon,
   ChevronDownIcon,
+  ArrowUpRightIcon,
   SearchIcon,
 } from '@stocky/icons';
 import type { Location } from '@stocky/types';
 import { useTranslation } from '@/lib/i18n';
+import { LanguageSwitcher } from '@/components/ui';
 
 export interface HomeHeroWidgetProps {
   userName?: string | null;
@@ -91,22 +93,25 @@ export function HomeHeroWidget({
             {/* Greeting Editorial */}
             <div className="flex flex-col min-w-0">
               <h2 className="text-xl sm:text-2xl lg:text-3xl text-white font-normal tracking-tight leading-snug">
-                {t('home.greeting', { name: firstName })}
+                {t('home.greeting', { name: '' })}<bdi>{firstName}</bdi>
               </h2>
               <p className="text-white/80 text-xs sm:text-sm font-normal mt-0.5">
-                {t('home.liveStatus', { location: displayLocation })}
+                {t('home.liveStatus', { location: '' })}<bdi>{displayLocation}</bdi>
               </p>
             </div>
           </div>
 
           {/* Branch Switcher (Desktop Right-Aligned) */}
           {locations && locations.length > 0 && onSelectLocation && (
-            <div className="relative hidden sm:flex items-center shrink-0">
+            <div className="relative hidden sm:flex items-center gap-2 shrink-0">
+              <LanguageSwitcher variant="compact" />
+              {locations.length > 1 && (
+                <>
               <select
                 value={selectedLocationId || 'all'}
                 onChange={(e) => onSelectLocation(e.target.value)}
                 aria-label="Switch location"
-                className="opacity-0 absolute inset-0 w-full h-full cursor-pointer z-10"
+                className="opacity-0 focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-stocky-accent absolute inset-0 w-full h-full cursor-pointer z-10"
               >
                 <option value="all">{t('home.allLocationsNetwork')}</option>
                 {locations.map((loc) => (
@@ -119,9 +124,11 @@ export function HomeHeroWidget({
                 type="button"
                 className="inline-flex items-center gap-1.5 text-xs font-medium text-stocky-accent hover:underline cursor-pointer bg-white/10 hover:bg-white/15 px-3 py-1.5 rounded-full border border-white/15 transition-colors backdrop-blur-md"
               >
-                <span>↗ {t('home.switchBranch')}</span>
+                <span className="inline-flex items-center gap-1"><ArrowUpRightIcon size="xs" className="rtl:rotate-180" />{t('home.switchBranch')}</span>
                 <ChevronDownIcon size="xs" />
               </button>
+                </>
+              )}
             </div>
           )}
         </div>
@@ -130,12 +137,14 @@ export function HomeHeroWidget({
         {locations && locations.length > 0 && onSelectLocation && (
           <div className="flex sm:hidden items-center justify-between text-xs px-1 text-white/80">
             <span className="font-medium text-white">{activeLocation ? activeLocation.name : displayLocation}</span>
-            <div className="relative flex items-center">
+            <div className="relative flex items-center gap-2">
+              <LanguageSwitcher variant="compact" />
+              {locations.length > 1 && <>
               <select
                 value={selectedLocationId || 'all'}
                 onChange={(e) => onSelectLocation(e.target.value)}
                 aria-label="Switch location"
-                className="opacity-0 absolute inset-0 w-full h-full cursor-pointer z-10"
+                className="opacity-0 focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-stocky-accent absolute inset-0 w-full h-full cursor-pointer z-10"
               >
                 <option value="all">{t('home.allLocationsNetwork')}</option>
                 {locations.map((loc) => (
@@ -148,9 +157,10 @@ export function HomeHeroWidget({
                 type="button"
                 className="inline-flex items-center gap-1 text-[11px] font-medium text-stocky-accent hover:underline cursor-pointer"
               >
-                <span>↗ {t('home.switchBranch')}</span>
+                <span className="inline-flex items-center gap-1"><ArrowUpRightIcon size="xs" className="rtl:rotate-180" />{t('home.switchBranch')}</span>
                 <ChevronDownIcon size="xs" />
               </button>
+              </>}
             </div>
           </div>
         )}

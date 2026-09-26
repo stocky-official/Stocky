@@ -29,6 +29,8 @@ export interface HomeBranchesAnalysisChartWidgetProps {
   onSelectLocation?: (locationId: string) => void;
   externalTimeframe?: '7D' | '14D' | '30D' | '90D' | 'YTD';
   externalLocationId?: string;
+  canViewCommercials?: boolean;
+  canExport?: boolean;
 }
 
 export function HomeBranchesAnalysisChartWidget({
@@ -41,6 +43,8 @@ export function HomeBranchesAnalysisChartWidget({
   onSelectLocation,
   externalTimeframe,
   externalLocationId,
+  canViewCommercials = true,
+  canExport = true,
 }: HomeBranchesAnalysisChartWidgetProps) {
   const { t } = useTranslation();
   const [metric, setMetric] = useState<BranchAnalysisMetric>('units');
@@ -88,50 +92,58 @@ export function HomeBranchesAnalysisChartWidget({
     },
   };
 
-  const currentConfig = metricConfig[metric];
+  const activeMetric: BranchAnalysisMetric = canViewCommercials || metric !== 'value' ? metric : 'units';
+  const activeConfig = metricConfig[activeMetric];
 
   // Compile comparison data per branch
   const chartData = useMemo(() => {
-    let baseLocations: Array<{ id: string; name: string; type: string; address?: string | null }> =
-      locations.length > 0
-        ? locations
-        : [
-            { id: 'loc-1', name: 'Olaya Central', type: 'branch', address: 'Riyadh' },
-            { id: 'loc-2', name: 'Corniche Retail', type: 'branch', address: 'Jeddah' },
-            { id: 'loc-3', name: 'Eastern Warehouse', type: 'warehouse', address: 'Dammam' },
-            { id: 'loc-4', name: 'Madinah Branch', type: 'branch', address: 'Madinah' },
-          ];
+    let baseLocations: Array<{ id: string; name: string; type: string; address?: string | null }> = locations;
 
     if (externalLocationId && externalLocationId !== 'all') {
       const match = baseLocations.filter((l) => l.id === externalLocationId);
       if (match.length > 0) baseLocations = match;
     }
 
-    const days = effectiveTimeframe === '7D' ? 7 : effectiveTimeframe === '14D' ? 14 : effectiveTimeframe === '30D' ? 30 : 90;
+    const days = externalTimeframe === 'YTD'
+      ? (() => {
+          const now = new Date();
+          return Math.floor((now.getTime() - new Date(now.getFullYear(), 0, 1).getTime()) / 86400000) + 1;
+        })()
+      : effectiveTimeframe === '7D' ? 7 : effectiveTimeframe === '14D' ? 14 : effectiveTimeframe === '30D' ? 30 : 90;
     const cutoff = new Date(Date.now() - days * 86400000).toISOString();
+    const dormantCutoff = new Date(Date.now() - 90 * 86400000).toISOString();
 
     return baseLocations.map((loc, idx) => {
       const branchLots = lots.filter((l) => l.locationId === loc.id && (l.quantityOnHand || 0) > 0);
-      const units = branchLots.reduce((acc, l) => acc + (l.quantityOnHand || 0), 0) || (idx === 0 ? 4850 : idx === 1 ? 3120 : idx === 2 ? 6400 : 1850);
-      const value = branchLots.reduce((acc, l) => acc + (l.quantityOnHand || 0) * (l.unitCost || 0), 0) || (units * 8.4);
+      const units = branchLots.reduce((acc, l) => acc + (l.quantityOnHand || 0), 0);
+      const value = canViewCommercials
+        ? branchLots.reduce((acc, l) => acc + (l.quantityOnHand || 0) * (l.unitCost || 0), 0)
+        : 0;
 
       // Movement volume
       const branchMovements = movements.filter((m) => m.locationId === loc.id && (!m.createdAt || m.createdAt >= cutoff));
-      const moving = branchMovements.reduce((acc, m) => acc + Math.abs(m.quantityDelta || 0), 0) || Math.round(units * 0.35);
+      const moving = branchMovements.reduce((acc, m) => acc + Math.abs(m.quantityDelta || 0), 0);
 
       // Lagging stock volume
-      const lagging = Math.round(units * (idx === 2 ? 0.08 : idx === 0 ? 0.12 : 0.18));
+      const recentMovementKeys = new Set(
+        movements
+          .filter((movement) => movement.locationId === loc.id && movement.createdAt && movement.createdAt >= dormantCutoff)
+          .map((movement) => movement.productId)
+      );
+      const lagging = branchLots
+        .filter((lot) => !recentMovementKeys.has(lot.productId))
+        .reduce((acc, lot) => acc + (lot.quantityOnHand || 0), 0);
 
       // Assigned staff
       const assignedIds = teamAssignments.filter((a) => a.location_id === loc.id).map((a) => a.user_id);
       const staff = teamMembers.filter((m) => assignedIds.includes(m.id) || (m.branchIds && m.branchIds.includes(loc.id)));
-      const staffCount = staff.length > 0 ? staff.length : Math.max(2, (idx * 2 + 3) % 7);
+      const staffCount = staff.length;
 
       let metricValue = units;
-      if (metric === 'value') metricValue = Math.round(value);
-      else if (metric === 'moving') metricValue = moving;
-      else if (metric === 'lagging') metricValue = lagging;
-      else if (metric === 'staff') metricValue = staffCount;
+      if (activeMetric === 'value') metricValue = Math.round(value);
+      else if (activeMetric === 'moving') metricValue = moving;
+      else if (activeMetric === 'lagging') metricValue = lagging;
+      else if (activeMetric === 'staff') metricValue = staffCount;
 
       return {
         id: loc.id,
@@ -146,7 +158,7 @@ export function HomeBranchesAnalysisChartWidget({
         metricValue,
       };
     });
-  }, [locations, lots, movements, teamMembers, teamAssignments, effectiveTimeframe, metric, externalLocationId]);
+  }, [locations, lots, movements, teamMembers, teamAssignments, effectiveTimeframe, activeMetric, externalLocationId, canViewCommercials]);
 
   const handleExportExcel = () => {
     exportVisualDataToExcel({
@@ -156,7 +168,7 @@ export function HomeBranchesAnalysisChartWidget({
       appliedFilters: {
         timeframe: effectiveTimeframe,
         location: externalLocationId || 'All',
-        metric: currentConfig.label,
+        metric: activeConfig.label,
       },
       rows: chartData.map((d) => ({
         'Location Name': d.name,
@@ -166,8 +178,8 @@ export function HomeBranchesAnalysisChartWidget({
         'Units Moved': d.moving,
         'Lagging Units': d.lagging,
         'Active Staff': d.staffCount,
-        'Active Benchmark Metric': currentConfig.label,
-        'Benchmark Score': currentConfig.formatter(d.metricValue),
+        'Active Benchmark Metric': activeConfig.label,
+        'Benchmark Score': activeConfig.formatter(d.metricValue),
       })),
     });
   };
@@ -194,7 +206,7 @@ export function HomeBranchesAnalysisChartWidget({
 
           <div className="flex items-center gap-2 shrink-0">
             {/* Desktop Visual / Table Toggle */}
-            <div className="hidden sm:inline-flex items-center p-0.5 rounded-lg bg-stocky-bg-global border border-stocky-border-subtle">
+            <div className="inline-flex items-center p-0.5 rounded-lg bg-stocky-bg-global border border-stocky-border-subtle">
               <button
                 type="button"
                 onClick={() => setViewMode('chart')}
@@ -204,7 +216,7 @@ export function HomeBranchesAnalysisChartWidget({
                     : 'text-stocky-text-sub hover:text-stocky-text-main'
                 }`}
               >
-                {t('home.charts.topMovers.chart')}
+                {t('home.charts.branchComparison.chart')}
               </button>
               <button
                 type="button"
@@ -216,12 +228,12 @@ export function HomeBranchesAnalysisChartWidget({
                     : 'text-stocky-text-sub hover:text-stocky-text-main'
                 }`}
               >
-                {t('home.charts.topMovers.table')}
+                {t('home.charts.branchComparison.table')}
               </button>
             </div>
 
             {/* Excel (.xlsx) Extract Button */}
-            <button
+            {canExport && <button
               type="button"
               data-testid="export-excel-branch-btn"
               onClick={handleExportExcel}
@@ -230,7 +242,7 @@ export function HomeBranchesAnalysisChartWidget({
             >
               <FileSpreadsheetIcon size="xs" />
               <span>{t('home.charts.topMovers.excel')}</span>
-            </button>
+            </button>}
 
             <button
               type="button"
@@ -240,7 +252,7 @@ export function HomeBranchesAnalysisChartWidget({
             >
               <FilterIcon size="xs" />
               <span className="px-1.5 py-0.5 rounded-full bg-stocky-primary text-white text-[10px] font-bold">
-                {currentConfig.label.split(' ')[0]}
+                {activeConfig.label.split(' ')[0]}
               </span>
             </button>
           </div>
@@ -287,7 +299,7 @@ export function HomeBranchesAnalysisChartWidget({
                 axisLine={{ stroke: 'var(--stocky-border-subtle)' }}
                 tickLine={false}
                 tickFormatter={(v) =>
-                  metric === 'value'
+                  activeMetric === 'value'
                     ? `$${v >= 1000 ? `${(v / 1000).toFixed(0)}k` : v}`
                     : v >= 1000
                     ? `${(v / 1000).toFixed(1)}k`
@@ -306,14 +318,16 @@ export function HomeBranchesAnalysisChartWidget({
                       </span>
                       <div className="space-y-1 text-[11px]">
                         <div className="text-stocky-primary font-bold">
-                          {currentConfig.label}: {currentConfig.formatter(data.metricValue)}
+                          {activeConfig.label}: {activeConfig.formatter(data.metricValue)}
                         </div>
                         <div className="text-stocky-text-sub">
                           {t('home.charts.branchMap.inventoryUnits')}: <span className="font-medium text-stocky-text-main">{data.units.toLocaleString()}</span>
                         </div>
-                        <div className="text-stocky-text-sub">
-                          {t('home.charts.branchMap.valuation')}: <span className="font-medium text-stocky-text-main">${(data.value / 1000).toFixed(1)}k</span>
-                        </div>
+                        {canViewCommercials && (
+                          <div className="text-stocky-text-sub">
+                            {t('home.charts.branchMap.valuation')}: <span className="font-medium text-stocky-text-main">${(data.value / 1000).toFixed(1)}k</span>
+                          </div>
+                        )}
                         <div className="text-stocky-text-sub">
                           {t('home.charts.branchMap.assignedStaff')}: <span className="font-medium text-stocky-text-main">{data.staffCount}</span>
                         </div>
@@ -333,7 +347,7 @@ export function HomeBranchesAnalysisChartWidget({
                 {chartData.map((_, index) => (
                   <Cell
                     key={`cell-bar-${index}`}
-                    fill={currentConfig.color}
+                    fill={activeConfig.color}
                     opacity={0.88 + index * 0.03}
                   />
                 ))}
@@ -349,7 +363,7 @@ export function HomeBranchesAnalysisChartWidget({
                 <th className="py-2.5 px-3 text-start">{t('common.location')}</th>
                 <th className="py-2.5 px-3 text-start">{t('common.type')}</th>
                 <th className="py-2.5 px-3 text-end">{t('home.charts.branchMap.inventoryUnits')}</th>
-                <th className="py-2.5 px-3 text-end">{t('home.charts.branchMap.valuation')}</th>
+                {canViewCommercials && <th className="py-2.5 px-3 text-end">{t('home.charts.branchMap.valuation')}</th>}
                 <th className="py-2.5 px-3 text-end">{t('team.title')}</th>
               </tr>
             </thead>
@@ -363,7 +377,7 @@ export function HomeBranchesAnalysisChartWidget({
                   <td className="py-2.5 px-3 font-medium text-stocky-text-main">{item.name}</td>
                   <td className="py-2.5 px-3 text-stocky-text-sub text-[11px] uppercase">{item.type}</td>
                   <td className="py-2.5 px-3 text-end font-medium">{item.units.toLocaleString()}</td>
-                  <td className="py-2.5 px-3 text-end font-bold text-stocky-primary">${(item.value / 1000).toFixed(1)}k</td>
+                  {canViewCommercials && <td className="py-2.5 px-3 text-end font-bold text-stocky-primary">${(item.value / 1000).toFixed(1)}k</td>}
                   <td className="py-2.5 px-3 text-end text-stocky-text-sub">{item.staffCount}</td>
                 </tr>
               ))}
@@ -376,7 +390,7 @@ export function HomeBranchesAnalysisChartWidget({
       <div className="flex items-center justify-between text-[11px] text-stocky-text-sub pt-2 border-t border-stocky-border-subtle font-medium">
         <span>{t('home.charts.branchComparison.comparingLocations', { count: chartData.length })}</span>
         <span className="text-stocky-text-main font-semibold">
-          {t('home.charts.branchComparison.metricLabel', { metric: currentConfig.label })}
+          {t('home.charts.branchComparison.metricLabel', { metric: activeConfig.label })}
         </span>
       </div>
 
@@ -396,7 +410,7 @@ export function HomeBranchesAnalysisChartWidget({
               {t('home.charts.branchComparison.comparisonMetric')}
             </label>
             <div className="space-y-1.5">
-              {(Object.keys(metricConfig) as BranchAnalysisMetric[]).map((key) => {
+              {(Object.keys(metricConfig) as BranchAnalysisMetric[]).filter((key) => canViewCommercials || key !== 'value').map((key) => {
                 const cfg = metricConfig[key];
                 const isSelected = metric === key;
                 return (

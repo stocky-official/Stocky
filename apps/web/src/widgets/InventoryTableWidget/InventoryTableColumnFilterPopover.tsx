@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   AlertCircleIcon,
@@ -49,6 +49,18 @@ export function InventoryTableColumnFilterPopover({
 }: StockTableColumnFilterPopoverProps) {
   const { t, isRtl } = useTranslation();
   const [searchValue, setSearchValue] = useState('');
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
 
   const isTextFilter =
     columnKey === 'product' ||
@@ -210,7 +222,7 @@ export function InventoryTableColumnFilterPopover({
             <button
               type="button"
               onClick={onClose}
-              className="flex h-6 w-6 items-center justify-center rounded-full text-stocky-text-sub hover:bg-stocky-bg-hover hover:text-stocky-text-main transition-colors cursor-pointer"
+              className="flex min-h-[44px] min-w-[44px] items-center justify-center rounded-full text-stocky-text-sub hover:bg-stocky-bg-hover hover:text-stocky-text-main transition-colors cursor-pointer"
               aria-label={t('inventory.closeFilterAria')}
             >
               <XIcon size="xs" />

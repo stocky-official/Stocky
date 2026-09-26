@@ -34,12 +34,12 @@ export interface HomeHighlightsWidgetProps {
  * 4. Staff on duty today (% with active staff counts)
  */
 export function HomeHighlightsWidget({
-  expiringSkuCount = 8,
-  pendingSupplierRequestsCount = 3,
-  assignedTasksCount = 5,
-  attendancePct = 92,
-  activeStaffPresent = 11,
-  totalStaff = 12,
+  expiringSkuCount = 0,
+  pendingSupplierRequestsCount = 0,
+  assignedTasksCount = 0,
+  attendancePct = 0,
+  activeStaffPresent = 0,
+  totalStaff = 0,
   onOpenExpiry,
   onOpenSuppliers,
   onOpenTasks,
@@ -93,6 +93,12 @@ export function HomeHighlightsWidget({
           <div
             key={card.id}
             onClick={card.action}
+            onKeyDown={(event) => {
+              if (card.action && (event.key === 'Enter' || event.key === ' ')) {
+                event.preventDefault();
+                card.action();
+              }
+            }}
             role={card.action ? 'button' : undefined}
             tabIndex={card.action ? 0 : undefined}
             className={`bg-stocky-bg-widget border border-stocky-border-subtle rounded-2xl p-3.5 sm:p-4 shadow-xs flex flex-col justify-between transition-all ${

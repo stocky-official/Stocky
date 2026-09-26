@@ -13,6 +13,23 @@ export function getCanonicalAuthOrigin(origin: string) {
   return url.origin;
 }
 
+export function isSafeInternalPath(value: string | null | undefined): value is string {
+  if (!value || !value.startsWith('/') || value.startsWith('//') || value.includes('\\')) {
+    return false;
+  }
+
+  try {
+    const parsed = new URL(value, 'https://stocky.invalid');
+    return parsed.origin === 'https://stocky.invalid';
+  } catch {
+    return false;
+  }
+}
+
+export function normalizeInternalPath(value: string | null | undefined, fallback = '/platform') {
+  return isSafeInternalPath(value) ? value : fallback;
+}
+
 export function getAuthRedirectOrigin() {
   return getCanonicalAuthOrigin(window.location.origin);
 }

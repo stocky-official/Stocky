@@ -1,5 +1,3 @@
-@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap');
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -203,7 +201,7 @@ html[lang="ar"] label,
 .meridian-landing button { font: inherit; }
 .meridian-hero { position: relative; display: flex; min-height: min(900px, 100svh); flex-direction: column; overflow: hidden; color: #fff; background: #131612; isolation: isolate; }
 .meridian-hero-photo, .meridian-hero-overlay { position: absolute; inset: -3%; pointer-events: none; }
-.meridian-hero-photo { z-index: -2; background: #25301e url('/hero.jpg') center center / cover no-repeat; transform: scale(1.02); }
+.meridian-hero-photo { z-index: -2; background: #0057ff; transform: scale(1.02); }
 .meridian-hero-overlay { z-index: -1; background: linear-gradient(180deg, rgba(5, 8, 5, .56), rgba(5, 8, 5, .32) 38%, rgba(5, 8, 5, .7)); }
 .meridian-nav { position: relative; z-index: 2; display: flex; width: min(1320px, calc(100% - 64px)); align-items: center; justify-content: space-between; margin: 0 auto; padding: 24px 0; color: rgba(255,255,255,.92); }
 .meridian-brand { display: inline-flex; align-items: center; gap: 9px; font-size: 15px; font-weight: 500; letter-spacing: -.04em; }
@@ -219,7 +217,7 @@ html[lang="ar"] label,
 .meridian-pill--lime:hover { background: #e3ff47; }
 .meridian-pill--dark { color: #fff; background: #151713; }
 .meridian-pill--nav { min-height: 36px; padding: 0 17px; font-size: 10px; box-shadow: none; }
-.meridian-menu-button { display: none; width: 38px; height: 38px; flex-direction: column; align-items: center; justify-content: center; gap: 4px; border: 1px solid rgba(255,255,255,.62); border-radius: 8px; color: #fff; background: rgba(0,0,0,.16); }
+.meridian-menu-button { display: none; width: 44px; height: 44px; flex-direction: column; align-items: center; justify-content: center; gap: 4px; border: 1px solid rgba(255,255,255,.62); border-radius: 8px; color: #fff; background: rgba(0,0,0,.16); }
 .meridian-menu-button span { display: block; width: 16px; height: 1px; background: currentColor; }
 .meridian-hero-copy { position: relative; z-index: 1; display: flex; width: min(740px, calc(100% - 32px)); flex: 1; flex-direction: column; align-items: center; justify-content: center; margin: -20px auto 0; text-align: center; }
 .meridian-hero-rating { display: inline-flex; align-items: center; gap: 10px; font-size: 13px; }
@@ -332,17 +330,17 @@ html[lang="ar"] label,
   --stocky-text-placeholder: #939A90;  /* Input placeholder text */
   --stocky-text-disabled: #B4B9AE;     /* Disabled text & controls */
   --stocky-text-inverse: #FFFFFF;      /* Text on dark or primary surfaces */
-  --stocky-text-primary: #0E8755;      /* Accent text in brand green */
+  --stocky-text-primary: #0057FF;      /* Accent text */
 
   /* --------------------------------------------------------------------------
      3. BRAND ACCENT & ACTIONS
      SOTA signature: Forest Green primary with Lime energizer.
      -------------------------------------------------------------------------- */
-  --stocky-primary: #0E8755;
-  --stocky-primary-hover: #0A6D43;
-  --stocky-accent: #D8FF00;
-  --stocky-accent-hover: #E3FF47;
-  --stocky-accent-soft: rgba(216, 255, 0, 0.18);
+  --stocky-primary: #0057FF;
+  --stocky-primary-hover: #0046CC;
+  --stocky-accent: #4D92D1;
+  --stocky-accent-hover: #6BA7DE;
+  --stocky-accent-soft: rgba(77, 146, 209, 0.18);
 
   /* --------------------------------------------------------------------------
      4. BORDERS & DIVIDERS
@@ -2864,7 +2862,9 @@ a:hover {
 
 .stocky-split-search-field__input-wrap:focus-within {
   border-color: var(--stocky-primary);
-  box-shadow: inset 0 0 0 1px var(--stocky-primary), 0 0 0 3px rgba(14, 135, 85, 0.12);
+  box-shadow: inset 0 0 0 1px var(--stocky-primary), 0 0 0 3px var(--stocky-accent-soft);
+  outline: 2px solid var(--stocky-border-focus);
+  outline-offset: 2px;
   z-index: 3;
 }
 
@@ -2882,7 +2882,7 @@ a:hover {
 }
 
 .stocky-split-search-field__input::placeholder {
-  color: var(--stocky-text-placeholder);
+  color: var(--stocky-text-sub);
 }
 
 /* Right Segment: Distinct Filter Button (Split Button) */
@@ -2970,11 +2970,11 @@ a:hover {
 /* Toolbar layout: Ensure search bar is on left and buttons are on the right in both English and Arabic */
 .stocky-standard-toolbar,
 .stocky-stock-table-toolbar {
-  direction: ltr !important;
+  direction: inherit !important;
 }
 
 .stocky-split-search-field {
-  direction: ltr !important;
+  direction: inherit !important;
 }
 
 /* Ensure Arabic search input text flows RTL with Cairo font */
@@ -3021,8 +3021,8 @@ html[lang="ar"] .stocky-stock-table-toolbar__actions {
 }
 
 .stocky-standard-toolbar__circle-btn--primary:hover {
-  background: #d8f53a !important;
-  border-color: #d8f53a !important;
+  background: var(--stocky-accent-hover) !important;
+  border-color: var(--stocky-accent-hover) !important;
 }
 
 .stocky-standard-toolbar__circle-btn--secondary {
@@ -3147,6 +3147,37 @@ html[lang="ar"] .stocky-stock-table-toolbar__actions {
   background: rgba(255, 255, 255, 0.1);
 }
 
+.meridian-mobile-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  border: 0;
+  background: rgba(5, 8, 5, 0.35);
+}
+
+.meridian-mobile-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.meridian-mobile-signin {
+  width: 100%;
+  padding: 10px 0;
+  border: 0;
+  color: rgba(255, 255, 255, 0.9);
+  background: transparent;
+  font-size: 12px;
+  font-weight: 500;
+  text-align: center;
+}
+
+.meridian-snapshot-brand b {
+  font-weight: 500;
+}
+
 /* ==========================================================================
    STOCKY HOME PLATFORM WIDGETS
    Solid luxury forest hero with Talabat-style smooth wavy bottom edge
@@ -3190,5 +3221,203 @@ html[lang="ar"] .stocky-stock-table-toolbar__actions {
   box-shadow: var(--stocky-shadow-bevel-float);
   user-select: none;
   background: linear-gradient(180deg, #151d17 0%, #0d120f 100%);
+}
+
+/* Public landing corrections: shared blue/white tokens, readable type, and
+   predictable touch/keyboard behavior. Keep these overrides scoped so the
+   operational shell can evolve independently. */
+.meridian-landing {
+  --meridian-ink: #000000;
+  --meridian-muted: #131313;
+  --meridian-soft: #F9F9F9;
+  --meridian-line: rgba(0, 0, 0, .08);
+  --meridian-lime: #4D92D1;
+  --meridian-green: #0057FF;
+  background: #F9F9F9;
+  color: #000000;
+}
+
+.meridian-landing .meridian-hero { background: #0057FF; }
+.meridian-landing .meridian-hero-overlay { background: linear-gradient(180deg, rgba(0, 30, 120, .18), rgba(0, 22, 92, .38)); }
+.meridian-landing .meridian-pill--lime,
+.meridian-landing .meridian-pill--blue { color: #FFFFFF; background: #0057FF; border-color: #0057FF; }
+.meridian-landing .meridian-pill--lime:hover,
+.meridian-landing .meridian-pill--blue:hover { background: #0046CC; border-color: #0046CC; }
+.meridian-landing .meridian-pill--dark { color: #FFFFFF; background: #0057FF; border-color: #0057FF; }
+.meridian-landing .meridian-pill,
+.meridian-landing .meridian-card-art,
+.meridian-landing .meridian-control-preview,
+.meridian-landing .meridian-relief-image,
+.meridian-landing .meridian-calculator-card,
+.meridian-landing .meridian-result-art,
+.meridian-landing .meridian-mobile-drawer,
+.meridian-landing .meridian-receiving-window,
+.meridian-landing .meridian-scan-phone,
+.meridian-landing .meridian-feature-visual,
+.meridian-landing .meridian-stock-snapshot,
+.meridian-landing .meridian-money-chip { border-radius: 12px; }
+.meridian-landing *,
+.meridian-landing *::before,
+.meridian-landing *::after { box-shadow: none !important; }
+.meridian-landing .meridian-nav,
+.meridian-landing .meridian-section,
+.meridian-landing .meridian-footer,
+.meridian-landing .meridian-trust-strip { width: min(1600px, calc(100% - 32px)); }
+.meridian-landing .meridian-intro-grid,
+.meridian-landing .meridian-control-grid,
+.meridian-landing .meridian-results-grid { gap: 16px; }
+.meridian-landing .meridian-hero h1,
+.meridian-landing .meridian-heading-block h2,
+.meridian-landing .meridian-control h2,
+.meridian-landing .meridian-relief h2,
+.meridian-landing .meridian-faq h2,
+.meridian-landing .meridian-final-cta h2 { max-width: 100%; font-size: clamp(1.75rem, 4vw, 2rem); line-height: 1.1; letter-spacing: -.03em; }
+.meridian-landing .meridian-hero h1 span { white-space: normal; }
+.meridian-landing .meridian-calculator-top strong,
+.meridian-landing .meridian-results-grid article > strong,
+.meridian-landing .meridian-control-preview-copy strong { max-width: 100%; font-size: 2rem; letter-spacing: -.03em; }
+.meridian-landing .meridian-snapshot-heading small,
+.meridian-landing .meridian-snapshot-metrics small,
+.meridian-landing .meridian-snapshot-table-head,
+.meridian-landing .meridian-snapshot-row,
+.meridian-landing .meridian-feature-window-title small,
+.meridian-landing .meridian-feature-window-title span,
+.meridian-landing .meridian-feature-window-bar,
+.meridian-landing .meridian-hero-award small { font-size: .75rem; }
+.meridian-landing .meridian-snapshot-metrics span,
+.meridian-landing .meridian-snapshot-row b,
+.meridian-landing .meridian-snapshot-plus,
+.meridian-landing .meridian-scan-phone small,
+.meridian-landing .meridian-scan-phone b { font-size: .75rem; }
+.meridian-landing .meridian-skip-link { position: absolute; top: 8px; left: 8px; z-index: 1000; padding: 8px 12px; color: #FFFFFF; background: #000000; border-radius: 12px; transform: translateY(-160%); }
+.meridian-landing .meridian-skip-link:focus { transform: translateY(0); }
+.meridian-landing :where(a, button, input):focus-visible { outline: 3px solid #4D92D1; outline-offset: 3px; }
+.meridian-landing :where(#product, #workflow, #teams, #pricing, #faq) { scroll-margin-top: 72px; }
+.meridian-landing .meridian-menu-button { width: 44px; height: 44px; border-radius: 12px; }
+.meridian-landing .meridian-float-chip--one { right: clamp(16px, 7%, 112px); }
+.meridian-landing .meridian-float-chip--two { left: clamp(16px, 7%, 112px); }
+.meridian-landing .meridian-footer a,
+.meridian-landing .meridian-text-button,
+.meridian-landing .meridian-mobile-signin { min-height: 44px; display: inline-flex; align-items: center; }
+.meridian-landing .meridian-text-button { border: 0; color: #0057FF; background: transparent; cursor: pointer; font-size: .875rem; font-weight: 500; }
+.meridian-landing .meridian-account-actions { display: flex; align-items: center; gap: 12px; }
+.meridian-landing .meridian-language-switcher { min-height: 44px; }
+.meridian-enterprise-grid,
+.meridian-differentiator-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: 32px;
+}
+.meridian-enterprise-grid article,
+.meridian-differentiator-grid article {
+  min-height: 170px;
+  padding: 24px;
+  border: 1px solid var(--stocky-border);
+  border-radius: 12px;
+  background: var(--stocky-surface);
+}
+.meridian-enterprise-grid article { display: flex; align-items: flex-start; gap: 14px; }
+.meridian-enterprise-grid svg { flex: 0 0 auto; color: var(--stocky-primary); }
+.meridian-enterprise-grid h3,
+.meridian-differentiator-grid strong { display: block; margin: 0; color: var(--stocky-text-main); font-size: 18px; line-height: 1.35; }
+.meridian-enterprise-grid p,
+.meridian-differentiator-grid p { margin: 10px 0 0; color: var(--stocky-text-sub); font-size: 14px; line-height: 1.65; }
+@media (max-width: 820px) {
+  .meridian-enterprise-grid,
+  .meridian-differentiator-grid { grid-template-columns: 1fr; }
+}
+.meridian-landing .meridian-account-email { max-width: 180px; overflow: hidden; color: rgba(255,255,255,.82); font-size: .75rem; text-overflow: ellipsis; white-space: nowrap; }
+.meridian-landing .meridian-final-actions { display: flex; align-items: center; gap: 16px; margin-top: 28px; }
+.meridian-landing .meridian-auth-error { position: fixed; right: 16px; bottom: 16px; z-index: 200; max-width: min(420px, calc(100% - 32px)); padding: 12px 16px; color: #000000; background: #FFFFFF; border: 1px solid #0057FF; border-radius: 12px; }
+.meridian-landing .meridian-calculator-label { display: block; margin-top: 20px; color: #131313; font-size: .75rem; }
+.meridian-landing .meridian-mobile-drawer,
+.meridian-landing .meridian-mobile-backdrop { display: none; }
+.meridian-landing .meridian-mobile-action { width: 100%; text-align: center; }
+.meridian-landing .meridian-calculator-card input[type="range"] { min-height: 44px; margin: 20px 0 8px; }
+.meridian-landing .meridian-status-control { display: inline-flex; align-items: center; gap: 4px; margin-top: auto; color: #0057FF; font-size: .75rem; font-weight: 500; }
+.meridian-landing .meridian-hero-photo { background: #0057FF; }
+.meridian-landing .meridian-calculator-card,
+.meridian-landing .meridian-relief-image,
+.meridian-landing .meridian-card-art { background-color: #FFFFFF; border: 1px solid #EBEBEB; }
+.meridian-landing .meridian-scan-phone { border: 1px solid #EBEBEB; }
+html { scroll-behavior: smooth; }
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .meridian-landing *, .meridian-landing *::before, .meridian-landing *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+}
+
+@media (max-width: 640px) {
+  .meridian-landing .meridian-mobile-drawer { display: flex; }
+  .meridian-landing .meridian-mobile-backdrop { display: block; }
+}
+
+.stocky-skip-link { position: absolute; top: 8px; left: 8px; z-index: 1000; transform: translateY(-160%); padding: .65rem .85rem; border-radius: 12px; color: #FFFFFF; background: #000000; }
+.stocky-skip-link:focus { transform: translateY(0); }
+.stocky-home-dashboard [class*="shadow-"] { box-shadow: none !important; }
+.stocky-home-dashboard [class*="rounded-2xl"] { border-radius: 12px !important; }
+.stocky-home-dashboard [class*="font-bold"],
+.stocky-home-dashboard [class*="font-semibold"] { font-weight: 500 !important; }
+.stocky-home-dashboard button { min-height: 44px; }
+.stocky-home-dashboard .stocky-home-hero button { min-height: 44px; }
+
+/* Inventory and transfer accessibility/layout corrections. */
+.stocky-platform-shell .stocky-stock-unified-card {
+  border-radius: var(--stocky-radius-widget) !important;
+  box-shadow: none !important;
+}
+.stocky-platform-shell .stocky-table-filter-trigger,
+.stocky-platform-shell .stocky-board-more-button,
+.stocky-platform-shell .stocky-table-page-button,
+.stocky-platform-shell .stocky-table-page-size,
+.stocky-platform-shell .stocky-board-actions .stocky-board-action,
+.stocky-platform-shell .stocky-transfer-action {
+  min-height: 44px;
+  min-width: 44px;
+}
+.stocky-platform-shell .stocky-table-filter-trigger:focus-visible,
+.stocky-platform-shell .stocky-board-more-button:focus-visible,
+.stocky-platform-shell .stocky-table-page-button:focus-visible,
+.stocky-platform-shell .stocky-table-page-size:focus-visible,
+.stocky-platform-shell .stocky-transfer-action:focus-visible {
+  outline: 2px solid var(--stocky-border-focus);
+  outline-offset: 2px;
+}
+.stocky-platform-shell .stocky-board-table__selection-cell label {
+  min-height: 44px;
+  min-width: 44px;
+}
+.stocky-platform-shell .stocky-mobile-stock-row__checkbox {
+  min-height: 44px;
+  min-width: 44px;
+}
+.stocky-platform-shell .stocky-standard-toolbar__circle-btn--primary {
+  box-shadow: none !important;
+}
+.stocky-platform-shell .stocky-transfer-mobile-list button {
+  min-height: 44px;
+  min-width: 44px;
+}
+.stocky-platform-shell .stocky-transfers-workspace [class*="shadow-"] {
+  box-shadow: none !important;
+}
+.stocky-platform-shell .stocky-transfers-workspace [class*="rounded-2xl"] {
+  border-radius: var(--stocky-radius-widget) !important;
+}
+[dir="rtl"] .stocky-platform-shell .stocky-standard-toolbar__actions {
+  direction: rtl;
+}
+[dir="rtl"] .stocky-split-search-field__input-wrap {
+  border-right: 1px solid var(--stocky-border-subtle);
+  border-left: 0;
+  border-radius: 9999px 0 0 9999px;
+  padding-left: 0.5rem;
+  padding-right: 0.875rem;
+}
+[dir="rtl"] .stocky-split-search-field__filter-btn {
+  border-left: 1px solid var(--stocky-border-subtle);
+  border-right: 0;
+  border-radius: 0 9999px 9999px 0;
 }
 

@@ -10,14 +10,14 @@ import { I18nProvider, type Locale } from '@/lib/i18n';
 const geistSans = Geist({
   variable: '--font-sans',
   subsets: ['latin'],
-  weight: ['300', '400', '500', '600'],
+  weight: ['300', '400', '500'],
   display: 'swap',
 });
 
 const cairo = Cairo({
   variable: '--font-cairo',
   subsets: ['arabic', 'latin'],
-  weight: ['300', '400', '500', '600', '700', '800', '900'],
+  weight: ['300', '400', '500'],
   display: 'swap',
 });
 
@@ -53,7 +53,6 @@ export const viewport: Viewport = {
   themeColor: '#D8FF00',
   width: 'device-width',
   initialScale: 1,
-  maximumScale: 1,
   viewportFit: 'cover',
 };
 
@@ -64,7 +63,7 @@ export default async function RootLayout({
 }) {
   const cookieStore = await cookies();
   const localeCookie = cookieStore.get('stocky_locale')?.value;
-  const initialLocale: Locale = localeCookie === 'en' ? 'en' : 'ar';
+  const initialLocale: Locale = localeCookie === 'ar' ? 'ar' : 'en';
   const dir = initialLocale === 'ar' ? 'rtl' : 'ltr';
 
   return (

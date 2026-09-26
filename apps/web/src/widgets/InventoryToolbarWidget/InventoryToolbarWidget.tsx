@@ -27,6 +27,7 @@ export interface InventoryToolbarWidgetProps {
   onAudit?: () => void;
   onResupply?: () => void;
   onReceive: () => void;
+  primaryActionLabel?: string;
 }
 
 /**
@@ -48,6 +49,7 @@ export function InventoryToolbarWidget({
   onAudit,
   onResupply,
   onReceive,
+  primaryActionLabel,
 }: InventoryToolbarWidgetProps) {
   const { t } = useTranslation();
 
@@ -107,10 +109,10 @@ export function InventoryToolbarWidget({
       onToggleFilter={onToggleFilterPanel}
       activeFilterCount={activeFilterCount || (isFilterActive ? 1 : 0)}
       primaryAction={{
-        label: t('inventory.addInventory') || 'Add inventory',
+        label: primaryActionLabel || t('inventory.addInventory') || 'Add inventory',
         icon: <PlusIcon size="xs" />,
         onClick: onReceive,
-        title: t('inventory.addInventory') || 'Add inventory / Receive stock',
+        title: primaryActionLabel || t('inventory.addInventory') || 'Add inventory / Receive stock',
       }}
       moreActions={moreActions}
       moreActionsTitle={t('common.actions') || 'Inventory Actions'}

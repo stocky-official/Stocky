@@ -25,6 +25,7 @@ export interface HomeTeamAttendanceChartWidgetProps {
   onOpenAttendance?: () => void;
   externalTimeframe?: '7D' | '14D' | '30D' | '90D' | 'YTD';
   externalLocationId?: string;
+  canExport?: boolean;
 }
 
 export function HomeTeamAttendanceChartWidget({
@@ -35,14 +36,28 @@ export function HomeTeamAttendanceChartWidget({
   onOpenAttendance,
   externalTimeframe,
   externalLocationId,
+  canExport = true,
 }: HomeTeamAttendanceChartWidgetProps) {
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
   const [analysisMode, setAnalysisMode] = useState<'branch' | 'person'>('branch');
   const [selectedBranchId, setSelectedBranchId] = useState<string>('all');
   const [selectedPersonId, setSelectedPersonId] = useState<string>('all');
   const [internalTimeframeDays, setInternalTimeframeDays] = useState<number>(7);
 
-  const effectiveDays = externalTimeframe === '7D' ? 7 : externalTimeframe === '14D' ? 14 : externalTimeframe === '30D' ? 30 : externalTimeframe === '90D' || externalTimeframe === 'YTD' ? 90 : internalTimeframeDays;
+  const effectiveDays = externalTimeframe === '7D'
+    ? 7
+    : externalTimeframe === '14D'
+      ? 14
+      : externalTimeframe === '30D'
+        ? 30
+        : externalTimeframe === '90D'
+          ? 90
+          : externalTimeframe === 'YTD'
+            ? (() => {
+                const now = new Date();
+                return Math.floor((now.getTime() - new Date(now.getFullYear(), 0, 1).getTime()) / 86400000) + 1;
+              })()
+            : internalTimeframeDays;
   const effectiveBranchId = externalLocationId !== undefined && externalLocationId !== 'all' ? externalLocationId : selectedBranchId;
 
   // UI state for bottom sheet filter & info popover
@@ -52,18 +67,11 @@ export function HomeTeamAttendanceChartWidget({
 
   // Normalize members list
   const memberList = useMemo(() => {
-    return teamMembers.length > 0
-      ? teamMembers.map((m) => ({
-          id: m.id,
-          name: m.fullName || m.name || 'Staff Member',
-          role: m.role || 'Staff',
-        }))
-      : [
-          { id: 'usr-1', name: 'Khalid Al-Mansoor', role: 'Branch Manager' },
-          { id: 'usr-2', name: 'Noura Al-Otaibi', role: 'Inventory Lead' },
-          { id: 'usr-3', name: 'Tariq Hamdan', role: 'Stock Associate' },
-          { id: 'usr-4', name: 'Sara Al-Ghamdi', role: 'Cashier / Associate' },
-        ];
+    return teamMembers.map((m) => ({
+      id: m.id,
+      name: m.fullName || m.name || 'Staff Member',
+      role: m.role || 'Staff',
+    }));
   }, [teamMembers]);
 
   // Generate date labels for the timeframe
@@ -82,7 +90,7 @@ export function HomeTeamAttendanceChartWidget({
   const chartData = useMemo(() => {
     return datesList.map((dateStr) => {
       const d = new Date(dateStr);
-      const label = d.toLocaleDateString('en-US', { weekday: 'short', month: 'numeric', day: 'numeric' });
+      const label = d.toLocaleDateString(locale === 'ar' ? 'ar-EG' : 'en-US', { weekday: 'short', month: 'numeric', day: 'numeric' });
 
       // Filter shifts for this date
       let matchingShifts = shifts.filter(
@@ -101,18 +109,9 @@ export function HomeTeamAttendanceChartWidget({
 
       // Realistic baseline fallback if shifts data is sparse
       if (matchingShifts.length === 0) {
-        const dayOfWeek = d.getDay();
-        const isWeekend = dayOfWeek === 5 || dayOfWeek === 6;
-        if (analysisMode === 'person' && selectedPersonId !== 'all') {
-          presentCount = isWeekend ? 0 : 1;
-          lateCount = 0;
-          offCount = isWeekend ? 1 : 0;
-        } else {
-          const totalStaff = Math.max(4, memberList.length);
-          presentCount = isWeekend ? Math.round(totalStaff * 0.4) : Math.round(totalStaff * 0.75);
-          lateCount = isWeekend ? 0 : 1;
-          offCount = totalStaff - presentCount - lateCount;
-        }
+        presentCount = 0;
+        lateCount = 0;
+        offCount = 0;
       }
 
       const totalActive = presentCount + lateCount;
@@ -130,7 +129,7 @@ export function HomeTeamAttendanceChartWidget({
         hoursLogged: Number(hoursLogged.toFixed(1)),
       };
     });
-  }, [datesList, shifts, analysisMode, effectiveBranchId, selectedPersonId, memberList.length]);
+  }, [datesList, shifts, analysisMode, effectiveBranchId, selectedPersonId, memberList.length, locale]);
 
   // Overall attendance rate KPI
   const totalPresent = chartData.reduce((acc, d) => acc + d.Present, 0);
@@ -208,7 +207,7 @@ export function HomeTeamAttendanceChartWidget({
             </div>
 
             {/* Excel (.xlsx) Extract Button */}
-            <button
+            {canExport && <button
               type="button"
               data-testid="export-excel-attendance-btn"
               onClick={handleExportExcel}
@@ -217,7 +216,7 @@ export function HomeTeamAttendanceChartWidget({
             >
               <FileSpreadsheetIcon size="xs" />
               <span>{t('home.charts.topMovers.excel')}</span>
-            </button>
+            </button>}
 
             <button
               type="button"
@@ -321,9 +320,9 @@ export function HomeTeamAttendanceChartWidget({
                 wrapperStyle={{ fontSize: 11, paddingTop: 4 }}
                 iconSize={8}
               />
-              <Bar dataKey="Present" stackId="a" fill="#0E8755" radius={[0, 0, 0, 0]} />
-              <Bar dataKey="Late" stackId="a" fill="#D97706" radius={[0, 0, 0, 0]} />
-              <Bar dataKey="Off / Leave" stackId="a" fill="#94A3B8" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="Present" name={t('home.charts.teamAttendance.presentOnDuty', { count: '' }).replace(/[:：]\s*$/, '')} stackId="a" fill="var(--stocky-primary)" radius={[0, 0, 0, 0]} />
+              <Bar dataKey="Late" name={t('home.charts.teamAttendance.lateArrival', { count: '' }).replace(/[:：]\s*$/, '')} stackId="a" fill="var(--stocky-accent)" radius={[0, 0, 0, 0]} />
+              <Bar dataKey="Off / Leave" name={t('home.charts.teamAttendance.offLeave', { count: '' }).replace(/[:：]\s*$/, '')} stackId="a" fill="var(--stocky-text-muted)" radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>

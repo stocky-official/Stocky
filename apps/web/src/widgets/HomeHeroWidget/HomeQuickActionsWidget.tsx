@@ -75,7 +75,7 @@ export function HomeQuickActionsWidget({
   return (
     <div className="w-full">
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3.5 w-full">
-        {actions.map((action) => (
+        {actions.filter((action) => Boolean(action.action)).map((action) => (
           <button
             key={action.id}
             type="button"
