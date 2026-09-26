@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import type {
   AttendanceShift,
   CompanyUserRole,
@@ -124,8 +124,11 @@ export function HomePlatformView({
   const { t } = useTranslation();
   // Global Location Filter State
   const [locationFilter, setLocationFilter] = useState<string>(
-    selectedLocationId && selectedLocationId !== 'all' ? selectedLocationId : 'all'
+    selectedLocationId && selectedLocationId !== 'all' ? selectedLocationId : locations.length === 1 ? locations[0].id : 'all'
   );
+  useEffect(() => {
+    if (locations.length === 1 && locationFilter === 'all') setLocationFilter(locations[0].id);
+  }, [locations, locationFilter]);
 
   // Location filter mappings
   const locationMap = useMemo(() => new Map(locations.map((l) => [l.id, l.name])), [locations]);
@@ -152,13 +155,13 @@ export function HomePlatformView({
         .filter((l) => l.expiryDate && l.expiryDate >= todayStr && l.expiryDate <= next30)
         .map((l) => l.productId)
     );
-    return uniqueProductIds.size || (scopedLots.length > 0 ? Math.min(uniqueProductIds.size || 8, products.length || 8) : 8);
+    return uniqueProductIds.size;
   }, [scopedLots, todayStr, products.length]);
 
   // 2. Highlight: Pending Supplier Requests Count
   const pendingSupplierRequestsCount = useMemo(() => {
     const pending = requests.filter((r) => ['open', 'contacted', 'ordered'].includes(r.status)).length;
-    return pending || metrics.supplierRequests || 3;
+    return pending;
   }, [requests, metrics.supplierRequests]);
 
   // 3. Highlight: Assigned Tasks Count
@@ -166,17 +169,20 @@ export function HomePlatformView({
     const active = scopedTasks.filter((t) =>
       ['assigned', 'in_progress', 'submitted'].includes(t.status)
     ).length;
-    return active || 5;
+    return active;
   }, [scopedTasks]);
 
   // 4. Highlight: Staff on Duty Today (Percentage + counts)
   const { attendancePct, activeStaffPresent, totalStaff } = useMemo(() => {
-    const total = teamMembers.length > 0 ? teamMembers.length : 12;
-    const presentToday = attendanceShifts.filter(
-      (s) => s.shiftDate === todayStr || s.clockInAt?.startsWith(todayStr)
-    ).length;
-    const onDuty = presentToday > 0 ? Math.min(total, presentToday) : Math.max(1, total - 1);
-    const pct = Math.round((onDuty / total) * 100);
+    const total = teamMembers.length;
+    const presentToday = new Set(
+      attendanceShifts
+        .filter((s) => s.shiftDate === todayStr || s.clockInAt?.startsWith(todayStr))
+        .filter((s) => ['present', 'late'].includes(s.status))
+        .map((s) => s.companyUserId)
+    ).size;
+    const onDuty = Math.min(total, presentToday);
+    const pct = total > 0 ? Math.round((onDuty / total) * 100) : 0;
     return {
       attendancePct: pct,
       activeStaffPresent: onDuty,
@@ -185,9 +191,11 @@ export function HomePlatformView({
   }, [teamMembers, attendanceShifts, todayStr]);
 
   return (
-    <div className="flex flex-col w-full min-h-full">
+    <div className="stocky-home-dashboard flex flex-col w-full min-h-full">
+      <a href="#home-content" className="stocky-skip-link">{t('common.skipToContent')}</a>
       {/* SECTION 1: HERO SECTION */}
       <section id="home-hero" aria-label="Hero Overview">
+        <h1 className="sr-only">Stocky dashboard</h1>
         <HomeHeroWidget
           userName={userName}
           locationName={activeLocationName}
@@ -204,7 +212,7 @@ export function HomePlatformView({
       </section>
 
       {/* Centered Page Content Container with Generous Section Breathing Room */}
-      <div className="w-full max-w-[var(--stocky-page-max-width)] mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 flex flex-col gap-8 sm:gap-10">
+      <div id="home-content" tabIndex={-1} className="w-full max-w-[var(--stocky-page-max-width)] mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 flex flex-col gap-8 sm:gap-10">
         
         {/* SECTION 2: 4 QUICK ACCESS BUTTONS */}
         <section id="home-quick-nav" aria-labelledby="quick-nav-heading" className="flex flex-col gap-3">
@@ -218,8 +226,8 @@ export function HomePlatformView({
           </div>
 
           <HomeQuickActionsWidget
-            onOpenSettings={onOpenSettings}
-            onOpenTeam={onOpenTeam}
+            onOpenSettings={userRole === 'staff' ? undefined : onOpenSettings}
+            onOpenTeam={userRole === 'owner' || userRole === 'admin' ? onOpenTeam : undefined}
             onOpenLocations={onOpenLocations}
             onOpenLogs={onOpenLogs}
           />
@@ -278,6 +286,10 @@ export function HomePlatformView({
             onOpenProduct={() => onOpenStock()}
             onOpenAttendance={onOpenAttendance}
             onOpenExpiry={onOpenExpiry}
+            canExport={userRole !== 'staff'}
+            canViewCommercials={userRole !== 'staff'}
+            selectedLocationId={locationFilter}
+            onLocationChange={setLocationFilter}
           />
         </section>
 

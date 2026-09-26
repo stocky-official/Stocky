@@ -26,6 +26,7 @@ export interface HomeBranchMapChartWidgetProps {
   teamAssignments?: Array<{ user_id: string; location_id: string }>;
   shifts?: AttendanceShift[];
   onSelectLocation?: (locationId: string) => void;
+  canViewCommercials?: boolean;
 }
 
 // Deterministic map coordinates for common Saudi cities / hubs
@@ -76,6 +77,7 @@ export function HomeBranchMapChartWidget({
   teamMembers = [],
   teamAssignments = [],
   onSelectLocation,
+  canViewCommercials = true,
 }: HomeBranchMapChartWidgetProps) {
   const { t } = useTranslation();
   // Date filter controls
@@ -105,26 +107,19 @@ export function HomeBranchMapChartWidget({
 
   // Compile branch data
   const branchData: BranchMapItem[] = useMemo(() => {
-    const fallbackLocations: Location[] = locations.length > 0 ? locations : [
-      { id: 'loc-1', companyId: 'c1', name: 'Olaya Central Hub', code: 'RUH-01', type: 'branch', address: 'King Fahd Rd, Riyadh', isActive: true, createdAt: '', updatedAt: '' },
-      { id: 'loc-2', companyId: 'c1', name: 'Corniche Superstore', code: 'JED-02', type: 'branch', address: 'Corniche Rd, Jeddah', isActive: true, createdAt: '', updatedAt: '' },
-      { id: 'loc-3', companyId: 'c1', name: 'Eastern Port Warehouse', code: 'DMM-03', type: 'warehouse', address: 'Port Zone, Dammam', isActive: true, createdAt: '', updatedAt: '' },
-      { id: 'loc-4', companyId: 'c1', name: 'Madinah Ring Road', code: 'MED-04', type: 'branch', address: 'Second Ring Rd, Madinah', isActive: true, createdAt: '', updatedAt: '' },
-    ];
-
-    const daysCount = Math.max(1, Math.round((new Date(endDate).getTime() - new Date(startDate).getTime()) / 86400000));
+    const fallbackLocations: Location[] = locations;
 
     return fallbackLocations.map((loc, idx) => {
       const branchLots = lots.filter((l) => l.locationId === loc.id && (l.quantityOnHand || 0) > 0);
-      const units = branchLots.reduce((acc, l) => acc + (l.quantityOnHand || 0), 0) || (idx === 0 ? 4850 : idx === 1 ? 3120 : idx === 2 ? 6400 : 1850);
-      const value = branchLots.reduce((acc, l) => acc + (l.quantityOnHand || 0) * (l.unitCost || 0), 0) || (units * 8.4);
+      const units = branchLots.reduce((acc, l) => acc + (l.quantityOnHand || 0), 0);
+      const value = canViewCommercials
+        ? branchLots.reduce((acc, l) => acc + (l.quantityOnHand || 0) * (l.unitCost || 0), 0)
+        : 0;
 
       const assignedIds = teamAssignments.filter((a) => a.location_id === loc.id).map((a) => a.user_id);
       const staff = teamMembers.filter((m) => assignedIds.includes(m.id) || (m.branchIds && m.branchIds.includes(loc.id)));
-      const staffCount = staff.length > 0 ? staff.length : Math.max(2, (idx * 2 + 3) % 7);
-
-      const seedFactor = (loc.name.length * 7 + daysCount) % 17;
-      const changePct = Number(((seedFactor - 7.5) * 1.6).toFixed(1));
+      const staffCount = staff.length;
+      const changePct = 0;
 
       return {
         id: loc.id,
@@ -139,7 +134,7 @@ export function HomeBranchMapChartWidget({
         coordinates: resolveCoordinates(loc as Location, idx),
       };
     });
-  }, [locations, lots, teamMembers, teamAssignments, startDate, endDate]);
+  }, [locations, lots, teamMembers, teamAssignments, startDate, endDate, canViewCommercials]);
 
   const minUnits = Math.min(...branchData.map((b) => b.units), 100);
   const maxUnits = Math.max(...branchData.map((b) => b.units), 5000);
@@ -320,12 +315,14 @@ export function HomeBranchMapChartWidget({
                 </span>
               </div>
 
-              <div className="flex flex-col">
-                <span className="text-[10px] text-stocky-text-sub font-medium">{t('home.charts.branchMap.valuation')}</span>
-                <span className="text-xs font-bold text-stocky-text-main">
-                  ${(selectedBranch.value / 1000).toFixed(1)}k
-                </span>
-              </div>
+              {canViewCommercials && (
+                <div className="flex flex-col">
+                  <span className="text-[10px] text-stocky-text-sub font-medium">{t('home.charts.branchMap.valuation')}</span>
+                  <span className="text-xs font-bold text-stocky-text-main">
+                    ${(selectedBranch.value / 1000).toFixed(1)}k
+                  </span>
+                </div>
+              )}
 
               <div className="flex flex-col">
                 <span className="text-[10px] text-stocky-text-sub font-medium">{t('home.charts.branchMap.assignedStaff')}</span>

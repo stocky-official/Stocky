@@ -35,7 +35,7 @@ export function MobileFloatingActionsWidget({
 
   return (
     <div
-      className="fixed bottom-[7.25rem] ltr:right-0 rtl:left-0 w-[20%] flex flex-col items-center gap-2.5 z-40 md:hidden pointer-events-none [&>*]:pointer-events-auto select-none"
+      className="fixed bottom-[8rem] ltr:right-0 rtl:left-0 w-[20%] flex flex-col items-center gap-2.5 z-30 md:hidden pointer-events-none [&>*]:pointer-events-auto select-none"
       aria-label={t('toolbar.actions')}
     >
       {/* 1. Top FAB: Attendance QR Clock Button (Shown on Attendance page only) */}

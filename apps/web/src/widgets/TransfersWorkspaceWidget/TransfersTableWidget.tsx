@@ -20,6 +20,7 @@ export interface TransfersTableWidgetProps {
   locationMap: Map<string, Location>;
   productMap: Map<string, Product>;
   userRole: CompanyUserRole;
+  receiveLocationId?: string;
   sort: { key: TransferSortKey; direction: TransferSortDirection };
   onSort: (key: TransferSortKey) => void;
   page: number;
@@ -44,9 +45,9 @@ const statusTone: Record<InventoryTransfer['status'], string> = {
   cancelled: 'stocky-status-critical',
 };
 
-function formatDate(value?: string | null) {
+function formatDate(value: string | null | undefined, locale: 'en' | 'ar' = 'en') {
   if (!value) return 'Not recorded';
-  return new Intl.DateTimeFormat('en', { day: 'numeric', month: 'short', year: 'numeric' }).format(new Date(value));
+  return new Intl.DateTimeFormat(locale === 'ar' ? 'ar-EG' : 'en-US', { day: 'numeric', month: 'short', year: 'numeric' }).format(new Date(value));
 }
 
 export function TransfersTableWidget({
@@ -55,6 +56,7 @@ export function TransfersTableWidget({
   locationMap,
   productMap,
   userRole,
+  receiveLocationId,
   sort,
   onSort,
   page,
@@ -67,7 +69,7 @@ export function TransfersTableWidget({
   onRequestStock,
   queue,
 }: TransfersTableWidgetProps) {
-  const { t, isRtl } = useTranslation();
+  const { t, locale } = useTranslation();
   const statusLabels: Record<InventoryTransfer['status'], string> = {
     draft: t('transfers.statusDraft'),
     requested: t('transfers.statusRequested'),
@@ -85,7 +87,7 @@ export function TransfersTableWidget({
     Array.from(
       new Set(
         linesForTransfer(transferId).map(
-          (line) => productMap.get(line.productId)?.name || 'Product'
+          (line) => productMap.get(line.productId)?.name || t('common.items')
         )
       )
     );
@@ -102,7 +104,7 @@ export function TransfersTableWidget({
   };
 
   const header = (label: string, key: TransferSortKey, className = '') => (
-    <th className={`stocky-board-table__header-cell px-4 py-3 align-middle text-start whitespace-nowrap ${className}`}>
+    <th scope="col" aria-sort={sort.key === key ? (sort.direction === 'asc' ? 'ascending' : 'descending') : 'none'} className={`stocky-board-table__header-cell px-4 py-3 align-middle text-start whitespace-nowrap ${className}`}>
       <button
         type="button"
         onClick={() => onSort(key)}
@@ -131,6 +133,7 @@ export function TransfersTableWidget({
           </button>
         )}
       {isApprovedAllowed &&
+        (!receiveLocationId || transfer.destinationLocationId === receiveLocationId) &&
         (transfer.status === 'approved' ||
           transfer.status === 'in_transit' ||
           transfer.status === 'partially_received') && (
@@ -192,7 +195,8 @@ export function TransfersTableWidget({
                   {header(t('transfers.statusRequested'), 'requested', 'stocky-transfer-secondary-column')}
                   <th
                     className="stocky-board-table__header-cell px-4 py-3 text-end align-middle whitespace-nowrap"
-                    aria-label="Transfer actions"
+                    aria-label={t('common.actions')}
+                    scope="col"
                   >
                     <span className="sr-only">{t('common.actions')}</span>
                   </th>
@@ -211,7 +215,7 @@ export function TransfersTableWidget({
                           </span>
                           <div className="min-w-0">
                             <span className="stocky-transfer-main font-medium">
-                              #{transfer.id.slice(0, 8)}
+                              <bdi>#{transfer.id.slice(0, 8)}</bdi>
                             </span>
                             <span className="stocky-transfer-sub text-stocky-text-sub">
                               {transfer.note || t('transfers.title')}
@@ -221,18 +225,18 @@ export function TransfersTableWidget({
                       </td>
                       <td className="stocky-transfer-cell stocky-transfer-secondary-column">
                         <div className="stocky-transfer-route flex items-center gap-1.5 text-xs text-stocky-text-main">
-                          <span>{locationMap.get(transfer.sourceLocationId)?.name || t('transfers.source')}</span>
+                           <bdi>{locationMap.get(transfer.sourceLocationId)?.name || t('transfers.source')}</bdi>
                           <ChevronRightIcon size="xs" className="text-stocky-text-sub flex-shrink-0 rtl:rotate-180" />
-                          <span>{locationMap.get(transfer.destinationLocationId)?.name || t('transfers.destination')}</span>
+                           <bdi>{locationMap.get(transfer.destinationLocationId)?.name || t('transfers.destination')}</bdi>
                         </div>
                       </td>
                       <td className="stocky-transfer-cell stocky-transfer-secondary-column">
                         <div className="stocky-transfer-items">
                           <span className="stocky-transfer-main font-medium">
-                            {transferLinesForRow.length || 0} product{transferLinesForRow.length === 1 ? '' : 's'}
+                             {transferLinesForRow.length === 1 ? t('transfers.itemCount', { count: transferLinesForRow.length }) : t('transfers.itemCountPlural', { count: transferLinesForRow.length })}
                           </span>
                           <span className="stocky-transfer-sub text-stocky-text-sub">
-                            {productNames.slice(0, 2).join(', ') || 'Line details pending'}
+                             <bdi>{productNames.slice(0, 2).join(', ') || t('common.notRecorded')}</bdi>
                             {productNames.length > 2 ? ` +${productNames.length - 2}` : ''}
                           </span>
                         </div>
@@ -244,7 +248,7 @@ export function TransfersTableWidget({
                       </td>
                       <td className="stocky-transfer-cell stocky-transfer-secondary-column">
                         <span className="stocky-transfer-date text-xs text-stocky-text-sub">
-                          {formatDate(transfer.requestedAt)}
+                          <bdi>{formatDate(transfer.requestedAt, locale)}</bdi>
                         </span>
                       </td>
                       <td className="stocky-transfer-cell stocky-transfer-actions-cell">
@@ -261,12 +265,13 @@ export function TransfersTableWidget({
           <div className="stocky-transfer-mobile-list divide-y divide-stocky-border-subtle sm:hidden w-full">
             {pageTransfers.map((transfer) => {
               const transferLinesForRow = linesForTransfer(transfer.id);
-              const sourceName = locationMap.get(transfer.sourceLocationId)?.name || 'Source';
-              const destName = locationMap.get(transfer.destinationLocationId)?.name || 'Destination';
+              const sourceName = locationMap.get(transfer.sourceLocationId)?.name || t('transfers.source');
+              const destName = locationMap.get(transfer.destinationLocationId)?.name || t('transfers.destination');
               const lineCount = transferLinesForRow.length || 0;
 
               const isActionableReceive =
                 isApprovedAllowed &&
+                (!receiveLocationId || transfer.destinationLocationId === receiveLocationId) &&
                 (transfer.status === 'approved' ||
                   transfer.status === 'in_transit' ||
                   transfer.status === 'partially_received');
@@ -303,13 +308,13 @@ export function TransfersTableWidget({
                     </div>
                     <div className="min-w-0 flex-1">
                       <p className="font-semibold text-stocky-text-main text-xs truncate leading-tight">
-                        #{transfer.id.slice(0, 8)}
+                         <bdi>#{transfer.id.slice(0, 8)}</bdi>
                         {transfer.note ? (
                           <span className="font-normal text-stocky-text-sub ml-1">· {transfer.note}</span>
                         ) : null}
                       </p>
                       <p className="text-[11px] text-stocky-text-sub truncate mt-0.5">
-                        {sourceName} → {destName} · {lineCount} product{lineCount === 1 ? '' : 's'}
+                         <bdi>{sourceName}</bdi> <ChevronRightIcon size="xs" className="inline-block align-middle rtl:rotate-180" /> <bdi>{destName}</bdi> · {lineCount === 1 ? t('transfers.itemCount', { count: lineCount }) : t('transfers.itemCountPlural', { count: lineCount })}
                       </p>
                     </div>
                   </div>
@@ -326,9 +331,9 @@ export function TransfersTableWidget({
                           e.stopPropagation();
                           onApprove(transfer);
                         }}
-                        className="h-6 px-2.5 rounded-full stocky-status-info text-[10px] font-medium border shadow-2xs hover:brightness-95 transition-all cursor-pointer"
+                         className="stocky-transfer-action h-11 min-w-[44px] px-3 rounded-full stocky-status-info text-[10px] font-medium border shadow-none hover:brightness-95 transition-all cursor-pointer"
                       >
-                        Approve
+                         {t('common.approve')}
                       </button>
                     ) : isActionableReceive ? (
                       <button
@@ -337,13 +342,13 @@ export function TransfersTableWidget({
                           e.stopPropagation();
                           onOpenReceipt(transfer);
                         }}
-                        className="h-6 px-2.5 rounded-full bg-stocky-primary text-white text-[10px] font-medium shadow-2xs hover:bg-stocky-primary-hover transition-colors cursor-pointer"
+                         className="stocky-transfer-action stocky-transfer-action--primary h-11 min-w-[44px] px-3 rounded-full text-[10px] font-medium shadow-none hover:bg-stocky-primary-hover transition-colors cursor-pointer"
                       >
-                        Receive
+                         {t('transfers.receiveTransfer')}
                       </button>
                     ) : (
                       <span className="text-[10px] text-stocky-text-sub">
-                        {formatDate(transfer.requestedAt)}
+                         {formatDate(transfer.requestedAt, locale)}
                       </span>
                     )}
                   </div>
@@ -363,6 +368,7 @@ export function TransfersTableWidget({
           <span>
             {t('inventory.rowsPerPage')}{' '}
             <select
+              aria-label={t('inventory.rowsPerPage')}
               value={pageSize}
               onChange={(event) => {
                 onPageSizeChange(Number(event.target.value));
@@ -386,7 +392,7 @@ export function TransfersTableWidget({
             onClick={() => onPageChange(Math.max(0, currentPage - 1))}
             disabled={currentPage === 0}
             className="stocky-table-page-button"
-            aria-label="Previous page"
+             aria-label={t('common.prevPage')}
           >
             ‹
           </button>
@@ -395,7 +401,7 @@ export function TransfersTableWidget({
             onClick={() => onPageChange(Math.min(pageCount - 1, currentPage + 1))}
             disabled={currentPage >= pageCount - 1}
             className="stocky-table-page-button"
-            aria-label="Next page"
+             aria-label={t('common.nextPage')}
           >
             ›
           </button>

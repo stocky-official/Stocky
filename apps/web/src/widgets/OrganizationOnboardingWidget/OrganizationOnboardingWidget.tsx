@@ -15,16 +15,16 @@ import { supabase } from '@/lib/supabase/client';
 
 export interface OrganizationOnboardingWidgetProps {
   userEmail?: string | null;
-  onSuccess?: () => void;
+  onSuccess?: (companyCode?: string) => void;
 }
 
 /**
  * OrganizationOnboardingWidget (v0.1.0 Design System)
- * Multi-tenant onboarding step for submitting a company verification request:
+ * Multi-tenant onboarding step for creating a company workspace:
  * - Company Name & Code
  * - Optional Logo upload to stocky-private bucket under the application id
  * - Initial branch request
- * - Owner membership is created only after Stocky admin approval
+ * - The current pilot auto-approves the workspace and creates its owner membership atomically
  */
 export function OrganizationOnboardingWidget({
   userEmail,
@@ -104,13 +104,13 @@ export function OrganizationOnboardingWidget({
       }
 
       // The application id is used to keep each upload unique. The user's
-      // auth id is the first storage path segment so the pending applicant can
+      // auth id is the first storage path segment so the applicant can
       // upload before the application row exists.
       const applicationId = crypto.randomUUID();
       let uploadedLogoPath: string | null = null;
 
-      // 2. Submit the application through a SECURITY DEFINER function. This
-      // prevents a browser client from creating companies or memberships.
+      // 2. Submit through a SECURITY DEFINER function. The database creates
+      // the verified company and owner membership atomically.
       const cleanCode = (orgCode.trim() || orgName.trim())
         .toLowerCase()
         .replace(/[^a-z0-9-]/g, '')
@@ -145,23 +145,21 @@ export function OrganizationOnboardingWidget({
           });
 
         if (uploadError) {
-          throw uploadError;
+          console.warn('Company created, but the optional logo could not be uploaded:', uploadError);
+        } else {
+          uploadedLogoPath = logoStoragePath;
+          const { error: logoPathError } = await supabase.rpc('set_company_application_logo', {
+            p_application_id: applicationId,
+            p_logo_path: uploadedLogoPath,
+          });
+          if (logoPathError) console.warn('Company created, but the optional logo could not be linked:', logoPathError);
         }
-
-        uploadedLogoPath = logoStoragePath;
-
-        const { error: logoPathError } = await supabase.rpc('set_company_application_logo', {
-          p_application_id: applicationId,
-          p_logo_path: uploadedLogoPath,
-        });
-
-        if (logoPathError) throw logoPathError;
       }
 
-      setSuccessMsg('Application submitted. Stocky will review your company before access is enabled.');
+      setSuccessMsg('Company created. Opening your workspace…');
 
       if (onSuccess) {
-        onSuccess();
+        onSuccess(cleanCode);
       }
     } catch (err: any) {
       console.error('Failed to create organization:', err);
@@ -177,7 +175,7 @@ export function OrganizationOnboardingWidget({
         <div className="border-b border-stocky-border-subtle pb-5 space-y-2">
           <div className="flex items-center justify-between">
             <span className="text-[11px] font-medium text-stocky-primary uppercase tracking-wider bg-stocky-primary/10 px-2.5 py-0.5 rounded-widget border border-stocky-primary/20">
-              Verification Request
+              Create Workspace
             </span>
             {userEmail && (
               <span className="text-xs text-stocky-text-sub truncate max-w-[200px]">
@@ -190,7 +188,7 @@ export function OrganizationOnboardingWidget({
             Submit Your Company
           </h1>
           <p className="text-xs sm:text-sm font-normal text-stocky-text-sub leading-relaxed">
-            Tell us about your company. After Stocky verifies it, you will be able to manage branches, inventory, suppliers, and team members.
+             Create a verified workspace and start managing branches, inventory, suppliers, and team members immediately.
           </p>
         </div>
 

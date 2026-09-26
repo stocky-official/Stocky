@@ -22,6 +22,7 @@ const RESERVED_ROOT_PATHS = new Set([
 const PLATFORM_VIEWS = new Set([
   'stock',
   'inventory',
+  'attendance',
   'suppliers',
   'transfers',
   'locations',
@@ -37,7 +38,7 @@ const PLATFORM_VIEWS = new Set([
 
 function copyResponseCookies(source: NextResponse, target: NextResponse): NextResponse {
   source.cookies.getAll().forEach((cookie) => {
-    target.cookies.set(cookie.name, cookie.value);
+    target.cookies.set(cookie);
   });
   return target;
 }

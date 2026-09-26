@@ -26,6 +26,7 @@ export interface InventoryProductLotsWidgetProps {
   lots: StockLot[];
   locations: Location[];
   suppliers: Supplier[];
+  canViewCommercials?: boolean;
   onSaveLot?: (lot: StockLot, input: StockLotUpdateInput) => Promise<void>;
   onDeleteLot?: (lot: StockLot) => void | Promise<void>;
 }
@@ -236,7 +237,7 @@ export function LotEditForm({
   );
 }
 
-export function InventoryProductLotsWidget({ product, lots, locations, suppliers, onSaveLot, onDeleteLot }: InventoryProductLotsWidgetProps) {
+export function InventoryProductLotsWidget({ product, lots, locations, suppliers, canViewCommercials = true, onSaveLot, onDeleteLot }: InventoryProductLotsWidgetProps) {
   const { t, locale } = useTranslation();
   const [view, setView] = useState<LotView>('active');
   const [search, setSearch] = useState('');
@@ -413,7 +414,7 @@ export function InventoryProductLotsWidget({ product, lots, locations, suppliers
                 <col style={{ width: '22%' }} />
                 <col style={{ width: '13%' }} />
                 <col style={{ width: '13%' }} />
-                <col style={{ width: '12%' }} />
+                {canViewCommercials && <col style={{ width: '12%' }} />}
                 <col style={{ width: '17%' }} />
                 <col style={{ width: '12%' }} />
                 <col style={{ width: '11%' }} />
@@ -429,9 +430,11 @@ export function InventoryProductLotsWidget({ product, lots, locations, suppliers
                   <th style={{ width: '13%' }} className="stocky-board-table__header-cell px-3 py-2.5 text-start whitespace-nowrap">
                     {t('drawers.inventoryLots.quantityOnHand')}
                   </th>
-                  <th style={{ width: '12%' }} className="stocky-board-table__header-cell px-3 py-2.5 text-start whitespace-nowrap">
-                    {t('drawers.inventoryLots.unitCost')}
-                  </th>
+                  {canViewCommercials && (
+                    <th style={{ width: '12%' }} className="stocky-board-table__header-cell px-3 py-2.5 text-start whitespace-nowrap">
+                      {t('drawers.inventoryLots.unitCost')}
+                    </th>
+                  )}
                   <th style={{ width: '17%' }} className="stocky-board-table__header-cell px-3 py-2.5 text-start whitespace-nowrap">
                     {t('drawers.inventoryLots.expiry')}
                   </th>
@@ -496,17 +499,21 @@ export function InventoryProductLotsWidget({ product, lots, locations, suppliers
                             {lot.quantityOnHand.toLocaleString()}{' '}
                             <span className="text-[10px] font-normal text-stocky-text-sub">{product.unitName || t('common.items')}</span>
                           </div>
-                          <div className="text-[10px] text-stocky-text-sub">
-                            {formatCurrency(lot.unitCost * lot.quantityOnHand, locale)}
-                          </div>
+                          {canViewCommercials && (
+                            <div className="text-[10px] text-stocky-text-sub">
+                              {formatCurrency(lot.unitCost * lot.quantityOnHand, locale)}
+                            </div>
+                          )}
                         </td>
 
                         {/* 4. Unit Cost */}
-                        <td className="px-3 py-3 align-middle whitespace-nowrap">
-                          <span className="font-semibold text-stocky-text-main text-xs">
-                            {formatCurrency(lot.unitCost, locale)}
-                          </span>
-                        </td>
+                        {canViewCommercials && (
+                          <td className="px-3 py-3 align-middle whitespace-nowrap">
+                            <span className="font-semibold text-stocky-text-main text-xs">
+                              {formatCurrency(lot.unitCost, locale)}
+                            </span>
+                          </td>
+                        )}
 
                         {/* 5. Expiry */}
                         <td className="px-3 py-3 align-middle whitespace-nowrap">
@@ -797,7 +804,7 @@ export function InventoryProductLotsWidget({ product, lots, locations, suppliers
                 </div>
 
                 {/* Third Row: Metrics Grid (Quantity & Total Value, Unit Cost & Supplier) */}
-                <div className="grid grid-cols-2 gap-2 pt-2 border-t border-stocky-border-subtle/70 text-xs">
+                <div className={`grid ${canViewCommercials ? 'grid-cols-2' : 'grid-cols-1'} gap-2 pt-2 border-t border-stocky-border-subtle/70 text-xs`}>
                   <div className="bg-stocky-bg-global/50 p-2 rounded-lg border border-stocky-border-subtle/50">
                     <span className="block text-[10px] uppercase font-semibold text-stocky-text-sub">
                       {t('drawers.inventoryLots.quantityOnHand')}
@@ -806,22 +813,26 @@ export function InventoryProductLotsWidget({ product, lots, locations, suppliers
                       {lot.quantityOnHand.toLocaleString()}{' '}
                       <span className="text-[10px] font-normal text-stocky-text-sub">{product.unitName || t('common.items')}</span>
                     </div>
-                    <div className="text-[10px] text-stocky-text-sub mt-0.5">
-                      {formatCurrency(lot.unitCost * lot.quantityOnHand, locale)}
-                    </div>
+                    {canViewCommercials && (
+                      <div className="text-[10px] text-stocky-text-sub mt-0.5">
+                        {formatCurrency(lot.unitCost * lot.quantityOnHand, locale)}
+                      </div>
+                    )}
                   </div>
 
-                  <div className="bg-stocky-bg-global/50 p-2 rounded-lg border border-stocky-border-subtle/50">
-                    <span className="block text-[10px] uppercase font-semibold text-stocky-text-sub">
-                      {t('drawers.inventoryLots.unitCost')}
-                    </span>
-                    <div className="font-semibold text-stocky-text-main text-xs mt-0.5">
-                      {formatCurrency(lot.unitCost, locale)}
+                  {canViewCommercials && (
+                    <div className="bg-stocky-bg-global/50 p-2 rounded-lg border border-stocky-border-subtle/50">
+                      <span className="block text-[10px] uppercase font-semibold text-stocky-text-sub">
+                        {t('drawers.inventoryLots.unitCost')}
+                      </span>
+                      <div className="font-semibold text-stocky-text-main text-xs mt-0.5">
+                        {formatCurrency(lot.unitCost, locale)}
+                      </div>
+                      <div className="text-[10px] text-stocky-text-sub truncate mt-0.5" title={supplierName}>
+                        {supplierName}
+                      </div>
                     </div>
-                    <div className="text-[10px] text-stocky-text-sub truncate mt-0.5" title={supplierName}>
-                      {supplierName}
-                    </div>
-                  </div>
+                  )}
                 </div>
 
                 {/* Inline Editing Form on Mobile */}
@@ -900,4 +911,3 @@ export function InventoryProductLotsWidget({ product, lots, locations, suppliers
 }
 
 export const StockProductLotsWidget = InventoryProductLotsWidget;
-

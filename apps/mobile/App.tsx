@@ -44,7 +44,7 @@ export default function App() {
         supabase.from('locations').select('*').eq('company_id', profile.company_id).eq('is_active', true).order('name'),
         supabase.from('user_locations').select('location_id').eq('user_id', profile.id),
         supabase.from('products').select('*').eq('company_id', profile.company_id).eq('is_active', true).order('name'),
-        supabase.from('stock_lots').select('*').eq('company_id', profile.company_id).order('expiry_date'),
+        supabase.from('stock_lots_visible').select('*').eq('company_id', profile.company_id).order('expiry_date'),
         supabase.from('stock_count_sessions').select('status').eq('company_id', profile.company_id).in('status', ['open', 'submitted']),
       ]);
       if (comp) setCompany({ id: comp.id, name: comp.name, code: comp.code, logoUrl: comp.logo_url, status: comp.status, verifiedAt: comp.verified_at, verifiedByAuthUserId: comp.verified_by_auth_user_id, verificationNote: comp.verification_note, createdAt: comp.created_at, updatedAt: comp.updated_at });

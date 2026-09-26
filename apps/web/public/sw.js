@@ -1,12 +1,10 @@
 const CACHE_NAME = 'stocky-pwa-v1';
 const STATIC_ASSETS = [
   '/',
-  '/platform',
   '/manifest.json',
   '/icon-192.png',
   '/icon-512.png',
   '/icon-maskable-512.png',
-  '/icon.svg',
   '/icon.svg',
   '/apple-touch-icon.png',
 ];
@@ -62,8 +60,8 @@ self.addEventListener('fetch', (event) => {
           if (cachedResponse) {
             return cachedResponse;
           }
-          if (event.request.mode === 'navigate') {
-            return caches.match('/platform') || caches.match('/');
+          if (event.request.mode === 'navigate' && new URL(event.request.url).pathname === '/') {
+            return caches.match('/');
           }
           return new Response('Network offline', {
             status: 503,

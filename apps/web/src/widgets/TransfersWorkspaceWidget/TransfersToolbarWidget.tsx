@@ -21,6 +21,8 @@ export interface TransfersToolbarWidgetProps {
 export function TransfersToolbarWidget({
   search,
   onSearchChange,
+  queue = 'all',
+  onQueueChange,
   onRequestStock,
   filterPanelOpen = false,
   onToggleFilterPanel,
@@ -36,19 +38,19 @@ export function TransfersToolbarWidget({
         <div className="relative min-w-0 flex-1">
           <SearchIcon
             size="xs"
-            className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-stocky-text-sub"
+            className="pointer-events-none absolute start-3.5 top-1/2 -translate-y-1/2 text-stocky-text-sub"
           />
           <input
             value={search}
             onChange={(event) => onSearchChange(event.target.value)}
             placeholder={t('transfers.searchPlaceholder')}
-            className="w-full h-10 rounded-full border border-stocky-border-subtle bg-stocky-bg-widget pl-9 pr-16 text-xs text-stocky-text-main placeholder:text-stocky-text-sub focus:border-stocky-primary focus:outline-none transition-colors"
+            className="w-full h-10 rounded-full border border-stocky-border-subtle bg-stocky-bg-widget ps-9 pe-16 text-xs text-stocky-text-main placeholder:text-stocky-text-sub focus:border-stocky-primary focus:outline-none transition-colors"
           />
           {search && (
             <button
               type="button"
               onClick={() => onSearchChange('')}
-              className="absolute right-9 top-1/2 -translate-y-1/2 text-stocky-text-sub hover:text-stocky-text-main transition-colors cursor-pointer"
+              className="absolute end-9 top-1/2 -translate-y-1/2 text-stocky-text-sub hover:text-stocky-text-main transition-colors cursor-pointer"
               aria-label={t('common.close')}
             >
               <XIcon size="xs" />
@@ -58,13 +60,14 @@ export function TransfersToolbarWidget({
             <button
               type="button"
               onClick={onToggleFilterPanel}
-              className={`absolute right-1.5 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full flex items-center justify-center transition-colors cursor-pointer ${
+                className={`absolute end-1.5 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full flex items-center justify-center transition-colors cursor-pointer ${
                 filterPanelOpen || isFilterActive || activeFilterCount > 0
                   ? 'bg-stocky-primary text-white hover:bg-stocky-primary-hover'
                   : 'text-stocky-text-sub hover:bg-stocky-bg-hover hover:text-stocky-text-main'
               }`}
-              title="Open transfers filter panel"
-              aria-label="Filter transfers"
+              title={t('transfers.filterTransfers')}
+              aria-label={t('transfers.filterTransfers')}
+              aria-expanded={filterPanelOpen}
             >
               <FilterIcon size="xs" />
               {activeFilterCount > 0 && (
@@ -77,10 +80,31 @@ export function TransfersToolbarWidget({
 
       {/* Primary Action */}
       <div className="stocky-stock-table-toolbar__actions flex items-center gap-2 w-full sm:w-auto sm:ml-auto">
+        {onQueueChange && (
+          <div className="stocky-transfer-toolbar__queues flex-wrap" role="tablist" aria-label={t('transfers.transferStatus')}>
+            {([
+              ['all', t('transfers.allQueues')],
+              ['action', t('transfers.needsAction')],
+              ['incoming', t('transfers.incoming')],
+              ['outgoing', t('transfers.outgoing')],
+            ] as const).map(([id, label]) => (
+              <button
+                key={id}
+                type="button"
+                role="tab"
+                aria-selected={queue === id}
+                onClick={() => onQueueChange(id)}
+                className={`stocky-table-toolbar-button h-10 px-4 rounded-full text-xs font-medium inline-flex items-center justify-center gap-1.5 whitespace-nowrap cursor-pointer transition-colors ${queue === id ? 'stocky-table-toolbar-button--active' : ''}`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+        )}
         <button
           type="button"
           onClick={onRequestStock}
-          className="stocky-table-toolbar-button stocky-table-toolbar-button--primary w-full sm:w-auto h-10 px-4 rounded-full text-xs font-semibold inline-flex items-center justify-center gap-1.5 whitespace-nowrap cursor-pointer"
+          className="stocky-table-toolbar-button stocky-table-toolbar-button--primary w-full sm:w-auto h-10 px-4 rounded-full text-xs font-medium inline-flex items-center justify-center gap-1.5 whitespace-nowrap cursor-pointer"
         >
           <PlusIcon size="xs" /> <span>{t('transfers.requestStock')}</span>
         </button>

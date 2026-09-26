@@ -37,9 +37,6 @@ Visit [http://localhost:3000](http://localhost:3000) in your browser.
 
 ## 📜 Development Directives & Rules
 
-Please refer to [`AGENT.md`](./AGENT.md) for critical architectural rules:
-1. Everything must remain organized.
-2. Any auxiliary scripts or non-production tools must live in `_technical_support/`.
-3. All styling aspects must be tokenized in `global.css`. All icons must use the centralized icon library.
-4. Never develop a monolith — always develop widgets.
-5. Always use `*View.tsx` (PageView) to orchestrate page layout and import widgets.
+1. Keep the monorepo organized by application and shared package.
+2. Keep styling tokenized in `global.css` and use the centralized icon library.
+3. Build pages from focused widgets and use `*View.tsx` files to orchestrate layouts.

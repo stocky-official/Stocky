@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowDownIcon, StockyLogoIcon, XIcon } from '@stocky/icons';
 
 export function PWARegistration() {
@@ -75,28 +74,15 @@ export function PWARegistration() {
   return (
     <>
       {/* Offline Status Bar */}
-      <AnimatePresence>
-        {isOffline && (
-          <motion.div
-            initial={{ y: -40, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            exit={{ y: -40, opacity: 0 }}
-            className="fixed top-0 left-0 right-0 z-50 bg-amber-600 text-white text-xs py-1.5 px-4 text-center font-medium shadow-md flex items-center justify-center gap-2"
-          >
+      {isOffline && (
+          <div className="stocky-pwa-offline-banner fixed top-0 left-0 right-0 z-50 bg-amber-600 text-white text-xs py-1.5 px-4 text-center font-medium shadow-md flex items-center justify-center gap-2">
             <span>You are currently offline. Cached stock records remain available.</span>
-          </motion.div>
-        )}
-      </AnimatePresence>
+          </div>
+      )}
 
       {/* PWA Install Banner */}
-      <AnimatePresence>
-        {showInstallBanner && (
-          <motion.div
-            initial={{ y: 80, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            exit={{ y: 80, opacity: 0 }}
-            className="fixed bottom-4 left-4 right-4 md:left-auto md:right-4 md:w-96 z-50 bg-stocky-bg-widget/95 backdrop-blur-md border border-stocky-border-subtle rounded-widget p-4 shadow-2xl flex items-center gap-3"
-          >
+      {showInstallBanner && (
+          <div className="stocky-pwa-install-banner fixed bottom-4 left-4 right-4 md:left-auto md:right-4 md:w-96 z-50 bg-stocky-bg-widget/95 backdrop-blur-md border border-stocky-border-subtle rounded-widget p-4 shadow-2xl flex items-center gap-3">
             <div className="w-10 h-10 rounded-lg bg-stocky-primary flex items-center justify-center shrink-0 shadow-md">
               <StockyLogoIcon size="sm" className="text-[#11120F]" />
             </div>
@@ -129,9 +115,8 @@ export function PWARegistration() {
                 <XIcon size="xs" />
               </button>
             </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+          </div>
+      )}
     </>
   );
 }

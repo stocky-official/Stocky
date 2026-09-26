@@ -38,6 +38,7 @@ export function SideDrawer({
 }: SideDrawerProps) {
   const [mounted, setMounted] = useState(false);
   const onCloseRef = useRef(onClose);
+  const panelRef = useRef<HTMLElement>(null);
   onCloseRef.current = onClose;
 
   useEffect(() => {
@@ -48,15 +49,53 @@ export function SideDrawer({
     if (!isOpen) return;
 
     const previousOverflow = document.body.style.overflow;
+    const previouslyFocused = document.activeElement as HTMLElement | null;
     document.body.style.overflow = 'hidden';
+    const focusableSelector = [
+      'a[href]',
+      'button:not([disabled])',
+      'input:not([disabled])',
+      'select:not([disabled])',
+      'textarea:not([disabled])',
+      '[tabindex]:not([tabindex="-1"])',
+    ].join(',');
+    const focusFirstControl = () => {
+      const panel = panelRef.current;
+      if (!panel) return;
+      const firstControl = panel.querySelector<HTMLElement>(focusableSelector);
+      (firstControl || panel).focus();
+    };
+    const focusFrame = window.requestAnimationFrame(focusFirstControl);
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') onCloseRef.current();
+      if (event.key !== 'Tab') return;
+
+      const panel = panelRef.current;
+      if (!panel) return;
+      const controls = Array.from(panel.querySelectorAll<HTMLElement>(focusableSelector));
+      if (controls.length === 0) {
+        event.preventDefault();
+        panel.focus();
+        return;
+      }
+
+      const first = controls[0];
+      const last = controls[controls.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
     };
     window.addEventListener('keydown', handleKeyDown);
 
     return () => {
+      window.cancelAnimationFrame(focusFrame);
       document.body.style.overflow = previousOverflow;
       window.removeEventListener('keydown', handleKeyDown);
+      previouslyFocused?.focus?.();
     };
   }, [isOpen]);
 
@@ -95,7 +134,9 @@ export function SideDrawer({
             }}
             transition={STOCKY_DRAWER_TRANSITION}
             onClick={(event) => event.stopPropagation()}
-            className={`fixed inset-y-0 right-0 flex h-dvh w-full flex-col overflow-hidden border-l border-stocky-border-subtle bg-white shadow-2xl ${widthClassName} ${panelClassName}`}
+            ref={panelRef}
+            tabIndex={-1}
+            className={`fixed inset-y-0 right-0 flex h-dvh w-full flex-col overflow-hidden border-l border-stocky-border-subtle bg-white shadow-none ${widthClassName} ${panelClassName}`}
           >
             {children as any}
           </motion.aside>

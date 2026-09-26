@@ -19,6 +19,7 @@ export interface HomeExecutiveKpiStripWidgetProps {
   onOpenStock?: () => void;
   onOpenExpiry?: () => void;
   onOpenAttendance?: () => void;
+  canViewCommercials?: boolean;
 }
 
 /**
@@ -42,6 +43,7 @@ export function HomeExecutiveKpiStripWidget({
   onOpenStock,
   onOpenExpiry,
   onOpenAttendance,
+  canViewCommercials = true,
 }: HomeExecutiveKpiStripWidgetProps) {
   const { t } = useTranslation();
 
@@ -93,9 +95,13 @@ export function HomeExecutiveKpiStripWidget({
     },
   ];
 
+  const visibleKpis = canViewCommercials
+    ? kpis
+    : kpis.filter((kpi) => kpi.id !== 'valuation' && kpi.id !== 'stagnant');
+
   return (
     <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 w-full">
-      {kpis.map((kpi) => (
+      {visibleKpis.map((kpi) => (
         <div
           key={kpi.id}
           data-testid={`kpi-card-${kpi.id}`}
