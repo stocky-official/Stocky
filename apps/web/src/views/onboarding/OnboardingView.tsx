@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase/client';
 import { OrganizationOnboardingWidget } from '@/widgets/OrganizationOnboardingWidget/OrganizationOnboardingWidget';
-import { StockyLogoIcon } from '@stocky/icons';
+import { AlertTriangleIcon, StockyLogoIcon } from '@stocky/icons';
 import { PageContent, PageFooter, PageHeader, PageLayout } from '@/components/ui/PageLayout';
 
 /**
@@ -19,6 +19,7 @@ export function OnboardingView() {
   const router = useRouter();
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [checking, setChecking] = useState(true);
+  const [membershipError, setMembershipError] = useState<string | null>(null);
 
   useEffect(() => {
     async function checkAuthAndCompany() {
@@ -35,20 +36,45 @@ export function OnboardingView() {
 
         setUserEmail(user.email ?? null);
 
-        // Check if user already belongs to an active organization
-        const { data: existingMembership } = await supabase
+        // Resolve the authenticated membership first. The email fallback keeps
+        // older records working without allowing lookup errors to masquerade as
+        // a user who has no workspace.
+        const { data: authMemberships, error: authMembershipError } = await supabase
           .from('company_users')
           .select('company_id, status')
-          .or(`auth_user_id.eq.${user.id},email.eq.${user.email}`)
+          .eq('auth_user_id', user.id)
+          .order('created_at', { ascending: false })
           .limit(1)
-          .maybeSingle();
+        let existingMembership = authMemberships?.[0] ?? null;
+        let membershipLookupFailed = Boolean(authMembershipError);
+
+        if (!existingMembership && user.email) {
+          const { data: emailMemberships, error: emailMembershipError } = await supabase
+            .from('company_users')
+            .select('company_id, status')
+            .eq('email', user.email.toLowerCase())
+            .order('created_at', { ascending: false })
+            .limit(1);
+          existingMembership = emailMemberships?.[0] ?? null;
+          membershipLookupFailed = Boolean(emailMembershipError);
+        }
+
+        if (membershipLookupFailed && !existingMembership) {
+          setMembershipError('We could not verify your workspace membership. Please refresh and try again.');
+          return;
+        }
 
         if (existingMembership?.company_id && existingMembership.status === 'active') {
-          const { data: company } = await supabase
+          const { data: company, error: companyError } = await supabase
             .from('companies')
             .select('code, status')
             .eq('id', existingMembership.company_id)
             .maybeSingle();
+
+          if (companyError) {
+            setMembershipError('We could not load your workspace details. Please refresh and try again.');
+            return;
+          }
 
           if (company?.status && company.status !== 'verified') {
             router.replace('/verification-pending');
@@ -61,13 +87,18 @@ export function OnboardingView() {
           return;
         }
 
-        const { data: existingApplication } = await supabase
+        const { data: existingApplication, error: applicationError } = await supabase
           .from('company_applications')
           .select('status')
           .eq('requested_by_auth_user_id', user.id)
           .in('status', ['pending', 'approved'])
           .limit(1)
           .maybeSingle();
+
+        if (applicationError) {
+          setMembershipError('We could not verify your workspace application. Please refresh and try again.');
+          return;
+        }
 
         if (existingApplication) {
           router.replace('/verification-pending');
@@ -90,6 +121,27 @@ export function OnboardingView() {
           <div className="w-12 h-12 rounded-full bg-stocky-border-default/60" />
           <div className="h-5 w-48 rounded-md bg-stocky-border-default/80" />
           <div className="h-3.5 w-64 rounded bg-stocky-border-default/40" />
+        </div>
+      </PageLayout>
+    );
+  }
+
+  if (membershipError) {
+    return (
+      <PageLayout className="w-screen flex flex-col items-center justify-center gap-3 select-none">
+        <div className="w-full max-w-md bg-stocky-bg-widget border border-stocky-border-subtle rounded-widget p-8 shadow-bevel flex flex-col items-center gap-4 text-center">
+          <div className="w-12 h-12 rounded-full bg-stocky-status-warning-bg border border-stocky-status-warning-border text-stocky-status-warning-fg flex items-center justify-center">
+            <AlertTriangleIcon size="lg" />
+          </div>
+          <h1 className="text-base font-semibold text-stocky-text-main">Workspace Verification Unavailable</h1>
+          <p className="text-xs text-stocky-text-sub leading-relaxed">{membershipError}</p>
+          <button
+            type="button"
+            onClick={() => window.location.reload()}
+            className="w-full py-2.5 px-4 rounded-xl bg-stocky-primary text-stocky-text-inverse text-xs font-medium hover:opacity-95 transition-opacity cursor-pointer shadow-sm"
+          >
+            Retry
+          </button>
         </div>
       </PageLayout>
     );

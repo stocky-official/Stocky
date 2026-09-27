@@ -40,23 +40,27 @@ export async function GET(request: Request) {
       // organization onboarding as before.
       const isPlatformAdminRoute = next.startsWith('/admin/');
       if (user && !isPlatformAdminRoute) {
-        const { data: memberships } = await supabase
+        const { data: memberships, error: membershipError } = await supabase
           .from('company_users')
           .select('company_id, status')
           .eq('auth_user_id', user.id)
           .limit(1);
         let membership = memberships?.[0] ?? null;
+        let membershipLookupFailed = Boolean(membershipError);
 
         if (!membership && user.email) {
-          const { data: emailMemberships } = await supabase
+          const { data: emailMemberships, error: emailMembershipError } = await supabase
             .from('company_users')
             .select('company_id, status')
             .eq('email', user.email.toLowerCase())
             .limit(1);
           membership = emailMemberships?.[0] ?? null;
+          membershipLookupFailed = Boolean(emailMembershipError);
         }
 
-        if (!membership || !membership.company_id) {
+        if (membershipLookupFailed && !membership) {
+          destination = '/auth/auth-code-error?reason=membership_lookup_failed';
+        } else if (!membership || !membership.company_id) {
           destination = '/onboarding';
         } else if (destination === '/platform' || destination.startsWith('/platform/')) {
           const { data: comp } = await supabase

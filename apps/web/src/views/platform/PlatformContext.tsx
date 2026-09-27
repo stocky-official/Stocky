@@ -127,6 +127,7 @@ export function canOpenTab(
 
 export interface PlatformContextValue {
   loading: boolean;
+  membershipLoadError: string | null;
   unauthorizedTenant?: {
     requestedTenantCode: string;
     requestedCompanyName?: string;
@@ -326,6 +327,7 @@ export function PlatformProvider({
   }, [initialTenantCode, pathname, tenantPrefix]);
 
   const [loading, setLoading] = useState(true);
+  const [membershipLoadError, setMembershipLoadError] = useState<string | null>(null);
   const [reloadKey, setReloadKey] = useState(0);
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [userName, setUserName] = useState<string | null>(null);
@@ -516,6 +518,7 @@ export function PlatformProvider({
     let cancelled = false;
     async function load() {
       setLoading(true);
+      setMembershipLoadError(null);
       setUnauthorizedTenant(null);
       const { data: auth, error: authError } = await supabase.auth.getUser();
       if (authError) console.error('Unable to restore the Stocky session', authError);
@@ -548,6 +551,7 @@ export function PlatformProvider({
       if (authMembershipError) console.error('Unable to load memberships', authMembershipError);
 
       let userMemberships = authMemberships || [];
+      let membershipLookupFailed = Boolean(authMembershipError);
       if (userMemberships.length === 0 && user.email) {
         const { data: emailMemberships, error: emailMembershipError } = await supabase
           .from('company_users')
@@ -555,6 +559,16 @@ export function PlatformProvider({
           .eq('email', user.email.toLowerCase());
         if (emailMembershipError) console.error('Unable to load email memberships', emailMembershipError);
         userMemberships = emailMemberships || [];
+        membershipLookupFailed = Boolean(emailMembershipError);
+      }
+
+      // A failed membership query is not proof that the user has no company.
+      // Treating transport/RLS errors as an empty result incorrectly sends
+      // existing users into workspace creation and can create duplicate data.
+      if (membershipLookupFailed && userMemberships.length === 0) {
+        setMembershipLoadError('We could not verify your workspace membership. Please refresh and try again.');
+        setLoading(false);
+        return;
       }
 
       // If user has zero company memberships anywhere in Stocky:
@@ -1485,6 +1499,7 @@ export function PlatformProvider({
 
   const contextValue: PlatformContextValue = {
     loading,
+    membershipLoadError,
     unauthorizedTenant,
     userEmail,
     userName,
