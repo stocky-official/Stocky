@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase/client';
+import { claimInvitedCompanyMembership } from '@/lib/claimMembership';
 import { OrganizationOnboardingWidget } from '@/widgets/OrganizationOnboardingWidget/OrganizationOnboardingWidget';
 import { AlertTriangleIcon, StockyLogoIcon } from '@stocky/icons';
 import { PageContent, PageFooter, PageHeader, PageLayout } from '@/components/ui/PageLayout';
@@ -35,6 +36,10 @@ export function OnboardingView() {
         }
 
         setUserEmail(user.email ?? null);
+
+        // Recover invited teammates even if the OAuth callback landed here
+        // before the membership claim was completed.
+        await claimInvitedCompanyMembership(supabase);
 
         // Resolve the authenticated membership first. The email fallback keeps
         // older records working without allowing lookup errors to masquerade as

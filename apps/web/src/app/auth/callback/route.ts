@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { getCanonicalAuthOrigin, normalizeInternalPath } from '@/lib/authRedirect';
+import { claimInvitedCompanyMembership } from '@/lib/claimMembership';
 
 export async function GET(request: Request) {
   const requestUrl = new URL(request.url);
@@ -40,6 +41,12 @@ export async function GET(request: Request) {
       // organization onboarding as before.
       const isPlatformAdminRoute = next.startsWith('/admin/');
       if (user && !isPlatformAdminRoute) {
+        // Invitations are created before the teammate has an Auth identity, so
+        // their row cannot be found by auth_user_id until this first sign-in.
+        // Claim it before resolving the destination to prevent a false onboarding
+        // redirect for an invited teammate.
+        await claimInvitedCompanyMembership(supabase);
+
         const { data: memberships, error: membershipError } = await supabase
           .from('company_users')
           .select('company_id, status')

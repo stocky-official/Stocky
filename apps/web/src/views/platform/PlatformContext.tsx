@@ -11,6 +11,7 @@ import React, {
 } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase/client';
+import { claimInvitedCompanyMembership } from '@/lib/claimMembership';
 import { parseTenantDomain } from '@/lib/domain';
 import * as XLSX from 'xlsx';
 import type {
@@ -528,6 +529,10 @@ export function PlatformProvider({
       setUserName(user.user_metadata?.full_name || user.user_metadata?.name || null);
       setUserTitle(user.user_metadata?.job_title || user.user_metadata?.title || 'Team member');
       setUserAvatarUrl(user.user_metadata?.avatar_url || user.user_metadata?.picture || null);
+
+      // A teammate may arrive through an OAuth/email flow before their invited
+      // company_users row has been linked to auth.users.id.
+      await claimInvitedCompanyMembership(supabase);
 
       let targetCompanyId: string | null = null;
       let requestedCompany: any = null;
