@@ -62,6 +62,19 @@ const AVAILABLE_PAGES = [
   { id: 'team', labelKey: 'drawers.memberDetail.pages.team', descKey: 'drawers.memberDetail.pages.teamDesc' },
 ];
 
+const defaultPagesForRole = (memberRole: CompanyUserRole) => {
+  if (memberRole === 'owner' || memberRole === 'admin') return AVAILABLE_PAGES.map((page) => page.id);
+  if (memberRole === 'manager') return ['inventory', 'transfers', 'suppliers', 'tasks', 'attendance', 'locations'];
+  return ['tasks', 'attendance', 'locations'];
+};
+
+const defaultCapabilitiesForRole = (memberRole: CompanyUserRole) => ({
+  can_edit_stock: memberRole !== 'staff',
+  can_approve_transfers: memberRole === 'owner' || memberRole === 'admin' || memberRole === 'manager',
+  can_manage_team: memberRole === 'owner' || memberRole === 'admin',
+  can_manage_attendance: memberRole === 'owner' || memberRole === 'admin' || memberRole === 'manager',
+});
+
 export function MemberDetailDrawer({
   isOpen,
   onClose,
@@ -95,21 +108,15 @@ export function MemberDetailDrawer({
       setRole(member.role || 'staff');
       setReportsTo(member.reports_to || '');
 
-      const currentPages = member.permissions?.pages || [
-        'inventory',
-        'transfers',
-        'suppliers',
-        'tasks',
-        'attendance',
-        'locations',
-      ];
+      const currentPages = member.permissions?.pages || defaultPagesForRole(member.role || 'staff');
       setAllowedPages(currentPages);
 
+      const defaults = defaultCapabilitiesForRole(member.role || 'staff');
       setCapabilities({
-        can_edit_stock: Boolean(member.permissions?.capabilities?.can_edit_stock ?? member.role !== 'staff'),
-        can_approve_transfers: Boolean(member.permissions?.capabilities?.can_approve_transfers ?? (member.role === 'owner' || member.role === 'admin')),
-        can_manage_team: Boolean(member.permissions?.capabilities?.can_manage_team ?? (member.role === 'owner' || member.role === 'admin')),
-        can_manage_attendance: Boolean(member.permissions?.capabilities?.can_manage_attendance ?? member.role !== 'staff'),
+        can_edit_stock: Boolean(member.permissions?.capabilities?.can_edit_stock ?? defaults.can_edit_stock),
+        can_approve_transfers: Boolean(member.permissions?.capabilities?.can_approve_transfers ?? defaults.can_approve_transfers),
+        can_manage_team: Boolean(member.permissions?.capabilities?.can_manage_team ?? defaults.can_manage_team),
+        can_manage_attendance: Boolean(member.permissions?.capabilities?.can_manage_attendance ?? defaults.can_manage_attendance),
       });
     }
   }, [member]);
@@ -158,6 +165,12 @@ export function MemberDetailDrawer({
         can_manage_attendance: false,
       });
     }
+  };
+
+  const handleRoleChange = (nextRole: CompanyUserRole) => {
+    setRole(nextRole);
+    setAllowedPages(defaultPagesForRole(nextRole));
+    setCapabilities(defaultCapabilitiesForRole(nextRole));
   };
 
   const handleTogglePage = (pageId: string) => {
@@ -242,7 +255,7 @@ export function MemberDetailDrawer({
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
                   placeholder={t('drawers.memberDetail.fullNamePlaceholder')}
-                  className="mt-1.5 h-10 w-full rounded-xl border border-stocky-border-subtle bg-white px-3 text-xs text-stocky-text-main focus:border-stocky-primary focus:outline-none"
+                  className="mt-1.5 h-10 w-full rounded-xl border border-stocky-border-subtle bg-stocky-bg-widget px-3 text-xs text-stocky-text-main focus:border-stocky-primary focus:outline-none"
                 />
               </label>
 
@@ -253,7 +266,7 @@ export function MemberDetailDrawer({
                   value={jobTitle}
                   onChange={(e) => setJobTitle(e.target.value)}
                   placeholder={t('drawers.memberDetail.jobTitlePlaceholder')}
-                  className="mt-1.5 h-10 w-full rounded-xl border border-stocky-border-subtle bg-white px-3 text-xs text-stocky-text-main focus:border-stocky-primary focus:outline-none"
+                  className="mt-1.5 h-10 w-full rounded-xl border border-stocky-border-subtle bg-stocky-bg-widget px-3 text-xs text-stocky-text-main focus:border-stocky-primary focus:outline-none"
                 />
               </label>
             </div>
@@ -264,8 +277,8 @@ export function MemberDetailDrawer({
                 <select
                   value={role}
                   disabled={member.role === 'owner' || !canManage}
-                  onChange={(e) => setRole(e.target.value as CompanyUserRole)}
-                  className="mt-1.5 h-10 w-full rounded-xl border border-stocky-border-subtle bg-white px-3 text-xs text-stocky-text-main focus:border-stocky-primary focus:outline-none disabled:bg-stocky-bg-global"
+                  onChange={(e) => handleRoleChange(e.target.value as CompanyUserRole)}
+                  className="mt-1.5 h-10 w-full rounded-xl border border-stocky-border-subtle bg-stocky-bg-widget px-3 text-xs text-stocky-text-main focus:border-stocky-primary focus:outline-none disabled:bg-stocky-bg-global"
                 >
                   <option value="staff">{t('drawers.memberDetail.roles.staff')}</option>
                   <option value="manager">{t('drawers.memberDetail.roles.manager')}</option>
@@ -280,7 +293,7 @@ export function MemberDetailDrawer({
                   value={reportsTo}
                   disabled={member.role === 'owner' || !canManage}
                   onChange={(e) => setReportsTo(e.target.value)}
-                  className="mt-1.5 h-10 w-full rounded-xl border border-stocky-border-subtle bg-white px-3 text-xs text-stocky-text-main focus:border-stocky-primary focus:outline-none disabled:bg-stocky-bg-global"
+                  className="mt-1.5 h-10 w-full rounded-xl border border-stocky-border-subtle bg-stocky-bg-widget px-3 text-xs text-stocky-text-main focus:border-stocky-primary focus:outline-none disabled:bg-stocky-bg-global"
                 >
                   <option value="">{t('drawers.memberDetail.reportsToNone')}</option>
                   {potentialManagers.map((m) => (
@@ -326,7 +339,7 @@ export function MemberDetailDrawer({
               })}
 
               {memberAssignments.length === 0 && (
-                <span className="text-xs text-amber-700 font-medium py-1">
+                <span className="text-xs text-stocky-status-warning-fg font-medium py-1">
                   {t('drawers.memberDetail.noLocationAssigned')}
                 </span>
               )}
@@ -341,7 +354,7 @@ export function MemberDetailDrawer({
                       onAssignLocation(member.id, e.target.value);
                     }
                   }}
-                  className="h-9 rounded-full border border-stocky-border-subtle bg-white px-3 text-xs text-stocky-text-main focus:border-stocky-primary focus:outline-none cursor-pointer"
+                  className="h-9 rounded-full border border-stocky-border-subtle bg-stocky-bg-widget px-3 text-xs text-stocky-text-main focus:border-stocky-primary focus:outline-none cursor-pointer"
                 >
                   <option value="">{t('drawers.memberDetail.assignAnotherLocation')}</option>
                   {locations
@@ -370,28 +383,28 @@ export function MemberDetailDrawer({
                   <button
                     type="button"
                     onClick={() => applyPreset('admin')}
-                    className="px-2 py-0.5 rounded-full border border-stocky-border-subtle bg-white hover:bg-stocky-bg-global cursor-pointer"
+                    className="px-2 py-0.5 rounded-full border border-stocky-border-subtle bg-stocky-bg-widget hover:bg-stocky-bg-global cursor-pointer"
                   >
                     {t('drawers.memberDetail.presetsAdmin')}
                   </button>
                   <button
                     type="button"
                     onClick={() => applyPreset('manager')}
-                    className="px-2 py-0.5 rounded-full border border-stocky-border-subtle bg-white hover:bg-stocky-bg-global cursor-pointer"
+                    className="px-2 py-0.5 rounded-full border border-stocky-border-subtle bg-stocky-bg-widget hover:bg-stocky-bg-global cursor-pointer"
                   >
                     {t('drawers.memberDetail.presetsManager')}
                   </button>
                   <button
                     type="button"
                     onClick={() => applyPreset('warehouse')}
-                    className="px-2 py-0.5 rounded-full border border-stocky-border-subtle bg-white hover:bg-stocky-bg-global cursor-pointer"
+                    className="px-2 py-0.5 rounded-full border border-stocky-border-subtle bg-stocky-bg-widget hover:bg-stocky-bg-global cursor-pointer"
                   >
                     {t('drawers.memberDetail.presetsWarehouse')}
                   </button>
                   <button
                     type="button"
                     onClick={() => applyPreset('staff')}
-                    className="px-2 py-0.5 rounded-full border border-stocky-border-subtle bg-white hover:bg-stocky-bg-global cursor-pointer"
+                    className="px-2 py-0.5 rounded-full border border-stocky-border-subtle bg-stocky-bg-widget hover:bg-stocky-bg-global cursor-pointer"
                   >
                     {t('drawers.memberDetail.presetsStaff')}
                   </button>
@@ -400,7 +413,7 @@ export function MemberDetailDrawer({
             </div>
 
             {/* Page Access Checkbox List */}
-            <div className="rounded-xl border border-stocky-border-subtle divide-y divide-stocky-border-subtle overflow-hidden bg-white">
+            <div className="rounded-xl border border-stocky-border-subtle divide-y divide-stocky-border-subtle overflow-hidden bg-stocky-bg-widget">
               <div className="bg-stocky-bg-global px-3.5 py-2 text-[10px] font-bold uppercase tracking-wider text-stocky-text-sub">
                 {t('drawers.memberDetail.permittedModules')}
               </div>
@@ -428,7 +441,7 @@ export function MemberDetailDrawer({
             </div>
 
             {/* Capabilities Checkbox List */}
-            <div className="rounded-xl border border-stocky-border-subtle divide-y divide-stocky-border-subtle overflow-hidden bg-white mt-3">
+            <div className="rounded-xl border border-stocky-border-subtle divide-y divide-stocky-border-subtle overflow-hidden bg-stocky-bg-widget mt-3">
               <div className="bg-stocky-bg-global px-3.5 py-2 text-[10px] font-bold uppercase tracking-wider text-stocky-text-sub">
                 {t('drawers.memberDetail.operationalPrivileges')}
               </div>
@@ -498,7 +511,7 @@ export function MemberDetailDrawer({
             type="button"
             onClick={onClose}
             disabled={saving}
-            className="h-10 rounded-full border border-stocky-border-subtle bg-white px-5 text-xs font-medium text-stocky-text-main hover:bg-stocky-bg-global transition-colors cursor-pointer"
+            className="h-10 rounded-full border border-stocky-border-subtle bg-stocky-bg-widget px-5 text-xs font-medium text-stocky-text-main hover:bg-stocky-bg-global transition-colors cursor-pointer"
           >
             {t('drawers.memberDetail.cancel')}
           </button>
@@ -506,7 +519,7 @@ export function MemberDetailDrawer({
             type="submit"
             form="member-detail-form"
             disabled={saving}
-            className="h-10 rounded-full bg-stocky-primary px-6 text-xs font-medium text-white hover:bg-stocky-primary-hover transition-colors shadow-xs disabled:opacity-50 cursor-pointer"
+            className="h-10 rounded-full bg-stocky-primary px-6 text-xs font-medium text-stocky-text-inverse hover:bg-stocky-primary-hover transition-colors shadow-xs disabled:opacity-50 cursor-pointer"
           >
             {saving ? t('drawers.memberDetail.saving') : t('drawers.memberDetail.save')}
           </button>

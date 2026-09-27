@@ -49,7 +49,7 @@ export function AdminTopBarWidget({ pendingCount = 0 }: AdminTopBarWidgetProps) 
   return (
     <>
       {/* Mobile TopBar */}
-      <header className="md:hidden sticky top-0 z-30 flex h-14 w-full items-center justify-between border-b border-stocky-border-subtle bg-white/95 px-4 backdrop-blur-md">
+      <header className="md:hidden sticky top-0 z-30 flex h-14 w-full items-center justify-between border-b border-stocky-border-subtle bg-stocky-bg-widget/95 px-4 backdrop-blur-md">
         <div className="flex items-center gap-2">
           <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-stocky-accent text-stocky-text-main shadow-2xs">
             <StockyLogoIcon size="xs" />
@@ -65,7 +65,7 @@ export function AdminTopBarWidget({ pendingCount = 0 }: AdminTopBarWidgetProps) 
             type="button"
             onClick={signOut}
             title="Sign out"
-            className="flex h-8 w-8 items-center justify-center rounded-full text-stocky-text-sub hover:text-red-600 hover:bg-red-50 transition-colors"
+            className="flex h-8 w-8 items-center justify-center rounded-full text-stocky-text-sub hover:text-stocky-status-critical-fg hover:bg-stocky-status-critical-bg transition-colors"
           >
             <LogOutIcon size="xs" />
           </button>
@@ -80,7 +80,7 @@ export function AdminTopBarWidget({ pendingCount = 0 }: AdminTopBarWidgetProps) 
 
       {/* Mobile Bottom Navigation Bar */}
       <nav
-        className="md:hidden fixed bottom-0 inset-x-0 z-40 bg-white/95 backdrop-blur-md border-t border-stocky-border-subtle flex items-center justify-around h-16 px-2 shadow-lg"
+        className="md:hidden fixed bottom-0 inset-x-0 z-40 bg-stocky-bg-widget/95 backdrop-blur-md border-t border-stocky-border-subtle flex items-center justify-around h-16 px-2 shadow-lg"
         aria-label="Mobile Admin Navigation"
       >
         {navItems.map((item) => {
@@ -99,7 +99,7 @@ export function AdminTopBarWidget({ pendingCount = 0 }: AdminTopBarWidgetProps) 
               <div className="relative">
                 {item.icon}
                 {typeof item.badge === 'number' && item.badge > 0 && (
-                  <span className="absolute -top-1 -end-2 flex h-4 w-4 items-center justify-center rounded-full bg-amber-500 text-[9px] font-bold text-white shadow-2xs">
+                  <span className="absolute -top-1 -end-2 flex h-4 w-4 items-center justify-center rounded-full bg-stocky-status-warning-fg text-[9px] font-bold text-stocky-text-inverse shadow-2xs">
                     {item.badge}
                   </span>
                 )}

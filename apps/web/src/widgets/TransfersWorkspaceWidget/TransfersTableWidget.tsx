@@ -374,7 +374,7 @@ export function TransfersTableWidget({
                 onPageSizeChange(Number(event.target.value));
                 onPageChange(0);
               }}
-              className="stocky-table-page-size rounded border border-stocky-border-subtle bg-white px-1.5 py-0.5"
+              className="stocky-table-page-size rounded border border-stocky-border-subtle bg-stocky-bg-widget px-1.5 py-0.5"
             >
               <option value={25}>25</option>
               <option value={50}>50</option>

@@ -345,7 +345,7 @@ export function SuppliersWorkspaceWidget({
 
   const supplierFilterPanelElement = (isMobile = false) => (
     <SuppliersFilterPanelWidget
-      className={isMobile ? 'flex-1 flex flex-col min-h-0 bg-white border-0 shadow-none rounded-none max-h-none' : undefined}
+      className={isMobile ? 'flex-1 flex flex-col min-h-0 bg-stocky-bg-widget border-0 shadow-none rounded-none max-h-none' : undefined}
       isOpen={isFilterPanelOpen}
       onClose={() => setIsFilterPanelOpen(false)}
       products={products}
@@ -383,12 +383,12 @@ export function SuppliersWorkspaceWidget({
       aria-label="Request filters"
       className={
         isMobile
-          ? "flex flex-col min-h-0 bg-white"
-          : "w-full rounded-2xl bg-white border border-stocky-border-subtle shadow-bevel-float overflow-hidden flex flex-col z-50 text-left select-none"
+          ? "flex flex-col min-h-0 bg-stocky-bg-widget"
+          : "w-full rounded-2xl bg-stocky-bg-widget border border-stocky-border-subtle shadow-bevel-float overflow-hidden flex flex-col z-50 text-left select-none"
       }
     >
       {!isMobile && (
-        <div className="flex items-center justify-between px-5 py-3.5 border-b border-stocky-border-subtle bg-white shrink-0">
+        <div className="flex items-center justify-between px-5 py-3.5 border-b border-stocky-border-subtle bg-stocky-bg-widget shrink-0">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-lg bg-stocky-primary/10 text-stocky-primary flex items-center justify-center shrink-0">
               <FilterIcon size="xs" />
@@ -397,7 +397,7 @@ export function SuppliersWorkspaceWidget({
               <div className="flex items-center gap-2">
                 <h2 className="text-sm font-semibold text-stocky-text-main">Filter Requests</h2>
                 {activeRequestFilterCount > 0 && (
-                  <span className="rounded-full bg-stocky-primary px-2 py-0.5 text-[10px] font-semibold text-white">
+                  <span className="rounded-full bg-stocky-primary px-2 py-0.5 text-[10px] font-semibold text-stocky-text-inverse">
                     {activeRequestFilterCount} active
                   </span>
                 )}
@@ -424,7 +424,7 @@ export function SuppliersWorkspaceWidget({
               <button
                 type="button"
                 onClick={() => setRequestStatusFilter('all')}
-                className="text-[11px] text-stocky-text-sub hover:text-red-500 cursor-pointer"
+                className="text-[11px] text-stocky-text-sub hover:text-stocky-status-critical-fg cursor-pointer"
               >
                 Clear
               </button>
@@ -450,7 +450,7 @@ export function SuppliersWorkspaceWidget({
                   className={`h-8 px-3 rounded-xl text-xs font-medium border transition-colors cursor-pointer flex items-center gap-1.5 ${
                     isChecked
                       ? 'bg-stocky-primary/10 border-stocky-primary/40 text-stocky-primary font-semibold'
-                      : 'bg-white border-stocky-border-subtle text-stocky-text-sub hover:text-stocky-text-main'
+                      : 'bg-stocky-bg-widget border-stocky-border-subtle text-stocky-text-sub hover:text-stocky-text-main'
                   }`}
                 >
                   {isChecked && <CheckIcon size="xs" />}
@@ -471,7 +471,7 @@ export function SuppliersWorkspaceWidget({
               <button
                 type="button"
                 onClick={() => setRequestSupplierFilter('all')}
-                className="text-[11px] text-stocky-text-sub hover:text-red-500 cursor-pointer"
+                className="text-[11px] text-stocky-text-sub hover:text-stocky-status-critical-fg cursor-pointer"
               >
                 Clear
               </button>
@@ -480,7 +480,7 @@ export function SuppliersWorkspaceWidget({
           <select
             value={requestSupplierFilter}
             onChange={(e) => setRequestSupplierFilter(e.target.value)}
-            className="w-full h-10 px-3 rounded-xl bg-white border border-stocky-border-subtle text-xs text-stocky-text-main focus:border-stocky-primary focus:outline-none cursor-pointer"
+            className="w-full h-10 px-3 rounded-xl bg-stocky-bg-widget border border-stocky-border-subtle text-xs text-stocky-text-main focus:border-stocky-primary focus:outline-none cursor-pointer"
           >
             <option value="all">All suppliers</option>
             {suppliers.map((s) => (
@@ -501,7 +501,7 @@ export function SuppliersWorkspaceWidget({
               <button
                 type="button"
                 onClick={() => setRequestLocationFilter('all')}
-                className="text-[11px] text-stocky-text-sub hover:text-red-500 cursor-pointer"
+                className="text-[11px] text-stocky-text-sub hover:text-stocky-status-critical-fg cursor-pointer"
               >
                 Clear
               </button>
@@ -510,7 +510,7 @@ export function SuppliersWorkspaceWidget({
           <select
             value={requestLocationFilter}
             onChange={(e) => setRequestLocationFilter(e.target.value)}
-            className="w-full h-10 px-3 rounded-xl bg-white border border-stocky-border-subtle text-xs text-stocky-text-main focus:border-stocky-primary focus:outline-none cursor-pointer"
+            className="w-full h-10 px-3 rounded-xl bg-stocky-bg-widget border border-stocky-border-subtle text-xs text-stocky-text-main focus:border-stocky-primary focus:outline-none cursor-pointer"
           >
             <option value="all">All locations</option>
             {locations.map((loc) => (
@@ -522,7 +522,7 @@ export function SuppliersWorkspaceWidget({
         </div>
       </div>
 
-      <div className="px-5 py-3.5 border-t border-stocky-border-subtle bg-white flex items-center justify-between shrink-0">
+      <div className="px-5 py-3.5 border-t border-stocky-border-subtle bg-stocky-bg-widget flex items-center justify-between shrink-0">
         <span className="text-xs text-stocky-text-sub">
           Showing <strong className="font-semibold text-stocky-text-main">{filteredRequests.length}</strong> requests
         </span>
@@ -531,7 +531,7 @@ export function SuppliersWorkspaceWidget({
             <button
               type="button"
               onClick={handleResetRequestFilters}
-              className="h-8 px-3 rounded-full text-xs font-medium text-stocky-text-sub hover:text-red-600 hover:bg-red-50 transition-colors cursor-pointer"
+              className="h-8 px-3 rounded-full text-xs font-medium text-stocky-text-sub hover:text-stocky-status-critical-fg hover:bg-stocky-status-critical-bg transition-colors cursor-pointer"
             >
               Reset
             </button>
@@ -539,7 +539,7 @@ export function SuppliersWorkspaceWidget({
           <button
             type="button"
             onClick={() => setIsRequestFilterDrawerOpen(false)}
-            className="h-8 px-5 rounded-full bg-stocky-text-main text-white text-xs font-semibold hover:opacity-90 transition-opacity cursor-pointer shadow-sm"
+            className="h-8 px-5 rounded-full bg-stocky-text-main text-stocky-text-inverse text-xs font-semibold hover:opacity-90 transition-opacity cursor-pointer shadow-sm"
           >
             Done
           </button>
@@ -553,7 +553,7 @@ export function SuppliersWorkspaceWidget({
       <input ref={fileInputRef} type="file" accept=".csv" onChange={handleFileChange} className="hidden" aria-hidden="true" />
 
       {/* Unified Table Workspace Card */}
-      <div className="stocky-stock-unified-card rounded-2xl bg-white border border-stocky-border-subtle shadow-sm flex flex-col relative z-20 overflow-visible">
+      <div className="stocky-stock-unified-card rounded-2xl bg-stocky-bg-widget border border-stocky-border-subtle shadow-sm flex flex-col relative z-20 overflow-visible">
         {/* 1. Integrated Toolbar Header */}
         <div className="p-3 sm:p-3.5 border-b border-stocky-border-subtle relative z-30">
           {activeTab === 'suppliers' ? (
@@ -669,7 +669,7 @@ export function SuppliersWorkspaceWidget({
           title="Supplier Filters"
           subtitle={`Showing ${filteredSuppliers.length} of ${suppliers.length} suppliers`}
         >
-          <div className="flex h-full flex-col min-h-0 bg-white">
+          <div className="flex h-full flex-col min-h-0 bg-stocky-bg-widget">
             {supplierFilterPanelElement(true)}
           </div>
         </BottomSheet>

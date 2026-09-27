@@ -147,7 +147,7 @@ function SearchSelectTagField({
           <button
             type="button"
             onClick={onClear}
-            className="text-[10px] text-stocky-text-sub hover:text-red-500 cursor-pointer"
+            className="text-[10px] text-stocky-text-sub hover:text-stocky-status-critical-fg cursor-pointer"
           >
             {t('filters.clearAll')}
           </button>
@@ -157,7 +157,7 @@ function SearchSelectTagField({
       {/* Input container with tags & search */}
       <div
         onClick={() => setIsOpen(true)}
-        className={`min-h-[38px] w-full rounded-xl border bg-white px-2.5 py-1.5 transition-colors cursor-text flex flex-wrap items-center gap-1.5 ${
+        className={`min-h-[38px] w-full rounded-xl border bg-stocky-bg-widget px-2.5 py-1.5 transition-colors cursor-text flex flex-wrap items-center gap-1.5 ${
           isOpen
             ? 'border-stocky-primary ring-2 ring-stocky-primary/10'
             : 'border-stocky-border-subtle hover:border-stocky-text-sub/40'
@@ -176,7 +176,7 @@ function SearchSelectTagField({
                 e.stopPropagation();
                 onToggle(item.id);
               }}
-              className="text-stocky-text-sub hover:text-red-600 cursor-pointer p-0.5"
+              className="text-stocky-text-sub hover:text-stocky-status-critical-fg cursor-pointer p-0.5"
               title={t('filters.remove')}
             >
               <XIcon size="xs" />
@@ -206,7 +206,7 @@ function SearchSelectTagField({
 
       {/* Dropdown menu */}
       {isOpen && (
-        <div className="absolute top-[calc(100%+4px)] inset-x-0 z-50 max-h-52 overflow-y-auto rounded-xl border border-stocky-border-subtle bg-white p-1 shadow-lg">
+        <div className="absolute top-[calc(100%+4px)] inset-x-0 z-50 max-h-52 overflow-y-auto rounded-xl border border-stocky-border-subtle bg-stocky-bg-widget p-1 shadow-lg">
           {filteredOptions.length === 0 ? (
             <p className="px-3 py-2 text-[11px] text-stocky-text-sub text-center">
               {t('filters.noMatching')}
@@ -315,10 +315,10 @@ export function InventoryFilterPanelWidget({
       transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
       role="dialog"
       aria-label={t('filters.inventoryFilters')}
-      className={className || "w-full rounded-2xl bg-white border border-stocky-border-subtle shadow-bevel-float overflow-hidden flex flex-col z-50 text-start select-none"}
+      className={className || "w-full rounded-2xl bg-stocky-bg-widget border border-stocky-border-subtle shadow-bevel-float overflow-hidden flex flex-col z-50 text-start select-none"}
     >
       {/* 1. Header */}
-      <div className="flex items-center justify-between px-5 py-3 border-b border-stocky-border-subtle bg-white shrink-0">
+      <div className="flex items-center justify-between px-5 py-3 border-b border-stocky-border-subtle bg-stocky-bg-widget shrink-0">
         <div className="flex items-center gap-2.5">
           <div className="w-7 h-7 rounded-lg bg-stocky-primary/10 text-stocky-primary flex items-center justify-center shrink-0">
             <FilterIcon size="xs" />
@@ -327,7 +327,7 @@ export function InventoryFilterPanelWidget({
             <div className="flex items-center gap-2">
               <h2 className="text-xs font-semibold text-stocky-text-main">{t('filters.title')}</h2>
               {activeFilterCount > 0 ? (
-                <span className="rounded-full bg-stocky-primary px-2 py-0.5 text-[10px] font-semibold text-white">
+                <span className="rounded-full bg-stocky-primary px-2 py-0.5 text-[10px] font-semibold text-stocky-text-inverse">
                   {t('filters.activeCount', { count: activeFilterCount })}
                 </span>
               ) : (
@@ -345,7 +345,7 @@ export function InventoryFilterPanelWidget({
             <button
               type="button"
               onClick={onResetAll}
-              className="text-xs font-medium text-stocky-text-sub hover:text-red-600 px-2 py-1 rounded transition-colors cursor-pointer flex items-center gap-1"
+              className="text-xs font-medium text-stocky-text-sub hover:text-stocky-status-critical-fg px-2 py-1 rounded transition-colors cursor-pointer flex items-center gap-1"
             >
               <RefreshIcon size="xs" />
               {t('filters.resetAll')}
@@ -415,7 +415,7 @@ export function InventoryFilterPanelWidget({
                     onQuantityMinChange('');
                     onQuantityMaxChange('');
                   }}
-                  className="text-[10px] text-stocky-text-sub hover:text-red-500 cursor-pointer"
+                  className="text-[10px] text-stocky-text-sub hover:text-stocky-status-critical-fg cursor-pointer"
                 >
                   {t('filters.clear')}
                 </button>
@@ -429,7 +429,7 @@ export function InventoryFilterPanelWidget({
                   value={filterQuantityMin}
                   onChange={(e) => onQuantityMinChange(e.target.value)}
                   placeholder={t('filters.minQuantity')}
-                  className="w-full h-9 rounded-xl bg-white px-3 text-xs text-stocky-text-main placeholder:text-stocky-text-sub border border-stocky-border-subtle focus:outline-none focus:border-stocky-primary focus:ring-2 focus:ring-stocky-primary/10 transition-all"
+                  className="w-full h-9 rounded-xl bg-stocky-bg-widget px-3 text-xs text-stocky-text-main placeholder:text-stocky-text-sub border border-stocky-border-subtle focus:outline-none focus:border-stocky-primary focus:ring-2 focus:ring-stocky-primary/10 transition-all"
                 />
               </div>
               <span className="text-xs text-stocky-text-sub font-medium">{t('filters.to')}</span>
@@ -440,7 +440,7 @@ export function InventoryFilterPanelWidget({
                   value={filterQuantityMax}
                   onChange={(e) => onQuantityMaxChange(e.target.value)}
                   placeholder={t('filters.maxQuantity')}
-                  className="w-full h-9 rounded-xl bg-white px-3 text-xs text-stocky-text-main placeholder:text-stocky-text-sub border border-stocky-border-subtle focus:outline-none focus:border-stocky-primary focus:ring-2 focus:ring-stocky-primary/10 transition-all"
+                  className="w-full h-9 rounded-xl bg-stocky-bg-widget px-3 text-xs text-stocky-text-main placeholder:text-stocky-text-sub border border-stocky-border-subtle focus:outline-none focus:border-stocky-primary focus:ring-2 focus:ring-stocky-primary/10 transition-all"
                 />
               </div>
             </div>
@@ -460,7 +460,7 @@ export function InventoryFilterPanelWidget({
                     onPriceMinChange('');
                     onPriceMaxChange('');
                   }}
-                  className="text-[10px] text-stocky-text-sub hover:text-red-500 cursor-pointer"
+                  className="text-[10px] text-stocky-text-sub hover:text-stocky-status-critical-fg cursor-pointer"
                 >
                   {t('filters.clear')}
                 </button>
@@ -475,7 +475,7 @@ export function InventoryFilterPanelWidget({
                   value={filterPriceMin}
                   onChange={(e) => onPriceMinChange(e.target.value)}
                   placeholder={t('filters.minPrice')}
-                  className="w-full h-9 rounded-xl bg-white px-3 text-xs text-stocky-text-main placeholder:text-stocky-text-sub border border-stocky-border-subtle focus:outline-none focus:border-stocky-primary focus:ring-2 focus:ring-stocky-primary/10 transition-all"
+                  className="w-full h-9 rounded-xl bg-stocky-bg-widget px-3 text-xs text-stocky-text-main placeholder:text-stocky-text-sub border border-stocky-border-subtle focus:outline-none focus:border-stocky-primary focus:ring-2 focus:ring-stocky-primary/10 transition-all"
                 />
               </div>
               <span className="text-xs text-stocky-text-sub font-medium">{t('filters.to')}</span>
@@ -487,7 +487,7 @@ export function InventoryFilterPanelWidget({
                   value={filterPriceMax}
                   onChange={(e) => onPriceMaxChange(e.target.value)}
                   placeholder={t('filters.maxPrice')}
-                  className="w-full h-9 rounded-xl bg-white px-3 text-xs text-stocky-text-main placeholder:text-stocky-text-sub border border-stocky-border-subtle focus:outline-none focus:border-stocky-primary focus:ring-2 focus:ring-stocky-primary/10 transition-all"
+                  className="w-full h-9 rounded-xl bg-stocky-bg-widget px-3 text-xs text-stocky-text-main placeholder:text-stocky-text-sub border border-stocky-border-subtle focus:outline-none focus:border-stocky-primary focus:ring-2 focus:ring-stocky-primary/10 transition-all"
                 />
               </div>
             </div>
@@ -507,7 +507,7 @@ export function InventoryFilterPanelWidget({
                     onExpiryFromChange('');
                     onExpiryToChange('');
                   }}
-                  className="text-[10px] text-stocky-text-sub hover:text-red-500 cursor-pointer"
+                  className="text-[10px] text-stocky-text-sub hover:text-stocky-status-critical-fg cursor-pointer"
                 >
                   {t('filters.clear')}
                 </button>
@@ -521,7 +521,7 @@ export function InventoryFilterPanelWidget({
                   onChange={(e) => onExpiryFromChange(e.target.value)}
                   title={t('filters.fromDate')}
                   aria-label={t('filters.expiryFromDate')}
-                  className="w-full h-9 rounded-xl bg-white px-2.5 text-xs text-stocky-text-main border border-stocky-border-subtle focus:outline-none focus:border-stocky-primary focus:ring-2 focus:ring-stocky-primary/10 transition-all"
+                  className="w-full h-9 rounded-xl bg-stocky-bg-widget px-2.5 text-xs text-stocky-text-main border border-stocky-border-subtle focus:outline-none focus:border-stocky-primary focus:ring-2 focus:ring-stocky-primary/10 transition-all"
                 />
               </div>
               <span className="text-xs text-stocky-text-sub font-medium">{t('filters.to')}</span>
@@ -532,7 +532,7 @@ export function InventoryFilterPanelWidget({
                   onChange={(e) => onExpiryToChange(e.target.value)}
                   title={t('filters.toDate')}
                   aria-label={t('filters.expiryToDate')}
-                  className="w-full h-9 rounded-xl bg-white px-2.5 text-xs text-stocky-text-main border border-stocky-border-subtle focus:outline-none focus:border-stocky-primary focus:ring-2 focus:ring-stocky-primary/10 transition-all"
+                  className="w-full h-9 rounded-xl bg-stocky-bg-widget px-2.5 text-xs text-stocky-text-main border border-stocky-border-subtle focus:outline-none focus:border-stocky-primary focus:ring-2 focus:ring-stocky-primary/10 transition-all"
                 />
               </div>
             </div>
@@ -563,7 +563,7 @@ export function InventoryFilterPanelWidget({
                     className={`h-7 px-2.5 rounded-lg text-[11px] font-medium transition-colors cursor-pointer border ${
                       isChecked
                         ? 'bg-stocky-primary/10 border-stocky-primary/30 text-stocky-primary'
-                        : 'bg-white border-stocky-border-subtle text-stocky-text-sub hover:text-stocky-text-main'
+                        : 'bg-stocky-bg-widget border-stocky-border-subtle text-stocky-text-sub hover:text-stocky-text-main'
                     }`}
                   >
                     {label}
@@ -585,7 +585,7 @@ export function InventoryFilterPanelWidget({
       </div>
 
       {/* 3. Footer */}
-      <div className="px-5 py-3 border-t border-stocky-border-subtle bg-white flex items-center justify-between shrink-0">
+      <div className="px-5 py-3 border-t border-stocky-border-subtle bg-stocky-bg-widget flex items-center justify-between shrink-0">
         <div className="text-xs text-stocky-text-sub">
           {t('filters.productsMatching', { matching: matchingCount, total: totalCount })}
         </div>
@@ -595,7 +595,7 @@ export function InventoryFilterPanelWidget({
             <button
               type="button"
               onClick={onResetAll}
-              className="h-8 px-3 rounded-full text-xs font-medium text-stocky-text-sub hover:text-red-600 hover:bg-red-50 transition-colors cursor-pointer"
+              className="h-8 px-3 rounded-full text-xs font-medium text-stocky-text-sub hover:text-stocky-status-critical-fg hover:bg-stocky-status-critical-bg transition-colors cursor-pointer"
             >
               {t('filters.resetAll')}
             </button>
@@ -603,7 +603,7 @@ export function InventoryFilterPanelWidget({
           <button
             type="button"
             onClick={onClose}
-            className="h-8 px-5 rounded-full bg-stocky-text-main text-white text-xs font-semibold hover:opacity-90 transition-opacity cursor-pointer shadow-sm"
+            className="h-8 px-5 rounded-full bg-stocky-text-main text-stocky-text-inverse text-xs font-semibold hover:opacity-90 transition-opacity cursor-pointer shadow-sm"
           >
             {t('filters.done')}
           </button>

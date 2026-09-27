@@ -78,10 +78,10 @@ export function SuppliersFilterPanelWidget({
       ref={panelRef}
       role="dialog"
       aria-label={t('supplierPanel.dialogAria')}
-      className={className || "absolute top-[calc(100%+8px)] inset-x-3 sm:inset-x-3.5 z-50 rounded-2xl border border-stocky-border-subtle bg-white shadow-bevel-float overflow-hidden flex flex-col max-h-[80vh]"}
+      className={className || "absolute top-[calc(100%+8px)] inset-x-3 sm:inset-x-3.5 z-50 rounded-2xl border border-stocky-border-subtle bg-stocky-bg-widget shadow-bevel-float overflow-hidden flex flex-col max-h-[80vh]"}
     >
       {/* Header */}
-      <div className="sticky top-0 z-10 flex shrink-0 items-center justify-between border-b border-stocky-border-subtle bg-white px-5 py-3.5">
+      <div className="sticky top-0 z-10 flex shrink-0 items-center justify-between border-b border-stocky-border-subtle bg-stocky-bg-widget px-5 py-3.5">
         <div className="flex items-center gap-2">
           <FilterIcon size="xs" className="text-stocky-primary" />
           <h3 className="text-xs font-semibold text-stocky-text-main">{t('supplierPanel.title')}</h3>
@@ -198,7 +198,7 @@ export function SuppliersFilterPanelWidget({
         <button
           type="button"
           onClick={onClose}
-          className="h-10 rounded-full bg-stocky-text-main px-5 text-xs font-medium text-white hover:bg-black transition-colors cursor-pointer"
+          className="h-10 rounded-full bg-stocky-text-main px-5 text-xs font-medium text-stocky-text-inverse hover:bg-stocky-text-main transition-colors cursor-pointer"
         >
           {t('supplierPanel.done')}
         </button>

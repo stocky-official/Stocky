@@ -15,6 +15,7 @@ import {
 import { supabase } from '@/lib/supabase/client';
 import type { Item } from '@stocky/types';
 import { Html5Qrcode, Html5QrcodeSupportedFormats } from 'html5-qrcode';
+import { rearCameraConstraints } from '@/lib/scanner/cameraConstraints';
 
 export interface BarcodeScannerWidgetProps {
   onProductFound?: (item: Item) => void;
@@ -125,6 +126,7 @@ export function BarcodeScannerWidget({
 
   const scannerRef = useRef<Html5Qrcode | null>(null);
   const isHandlingScanRef = useRef(false);
+  const nativeDetectionInFlightRef = useRef(false);
   const rafIdRef = useRef<number | null>(null);
 
   // Core Lookup Handler for detected or typed barcodes
@@ -309,6 +311,10 @@ export function BarcodeScannerWidget({
       setScannedResult(null);
       setShowManualInput(false);
       setManualInput('');
+      setHasTorch(false);
+      setIsTorchOn(false);
+      setZoomRange(null);
+      setCurrentZoom(1);
       isHandlingScanRef.current = false;
 
       // Small tick to ensure container element is mounted in DOM
@@ -364,13 +370,8 @@ export function BarcodeScannerWidget({
           { facingMode: 'environment' },
           {
             fps: 20,
-            aspectRatio: 1.0,
             disableFlip: false,
-            videoConstraints: {
-              facingMode: 'environment',
-              width: { min: 640, ideal: 1280, max: 1920 },
-              height: { min: 480, ideal: 720, max: 1080 },
-            },
+            videoConstraints: rearCameraConstraints,
           },
           (decodedText: string) => {
             handleBarcodeScannedRef.current(decodedText);
@@ -394,20 +395,15 @@ export function BarcodeScannerWidget({
           try {
             const capabilities: any = track.getCapabilities ? track.getCapabilities() : {};
 
-            // 1. Zoom support & auto macro zoom (2x for small retail barcodes)
+            // 1. Zoom support. Start at the optical default and let the user
+            // opt into digital zoom when the code is genuinely too small.
             if (capabilities.zoom) {
               const minZ = capabilities.zoom.min || 1;
               const maxZ = capabilities.zoom.max || 5;
               const stepZ = capabilities.zoom.step || 0.1;
               setZoomRange({ min: minZ, max: maxZ, step: stepZ });
 
-              const initialMacroZoom = Math.min(Math.max(minZ, 2.0), maxZ);
-              if (initialMacroZoom > 1) {
-                track
-                  .applyConstraints({ advanced: [{ zoom: initialMacroZoom } as any] })
-                  .catch(() => {});
-                setCurrentZoom(initialMacroZoom);
-              }
+              setCurrentZoom(Math.max(minZ, 1));
             }
 
             // 2. Enforce continuous autofocus
@@ -445,24 +441,28 @@ export function BarcodeScannerWidget({
             });
 
             const checkNativeDetection = async () => {
-              if (!isMounted || !isOpen || isHandlingScanRef.current) return;
+              if (!isMounted || !isOpen || isHandlingScanRef.current || nativeDetectionInFlightRef.current) return;
               const currentVideo = document.querySelector(
                 '#stocky-camera-viewport video'
               ) as HTMLVideoElement | null;
 
-              if (currentVideo && currentVideo.readyState >= 2) {
-                try {
+              nativeDetectionInFlightRef.current = true;
+              try {
+                if (currentVideo && currentVideo.readyState >= 2) {
                   const barcodes = await nativeDetector.detect(currentVideo);
                   if (barcodes && barcodes.length > 0 && barcodes[0].rawValue) {
                     handleBarcodeScannedRef.current(barcodes[0].rawValue);
-                    return;
                   }
-                } catch {
-                  // Frame detection error
                 }
+              } catch {
+                // Frame detection error
+              } finally {
+                nativeDetectionInFlightRef.current = false;
               }
 
-              rafIdRef.current = requestAnimationFrame(checkNativeDetection);
+              if (isMounted && isOpen && !isHandlingScanRef.current) {
+                rafIdRef.current = requestAnimationFrame(checkNativeDetection);
+              }
             };
 
             rafIdRef.current = requestAnimationFrame(checkNativeDetection);
@@ -561,12 +561,11 @@ export function BarcodeScannerWidget({
   };
 
   const handleToggleTorch = async () => {
-    if (!scannerRef.current || !hasTorch) return;
+    if (!activeStreamRef.current || !hasTorch) return;
     try {
       const nextTorch = !isTorchOn;
-      await scannerRef.current.applyVideoConstraints({
-        advanced: [{ torch: nextTorch } as any],
-      });
+      const track = activeStreamRef.current.getVideoTracks()[0];
+      await track?.applyConstraints({ advanced: [{ torch: nextTorch } as any] });
       setIsTorchOn(nextTorch);
     } catch (err) {
       console.error('Error toggling torch:', err);
@@ -593,10 +592,9 @@ export function BarcodeScannerWidget({
             whileHover={{ scale: 1.08 }}
             whileTap={{ scale: 0.92 }}
             aria-label="Scan Barcode"
-            className="pointer-events-auto bg-stocky-primary text-white rounded-full flex items-center justify-center shadow-xl hover:bg-stocky-primary-hover active:bg-stocky-primary-active transition-all focus:outline-none"
-            style={{ width: '54px', height: '54px' }}
+            className="stocky-barcode-fab pointer-events-auto bg-stocky-primary text-stocky-text-inverse rounded-full flex items-center justify-center shadow-bevel-float hover:bg-stocky-primary-hover active:bg-stocky-primary-active transition-all focus:outline-none"
           >
-            <BarcodeIcon size="md" className="text-white" />
+            <BarcodeIcon size="md" className="text-stocky-text-inverse" />
           </motion.button>
         </div>
       )}
@@ -608,16 +606,16 @@ export function BarcodeScannerWidget({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[70] bg-black flex flex-col"
+            className="fixed inset-0 z-[70] bg-stocky-text-main flex flex-col"
           >
             {/* Top Navigation & Controls */}
-            <div className="relative z-10 flex items-center justify-between px-4 py-3 pt-5 bg-gradient-to-b from-black/90 to-transparent">
+            <div className="relative z-10 flex items-center justify-between px-4 py-3 pt-5 bg-gradient-to-b from-stocky-text-main/90 to-transparent">
               <div className="flex items-center gap-2">
-                <span className="text-sm font-medium text-white tracking-tight">
+                <span className="text-sm font-medium text-stocky-text-inverse tracking-tight">
                   Barcode Scanner
                 </span>
                 {isSearching && (
-                  <span className="text-[11px] px-2 py-0.5 rounded-full bg-stocky-primary text-white font-normal animate-pulse">
+                  <span className="text-[11px] px-2 py-0.5 rounded-full bg-stocky-primary text-stocky-text-inverse font-normal animate-pulse">
                     Looking up...
                   </span>
                 )}
@@ -628,7 +626,7 @@ export function BarcodeScannerWidget({
                   <button
                     type="button"
                     onClick={handleToggleTorch}
-                    className="w-10 h-10 rounded-full bg-white/20 text-white flex items-center justify-center hover:bg-white/30 transition-colors"
+                    className="w-10 h-10 rounded-full bg-stocky-bg-widget text-stocky-text-inverse flex items-center justify-center hover:bg-stocky-bg-hover transition-colors"
                   >
                     {isTorchOn ? <ZapIcon size="sm" /> : <ZapOffIcon size="sm" />}
                   </button>
@@ -637,7 +635,7 @@ export function BarcodeScannerWidget({
                 <button
                   type="button"
                   onClick={handleClose}
-                  className="w-10 h-10 rounded-full bg-white/20 text-white flex items-center justify-center hover:bg-white/30 transition-colors"
+                  className="w-10 h-10 rounded-full bg-stocky-bg-widget text-stocky-text-inverse flex items-center justify-center hover:bg-stocky-bg-hover transition-colors"
                 >
                   <XIcon size="sm" />
                 </button>
@@ -646,19 +644,19 @@ export function BarcodeScannerWidget({
 
             {/* Viewfinder Center Container with Tap-To-Focus */}
             <div
-              className="flex-1 relative w-full h-full overflow-hidden bg-black cursor-crosshair select-none"
+              className="flex-1 relative w-full h-full overflow-hidden bg-stocky-text-main cursor-crosshair select-none"
               onClick={handleTapToFocus}
               onTouchStart={handleTapToFocus}
             >
               {/* Layer 1: html5-qrcode video viewport - Enforced full cover, no flex, absolute */}
               <div
                 id="stocky-camera-viewport"
-                className="!absolute !inset-0 w-full h-full overflow-hidden block [&>video]:w-full [&>video]:h-full [&>video]:object-cover [&>canvas]:hidden pointer-events-none"
+                 className="!absolute !inset-0 w-full h-full overflow-hidden block [&>video]:w-full [&>video]:h-full [&>video]:object-contain [&>video]:bg-stocky-text-main [&>canvas]:hidden pointer-events-none"
               />
 
               {/* Quick Macro Zoom Controls (1x / 2x / 3x) */}
               {zoomRange && zoomRange.max > 1 && (
-                <div className="absolute top-4 left-1/2 -translate-x-1/2 z-30 flex items-center gap-1.5 bg-black/70 backdrop-blur-md px-3 py-1 rounded-full border border-white/20 shadow-xl">
+              <div className="absolute top-4 left-1/2 -translate-x-1/2 z-30 flex items-center gap-1.5 bg-stocky-text-main/70 backdrop-blur-md px-3 py-1 rounded-full border border-stocky-border-subtle shadow-bevel-float">
                   <button
                     type="button"
                     onClick={(e) => {
@@ -667,8 +665,8 @@ export function BarcodeScannerWidget({
                     }}
                     className={`px-2.5 py-0.5 rounded-full text-xs font-medium transition-all ${
                       Math.abs(currentZoom - 1) < 0.2
-                        ? 'bg-stocky-primary text-white shadow'
-                        : 'text-white/70 hover:text-white'
+                        ? 'bg-stocky-primary text-stocky-text-inverse shadow'
+                        : 'text-stocky-text-inverse opacity-70 hover:opacity-100'
                     }`}
                   >
                     1x
@@ -681,8 +679,8 @@ export function BarcodeScannerWidget({
                     }}
                     className={`px-2.5 py-0.5 rounded-full text-xs font-medium transition-all ${
                       Math.abs(currentZoom - 2) < 0.3
-                        ? 'bg-stocky-primary text-white shadow'
-                        : 'text-white/70 hover:text-white'
+                        ? 'bg-stocky-primary text-stocky-text-inverse shadow'
+                        : 'text-stocky-text-inverse opacity-70 hover:opacity-100'
                     }`}
                   >
                     2x
@@ -696,8 +694,8 @@ export function BarcodeScannerWidget({
                       }}
                       className={`px-2.5 py-0.5 rounded-full text-xs font-medium transition-all ${
                         Math.abs(currentZoom - 3) < 0.3
-                          ? 'bg-stocky-primary text-white shadow'
-                          : 'text-white/70 hover:text-white'
+                          ? 'bg-stocky-primary text-stocky-text-inverse shadow'
+                          : 'text-stocky-text-inverse opacity-70 hover:opacity-100'
                       }`}
                     >
                       3x
@@ -718,8 +716,8 @@ export function BarcodeScannerWidget({
                     style={{ left: focusRing.x, top: focusRing.y }}
                     className="absolute pointer-events-none -translate-x-1/2 -translate-y-1/2 z-30"
                   >
-                    <div className="w-16 h-16 border-2 border-yellow-400 rounded-sm shadow-[0_0_12px_rgba(250,204,21,0.8)] flex items-center justify-center">
-                      <div className="w-1.5 h-1.5 bg-yellow-400 rounded-full" />
+                    <div className="w-16 h-16 border-2 border-stocky-status-warning-fg rounded-sm shadow-bevel-float flex items-center justify-center">
+                      <div className="w-1.5 h-1.5 bg-stocky-status-warning-fg rounded-full" />
                     </div>
                   </motion.div>
                 )}
@@ -730,15 +728,15 @@ export function BarcodeScannerWidget({
                 <div className="absolute inset-0 pointer-events-none flex items-center justify-center z-20">
                   <div className="relative w-[80vw] max-w-[320px] h-[180px] flex items-center justify-center">
                     {/* High-Contrast Reticle Corners */}
-                    <div className="absolute -top-1 -left-1 w-7 h-7 border-t-3 border-l-3 border-stocky-primary rounded-tl-sm shadow-[0_0_8px_rgba(0,87,255,0.6)]" />
-                    <div className="absolute -top-1 -right-1 w-7 h-7 border-t-3 border-r-3 border-stocky-primary rounded-tr-sm shadow-[0_0_8px_rgba(0,87,255,0.6)]" />
-                    <div className="absolute -bottom-1 -left-1 w-7 h-7 border-b-3 border-l-3 border-stocky-primary rounded-bl-sm shadow-[0_0_8px_rgba(0,87,255,0.6)]" />
-                    <div className="absolute -bottom-1 -right-1 w-7 h-7 border-b-3 border-r-3 border-stocky-primary rounded-br-sm shadow-[0_0_8px_rgba(0,87,255,0.6)]" />
+                    <div className="absolute -top-1 -left-1 w-7 h-7 border-t-3 border-l-3 border-stocky-primary rounded-tl-sm shadow-bevel-float" />
+                    <div className="absolute -top-1 -right-1 w-7 h-7 border-t-3 border-r-3 border-stocky-primary rounded-tr-sm shadow-bevel-float" />
+                    <div className="absolute -bottom-1 -left-1 w-7 h-7 border-b-3 border-l-3 border-stocky-primary rounded-bl-sm shadow-bevel-float" />
+                    <div className="absolute -bottom-1 -right-1 w-7 h-7 border-b-3 border-r-3 border-stocky-primary rounded-br-sm shadow-bevel-float" />
 
                     {/* Animated Laser Scanning Line */}
                     {!scannedResult && (
                       <motion.div
-                        className="w-full h-0.5 bg-green-400 shadow-[0_0_12px_rgba(74,222,128,1)]"
+                        className="w-full h-0.5 bg-stocky-status-success-fg shadow-bevel-float"
                         animate={{
                           y: [-75, 75, -75],
                         }}
@@ -757,7 +755,7 @@ export function BarcodeScannerWidget({
               {cameraError && (
                 <div className="absolute inset-0 z-30 flex items-center justify-center p-4">
                   <div className="p-6 bg-stocky-bg-widget/95 rounded-widget border border-stocky-border-subtle max-w-xs text-center space-y-3 shadow-xl">
-                    <AlertCircleIcon size="lg" className="text-red-500 mx-auto" />
+                    <AlertCircleIcon size="lg" className="text-stocky-status-critical-fg mx-auto" />
                     <h3 className="text-sm font-medium text-stocky-text-main">
                       Camera Access Required
                     </h3>
@@ -767,7 +765,7 @@ export function BarcodeScannerWidget({
                     <button
                       type="button"
                       onClick={handleClose}
-                      className="w-full py-2 bg-stocky-primary text-white text-xs font-medium rounded-widget hover:bg-stocky-primary-hover transition-colors"
+                      className="w-full py-2 bg-stocky-primary text-stocky-text-inverse text-xs font-medium rounded-widget hover:bg-stocky-primary-hover transition-colors"
                     >
                       Close
                     </button>
@@ -777,20 +775,20 @@ export function BarcodeScannerWidget({
             </div>
 
             {/* Bottom Status & Feedback Bar */}
-            <div className="relative z-10 px-4 py-4 pb-6 bg-gradient-to-t from-black/95 to-transparent flex flex-col items-center gap-3">
+            <div className="relative z-10 px-4 py-4 pb-6 bg-gradient-to-t from-stocky-text-main/95 to-transparent flex flex-col items-center gap-3">
               {scannedResult ? (
                 scannedResult.found ? (
                   <motion.div
                     initial={{ scale: 0.9, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
-                    className="w-full max-w-sm bg-green-950/95 border border-green-500/60 rounded-widget p-3.5 flex items-center gap-3 text-left shadow-lg"
+                    className="w-full max-w-sm bg-stocky-status-success-fg border border-stocky-status-success-border rounded-widget p-3.5 flex items-center gap-3 text-left shadow-lg"
                   >
-                    <CheckCircleIcon size="md" className="text-green-400 shrink-0" />
+                    <CheckCircleIcon size="md" className="text-stocky-status-success-fg shrink-0" />
                     <div className="flex-1 min-w-0">
-                      <p className="text-xs font-medium text-white truncate">
+                      <p className="text-xs font-medium text-stocky-text-inverse truncate">
                         {scannedResult.itemName}
                       </p>
-                      <p className="text-[11px] text-green-300 font-normal">
+                      <p className="text-[11px] text-stocky-status-success-fg font-normal">
                         Barcode: {scannedResult.code} • Opening details...
                       </p>
                     </div>
@@ -799,21 +797,21 @@ export function BarcodeScannerWidget({
                   <motion.div
                     initial={{ scale: 0.9, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
-                    className="w-full max-w-sm bg-amber-950/95 border border-amber-500/60 rounded-widget p-3.5 space-y-2 text-left shadow-lg"
+                    className="w-full max-w-sm bg-stocky-status-warning-fg border border-stocky-status-warning-border rounded-widget p-3.5 space-y-2 text-left shadow-lg"
                   >
                     <div className="flex items-center gap-2">
-                      <AlertCircleIcon size="sm" className="text-amber-400 shrink-0" />
-                      <span className="text-xs font-medium text-white">
+                      <AlertCircleIcon size="sm" className="text-stocky-status-warning-fg shrink-0" />
+                      <span className="text-xs font-medium text-stocky-text-inverse">
                         Item Not Found
                       </span>
                     </div>
-                    <p className="text-[11px] text-amber-200 font-normal">
+                    <p className="text-[11px] text-stocky-status-warning-fg font-normal">
                       Barcode <span className="font-medium">{scannedResult.code}</span> is not registered in the catalog.
                     </p>
                     <button
                       type="button"
                       onClick={handleScanAgain}
-                      className="w-full mt-1 py-1.5 bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 rounded-widget text-xs font-medium flex items-center justify-center gap-1.5 transition-colors"
+                      className="w-full mt-1 py-1.5 bg-stocky-status-warning-fg hover:bg-stocky-status-warning-fg text-stocky-status-warning-fg border border-stocky-status-warning-border rounded-widget text-xs font-medium flex items-center justify-center gap-1.5 transition-colors"
                     >
                       <RefreshIcon size="xs" />
                       Scan Another
@@ -822,7 +820,7 @@ export function BarcodeScannerWidget({
                 )
               ) : (
                 <div className="w-full max-w-sm flex flex-col items-center gap-2">
-                  <p className="text-xs text-white/80 font-normal text-center">
+                  <p className="text-xs text-stocky-text-inverse/80 font-normal text-center">
                     Tap screen to focus • Use 2x zoom for small barcodes
                   </p>
 
@@ -838,12 +836,12 @@ export function BarcodeScannerWidget({
                         onChange={(e) => setManualInput(e.target.value)}
                         placeholder="Type barcode e.g. 6223000..."
                         autoFocus
-                        className="flex-1 px-3 py-1.5 bg-white/10 border border-white/20 rounded-widget text-white text-xs placeholder:text-white/40 focus:outline-none focus:border-stocky-primary"
+                        className="flex-1 px-3 py-1.5 bg-stocky-bg-widget/10 border border-stocky-text-inverse/20 rounded-widget text-stocky-text-inverse text-xs placeholder:text-stocky-text-inverse/40 focus:outline-none focus:border-stocky-primary"
                       />
                       <button
                         type="submit"
                         disabled={!manualInput.trim()}
-                        className="px-3 py-1.5 bg-stocky-primary text-white text-xs font-medium rounded-widget hover:bg-stocky-primary-hover disabled:opacity-50"
+                        className="px-3 py-1.5 bg-stocky-primary text-stocky-text-inverse text-xs font-medium rounded-widget hover:bg-stocky-primary-hover disabled:opacity-50"
                       >
                         Lookup
                       </button>
@@ -852,7 +850,7 @@ export function BarcodeScannerWidget({
                     <button
                       type="button"
                       onClick={() => setShowManualInput(true)}
-                      className="text-[11px] text-white/60 hover:text-white underline underline-offset-2 transition-colors"
+                      className="text-[11px] text-stocky-text-inverse/60 hover:text-stocky-text-inverse underline underline-offset-2 transition-colors"
                     >
                       Can't scan? Type barcode manually
                     </button>

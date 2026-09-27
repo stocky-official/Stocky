@@ -76,8 +76,8 @@ function PlatformShell({ children }: { children?: React.ReactNode }) {
     const hasUserCompany = Boolean(userCompanyCode && userCompanyCode !== 'platform');
     return (
       <PageLayout className="stocky-platform-shell flex items-center justify-center min-h-screen p-4 bg-stocky-bg-global select-none">
-        <div className="max-w-md w-full bg-white border border-stocky-border-subtle rounded-2xl p-6 shadow-bevel text-center space-y-4">
-          <div className="w-12 h-12 rounded-full bg-amber-50 border border-amber-200 text-amber-600 flex items-center justify-center mx-auto text-xl font-bold">
+        <div className="max-w-md w-full bg-stocky-bg-widget border border-stocky-border-subtle rounded-2xl p-6 shadow-bevel text-center space-y-4">
+          <div className="w-12 h-12 rounded-full bg-stocky-status-warning-bg border border-stocky-status-warning-border text-stocky-status-warning-fg flex items-center justify-center mx-auto text-xl font-bold">
             !
           </div>
           <div className="space-y-1">
@@ -93,7 +93,7 @@ function PlatformShell({ children }: { children?: React.ReactNode }) {
               <button
                 type="button"
                 onClick={() => { window.location.href = `/${userCompanyCode}`; }}
-                className="w-full py-2.5 px-4 rounded-xl bg-stocky-primary text-white text-xs font-medium hover:opacity-95 transition-opacity cursor-pointer shadow-sm"
+                className="w-full py-2.5 px-4 rounded-xl bg-stocky-primary text-stocky-text-inverse text-xs font-medium hover:opacity-95 transition-opacity cursor-pointer shadow-sm"
               >
                 Go to {userCompanyName} Workspace
               </button>
@@ -101,7 +101,7 @@ function PlatformShell({ children }: { children?: React.ReactNode }) {
               <button
                 type="button"
                 onClick={() => { window.location.href = '/onboarding'; }}
-                className="w-full py-2.5 px-4 rounded-xl bg-stocky-primary text-white text-xs font-medium hover:opacity-95 transition-opacity cursor-pointer shadow-sm"
+                className="w-full py-2.5 px-4 rounded-xl bg-stocky-primary text-stocky-text-inverse text-xs font-medium hover:opacity-95 transition-opacity cursor-pointer shadow-sm"
               >
                 Go to Onboarding
               </button>

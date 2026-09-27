@@ -39,8 +39,8 @@ const SIZE_STYLES: Record<string, { container: string; img: string }> = {
 
 const VARIANT_STYLES: Record<string, string> = {
   subtle: 'bg-stocky-primary/10 text-stocky-primary font-semibold',
-  solid: 'bg-stocky-primary text-white font-semibold',
-  amber: 'bg-amber-50 text-amber-700 border border-amber-200 font-semibold',
+  solid: 'bg-stocky-primary text-stocky-text-inverse font-semibold',
+  amber: 'bg-stocky-status-warning-bg text-stocky-status-warning-fg border border-stocky-status-warning-border font-semibold',
 };
 
 /**

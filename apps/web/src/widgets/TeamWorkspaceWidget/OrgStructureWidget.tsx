@@ -145,7 +145,7 @@ export function OrgStructureWidget({
           role="button"
           tabIndex={0}
           onClick={() => onSelectMember(node.member)}
-          className="group relative w-60 rounded-2xl bg-white border border-stocky-border-subtle p-3.5 shadow-2xs hover:border-stocky-primary hover:shadow-md transition-all text-start cursor-pointer z-10"
+          className="group relative w-60 rounded-2xl bg-stocky-bg-widget border border-stocky-border-subtle p-3.5 shadow-2xs hover:border-stocky-primary hover:shadow-md transition-all text-start cursor-pointer z-10"
         >
           {/* Top row: Avatar & Role */}
           <div className="flex items-center justify-between gap-2">
@@ -191,7 +191,7 @@ export function OrgStructureWidget({
             <button
               type="button"
               onClick={(e) => toggleCollapse(node.member.id, e)}
-              className="absolute -bottom-3 left-1/2 -translate-x-1/2 flex h-6 px-2 items-center justify-center gap-1 rounded-full bg-white border border-stocky-border-strong text-[10px] font-bold text-stocky-text-main hover:bg-stocky-bg-global shadow-2xs cursor-pointer z-20"
+              className="absolute -bottom-3 left-1/2 -translate-x-1/2 flex h-6 px-2 items-center justify-center gap-1 rounded-full bg-stocky-bg-widget border border-stocky-border-strong text-[10px] font-bold text-stocky-text-main hover:bg-stocky-bg-global shadow-2xs cursor-pointer z-20"
               title={isCollapsed ? t('team.expandReports') : t('team.collapseReports')}
             >
               <span>{isCollapsed ? `+${node.children.length}` : '-'}</span>
@@ -248,14 +248,14 @@ export function OrgStructureWidget({
             <button
               type="button"
               onClick={expandAll}
-              className="h-8 px-3 rounded-full border border-stocky-border-subtle bg-white text-[11px] font-medium text-stocky-text-main hover:bg-stocky-bg-global cursor-pointer"
+              className="h-8 px-3 rounded-full border border-stocky-border-subtle bg-stocky-bg-widget text-[11px] font-medium text-stocky-text-main hover:bg-stocky-bg-global cursor-pointer"
             >
               {t('team.expandAll')}
             </button>
             <button
               type="button"
               onClick={collapseAll}
-              className="h-8 px-3 rounded-full border border-stocky-border-subtle bg-white text-[11px] font-medium text-stocky-text-main hover:bg-stocky-bg-global cursor-pointer"
+              className="h-8 px-3 rounded-full border border-stocky-border-subtle bg-stocky-bg-widget text-[11px] font-medium text-stocky-text-main hover:bg-stocky-bg-global cursor-pointer"
             >
               {t('team.collapseAll')}
             </button>
@@ -264,7 +264,7 @@ export function OrgStructureWidget({
           <div className="hidden sm:block h-4 w-px bg-stocky-border-subtle mx-0.5" />
 
           {/* Zoom buttons */}
-          <div className="inline-flex items-center rounded-full border border-stocky-border-subtle bg-white p-0.5 shadow-2xs">
+          <div className="inline-flex items-center rounded-full border border-stocky-border-subtle bg-stocky-bg-widget p-0.5 shadow-2xs">
             <button
               type="button"
               onClick={handleZoomOut}
@@ -302,7 +302,7 @@ export function OrgStructureWidget({
       <div className="overflow-auto min-h-[440px] max-h-[70vh] p-4 sm:p-8 bg-stocky-bg-global/20 text-center overscroll-contain">
         <div
           className="inline-flex transition-transform duration-200 origin-top items-start gap-8 sm:gap-12 justify-center text-start"
-          style={{ transform: `scale(${zoom})`, transformOrigin: 'top center' }}
+          style={{ transform: `scale(${zoom})` }}
         >
           {treeRoots.map((root) => renderTreeNode(root, true))}
         </div>

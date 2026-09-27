@@ -18,7 +18,7 @@ export default function SkeletonPreviewPage() {
   return (
     <div className="p-4 sm:p-6 max-w-[var(--stocky-page-max-width)] mx-auto">
       {/* Dev Switcher Bar */}
-      <div className="mb-6 p-3 bg-white border border-stocky-border-subtle rounded-2xl shadow-2xs flex flex-wrap items-center justify-between gap-3">
+      <div className="mb-6 p-3 bg-stocky-bg-widget border border-stocky-border-subtle rounded-2xl shadow-2xs flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2 flex-wrap">
           <span className="text-xs font-semibold uppercase text-stocky-text-sub">Variant:</span>
           {(['dashboard', 'inventory', 'attendance', 'calendar', 'transfers', 'suppliers', 'locations', 'team', 'tasks', 'notifications'] as PlatformSkeletonVariant[]).map((v) => (
@@ -28,7 +28,7 @@ export default function SkeletonPreviewPage() {
               onClick={() => setVariant(v)}
               className={`text-xs px-3 py-1.5 rounded-full border transition-all ${
                 variant === v
-                  ? 'bg-stocky-primary text-white border-stocky-primary shadow-xs'
+                  ? 'bg-stocky-primary text-stocky-text-inverse border-stocky-primary shadow-xs'
                   : 'bg-stocky-bg-global text-stocky-text-sub border-stocky-border-subtle hover:border-stocky-border-default'
               }`}
             >
@@ -51,7 +51,7 @@ export default function SkeletonPreviewPage() {
         isLoading={isLoading}
         skeleton={<PlatformWorkspaceSkeleton variant={variant} />}
       >
-        <div className="bg-white border border-stocky-border-subtle rounded-2xl p-6 shadow-card flex flex-col gap-4">
+        <div className="bg-stocky-bg-widget border border-stocky-border-subtle rounded-2xl p-6 shadow-card flex flex-col gap-4">
           <h2 className="text-lg font-medium text-stocky-text-main">Hydrated Content Resolved</h2>
           <p className="text-sm text-stocky-text-sub">
             The data has loaded smoothly with Framer Motion cross-fade transition and zero layout shift.

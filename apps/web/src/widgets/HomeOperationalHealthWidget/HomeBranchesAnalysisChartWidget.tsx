@@ -76,19 +76,19 @@ export function HomeBranchesAnalysisChartWidget({
       label: t('home.charts.branchComparison.movingLabel'),
       unitLabel: t('home.charts.branchComparison.movingUnit'),
       formatter: (v) => `${v.toLocaleString()} ${t('home.charts.branchComparison.movingUnit')}`,
-      color: '#0D9488',
+      color: 'var(--stocky-status-info-fg)',
     },
     lagging: {
       label: t('home.charts.branchComparison.laggingLabel'),
       unitLabel: t('home.charts.branchComparison.laggingUnit'),
       formatter: (v) => `${v.toLocaleString()} ${t('home.charts.branchComparison.laggingUnit')}`,
-      color: '#D97706',
+      color: 'var(--stocky-status-warning-fg)',
     },
     staff: {
       label: t('home.charts.branchComparison.staffLabel'),
       unitLabel: t('home.charts.branchComparison.staffUnit'),
       formatter: (v) => `${v} ${t('home.charts.branchComparison.staffUnit')}`,
-      color: '#6366F1',
+      color: 'var(--stocky-status-hold-fg)',
     },
   };
 
@@ -251,7 +251,7 @@ export function HomeBranchesAnalysisChartWidget({
               title="Filter by metric"
             >
               <FilterIcon size="xs" />
-              <span className="px-1.5 py-0.5 rounded-full bg-stocky-primary text-white text-[10px] font-bold">
+              <span className="px-1.5 py-0.5 rounded-full bg-stocky-primary text-stocky-text-inverse text-[10px] font-bold">
                 {activeConfig.label.split(' ')[0]}
               </span>
             </button>
@@ -446,7 +446,7 @@ export function HomeBranchesAnalysisChartWidget({
                   onClick={() => setInternalTimeframe(tVal)}
                   className={`h-9 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                     internalTimeframe === tVal
-                      ? 'bg-stocky-primary text-white shadow-xs'
+                      ? 'bg-stocky-primary text-stocky-text-inverse shadow-xs'
                       : 'bg-stocky-bg-global text-stocky-text-sub border border-stocky-border-subtle'
                   }`}
                 >

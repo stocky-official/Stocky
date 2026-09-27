@@ -204,9 +204,16 @@ export function TaskDetailsDrawerWidget({
               </div>
             )}
 
+            {activeTask.reviewNote && (
+              <div className="rounded-xl stocky-status-warning border px-3.5 py-2.5 text-xs">
+                <span className="font-semibold block">{t('tasks.reviewNotes')}</span>
+                <span className="mt-0.5 block whitespace-pre-wrap text-[11px]">{activeTask.reviewNote}</span>
+              </div>
+            )}
+
             {/* Status & Assignee Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-              <div className="rounded-xl border border-stocky-border-subtle p-3 bg-white">
+              <div className="rounded-xl border border-stocky-border-subtle p-3 bg-stocky-bg-widget">
                 <p className="text-[10px] uppercase font-semibold tracking-wider text-stocky-text-sub">
                   {t('common.status')}
                 </p>
@@ -215,7 +222,7 @@ export function TaskDetailsDrawerWidget({
                 </p>
               </div>
 
-              <div className="rounded-xl border border-stocky-border-subtle p-3 bg-white">
+              <div className="rounded-xl border border-stocky-border-subtle p-3 bg-stocky-bg-widget">
                 <p className="text-[10px] uppercase font-semibold tracking-wider text-stocky-text-sub">
                   {t('tasks.assignTo')}
                 </p>
@@ -240,7 +247,7 @@ export function TaskDetailsDrawerWidget({
                 <p className="text-xs font-semibold text-stocky-text-main mb-2">
                   {t('tasks.taskItems')} ({currentItems.length})
                 </p>
-                <div className="divide-y divide-stocky-border-subtle rounded-xl border border-stocky-border-subtle bg-white overflow-hidden">
+                <div className="divide-y divide-stocky-border-subtle rounded-xl border border-stocky-border-subtle bg-stocky-bg-widget overflow-hidden">
                   {currentItems.map((item) => {
                     const product = productMap.get(item.productId);
                     const isCompleted = item.status !== 'pending';

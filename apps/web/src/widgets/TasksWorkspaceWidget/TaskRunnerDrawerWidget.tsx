@@ -12,6 +12,7 @@ import {
 import type { Product, StockTask, StockTaskItem } from '@stocky/types';
 import { SideDrawer } from '@/components/ui/SideDrawer';
 import { useTranslation } from '@/lib/i18n';
+import { BarcodeScannerWidget } from '../BarcodeScannerWidget/BarcodeScannerWidget';
 
 type TaskResult = {
   countedQuantity: string;
@@ -70,6 +71,8 @@ export function TaskRunnerDrawerWidget({
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [now, setNow] = useState(Date.now());
+  const [scannerOpen, setScannerOpen] = useState(false);
+  const [highlightedItemId, setHighlightedItemId] = useState<string | null>(null);
 
   const productMap = useMemo(
     () => new Map(products.map((p) => [p.id, p])),
@@ -88,12 +91,41 @@ export function TaskRunnerDrawerWidget({
           note: '',
         };
       });
+    try {
+      const saved = window.localStorage.getItem(`stocky-task-draft:${task.id}`);
+      if (saved) {
+        const draft = JSON.parse(saved) as Record<string, Partial<TaskResult>>;
+        Object.keys(initial).forEach((itemId) => {
+          const savedResult = draft[itemId];
+          if (savedResult) {
+            initial[itemId] = {
+              countedQuantity: savedResult.countedQuantity || '',
+              observedExpiryDate: savedResult.observedExpiryDate || '',
+              note: savedResult.note || '',
+            };
+          }
+        });
+      }
+    } catch {
+      // Ignore malformed local drafts and start with a clean task form.
+    }
     setResults(initial);
     setSearch('');
     setError(null);
     setStatus(task.status);
-    setStartedAt(task.createdAt);
+    setStartedAt(task.startedAt || task.createdAt);
+    setScannerOpen(false);
+    setHighlightedItemId(null);
   }, [task, taskItems]);
+
+  useEffect(() => {
+    if (!activeTask || activeTask.taskType === 'open' || Object.keys(results).length === 0) return;
+    try {
+      window.localStorage.setItem(`stocky-task-draft:${activeTask.id}`, JSON.stringify(results));
+    } catch {
+      // Draft persistence is best effort; submission remains server-backed.
+    }
+  }, [activeTask, results]);
 
   useEffect(() => {
     if (task && scanQuery.trim()) {
@@ -157,6 +189,7 @@ export function TaskRunnerDrawerWidget({
       setError(null);
       try {
         await onSubmitTask(activeTask.id, []);
+        window.localStorage.removeItem(`stocky-task-draft:${activeTask.id}`);
         onClose();
       } catch (err: any) {
         setError(err?.message || t('tasks.submitFailed'));
@@ -210,6 +243,7 @@ export function TaskRunnerDrawerWidget({
     setError(null);
     try {
       await onSubmitTask(activeTask.id, payload);
+      window.localStorage.removeItem(`stocky-task-draft:${activeTask.id}`);
       onClose();
     } catch (err: any) {
       setError(err?.message || t('tasks.submitFailed'));
@@ -219,11 +253,12 @@ export function TaskRunnerDrawerWidget({
   };
 
   return (
-    <SideDrawer
-      isOpen={Boolean(task)}
-      onClose={() => !saving && onClose()}
-      ariaLabel={t('tasks.title')}
-    >
+    <>
+      <SideDrawer
+        isOpen={Boolean(task)}
+        onClose={() => !saving && onClose()}
+        ariaLabel={t('tasks.title')}
+      >
       {activeTask && (
         <div className="flex flex-col h-full">
           {/* Header */}
@@ -276,7 +311,7 @@ export function TaskRunnerDrawerWidget({
               </h3>
               <p className="max-w-sm text-xs text-stocky-text-sub">
                 {status === 'rejected'
-                  ? t('tasks.rejectedDesc')
+                  ? `${t('tasks.rejectedDesc')}${activeTask.reviewNote ? ` ${activeTask.reviewNote}` : ''}`
                   : activeTask.taskType === 'open'
                   ? (activeTask.notes || t('tasks.startTaskInstructions'))
                   : t('tasks.scannerPrompt')}
@@ -285,7 +320,7 @@ export function TaskRunnerDrawerWidget({
                 type="button"
                 onClick={startRunner}
                 disabled={saving}
-                className="h-10 rounded-full bg-stocky-primary hover:bg-stocky-primary-hover px-6 text-xs font-medium text-white transition-colors cursor-pointer disabled:opacity-60"
+                className="h-10 rounded-full bg-stocky-primary hover:bg-stocky-primary-hover px-6 text-xs font-medium text-stocky-text-inverse transition-colors cursor-pointer disabled:opacity-60"
               >
                 {saving
                   ? t('common.loading')
@@ -313,7 +348,7 @@ export function TaskRunnerDrawerWidget({
                     </p>
                   </div>
 
-                  <div className="rounded-2xl border border-stocky-border-subtle bg-emerald-500/5 p-4">
+                  <div className="rounded-2xl border border-stocky-border-subtle bg-stocky-status-success-fg p-4">
                     <p className="text-xs text-stocky-text-sub">
                       {t('tasks.workAccomplished')}
                     </p>
@@ -322,17 +357,27 @@ export function TaskRunnerDrawerWidget({
               ) : (
                 <>
                   <div className="border-b border-stocky-border-subtle p-5">
-                    <div className="relative">
-                      <SearchIcon
-                        size="xs"
-                        className="pointer-events-none absolute start-3 top-1/2 -translate-y-1/2 text-stocky-text-sub"
-                      />
-                      <input
-                        value={search}
-                        onChange={(e) => setSearch(e.target.value)}
-                        placeholder={t('tasks.searchProducts')}
-                        className="h-10 w-full rounded-xl border border-stocky-border-subtle ps-9 pe-3 text-xs text-stocky-text-main placeholder:text-stocky-text-sub focus:border-stocky-primary focus:outline-none transition-colors"
-                      />
+                    <div className="flex gap-2">
+                      <div className="relative min-w-0 flex-1">
+                        <SearchIcon
+                          size="xs"
+                          className="pointer-events-none absolute start-3 top-1/2 -translate-y-1/2 text-stocky-text-sub"
+                        />
+                        <input
+                          value={search}
+                          onChange={(e) => setSearch(e.target.value)}
+                          placeholder={t('tasks.searchProducts')}
+                          className="h-10 w-full rounded-xl border border-stocky-border-subtle ps-9 pe-3 text-xs text-stocky-text-main placeholder:text-stocky-text-sub focus:border-stocky-primary focus:outline-none transition-colors"
+                        />
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setScannerOpen(true)}
+                        className="inline-flex h-10 shrink-0 items-center gap-1.5 rounded-xl border border-stocky-border-subtle px-3 text-xs font-medium text-stocky-text-main hover:bg-stocky-bg-global transition-colors"
+                      >
+                        <BarcodeIcon size="xs" />
+                        <span>{t('tasks.scanBarcode')}</span>
+                      </button>
                     </div>
                     <p className="mt-2 flex items-center gap-1.5 text-[11px] text-stocky-text-sub">
                       <BarcodeIcon size="xs" />
@@ -353,7 +398,7 @@ export function TaskRunnerDrawerWidget({
                       const completed = Boolean(item.completedAt);
 
                       return (
-                        <div key={item.id} className="py-4">
+                        <div key={item.id} className={`py-4 ${highlightedItemId === item.id ? 'rounded-xl bg-stocky-primary/10 px-3' : ''}`}>
                           <div className="flex items-start gap-3">
                             <span
                               className={`mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full border ${
@@ -457,7 +502,7 @@ export function TaskRunnerDrawerWidget({
                 <button
                   type="submit"
                   disabled={saving}
-                  className="h-10 flex-1 rounded-full bg-stocky-primary hover:bg-stocky-primary-hover px-6 text-xs font-medium text-white transition-colors cursor-pointer disabled:opacity-60 shadow-sm"
+                  className="h-10 flex-1 rounded-full bg-stocky-primary hover:bg-stocky-primary-hover px-6 text-xs font-medium text-stocky-text-inverse transition-colors cursor-pointer disabled:opacity-60 shadow-sm"
                 >
                   {saving ? t('common.loading') : t('tasks.submitTask')}
                 </button>
@@ -466,6 +511,26 @@ export function TaskRunnerDrawerWidget({
           )}
         </div>
       )}
-    </SideDrawer>
+      </SideDrawer>
+      <BarcodeScannerWidget
+        isOpen={scannerOpen}
+        onClose={() => setScannerOpen(false)}
+        hideFloatingButton
+        onBarcodeFound={(barcode) => {
+          const scannedItem = activeTask
+            ? taskItems.find((item) => item.taskId === activeTask.id && productMap.get(item.productId)?.barcode === barcode)
+            : undefined;
+          setSearch('');
+          setScannerOpen(false);
+          if (!scannedItem) {
+            setError(t('tasks.barcodeNotFound'));
+          } else {
+            setHighlightedItemId(scannedItem.id);
+            setError(null);
+            window.setTimeout(() => setHighlightedItemId(null), 2500);
+          }
+        }}
+      />
+    </>
   );
 }

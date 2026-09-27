@@ -48,33 +48,33 @@ export function HomeSpeedometerWidget({
     <div className="stocky-home-speedometer p-5 sm:p-7 select-none">
       {/* Top Header Pill & Timeframe */}
       <div className="flex items-center justify-between gap-2 mb-3">
-        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/[0.08] border border-white/10 text-xs font-medium text-white/90">
-          <span className="text-emerald-400 font-semibold">↗</span>
+        <div className="stocky-home-speedometer__glass inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium text-stocky-text-inverse opacity-90">
+          <span className="stocky-home-speedometer__success font-semibold">↗</span>
           <span>Top Velocity SKU</span>
         </div>
 
-        <div className="flex items-center gap-1 px-3 py-1 rounded-full bg-white/[0.06] border border-white/10 text-xs font-medium text-white/80">
+        <div className="stocky-home-speedometer__glass flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium text-stocky-text-inverse opacity-80">
           <span>Last 30 Days</span>
-          <ChevronDownIcon size="xs" className="text-white/60" />
+          <ChevronDownIcon size="xs" className="stocky-home-speedometer__faint" />
         </div>
       </div>
 
       {/* Display Headline */}
-      <h3 className="text-xl sm:text-2xl text-white font-normal tracking-tight leading-snug mb-2">
+      <h3 className="text-xl sm:text-2xl text-stocky-text-inverse font-normal tracking-tight leading-snug mb-2">
         Operational Health &amp;
         <br />
-        <span className="text-white/95 font-medium">Batch Freshness</span>
+        <span className="text-stocky-text-inverse opacity-95 font-medium">Batch Freshness</span>
       </h3>
 
       {/* Metadata Badges */}
-      <div className="flex items-center gap-3 text-xs text-white/70 mb-4">
+      <div className="stocky-home-speedometer__muted flex items-center gap-3 text-xs mb-4">
         <div className="flex items-center gap-1.5">
-          <BoxesIcon size="xs" className="text-white/60" />
+          <BoxesIcon size="xs" className="stocky-home-speedometer__faint" />
           <span>{activeProductsCount} Active SKUs</span>
         </div>
         <span>•</span>
         <div className="flex items-center gap-1.5">
-          <CheckCircleIcon size="xs" className="text-emerald-400" />
+          <CheckCircleIcon size="xs" className="stocky-home-speedometer__success" />
           <span>{auditAccuracyPct}% Count Accuracy</span>
         </div>
       </div>
@@ -83,19 +83,19 @@ export function HomeSpeedometerWidget({
       <button
         type="button"
         onClick={onOpenStock}
-        className="w-full p-2.5 rounded-2xl bg-white/[0.08] border border-white/12 flex items-center justify-between gap-3 mb-5 hover:bg-white/[0.12] transition-colors cursor-pointer text-left"
+        className="stocky-home-speedometer__glass w-full p-2.5 rounded-2xl flex items-center justify-between gap-3 mb-5 transition-colors cursor-pointer text-left"
       >
         <div className="flex items-center gap-3 min-w-0">
-          <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center text-emerald-400 text-sm font-semibold shrink-0 border border-white/10">
+          <div className="stocky-home-speedometer__glass stocky-home-speedometer__success w-10 h-10 rounded-xl flex items-center justify-center text-sm font-semibold shrink-0">
             <BoxesIcon size="sm" />
           </div>
           <div className="min-w-0">
-            <p className="text-xs font-semibold text-white truncate">{topProductName}</p>
-            <p className="text-[11px] text-white/60 truncate">{topProductUnits}</p>
+            <p className="text-xs font-semibold text-stocky-text-inverse truncate">{topProductName}</p>
+            <p className="stocky-home-speedometer__faint text-[11px] truncate">{topProductUnits}</p>
           </div>
         </div>
 
-        <span className="text-xs font-semibold text-emerald-400 shrink-0">
+        <span className="stocky-home-speedometer__success text-xs font-semibold shrink-0">
           Peak Flow ↗
         </span>
       </button>
@@ -128,7 +128,7 @@ export function HomeSpeedometerWidget({
               cy={center}
               r={radius}
               fill="none"
-              stroke="rgba(255, 255, 255, 0.12)"
+              className="stocky-home-speedometer__track"
               strokeWidth={strokeWidth}
               strokeDasharray={`${arcLength} ${circumference}`}
               strokeLinecap="round"
@@ -140,7 +140,7 @@ export function HomeSpeedometerWidget({
               cy={center}
               r={radius - 16}
               fill="none"
-              stroke="rgba(255, 255, 255, 0.25)"
+              className="stocky-home-speedometer__grid"
               strokeWidth="2"
               strokeDasharray="2 8"
             />
@@ -162,10 +162,10 @@ export function HomeSpeedometerWidget({
 
           {/* Center Gauge Reading */}
           <div className="absolute top-14 flex flex-col items-center justify-center text-center pointer-events-none">
-            <span className="text-3xl sm:text-4xl font-semibold text-white tracking-tight">
+            <span className="text-3xl sm:text-4xl font-semibold text-stocky-text-inverse tracking-tight">
               {healthPct}%
             </span>
-            <span className="text-xs font-semibold text-emerald-400 mt-0.5 tracking-wide uppercase">
+            <span className="stocky-home-speedometer__success text-xs font-semibold mt-0.5 tracking-wide uppercase">
               Overall Healthy
             </span>
           </div>
@@ -185,20 +185,20 @@ export function HomeSpeedometerWidget({
       </div>
 
       {/* 3-Pillar MECE Inventory Health Breakdown */}
-      <div className="grid grid-cols-3 gap-2 w-full mt-4 pt-4 border-t border-white/10 text-center">
+      <div className="stocky-home-speedometer__divider grid grid-cols-3 gap-2 w-full mt-4 pt-4 border-t text-center">
         <div className="flex flex-col items-center">
-          <span className="text-xs sm:text-sm font-bold text-white tracking-tight">
+          <span className="text-xs sm:text-sm font-bold text-stocky-text-inverse tracking-tight">
             {availabilityRatePct}%
           </span>
-          <span className="text-[10px] text-white/70 font-medium mt-0.5">
+          <span className="stocky-home-speedometer__muted text-[10px] font-medium mt-0.5">
             In-Stock Rate
           </span>
         </div>
-        <div className="flex flex-col items-center border-x border-white/10">
-          <span className="text-xs sm:text-sm font-bold text-emerald-400 tracking-tight">
+        <div className="stocky-home-speedometer__divider flex flex-col items-center border-x">
+          <span className="stocky-home-speedometer__success text-xs sm:text-sm font-bold tracking-tight">
             {freshnessRatePct}%
           </span>
-          <span className="text-[10px] text-white/70 font-medium mt-0.5">
+          <span className="stocky-home-speedometer__muted text-[10px] font-medium mt-0.5">
             Batch Freshness
           </span>
         </div>
@@ -206,7 +206,7 @@ export function HomeSpeedometerWidget({
           <span className="text-xs sm:text-sm font-bold text-stocky-accent tracking-tight">
             {auditAccuracyPct}%
           </span>
-          <span className="text-[10px] text-white/70 font-medium mt-0.5">
+          <span className="stocky-home-speedometer__muted text-[10px] font-medium mt-0.5">
             Count Accuracy
           </span>
         </div>

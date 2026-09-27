@@ -265,7 +265,7 @@ export function TimeOffWidget({
                                 type="button"
                                 disabled={reviewingId === req.id}
                                 onClick={() => handleReview(req.id, true)}
-                                className="h-8 px-3 rounded-full bg-stocky-primary text-white text-xs font-medium hover:bg-stocky-primary-hover transition-colors inline-flex items-center gap-1 cursor-pointer"
+                                className="h-8 px-3 rounded-full bg-stocky-primary text-stocky-text-inverse text-xs font-medium hover:bg-stocky-primary-hover transition-colors inline-flex items-center gap-1 cursor-pointer"
                               >
                                 <CheckIcon size="xs" />
                                 <span>{t('timeOff.approve')}</span>
@@ -308,7 +308,7 @@ export function TimeOffWidget({
                 .slice(0, 2);
 
               return (
-                <article key={req.id} className="p-3.5 flex items-center justify-between gap-3 bg-white hover:bg-stocky-bg-global/30 transition-colors text-start">
+                <article key={req.id} className="p-3.5 flex items-center justify-between gap-3 bg-stocky-bg-widget hover:bg-stocky-bg-global/30 transition-colors text-start">
                   {/* Left Anchor + Center Info */}
                   <div className="flex items-center gap-2.5 min-w-0 flex-1">
                     <div className="w-9 h-9 rounded-full bg-stocky-primary/10 border border-stocky-primary/20 text-stocky-primary flex items-center justify-center text-xs font-semibold shrink-0">
@@ -337,7 +337,7 @@ export function TimeOffWidget({
                             type="button"
                             disabled={reviewingId === req.id}
                             onClick={() => handleReview(req.id, true)}
-                            className="h-7 px-2.5 rounded-full bg-stocky-primary text-white text-xs font-medium hover:bg-stocky-primary-hover transition-colors inline-flex items-center gap-1 cursor-pointer shadow-2xs"
+                            className="h-7 px-2.5 rounded-full bg-stocky-primary text-stocky-text-inverse text-xs font-medium hover:bg-stocky-primary-hover transition-colors inline-flex items-center gap-1 cursor-pointer shadow-2xs"
                           >
                             <CheckIcon size="xs" />
                             <span>{t('timeOff.approve')}</span>
@@ -346,7 +346,7 @@ export function TimeOffWidget({
                             type="button"
                             disabled={reviewingId === req.id}
                             onClick={() => handleReview(req.id, false)}
-                            className="h-7 px-2 rounded-full border border-stocky-border-subtle bg-white text-stocky-text-sub hover:text-stocky-status-critical-fg text-xs font-medium transition-colors inline-flex items-center cursor-pointer"
+                            className="h-7 px-2 rounded-full border border-stocky-border-subtle bg-stocky-bg-widget text-stocky-text-sub hover:text-stocky-status-critical-fg text-xs font-medium transition-colors inline-flex items-center cursor-pointer"
                           >
                             <XIcon size="xs" />
                           </button>

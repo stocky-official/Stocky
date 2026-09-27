@@ -60,20 +60,20 @@ function AdminShellContent({ children }: { children: React.ReactNode }) {
   if (!isAuthorized) {
     return (
       <div className="min-h-screen bg-stocky-bg-global flex items-center justify-center p-4 sm:p-6 text-start">
-        <Card className="max-w-md w-full p-6 sm:p-8 space-y-5 bg-white border border-stocky-border-subtle rounded-2xl shadow-md text-center">
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-50 text-amber-600 border border-amber-200 mx-auto">
+        <Card className="max-w-md w-full p-6 sm:p-8 space-y-5 bg-stocky-bg-widget border border-stocky-border-subtle rounded-2xl shadow-md text-center">
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-stocky-status-warning-bg text-stocky-status-warning-fg border border-stocky-status-warning-border mx-auto">
             <ShieldIcon size="md" />
           </div>
           <div className="space-y-2">
             <h1 className="text-xl font-bold text-stocky-text-main">Access Denied (403)</h1>
             <p className="text-xs text-stocky-text-sub leading-relaxed">
-              The Stocky Admin Portal is restricted to platform operators. Your current account (<strong className="text-stocky-text-main font-mono">{user?.email}</strong>) is not authorized.
+              The Stocky Admin Portal is restricted to platform operators. Your current account (<strong className="text-stocky-text-main font-sans">{user?.email}</strong>) is not authorized.
             </p>
           </div>
 
           <div className="p-3 rounded-xl bg-stocky-bg-global border border-stocky-border-subtle text-[11px] text-stocky-text-sub text-start">
             <span>Authorized Administrator Email:</span>
-            <span className="block font-mono font-semibold text-stocky-text-main mt-0.5">
+            <span className="block font-sans font-semibold text-stocky-text-main mt-0.5">
               {ALLOWED_ADMIN_EMAIL}
             </span>
           </div>

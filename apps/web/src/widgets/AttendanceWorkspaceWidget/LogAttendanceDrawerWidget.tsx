@@ -198,8 +198,8 @@ export function LogAttendanceDrawerWidget({
       {/* Drawer Form Body */}
       <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-5 sm:p-6 space-y-5">
         {error && (
-          <div className="flex items-center gap-2.5 p-3.5 rounded-xl border border-red-200 bg-red-50/80 text-xs text-red-700">
-            <AlertCircleIcon size="xs" className="shrink-0 text-red-500" />
+          <div className="flex items-center gap-2.5 p-3.5 rounded-xl border border-stocky-status-critical-border bg-stocky-status-critical-bg text-xs text-stocky-status-critical-fg">
+            <AlertCircleIcon size="xs" className="shrink-0 text-stocky-status-critical-fg" />
             <span>{error}</span>
           </div>
         )}
@@ -214,7 +214,7 @@ export function LogAttendanceDrawerWidget({
             <select
               value={selectedMemberId}
               onChange={(e) => setSelectedMemberId(e.target.value)}
-              className="w-full h-10 px-3 rounded-xl bg-white border border-stocky-border-subtle text-xs text-stocky-text-main focus:border-stocky-primary focus:outline-none transition-colors cursor-pointer"
+              className="w-full h-10 px-3 rounded-xl bg-stocky-bg-widget border border-stocky-border-subtle text-xs text-stocky-text-main focus:border-stocky-primary focus:outline-none transition-colors cursor-pointer"
             >
               {activeMembers.map((m) => (
                 <option key={m.id} value={m.id}>
@@ -244,7 +244,7 @@ export function LogAttendanceDrawerWidget({
           <select
             value={selectedLocationId}
             onChange={(e) => setSelectedLocationId(e.target.value)}
-            className="w-full h-10 px-3 rounded-xl bg-white border border-stocky-border-subtle text-xs text-stocky-text-main focus:border-stocky-primary focus:outline-none transition-colors cursor-pointer"
+            className="w-full h-10 px-3 rounded-xl bg-stocky-bg-widget border border-stocky-border-subtle text-xs text-stocky-text-main focus:border-stocky-primary focus:outline-none transition-colors cursor-pointer"
           >
             {locations.map((loc) => (
               <option key={loc.id} value={loc.id}>
@@ -264,7 +264,7 @@ export function LogAttendanceDrawerWidget({
             type="date"
             value={shiftDate}
             onChange={(e) => setShiftDate(e.target.value)}
-            className="w-full h-10 px-3 rounded-xl bg-white border border-stocky-border-subtle text-xs text-stocky-text-main focus:border-stocky-primary focus:outline-none transition-colors"
+            className="w-full h-10 px-3 rounded-xl bg-stocky-bg-widget border border-stocky-border-subtle text-xs text-stocky-text-main focus:border-stocky-primary focus:outline-none transition-colors"
             required
           />
         </div>
@@ -281,7 +281,7 @@ export function LogAttendanceDrawerWidget({
               onClick={() => setShiftMode('clock_in')}
               className={`h-8 rounded-lg text-xs font-medium transition-all cursor-pointer ${
                 shiftMode === 'clock_in'
-                  ? 'bg-white text-stocky-text-main shadow-xs font-semibold'
+                  ? 'bg-stocky-bg-widget text-stocky-text-main shadow-xs font-semibold'
                   : 'text-stocky-text-sub hover:text-stocky-text-main'
               }`}
             >
@@ -292,7 +292,7 @@ export function LogAttendanceDrawerWidget({
               onClick={() => setShiftMode('completed')}
               className={`h-8 rounded-lg text-xs font-medium transition-all cursor-pointer ${
                 shiftMode === 'completed'
-                  ? 'bg-white text-stocky-text-main shadow-xs font-semibold'
+                  ? 'bg-stocky-bg-widget text-stocky-text-main shadow-xs font-semibold'
                   : 'text-stocky-text-sub hover:text-stocky-text-main'
               }`}
             >
@@ -311,7 +311,7 @@ export function LogAttendanceDrawerWidget({
               type="time"
               value={clockInTime}
               onChange={(e) => handleClockInChange(e.target.value)}
-              className="w-full h-10 px-3 rounded-xl bg-white border border-stocky-border-subtle text-xs text-stocky-text-main focus:border-stocky-primary focus:outline-none transition-colors"
+              className="w-full h-10 px-3 rounded-xl bg-stocky-bg-widget border border-stocky-border-subtle text-xs text-stocky-text-main focus:border-stocky-primary focus:outline-none transition-colors"
               required
             />
           </div>
@@ -325,7 +325,7 @@ export function LogAttendanceDrawerWidget({
                 type="time"
                 value={clockOutTime}
                 onChange={(e) => setClockOutTime(e.target.value)}
-                className="w-full h-10 px-3 rounded-xl bg-white border border-stocky-border-subtle text-xs text-stocky-text-main focus:border-stocky-primary focus:outline-none transition-colors"
+                className="w-full h-10 px-3 rounded-xl bg-stocky-bg-widget border border-stocky-border-subtle text-xs text-stocky-text-main focus:border-stocky-primary focus:outline-none transition-colors"
                 required
               />
             </div>
@@ -363,7 +363,7 @@ export function LogAttendanceDrawerWidget({
                   className={`h-9 px-2.5 rounded-xl text-xs font-medium border transition-colors cursor-pointer flex items-center justify-center text-center ${
                     isSelected
                       ? 'border-stocky-primary bg-stocky-primary/10 text-stocky-primary font-semibold'
-                      : 'border-stocky-border-subtle bg-white text-stocky-text-main hover:border-stocky-primary/50'
+                      : 'border-stocky-border-subtle bg-stocky-bg-widget text-stocky-text-main hover:border-stocky-primary/50'
                   }`}
                 >
                   {st.label}
@@ -383,7 +383,7 @@ export function LogAttendanceDrawerWidget({
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
             placeholder={t('attendance.manualEntryReasonPlaceholder')}
-            className="w-full h-10 px-3 rounded-xl bg-white border border-stocky-border-subtle text-xs text-stocky-text-main placeholder:text-stocky-text-sub focus:border-stocky-primary focus:outline-none transition-colors"
+            className="w-full h-10 px-3 rounded-xl bg-stocky-bg-widget border border-stocky-border-subtle text-xs text-stocky-text-main placeholder:text-stocky-text-sub focus:border-stocky-primary focus:outline-none transition-colors"
           />
         </div>
 

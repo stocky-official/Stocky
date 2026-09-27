@@ -37,7 +37,7 @@ export function HomeAssetCardsWidget({
           }`}
         >
           <div className="flex items-center gap-2.5">
-            <span className="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-600 border border-emerald-200/60 flex items-center justify-center shrink-0">
+            <span className="w-8 h-8 rounded-xl bg-stocky-status-success-bg text-stocky-status-success-fg border border-stocky-status-success-border flex items-center justify-center shrink-0">
               <BoxesIcon size="xs" />
             </span>
             <span className="text-xl sm:text-2xl font-bold text-stocky-text-main tracking-tight truncate">
@@ -84,7 +84,7 @@ export function HomeAssetCardsWidget({
 
       {/* Momentum Indicator Pill */}
       <div className="inline-flex items-center gap-2 px-3.5 py-1.5 self-start rounded-full bg-stocky-bg-widget border border-stocky-border-subtle shadow-2xs text-xs text-stocky-text-sub font-medium">
-        <span className="text-emerald-600 font-bold">↗</span>
+        <span className="text-stocky-status-success-fg font-bold">↗</span>
         <span>Stock turnover efficiency up <strong className="text-stocky-text-main font-semibold">{growthPct}%</strong> vs last month</span>
       </div>
     </div>

@@ -73,7 +73,7 @@ export function SupplierRequestsToolbarWidget({
               onClick={onToggleFilterPanel}
               className={`absolute right-1.5 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full flex items-center justify-center transition-colors cursor-pointer ${
                 filterPanelOpen || isFilterActive || activeFilterCount > 0
-                  ? 'bg-stocky-primary text-white hover:bg-stocky-primary-hover'
+                  ? 'bg-stocky-primary text-stocky-text-inverse hover:bg-stocky-primary-hover'
                   : 'text-stocky-text-sub hover:bg-stocky-bg-hover hover:text-stocky-text-main'
               }`}
               title="Open requests filter panel"
@@ -107,7 +107,7 @@ export function SupplierRequestsToolbarWidget({
                 className={`stocky-table-toolbar-button w-full sm:w-auto h-10 px-2 sm:px-4 rounded-full text-xs font-medium inline-flex items-center justify-center whitespace-nowrap cursor-pointer transition-colors ${
                   isActive
                     ? 'stocky-table-toolbar-button--active border-stocky-primary bg-stocky-primary/10 text-stocky-primary font-semibold'
-                    : 'border border-stocky-border-subtle bg-white text-stocky-text-main hover:border-stocky-primary hover:text-stocky-primary'
+                    : 'border border-stocky-border-subtle bg-stocky-bg-widget text-stocky-text-main hover:border-stocky-primary hover:text-stocky-primary'
                 }`}
               >
                 <span>{tab.label}</span>

@@ -203,7 +203,7 @@ export function HomeTopMovingProductsChartWidget({
             >
               <FilterIcon size="xs" />
               <span>{t('home.charts.topMovers.filter')}</span>
-              <span className="px-1.5 py-0.5 rounded-full bg-stocky-primary text-white text-[10px] font-bold">
+              <span className="px-1.5 py-0.5 rounded-full bg-stocky-primary text-stocky-text-inverse text-[10px] font-bold">
                 {effectiveTimeframe}
               </span>
             </button>
@@ -323,7 +323,7 @@ export function HomeTopMovingProductsChartWidget({
                   <td className="py-2.5 px-3 text-end font-bold text-stocky-primary">{item.unitsMoved.toLocaleString()}</td>
                   <td className="py-2.5 px-3 text-end text-stocky-text-sub">{item.batches}</td>
                   <td className="py-2.5 px-3 text-end">
-                    <span className="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-[10px] font-bold border border-emerald-200/60">
+                    <span className="px-2 py-0.5 rounded-full bg-stocky-status-success-bg text-stocky-status-success-fg text-[10px] font-bold border border-stocky-status-success-border">
                       {item.velocityScore}/wk
                     </span>
                   </td>
@@ -365,7 +365,7 @@ export function HomeTopMovingProductsChartWidget({
                   onClick={() => setInternalTimeframe(tVal)}
                   className={`h-9 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                     internalTimeframe === tVal
-                      ? 'bg-stocky-primary text-white shadow-xs'
+                      ? 'bg-stocky-primary text-stocky-text-inverse shadow-xs'
                       : 'bg-stocky-bg-global text-stocky-text-sub border border-stocky-border-subtle'
                   }`}
                 >

@@ -231,7 +231,7 @@ export function InventoryImportModalWidget({ isOpen, onClose, companyId, product
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-3 sm:p-6" role="dialog" aria-modal="true" aria-labelledby="stock-import-title" dir={isRtl ? 'rtl' : 'ltr'} style={{ fontFamily: isRtl ? 'Cairo, sans-serif' : undefined }}>
+    <div className={`fixed inset-0 z-50 flex items-center justify-center bg-stocky-text-main/50 p-3 sm:p-6 ${isRtl ? 'font-cairo' : ''}`} role="dialog" aria-modal="true" aria-labelledby="stock-import-title" dir={isRtl ? 'rtl' : 'ltr'}>
       <section className="flex max-h-[min(92vh,900px)] w-full max-w-5xl flex-col overflow-hidden rounded-2xl border border-stocky-border-subtle bg-stocky-bg-widget shadow-2xl">
         <header className="flex items-start justify-between gap-4 border-b border-stocky-border-subtle px-5 py-4 sm:px-6">
           <div className="flex items-start gap-3">
@@ -261,7 +261,7 @@ export function InventoryImportModalWidget({ isOpen, onClose, companyId, product
         <div className="min-h-0 flex-1 overflow-y-auto p-5 sm:p-6">
           {success ? (
             <div className="flex min-h-80 flex-col items-center justify-center text-center">
-              <span className="flex h-14 w-14 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-600">
+              <span className="flex h-14 w-14 items-center justify-center rounded-full bg-stocky-status-success-fg text-stocky-status-success-fg">
                 <CheckCircleIcon size="lg" />
               </span>
               <h3 className="mt-4 text-base font-medium text-stocky-text-main">
@@ -277,7 +277,7 @@ export function InventoryImportModalWidget({ isOpen, onClose, companyId, product
               <button
                 type="button"
                 onClick={close}
-                className="mt-5 h-9 rounded-full bg-stocky-primary px-5 text-xs font-medium text-white"
+                className="mt-5 h-9 rounded-full bg-stocky-primary px-5 text-xs font-medium text-stocky-text-inverse"
               >
                 {t('modals.import.done')}
               </button>
@@ -329,7 +329,7 @@ export function InventoryImportModalWidget({ isOpen, onClose, companyId, product
               {(selectedLocationId === 'all' || columnMapping.location_name) && (
                 <label className="block">
                   <span className="text-xs font-medium text-stocky-text-main">
-                    {t('modals.import.defaultLocation')} {!columnMapping.location_name && <span className="text-red-600">*</span>}
+                    {t('modals.import.defaultLocation')} {!columnMapping.location_name && <span className="text-stocky-status-critical-fg">*</span>}
                   </span>
                   <select
                     value={defaultLocationId}
@@ -380,7 +380,7 @@ export function InventoryImportModalWidget({ isOpen, onClose, companyId, product
                       >
                         <span className="min-w-0 flex-1">
                           <span className="block text-xs font-medium text-stocky-text-main">
-                            {translatedLabel} {field.required && <span className="text-red-600">*</span>}
+                            {translatedLabel} {field.required && <span className="text-stocky-status-critical-fg">*</span>}
                           </span>
                           <span className="mt-0.5 block text-[10px] text-stocky-text-sub">
                             {translatedDesc}
@@ -407,7 +407,7 @@ export function InventoryImportModalWidget({ isOpen, onClose, companyId, product
               </div>
 
               {missingRequiredMappings.length > 0 || validationErrors.length > 0 || duplicateKeys.size > 0 ? (
-                <div className="rounded-xl border border-red-200 bg-red-50 px-3 py-2.5 text-xs text-red-700">
+                <div className="rounded-xl border border-stocky-status-critical-border bg-stocky-status-critical-bg px-3 py-2.5 text-xs text-stocky-status-critical-fg">
                   <div className="flex items-start gap-2">
                     <AlertCircleIcon size="xs" />
                     <div>
@@ -488,11 +488,11 @@ export function InventoryImportModalWidget({ isOpen, onClose, companyId, product
                           </td>
                           <td className="px-3 py-3 text-start">
                             {row.errors.length ? (
-                              <span className="text-red-700">{t('modals.import.needsFixing')}</span>
+                              <span className="text-stocky-status-critical-fg">{t('modals.import.needsFixing')}</span>
                             ) : duplicateKeys.has(`${row.barcode}|${row.locationId}|${row.lotNumber}|${row.expiryDate || ''}`) ? (
-                              <span className="text-red-700">{t('modals.import.duplicate')}</span>
+                              <span className="text-stocky-status-critical-fg">{t('modals.import.duplicate')}</span>
                             ) : (
-                              <span className="text-emerald-700">
+                              <span className="text-stocky-status-success-fg">
                                 {productBarcodes.has(row.barcode)
                                   ? t('modals.import.updateExisting')
                                   : t('modals.import.createProduct')}
@@ -528,7 +528,7 @@ export function InventoryImportModalWidget({ isOpen, onClose, companyId, product
             </div>
           )}
           {error && !success && (
-            <div className="mt-4 flex items-start gap-2 rounded-xl border border-red-200 bg-red-50 px-3 py-2.5 text-xs text-red-700">
+            <div className="mt-4 flex items-start gap-2 rounded-xl border border-stocky-status-critical-border bg-stocky-status-critical-bg px-3 py-2.5 text-xs text-stocky-status-critical-fg">
               <AlertCircleIcon size="xs" />
               <span>{error}</span>
             </div>
@@ -561,7 +561,7 @@ export function InventoryImportModalWidget({ isOpen, onClose, companyId, product
                   duplicateKeys.size > 0 ||
                   validRows.length === 0
                 }
-                className="inline-flex h-9 flex-1 items-center justify-center gap-1.5 rounded-full bg-stocky-primary px-4 text-xs font-medium text-white disabled:cursor-not-allowed disabled:opacity-50 sm:flex-none"
+                className="inline-flex h-9 flex-1 items-center justify-center gap-1.5 rounded-full bg-stocky-primary px-4 text-xs font-medium text-stocky-text-inverse disabled:cursor-not-allowed disabled:opacity-50 sm:flex-none"
               >
                 <CheckCircleIcon size="xs" />
                 {isImporting

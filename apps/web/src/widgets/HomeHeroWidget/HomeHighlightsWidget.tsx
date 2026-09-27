@@ -54,7 +54,7 @@ export function HomeHighlightsWidget({
       value: expiringSkuCount.toString(),
       subtitle: t('home.expiringDesc'),
       icon: <AlertTriangleIcon size="xs" />,
-      badgeBg: 'bg-amber-50 text-amber-600 border border-amber-200/60',
+      badgeBg: 'bg-stocky-status-warning-bg text-stocky-status-warning-fg border border-stocky-status-warning-border',
       action: onOpenExpiry,
     },
     {
@@ -63,7 +63,7 @@ export function HomeHighlightsWidget({
       value: pendingSupplierRequestsCount.toString(),
       subtitle: t('home.supplierRequestsDesc'),
       icon: <TruckIcon size="xs" />,
-      badgeBg: 'bg-blue-50 text-blue-600 border border-blue-200/60',
+      badgeBg: 'bg-stocky-status-info-bg text-stocky-status-info-fg border border-stocky-status-info-border',
       action: onOpenSuppliers,
     },
     {
@@ -72,7 +72,7 @@ export function HomeHighlightsWidget({
       value: assignedTasksCount.toString(),
       subtitle: t('home.assignedTasksDesc'),
       icon: <ActivityIcon size="xs" />,
-      badgeBg: 'bg-purple-50 text-purple-600 border border-purple-200/60',
+      badgeBg: 'bg-stocky-status-hold-bg text-stocky-status-hold-fg border border-stocky-status-hold-border',
       action: onOpenTasks,
     },
     {
@@ -81,7 +81,7 @@ export function HomeHighlightsWidget({
       value: `${attendancePct}%`,
       subtitle: t('home.activeStaff', { active: activeStaffPresent, total: totalStaff }),
       icon: <UsersIcon size="xs" />,
-      badgeBg: 'bg-emerald-50 text-emerald-600 border border-emerald-200/60',
+      badgeBg: 'bg-stocky-status-success-bg text-stocky-status-success-fg border border-stocky-status-success-border',
       action: onOpenAttendance,
     },
   ];

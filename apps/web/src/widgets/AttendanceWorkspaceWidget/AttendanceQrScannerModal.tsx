@@ -16,6 +16,7 @@ import type { Location, AttendanceShift, PunchMethod } from '@stocky/types';
 import { Html5Qrcode, Html5QrcodeSupportedFormats } from 'html5-qrcode';
 import { checkBranchGeofence, type GeofenceCheckResult } from '@/lib/attendanceGeofence';
 import { useTranslation } from '@/lib/i18n';
+import { rearCameraConstraints } from '@/lib/scanner/cameraConstraints';
 
 export interface AttendanceQrScannerModalProps {
   isOpen: boolean;
@@ -75,6 +76,7 @@ export function AttendanceQrScannerModal({
   const scannerRef = useRef<Html5Qrcode | null>(null);
   const activeStreamRef = useRef<MediaStream | null>(null);
   const isProcessingRef = useRef(false);
+  const nativeDetectionInFlightRef = useRef(false);
   const rafIdRef = useRef<number | null>(null);
 
   // 1. Geofence Verification Hook (100-meter radius placeholder)
@@ -273,6 +275,8 @@ export function AttendanceQrScannerModal({
       try {
         setErrorMsg(null);
         isProcessingRef.current = false;
+        setHasTorch(false);
+        setIsTorchOn(false);
 
         // Small tick for DOM mount
         await new Promise((r) => setTimeout(r, 100));
@@ -324,11 +328,7 @@ export function AttendanceQrScannerModal({
           { facingMode: 'environment' },
           {
             fps: 15,
-            videoConstraints: {
-              facingMode: 'environment',
-              width: { min: 640, ideal: 1280 },
-              height: { min: 480, ideal: 720 },
-            },
+            videoConstraints: rearCameraConstraints,
           },
           (decodedText) => {
             handleDecodedQrRef.current(decodedText);
@@ -384,22 +384,26 @@ export function AttendanceQrScannerModal({
             });
 
             const checkNativeDetection = async () => {
-              if (!isMounted || !isOpen || isProcessingRef.current) return;
+              if (!isMounted || !isOpen || isProcessingRef.current || nativeDetectionInFlightRef.current) return;
               const currentVideo = document.querySelector(
                 `#${containerId} video`
               ) as HTMLVideoElement | null;
 
-              if (currentVideo && currentVideo.readyState >= 2) {
-                try {
+              nativeDetectionInFlightRef.current = true;
+              try {
+                if (currentVideo && currentVideo.readyState >= 2) {
                   const codes = await nativeDetector.detect(currentVideo);
                   if (codes && codes.length > 0 && codes[0].rawValue) {
                     handleDecodedQrRef.current(codes[0].rawValue);
-                    return;
                   }
-                } catch {}
+                }
+              } catch {} finally {
+                nativeDetectionInFlightRef.current = false;
               }
 
-              rafIdRef.current = requestAnimationFrame(checkNativeDetection);
+              if (isMounted && isOpen && !isProcessingRef.current) {
+                rafIdRef.current = requestAnimationFrame(checkNativeDetection);
+              }
             };
 
             rafIdRef.current = requestAnimationFrame(checkNativeDetection);
@@ -426,12 +430,11 @@ export function AttendanceQrScannerModal({
   }, [isOpen, punchResult]);
 
   const handleToggleTorch = async () => {
-    if (!scannerRef.current || !hasTorch) return;
+    if (!activeStreamRef.current || !hasTorch) return;
     try {
       const next = !isTorchOn;
-      await (scannerRef.current as any).applyVideoConstraints({
-        advanced: [{ torch: next }],
-      });
+      const track = activeStreamRef.current.getVideoTracks()[0];
+      await track?.applyConstraints({ advanced: [{ torch: next } as any] });
       setIsTorchOn(next);
     } catch (err) {
       console.error('Error toggling torch:', err);
@@ -466,31 +469,31 @@ export function AttendanceQrScannerModal({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-[75] bg-black flex flex-col select-none overflow-hidden"
+          className="fixed inset-0 z-[75] bg-stocky-text-main flex flex-col select-none overflow-hidden"
         >
           {/* 1. Header Bar: Shift info & Controls */}
-          <div className="relative z-30 flex items-center justify-between px-4 py-3 pt-[max(env(safe-area-inset-top),0.75rem)] bg-gradient-to-b from-black/90 via-black/60 to-transparent">
+          <div className="relative z-30 flex items-center justify-between px-4 py-3 pt-[max(env(safe-area-inset-top),0.75rem)] bg-gradient-to-b from-stocky-text-main/90 via-stocky-text-main/60 to-transparent">
             <div className="flex items-center gap-2.5 min-w-0">
               <div
                 className={`w-9 h-9 rounded-full flex items-center justify-center shrink-0 shadow-md ${
                   isClockedIn
-                    ? 'bg-emerald-500 text-white shadow-emerald-500/20'
-                    : 'bg-stocky-accent text-stocky-text-main shadow-[#D8FF00]/20'
+                    ? 'bg-stocky-status-success-fg text-stocky-text-inverse shadow-bevel-float'
+                    : 'bg-stocky-accent text-stocky-text-main shadow-bevel-float'
                 }`}
               >
                 <ClockIcon size="xs" />
               </div>
               <div className="min-w-0">
-                <h2 className="text-sm font-bold text-white leading-tight truncate">
+                <h2 className="text-sm font-bold text-stocky-text-inverse leading-tight truncate">
                   {isClockedIn ? t('modals.qrScanner.scanToClockOut') : t('modals.qrScanner.scanToClockIn')}
                 </h2>
                 <div className="flex items-center gap-1.5 mt-0.5">
                   <span
                     className={`w-1.5 h-1.5 rounded-full ${
-                      isClockedIn ? 'bg-emerald-400 animate-pulse' : 'bg-[#D8FF00]'
+                      isClockedIn ? 'bg-stocky-status-success-fg animate-pulse' : 'bg-stocky-accent'
                     }`}
                   />
-                  <span className="text-[11px] text-white/80 font-medium truncate">
+                  <span className="text-[11px] text-stocky-text-inverse/80 font-medium truncate">
                     {isClockedIn
                       ? t('modals.qrScanner.activeShiftAt', {
                           time: new Date(activeShift?.clockInAt || '').toLocaleTimeString(locale === 'ar' ? 'ar-EG' : [], {
@@ -509,18 +512,18 @@ export function AttendanceQrScannerModal({
                 <button
                   type="button"
                   onClick={handleToggleTorch}
-                  className="w-10 h-10 rounded-full bg-white/15 backdrop-blur-md flex items-center justify-center text-white hover:bg-white/25 active:scale-95 transition-all cursor-pointer"
+                  className="w-10 h-10 rounded-full bg-stocky-bg-widget/15 backdrop-blur-md flex items-center justify-center text-stocky-text-inverse hover:bg-stocky-bg-widget/25 active:scale-95 transition-all cursor-pointer"
                   aria-label={t('modals.qrScanner.toggleFlashlight')}
                   title={t('modals.qrScanner.flashlight')}
                 >
-                  {isTorchOn ? <ZapIcon size="sm" className="text-[#D8FF00]" /> : <ZapOffIcon size="sm" />}
+                  {isTorchOn ? <ZapIcon size="sm" className="text-stocky-accent" /> : <ZapOffIcon size="sm" />}
                 </button>
               )}
 
               <button
                 type="button"
                 onClick={handleCloseModal}
-                className="w-10 h-10 rounded-full bg-white/15 backdrop-blur-md flex items-center justify-center text-white hover:bg-white/25 active:scale-95 transition-all cursor-pointer"
+                className="w-10 h-10 rounded-full bg-stocky-bg-widget/15 backdrop-blur-md flex items-center justify-center text-stocky-text-inverse hover:bg-stocky-bg-widget/25 active:scale-95 transition-all cursor-pointer"
                 aria-label={t('modals.qrScanner.closeScanner')}
                 title={t('modals.qrScanner.close')}
               >
@@ -531,14 +534,14 @@ export function AttendanceQrScannerModal({
 
           {/* 2. Main Full-Bleed Viewport Section */}
           <div
-            className="flex-1 relative w-full h-full overflow-hidden bg-black cursor-crosshair"
+            className="flex-1 relative w-full h-full overflow-hidden bg-stocky-text-main cursor-crosshair"
             onClick={handleTapToFocus}
             onTouchStart={handleTapToFocus}
           >
             {/* Layer 1: html5-qrcode Video Feed (Full cover) */}
             <div
               id="stocky-attendance-qr-scanner-element"
-              className="!absolute !inset-0 w-full h-full overflow-hidden block [&>video]:w-full [&>video]:h-full [&>video]:object-cover [&>canvas]:hidden pointer-events-none [&_#qr-shaded-region]:!hidden [&_#reader__scan_region]:!border-none [&_#reader__dashboard_section]:!hidden"
+              className="!absolute !inset-0 w-full h-full overflow-hidden block [&>video]:w-full [&>video]:h-full [&>video]:object-contain [&>video]:bg-stocky-text-main [&>canvas]:hidden pointer-events-none [&_#qr-shaded-region]:!hidden [&_#reader__scan_region]:!border-none [&_#reader__dashboard_section]:!hidden"
             />
 
             {/* Tap-to-Focus Ring */}
@@ -555,10 +558,10 @@ export function AttendanceQrScannerModal({
                 >
                   <div
                     className={`w-16 h-16 border-2 rounded-sm flex items-center justify-center ${
-                      isClockedIn ? 'border-emerald-400 shadow-[0_0_12px_rgba(52,211,153,0.8)]' : 'border-[#D8FF00] shadow-[0_0_12px_rgba(216,255,0,0.8)]'
+                      isClockedIn ? 'border-stocky-status-success-fg shadow-bevel-float' : 'border-stocky-accent shadow-bevel-float'
                     }`}
                   >
-                    <div className={`w-1.5 h-1.5 rounded-full ${isClockedIn ? 'bg-emerald-400' : 'bg-[#D8FF00]'}`} />
+                    <div className={`w-1.5 h-1.5 rounded-full ${isClockedIn ? 'bg-stocky-status-success-fg' : 'bg-stocky-accent'}`} />
                   </div>
                 </motion.div>
               )}
@@ -567,33 +570,33 @@ export function AttendanceQrScannerModal({
             {/* Layer 2: Single Centered QR Target Reticle & Shaded Vignette */}
             <div className="absolute inset-0 pointer-events-none flex flex-col items-center justify-center z-10 px-4">
               {/* Centered QR Frame */}
-              <div className="relative w-64 h-64 sm:w-72 sm:h-72 rounded-3xl border-2 border-white/30 shadow-[0_0_0_9999px_rgba(0,0,0,0.65)] overflow-hidden flex items-center justify-center">
+              <div className="relative w-64 h-64 sm:w-72 sm:h-72 rounded-3xl border-2 border-stocky-border-subtle shadow-bevel-float overflow-hidden flex items-center justify-center">
                 {/* 4 Crisp Glowing Corner Accents */}
                 <span
                   className={`absolute top-0 left-0 w-8 h-8 border-t-4 border-l-4 rounded-tl-2xl ${
-                    isClockedIn ? 'border-emerald-400' : 'border-[#D8FF00]'
+                    isClockedIn ? 'border-stocky-status-success-fg' : 'border-stocky-accent'
                   }`}
                 />
                 <span
                   className={`absolute top-0 right-0 w-8 h-8 border-t-4 border-r-4 rounded-tr-2xl ${
-                    isClockedIn ? 'border-emerald-400' : 'border-[#D8FF00]'
+                    isClockedIn ? 'border-stocky-status-success-fg' : 'border-stocky-accent'
                   }`}
                 />
                 <span
                   className={`absolute bottom-0 left-0 w-8 h-8 border-b-4 border-l-4 rounded-bl-2xl ${
-                    isClockedIn ? 'border-emerald-400' : 'border-[#D8FF00]'
+                    isClockedIn ? 'border-stocky-status-success-fg' : 'border-stocky-accent'
                   }`}
                 />
                 <span
                   className={`absolute bottom-0 right-0 w-8 h-8 border-b-4 border-r-4 rounded-br-2xl ${
-                    isClockedIn ? 'border-emerald-400' : 'border-[#D8FF00]'
+                    isClockedIn ? 'border-stocky-status-success-fg' : 'border-stocky-accent'
                   }`}
                 />
 
                 {/* Animated Laser Scanning Line */}
                 <motion.div
                   className={`absolute inset-x-0 h-1 bg-gradient-to-r from-transparent ${
-                    isClockedIn ? 'via-emerald-400 shadow-[0_0_12px_rgba(52,211,153,1)]' : 'via-[#D8FF00] shadow-[0_0_12px_rgba(216,255,0,1)]'
+                    isClockedIn ? 'via-stocky-status-success-fg shadow-bevel-float' : 'via-stocky-accent shadow-bevel-float'
                   } to-transparent`}
                   animate={{ top: ['6%', '92%', '6%'] }}
                   transition={{ duration: 2.2, repeat: Infinity, ease: 'easeInOut' }}
@@ -602,11 +605,11 @@ export function AttendanceQrScannerModal({
 
               {/* Viewfinder Guidance Instructions */}
               <div className="mt-7 flex flex-col items-center gap-1.5 px-6 text-center max-w-xs">
-                <div className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-black/80 backdrop-blur-md text-xs font-semibold text-white border border-white/20 shadow-lg">
-                  <QrCodeIcon size="xs" className={isClockedIn ? 'text-emerald-400' : 'text-[#D8FF00]'} />
+                <div className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-stocky-text-main/80 backdrop-blur-md text-xs font-semibold text-stocky-text-inverse border border-stocky-text-inverse/20 shadow-lg">
+                  <QrCodeIcon size="xs" className={isClockedIn ? 'text-stocky-status-success-fg' : 'text-stocky-accent'} />
                   <span>{t('modals.qrScanner.alignBranchQr')}</span>
                 </div>
-                <p className="text-[11px] text-white/75 leading-relaxed">
+                <p className="text-[11px] text-stocky-text-inverse/75 leading-relaxed">
                   {t('modals.qrScanner.scanPosterHint')}
                 </p>
               </div>
@@ -614,7 +617,7 @@ export function AttendanceQrScannerModal({
 
             {/* Geofence notice banner */}
             {geofenceNotice && (
-              <div className="absolute top-4 inset-x-4 z-30 p-3 rounded-2xl bg-amber-500/90 backdrop-blur-md text-black text-xs font-medium flex items-center gap-2 shadow-lg">
+              <div className="absolute top-4 inset-x-4 z-30 p-3 rounded-2xl bg-stocky-status-warning-fg backdrop-blur-md text-stocky-text-main text-xs font-medium flex items-center gap-2 shadow-lg">
                 <AlertTriangleIcon size="xs" className="shrink-0" />
                 <span>{geofenceNotice}</span>
               </div>
@@ -622,20 +625,20 @@ export function AttendanceQrScannerModal({
 
             {/* Error Message Pill */}
             {errorMsg && (
-              <div className="absolute bottom-20 inset-x-4 z-30 p-3.5 rounded-2xl bg-red-600/95 backdrop-blur-md text-white text-xs font-medium text-center shadow-xl">
+              <div className="absolute bottom-20 inset-x-4 z-30 p-3.5 rounded-2xl bg-stocky-status-critical-fg backdrop-blur-md text-stocky-text-inverse text-xs font-medium text-center shadow-xl">
                 {errorMsg}
               </div>
             )}
           </div>
 
           {/* 3. Bottom Status Bar */}
-          <div className="relative z-30 px-4 py-3 pb-[max(env(safe-area-inset-bottom),0.75rem)] bg-gradient-to-t from-black/95 via-black/70 to-transparent flex items-center justify-between">
-            <div className="flex items-center gap-2 text-white/80 text-xs">
-              <WarehouseIcon size="xs" className="text-white/60 shrink-0" />
+          <div className="relative z-30 px-4 py-3 pb-[max(env(safe-area-inset-bottom),0.75rem)] bg-gradient-to-t from-stocky-text-main/95 via-stocky-text-main/70 to-transparent flex items-center justify-between">
+            <div className="flex items-center gap-2 text-stocky-text-inverse/80 text-xs">
+              <WarehouseIcon size="xs" className="text-stocky-text-inverse/60 shrink-0" />
               <span className="truncate max-w-[220px] font-medium">{currentBranchName}</span>
             </div>
-            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-white/15 text-[10px] font-medium text-white/90">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-stocky-bg-widget/15 text-[10px] font-medium text-stocky-text-inverse/90">
+              <span className="w-1.5 h-1.5 rounded-full bg-stocky-status-success-fg" />
               {t('modals.qrScanner.geofenceActive')}
             </span>
           </div>
@@ -647,12 +650,12 @@ export function AttendanceQrScannerModal({
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.95 }}
-                className="absolute inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-6"
+                className="absolute inset-0 z-50 bg-stocky-text-main/85 backdrop-blur-md flex items-center justify-center p-6"
               >
-                <div className="w-full max-w-sm bg-white rounded-3xl p-6 text-center shadow-2xl flex flex-col items-center gap-3.5">
+                <div className="w-full max-w-sm bg-stocky-bg-widget rounded-3xl p-6 text-center shadow-2xl flex flex-col items-center gap-3.5">
                   <div
-                    className={`w-14 h-14 rounded-2xl flex items-center justify-center text-white ${
-                      punchResult.action === 'out' ? 'bg-amber-500 shadow-amber-500/30' : 'bg-emerald-500 shadow-emerald-500/30'
+                    className={`w-14 h-14 rounded-2xl flex items-center justify-center text-stocky-text-inverse ${
+                      punchResult.action === 'out' ? 'bg-stocky-status-warning-fg shadow-stocky-status-warning-fg/30' : 'bg-stocky-status-success-fg shadow-stocky-status-success-fg/30'
                     } shadow-lg`}
                   >
                     <CheckCircleIcon size="md" />

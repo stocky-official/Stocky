@@ -46,7 +46,7 @@ export function StockActivityLogWidget({ logs, locations, members }: StockActivi
             type="button"
             onClick={() => setFilter(item.id)}
             className={`inline-flex h-8 shrink-0 items-center gap-1.5 rounded-full border px-3 text-xs font-medium cursor-pointer transition-colors ${
-              filter === item.id ? 'border-stocky-primary bg-stocky-primary text-white' : 'border-stocky-border-subtle bg-white text-stocky-text-sub hover:text-stocky-text-main hover:border-stocky-border-strong'
+              filter === item.id ? 'border-stocky-primary bg-stocky-primary text-stocky-text-inverse' : 'border-stocky-border-subtle bg-stocky-bg-widget text-stocky-text-sub hover:text-stocky-text-main hover:border-stocky-border-strong'
             }`}
           >
             {item.icon}
@@ -54,7 +54,7 @@ export function StockActivityLogWidget({ logs, locations, members }: StockActivi
           </button>
         ))}
       </div>
-      <div className="rounded-2xl border border-stocky-border-subtle bg-white overflow-hidden shadow-xs">
+      <div className="rounded-2xl border border-stocky-border-subtle bg-stocky-bg-widget overflow-hidden shadow-xs">
         {visibleLogs.length === 0 ? (
           <div className="px-6 py-16 text-center">
             <ActivityIcon size="md" className="mx-auto text-stocky-text-sub/50" />

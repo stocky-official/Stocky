@@ -115,15 +115,15 @@ export function ItemAnalyticsSheetWidget({
       {/* Header */}
       <div className="flex items-start justify-between">
         <div>
-          <span className="text-xs font-medium text-emerald-600 uppercase tracking-wider">
+          <span className="text-xs font-medium text-stocky-status-success uppercase tracking-wider">
             {categoryName} • {t('drawers.itemAnalytics.velocityAnalytics')}
           </span>
-          <h3 className="text-xl font-medium text-slate-900 tracking-tight mt-0.5">
+          <h3 className="text-xl font-medium text-stocky-text-main tracking-tight mt-0.5">
             {itemName}
           </h3>
-          <p className="text-xs text-slate-400 mt-0.5">
+          <p className="text-xs text-stocky-text-placeholder mt-0.5">
             {t('drawers.itemAnalytics.currentStock')}:{' '}
-            <span className="font-medium text-slate-700">
+            <span className="font-medium text-stocky-text-sub">
               {currentStock} {t('drawers.itemAnalytics.units')}
             </span>{' '}
             ({formattedTotalVal})
@@ -134,14 +134,14 @@ export function ItemAnalyticsSheetWidget({
           type="button"
           onClick={onClose}
           aria-label={t('common.close')}
-          className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500 transition-colors cursor-pointer"
+          className="h-10 w-10 rounded-full bg-stocky-bg-subtle hover:bg-stocky-bg-hover flex items-center justify-center text-stocky-text-sub transition-colors cursor-pointer"
         >
           <XIcon size="xs" />
         </button>
       </div>
 
       {/* Timeframe Switcher Tabs */}
-      <div className="flex items-center justify-between bg-slate-100/80 p-1 rounded-2xl">
+      <div className="flex items-center justify-between bg-stocky-bg-subtle p-1 rounded-2xl">
         {(['30D', '3M', '6M', '1Y'] as const).map((tf) => (
           <button
             key={tf}
@@ -149,8 +149,8 @@ export function ItemAnalyticsSheetWidget({
             onClick={() => setTimeframe(tf)}
             className={`flex-1 py-1.5 rounded-xl text-xs font-medium transition-all cursor-pointer ${
               timeframe === tf
-                ? 'bg-white text-slate-900 shadow-sm font-medium'
-                : 'text-slate-500 hover:text-slate-800'
+                ? 'bg-stocky-bg-widget text-stocky-text-main shadow-sm font-medium'
+                : 'text-stocky-text-sub hover:text-stocky-text-main'
             }`}
           >
             {timeframeLabels[tf]}
@@ -159,17 +159,17 @@ export function ItemAnalyticsSheetWidget({
       </div>
 
       {/* Velocity Trend Chart */}
-      <div className="bg-slate-50/70 border border-slate-100 rounded-3xl p-4 relative overflow-hidden">
+      <div className="bg-stocky-bg-subtle border border-stocky-border-subtle rounded-3xl p-4 relative overflow-hidden">
         <div className="flex items-baseline justify-between mb-2">
           <div>
-            <span className="text-xs text-slate-400 block">{t('drawers.itemAnalytics.dailyConsumptionVelocity')}</span>
+            <span className="text-xs text-stocky-text-placeholder block">{t('drawers.itemAnalytics.dailyConsumptionVelocity')}</span>
             <div className="flex items-baseline gap-2">
-              <span className="text-2xl font-medium text-slate-900">
+              <span className="text-2xl font-medium text-stocky-text-main">
                 {hoveredPoint
                   ? `${hoveredPoint.value} ${t('drawers.itemAnalytics.units')}`
                   : `${avgValue} ${t('drawers.itemAnalytics.unitsPerDay')}`}
               </span>
-              <span className="text-xs text-slate-400">
+              <span className="text-xs text-stocky-text-placeholder">
                 {hoveredPoint
                   ? hoveredPoint.date
                   : t('drawers.itemAnalytics.avgTimeframe', { timeframe: timeframeLabels[timeframe] })}
@@ -177,7 +177,7 @@ export function ItemAnalyticsSheetWidget({
             </div>
           </div>
 
-          <div className="flex items-center gap-1.5 text-xs text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full font-medium">
+          <div className="flex items-center gap-1.5 text-xs text-stocky-status-success-fg bg-stocky-status-success-bg px-2.5 py-1 rounded-full font-medium">
             <TrendingUpIcon size="xs" />
             <span>{t('drawers.itemAnalytics.demandSurge', { pct: '+8.4%' })}</span>
           </div>
@@ -188,8 +188,8 @@ export function ItemAnalyticsSheetWidget({
           <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-full overflow-visible">
             <defs>
               <linearGradient id="chartGradient" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#10B981" stopOpacity="0.25" />
-                <stop offset="100%" stopColor="#10B981" stopOpacity="0.0" />
+                <stop offset="0%" stopColor="var(--stocky-status-success-fg)" stopOpacity="0.25" />
+                <stop offset="100%" stopColor="var(--stocky-status-success-fg)" stopOpacity="0.0" />
               </linearGradient>
             </defs>
 
@@ -199,7 +199,7 @@ export function ItemAnalyticsSheetWidget({
               y1={avgY}
               x2={width - paddingX}
               y2={avgY}
-              stroke="#94A3B8"
+              stroke="var(--stocky-text-placeholder)"
               strokeWidth="1.5"
               strokeDasharray="4 4"
             />
@@ -207,7 +207,7 @@ export function ItemAnalyticsSheetWidget({
               x={width - paddingX - 4}
               y={avgY - 6}
               textAnchor="end"
-              className="text-[10px] fill-slate-400 font-medium select-none"
+              className="text-[10px] fill-stocky-text-placeholder font-medium select-none"
             >
               {t('drawers.itemAnalytics.avgReference', { avg: avgValue })}
             </text>
@@ -220,7 +220,7 @@ export function ItemAnalyticsSheetWidget({
               key={timeframe}
               d={smoothLinePath}
               fill="none"
-              stroke="#10B981"
+              stroke="var(--stocky-status-success-fg)"
               strokeWidth="2.5"
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -241,8 +241,8 @@ export function ItemAnalyticsSheetWidget({
                   cx={pt.x}
                   cy={pt.y}
                   r={hoveredPoint?.date === pt.date ? 6 : 4}
-                  fill="#FFFFFF"
-                  stroke="#10B981"
+                  fill="var(--stocky-bg-widget)"
+                  stroke="var(--stocky-status-success-fg)"
                   strokeWidth="2.5"
                   className="transition-all"
                 />
@@ -252,7 +252,7 @@ export function ItemAnalyticsSheetWidget({
         </div>
 
         {/* X Axis Labels */}
-        <div className="flex justify-between text-[10px] text-slate-400 mt-1 px-3">
+        <div className="flex justify-between text-[10px] text-stocky-text-placeholder mt-1 px-3">
           <span>{activeData[0].date}</span>
           <span>{activeData[Math.floor(activeData.length / 2)].date}</span>
           <span>{activeData[activeData.length - 1].date}</span>
@@ -262,39 +262,39 @@ export function ItemAnalyticsSheetWidget({
       {/* 3 Biomarker Health Metrics Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         {/* Card 1: Reorder Trigger */}
-        <div className="bg-slate-50/70 border border-slate-100 rounded-2xl p-3.5">
-          <span className="text-[11px] text-slate-400 block">{t('drawers.itemAnalytics.reorderBufferTarget')}</span>
-          <span className="text-base font-medium text-slate-900 mt-0.5 block">
+        <div className="bg-stocky-bg-subtle border border-stocky-border-subtle rounded-2xl p-3.5">
+          <span className="text-[11px] text-stocky-text-placeholder block">{t('drawers.itemAnalytics.reorderBufferTarget')}</span>
+          <span className="text-base font-medium text-stocky-text-main mt-0.5 block">
             180 {t('drawers.itemAnalytics.units')}
           </span>
-          <span className="text-[10px] text-emerald-600 mt-0.5 block font-medium">
+          <span className="text-[10px] text-stocky-status-success-fg mt-0.5 block font-medium">
             {t('drawers.itemAnalytics.adequateInStock', { count: currentStock })}
           </span>
         </div>
 
         {/* Card 2: Restock Confidence */}
-        <div className="bg-slate-50/70 border border-slate-100 rounded-2xl p-3.5">
+        <div className="bg-stocky-bg-subtle border border-stocky-border-subtle rounded-2xl p-3.5">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] text-slate-400">{t('drawers.itemAnalytics.restockConfidence')}</span>
-            <div className="w-4 h-4 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center">
+            <span className="text-[11px] text-stocky-text-placeholder">{t('drawers.itemAnalytics.restockConfidence')}</span>
+            <div className="w-4 h-4 rounded-full bg-stocky-status-success-bg text-stocky-status-success-fg flex items-center justify-center">
               <CheckIcon size="xs" />
             </div>
           </div>
-          <span className="text-base font-medium text-slate-900 mt-0.5 block">
+          <span className="text-base font-medium text-stocky-text-main mt-0.5 block">
             98.4%
           </span>
-          <span className="text-[10px] text-slate-400 mt-0.5 block">
+          <span className="text-[10px] text-stocky-text-placeholder mt-0.5 block">
             {t('drawers.itemAnalytics.highVendorReliability')}
           </span>
         </div>
 
         {/* Card 3: Lead Time */}
-        <div className="bg-slate-50/70 border border-slate-100 rounded-2xl p-3.5">
-          <span className="text-[11px] text-slate-400 block">{t('drawers.itemAnalytics.leadTimeWindow')}</span>
-          <span className="text-base font-medium text-slate-900 mt-0.5 block">
+        <div className="bg-stocky-bg-subtle border border-stocky-border-subtle rounded-2xl p-3.5">
+          <span className="text-[11px] text-stocky-text-placeholder block">{t('drawers.itemAnalytics.leadTimeWindow')}</span>
+          <span className="text-base font-medium text-stocky-text-main mt-0.5 block">
             {t('drawers.itemAnalytics.daysCount', { days: '2.4' })}
           </span>
-          <span className="text-[10px] text-slate-400 mt-0.5 block">
+          <span className="text-[10px] text-stocky-text-placeholder mt-0.5 block">
             {t('drawers.itemAnalytics.directFleet')}
           </span>
         </div>
@@ -305,14 +305,14 @@ export function ItemAnalyticsSheetWidget({
         <button
           type="button"
           onClick={onClose}
-          className="flex-1 py-3 px-4 rounded-2xl bg-stocky-primary hover:bg-stocky-primary-hover text-white font-medium text-xs shadow-md transition-colors cursor-pointer text-center"
+          className="h-10 flex-1 rounded-full px-4 bg-stocky-primary hover:bg-stocky-primary-hover text-stocky-text-inverse font-medium text-xs shadow-sm transition-colors cursor-pointer text-center"
         >
           {t('drawers.itemAnalytics.createPurchaseOrder')}
         </button>
         <button
           type="button"
           onClick={onClose}
-          className="py-3 px-4 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium text-xs transition-colors cursor-pointer"
+          className="h-10 rounded-full px-4 bg-stocky-bg-subtle hover:bg-stocky-bg-hover text-stocky-text-sub font-medium text-xs transition-colors cursor-pointer"
         >
           {t('drawers.itemAnalytics.done')}
         </button>

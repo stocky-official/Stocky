@@ -28,21 +28,21 @@ export function Badge({
   className = '',
   dot = false,
 }: BadgeProps) {
-  let colorStyles = 'bg-slate-50 text-slate-700 border-slate-200/80';
-  let dotColor = 'bg-slate-400';
+  let colorStyles = 'bg-stocky-bg-subtle text-stocky-text-sub border-stocky-border-subtle';
+  let dotColor = 'bg-stocky-text-main';
 
   if (variant === 'in_stock' || variant === 'emerald') {
-    colorStyles = 'bg-emerald-50/90 text-emerald-700 border-emerald-200/70';
-    dotColor = 'bg-emerald-500';
+    colorStyles = 'bg-stocky-status-success-bg text-stocky-status-success-fg border-stocky-status-success-border';
+    dotColor = 'bg-stocky-status-success-fg';
   } else if (variant === 'out_of_stock' || variant === 'rose') {
-    colorStyles = 'bg-rose-50/90 text-rose-700 border-rose-200/70';
-    dotColor = 'bg-rose-500';
+    colorStyles = 'bg-stocky-status-critical-bg text-stocky-status-critical-fg border-stocky-status-critical-border';
+    dotColor = 'bg-stocky-status-critical-fg';
   } else if (variant === 'low_stock' || variant === 'amber') {
-    colorStyles = 'bg-amber-50/90 text-amber-700 border-amber-200/70';
-    dotColor = 'bg-amber-500';
+    colorStyles = 'bg-stocky-status-warning-bg text-stocky-status-warning-fg border-stocky-status-warning-border';
+    dotColor = 'bg-stocky-status-warning-fg';
   } else if (variant === 'accent' || variant === 'blue') {
-    colorStyles = 'bg-blue-50/90 text-blue-700 border-blue-200/70';
-    dotColor = 'bg-blue-500';
+    colorStyles = 'bg-stocky-status-info-bg text-stocky-status-info-fg border-stocky-status-info-border';
+    dotColor = 'bg-stocky-status-info-fg';
   }
 
   return (

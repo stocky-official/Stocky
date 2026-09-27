@@ -119,7 +119,7 @@ export function ExpiringStockWidget({
 
       <div className="flex gap-2 overflow-x-auto pb-1">
         {filters.map((option) => (
-          <button key={option.id} type="button" onClick={() => setFilter(option.id)} className={`shrink-0 h-8 px-3 rounded-full border text-xs cursor-pointer ${filter === option.id ? 'bg-stocky-text-main text-white border-stocky-text-main' : 'bg-white text-stocky-text-sub border-stocky-border-subtle hover:border-stocky-primary/40'}`}>
+          <button key={option.id} type="button" onClick={() => setFilter(option.id)} className={`shrink-0 h-8 px-3 rounded-full border text-xs cursor-pointer ${filter === option.id ? 'bg-stocky-text-main text-stocky-text-inverse border-stocky-text-main' : 'bg-stocky-bg-widget text-stocky-text-sub border-stocky-border-subtle hover:border-stocky-primary/40'}`}>
             {option.label} <span className="ms-1 opacity-70">{option.count}</span>
           </button>
         ))}
@@ -127,14 +127,14 @@ export function ExpiringStockWidget({
 
       <div className="relative">
         <SearchIcon size="xs" className="absolute start-3 top-1/2 -translate-y-1/2 text-stocky-text-sub pointer-events-none" />
-        <input value={search} onChange={(event) => setSearch(event.target.value)} placeholder={t('expiring.searchPlaceholder')} className="w-full h-10 rounded-xl bg-white border border-stocky-border-subtle ps-9 pe-9 text-sm focus:outline-none focus:border-stocky-primary text-start" />
+        <input value={search} onChange={(event) => setSearch(event.target.value)} placeholder={t('expiring.searchPlaceholder')} className="w-full h-10 rounded-xl bg-stocky-bg-widget border border-stocky-border-subtle ps-9 pe-9 text-sm focus:outline-none focus:border-stocky-primary text-start" />
         {search && <button type="button" onClick={() => setSearch('')} className="absolute end-3 top-1/2 -translate-y-1/2 text-stocky-text-sub cursor-pointer" aria-label={t('expiring.clearSearch')}><XIcon size="xs" /></button>}
       </div>
 
-      <section className="rounded-2xl bg-white border border-stocky-border-subtle overflow-hidden">
+      <section className="rounded-2xl bg-stocky-bg-widget border border-stocky-border-subtle overflow-hidden">
         {queue.length === 0 ? (
           <div className="px-6 py-16 text-center">
-            <ClockIcon size="md" className="mx-auto text-emerald-600/60" />
+            <ClockIcon size="md" className="mx-auto text-stocky-status-success-fg" />
             <h2 className="mt-3 text-base font-medium text-stocky-text-main">{t('expiring.emptyTitle')}</h2>
             <p className="mt-1 text-sm text-stocky-text-sub">{t('expiring.emptyDesc')}</p>
           </div>
@@ -157,10 +157,10 @@ export function ExpiringStockWidget({
                       {state === 'expired' || state === 'soon' ? <button type="button" onClick={() => runAction(lot, 'hold')} className="h-8 px-3 rounded-lg border border-stocky-border-subtle text-[11px] cursor-pointer">{t('expiring.putOnHold')}</button> : null}
                       {state === 'expired' ? <button type="button" onClick={() => runAction(lot, 'dispose')} className="h-8 px-3 rounded-lg border stocky-status-critical text-[11px] cursor-pointer">{t('expiring.markRemoved')}</button> : null}
                       {state === 'expired' ? <button type="button" onClick={() => onSupplierRequest({ productId: lot.productId, locationId: lot.locationId, quantity: lot.quantityOnHand, supplierId: lot.supplierId || undefined, type: 'return' })} className="h-8 px-3 rounded-lg border stocky-status-critical text-[11px] cursor-pointer">{t('expiring.returnToSupplier')}</button> : null}
-                      {state === 'soon' ? <button type="button" onClick={() => onSupplierRequest({ productId: lot.productId, locationId: lot.locationId, quantity: lot.quantityOnHand, supplierId: lot.supplierId || undefined, type: 'replace' })} className="h-8 px-3 rounded-lg bg-stocky-primary text-white text-[11px] font-medium cursor-pointer">{t('expiring.requestReplacement')}</button> : null}
+                      {state === 'soon' ? <button type="button" onClick={() => onSupplierRequest({ productId: lot.productId, locationId: lot.locationId, quantity: lot.quantityOnHand, supplierId: lot.supplierId || undefined, type: 'replace' })} className="h-8 px-3 rounded-lg bg-stocky-primary text-stocky-text-inverse text-[11px] font-medium cursor-pointer">{t('expiring.requestReplacement')}</button> : null}
                       {canAct && (state === 'soon' || state === 'expired') ? <button type="button" onClick={() => onTransferRequest(lot.productId, lot.locationId)} className="h-8 px-3 rounded-lg border border-stocky-border-subtle text-[11px] cursor-pointer">{t('expiring.moveToLocation')}</button> : null}
                       {state === 'on_hold' ? <button type="button" onClick={() => runAction(lot, 'dispose')} className="h-8 px-3 rounded-lg border stocky-status-critical text-[11px] cursor-pointer">{t('expiring.markRemoved')}</button> : null}
-                      {state === 'missing' ? <button type="button" onClick={() => openLotEditor(lot)} className="h-8 px-3 rounded-lg bg-stocky-primary text-white text-[11px] font-medium cursor-pointer">{t('expiring.addExpiry')}</button> : null}
+                      {state === 'missing' ? <button type="button" onClick={() => openLotEditor(lot)} className="h-8 px-3 rounded-lg bg-stocky-primary text-stocky-text-inverse text-[11px] font-medium cursor-pointer">{t('expiring.addExpiry')}</button> : null}
                     </div>
                   ) : (
                     <span className="text-xs text-stocky-text-sub">{t('expiring.tellManager')}</span>
@@ -174,10 +174,10 @@ export function ExpiringStockWidget({
 
       {editingLot ? (
         <div className="fixed inset-0 z-[70] stocky-overlay flex items-end sm:items-center justify-center p-0 sm:p-4" role="dialog" aria-modal="true" aria-label={t('expiring.addExpiryDetails')}>
-          <div className="w-full sm:max-w-md rounded-t-2xl sm:rounded-2xl bg-white shadow-2xl border border-stocky-border-subtle p-5 space-y-4 text-start">
+          <div className="w-full sm:max-w-md rounded-t-2xl sm:rounded-2xl bg-stocky-bg-widget shadow-2xl border border-stocky-border-subtle p-5 space-y-4 text-start">
             <div className="flex items-start justify-between gap-4">
               <div>
-                <p className="text-xs font-medium text-amber-700 uppercase tracking-[0.12em]">{t('expiring.missingBatchData')}</p>
+                <p className="text-xs font-medium text-stocky-status-warning-fg uppercase tracking-[0.12em]">{t('expiring.missingBatchData')}</p>
                 <h2 className="text-lg font-medium text-stocky-text-main mt-1">{t('expiring.addExpiryDetails')}</h2>
                 <p className="text-xs text-stocky-text-sub mt-1">{t('expiring.addExpiryDesc')}</p>
               </div>
@@ -196,7 +196,7 @@ export function ExpiringStockWidget({
             </div>
             <div className="flex justify-end gap-2 pt-1">
               <button type="button" onClick={() => setEditingLot(null)} className="h-9 px-3 rounded-lg border border-stocky-border-subtle text-xs cursor-pointer">{t('common.cancel')}</button>
-              <button type="button" disabled={!editExpiryDate} onClick={() => { onUpdateLot(editingLot, { lotNumber: editLotNumber.trim() || undefined, expiryDate: editExpiryDate, notificationDays: Math.max(0, Number.parseInt(editNotificationDays || '0', 10) || 0) }); setEditingLot(null); }} className="h-9 px-3 rounded-lg bg-stocky-primary text-white text-xs font-medium disabled:opacity-50 cursor-pointer">{t('expiring.saveExpiryDetails')}</button>
+              <button type="button" disabled={!editExpiryDate} onClick={() => { onUpdateLot(editingLot, { lotNumber: editLotNumber.trim() || undefined, expiryDate: editExpiryDate, notificationDays: Math.max(0, Number.parseInt(editNotificationDays || '0', 10) || 0) }); setEditingLot(null); }} className="h-9 px-3 rounded-lg bg-stocky-primary text-stocky-text-inverse text-xs font-medium disabled:opacity-50 cursor-pointer">{t('expiring.saveExpiryDetails')}</button>
             </div>
           </div>
         </div>

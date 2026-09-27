@@ -71,7 +71,7 @@ function CompanyLogoAvatar({
         alt={name}
         referrerPolicy="no-referrer"
         onError={() => setImgFailed(true)}
-        className={`${sizeClass} object-cover border border-stocky-border-subtle shrink-0 bg-white shadow-2xs`}
+        className={`${sizeClass} object-cover border border-stocky-border-subtle shrink-0 bg-stocky-bg-widget shadow-2xs`}
       />
     );
   }
@@ -314,7 +314,7 @@ export function AdminCompaniesView() {
       </header>
 
       {/* Unified Workspace Card */}
-      <div className="stocky-stock-unified-card rounded-2xl bg-white border border-stocky-border-subtle shadow-sm flex flex-col overflow-hidden">
+      <div className="stocky-stock-unified-card rounded-2xl bg-stocky-bg-widget border border-stocky-border-subtle shadow-sm flex flex-col overflow-hidden">
         {/* Toolbar Header */}
         <div className="p-3 sm:p-3.5 border-b border-stocky-border-subtle flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           {/* Search Input */}
@@ -351,7 +351,7 @@ export function AdminCompaniesView() {
               className={`h-10 px-4 rounded-full text-xs font-medium inline-flex items-center justify-center gap-1.5 cursor-pointer transition-colors ${
                 statusFilter === 'all'
                   ? 'border-stocky-primary bg-stocky-primary/10 text-stocky-primary font-semibold'
-                  : 'border border-stocky-border-subtle bg-white text-stocky-text-main hover:border-stocky-primary hover:text-stocky-primary'
+                  : 'border border-stocky-border-subtle bg-stocky-bg-widget text-stocky-text-main hover:border-stocky-primary hover:text-stocky-primary'
               }`}
             >
               <span>All Companies</span>
@@ -365,13 +365,13 @@ export function AdminCompaniesView() {
               onClick={() => setStatusFilter('pending')}
               className={`h-10 px-4 rounded-full text-xs font-medium inline-flex items-center justify-center gap-1.5 cursor-pointer transition-colors ${
                 statusFilter === 'pending'
-                  ? 'border-amber-500 bg-amber-50 text-amber-800 font-bold'
-                  : 'border border-stocky-border-subtle bg-white text-stocky-text-main hover:border-amber-500'
+                  ? 'border-stocky-status-warning-border bg-stocky-status-warning-bg text-stocky-status-warning-fg font-bold'
+                  : 'border border-stocky-border-subtle bg-stocky-bg-widget text-stocky-text-main hover:border-stocky-status-warning-border'
               }`}
             >
               <span>Pending Review</span>
               {counts.pending > 0 && (
-                <span className="px-1.5 py-0.2 rounded-full bg-amber-500 text-white text-[10px] font-bold">
+                <span className="px-1.5 py-0.2 rounded-full bg-stocky-status-warning-fg text-stocky-text-inverse text-[10px] font-bold">
                   {counts.pending}
                 </span>
               )}
@@ -384,8 +384,8 @@ export function AdminCompaniesView() {
               onClick={() => setStatusFilter('verified')}
               className={`h-10 px-4 rounded-full text-xs font-medium inline-flex items-center justify-center gap-1.5 cursor-pointer transition-colors ${
                 statusFilter === 'verified'
-                  ? 'border-emerald-500 bg-emerald-50 text-emerald-800 font-bold'
-                  : 'border border-stocky-border-subtle bg-white text-stocky-text-main hover:border-emerald-500'
+                  ? 'border-stocky-status-success-border bg-stocky-status-success-bg text-stocky-status-success-fg font-bold'
+                  : 'border border-stocky-border-subtle bg-stocky-bg-widget text-stocky-text-main hover:border-stocky-status-success-border'
               }`}
             >
               <span>Verified</span>
@@ -399,8 +399,8 @@ export function AdminCompaniesView() {
               onClick={() => setStatusFilter('rejected')}
               className={`h-10 px-4 rounded-full text-xs font-medium inline-flex items-center justify-center gap-1.5 cursor-pointer transition-colors ${
                 statusFilter === 'rejected'
-                  ? 'border-slate-500 bg-slate-100 text-slate-800 font-bold'
-                  : 'border border-stocky-border-subtle bg-white text-stocky-text-main hover:border-slate-500'
+                  ? 'border-stocky-border-subtle bg-stocky-bg-subtle text-stocky-text-main font-bold'
+                  : 'border border-stocky-border-subtle bg-stocky-bg-widget text-stocky-text-main hover:border-stocky-border-subtle'
               }`}
             >
               <span>Rejected / Suspended</span>
@@ -457,7 +457,7 @@ export function AdminCompaniesView() {
                             <span className="font-semibold text-stocky-text-main group-hover:text-stocky-primary transition-colors block truncate">
                               {company.name}
                             </span>
-                            <span className="font-mono text-[10px] text-stocky-text-sub block">
+                            <span className="font-sans text-[10px] text-stocky-text-sub block">
                               /{company.code || 'no-slug'}
                             </span>
                           </div>
@@ -469,15 +469,15 @@ export function AdminCompaniesView() {
                         <span
                           className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-semibold border ${
                             isVerified
-                              ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                              ? 'bg-stocky-status-success-bg text-stocky-status-success-fg border-stocky-status-success-border'
                               : isPending
-                              ? 'bg-amber-50 text-amber-800 border-amber-200'
-                              : 'bg-red-50 text-red-700 border-red-200'
+                              ? 'bg-stocky-status-warning-bg text-stocky-status-warning-fg border-stocky-status-warning-border'
+                              : 'bg-stocky-status-critical-bg text-stocky-status-critical-fg border-stocky-status-critical-border'
                           }`}
                         >
                           <span
                             className={`w-1.5 h-1.5 rounded-full ${
-                              isVerified ? 'bg-emerald-500' : isPending ? 'bg-amber-500' : 'bg-red-500'
+                              isVerified ? 'bg-stocky-status-success-fg' : isPending ? 'bg-stocky-status-warning-fg' : 'bg-stocky-status-critical-fg'
                             }`}
                           />
                           <span>{company.status.toUpperCase()}</span>
@@ -515,8 +515,8 @@ export function AdminCompaniesView() {
                           }}
                           className={`h-8 px-3 rounded-full text-xs font-medium inline-flex items-center gap-1 transition-colors shadow-2xs cursor-pointer ${
                             isPending
-                              ? 'bg-amber-100 hover:bg-amber-200 text-amber-900 border border-amber-300 font-bold'
-                              : 'border border-stocky-border-subtle bg-white hover:border-stocky-primary hover:text-stocky-primary text-stocky-text-main'
+                              ? 'bg-stocky-status-warning-bg hover:bg-stocky-status-warning-bg text-stocky-status-warning-fg border border-stocky-status-warning-border font-bold'
+                              : 'border border-stocky-border-subtle bg-stocky-bg-widget hover:border-stocky-primary hover:text-stocky-primary text-stocky-text-main'
                           }`}
                         >
                           <span>{isPending ? 'Review Application' : 'Inspect'}</span>

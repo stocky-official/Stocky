@@ -151,12 +151,12 @@ export function ProductEditDrawerWidget({ isOpen, product, categories = [], supp
         </div>
         <label className="block text-xs font-medium text-stocky-text-main">{t('drawers.productEdit.defaultExpiryAlert')}<input type="number" min="0" step="1" value={alertDays} onChange={(event) => setAlertDays(event.target.value)} placeholder="30" className="stocky-form-input mt-1.5" /><span className="mt-1 block text-[10px] font-normal text-stocky-text-sub">{t('drawers.productEdit.expiryAlertDesc')}</span></label>
         <label className="block text-xs font-medium text-stocky-text-main">{t('drawers.productEdit.supplier')}<select value={supplierId} onChange={(event) => setSupplierId(event.target.value)} className="stocky-form-input mt-1.5"><option value="">{t('drawers.productEdit.noDefaultSupplier')}</option>{suppliers.map((supplier) => <option key={supplier.id} value={supplier.id}>{supplier.name}</option>)}</select></label>
-        {error && <p className="rounded-lg border border-red-100 bg-red-50 px-3 py-2 text-xs text-red-700">{error}</p>}
+        {error && <p className="rounded-lg border border-stocky-status-critical-border bg-stocky-status-critical-bg px-3 py-2 text-xs text-stocky-status-critical-fg">{error}</p>}
       </form>
 
       <div className="flex gap-2 border-t border-stocky-border-subtle p-5">
         <button type="button" onClick={onClose} className="h-10 flex-1 cursor-pointer rounded-lg border border-stocky-border-subtle text-sm">{t('drawers.productEdit.cancel')}</button>
-        <button type="submit" form="product-edit-form" disabled={saving || !product} className="h-10 flex-1 cursor-pointer rounded-lg bg-stocky-primary text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-60">{saving ? t('drawers.productEdit.saving') : t('drawers.productEdit.saveChanges')}</button>
+        <button type="submit" form="product-edit-form" disabled={saving || !product} className="h-10 flex-1 cursor-pointer rounded-lg bg-stocky-primary text-sm font-medium text-stocky-text-inverse disabled:cursor-not-allowed disabled:opacity-60">{saving ? t('drawers.productEdit.saving') : t('drawers.productEdit.saveChanges')}</button>
       </div>
     </SideDrawer>
   );

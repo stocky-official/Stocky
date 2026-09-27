@@ -35,7 +35,7 @@ export function AdminSettingsView() {
         <button
           type="button"
           onClick={signOut}
-          className="h-9 px-4 rounded-full border border-red-200 bg-red-50 text-red-700 hover:bg-red-100 text-xs font-semibold transition-colors inline-flex items-center gap-1.5 shadow-2xs self-start sm:self-auto cursor-pointer"
+          className="h-9 px-4 rounded-full border border-stocky-status-critical-border bg-stocky-status-critical-bg text-stocky-status-critical-fg hover:bg-stocky-status-critical-bg text-xs font-semibold transition-colors inline-flex items-center gap-1.5 shadow-2xs self-start sm:self-auto cursor-pointer"
         >
           <LogOutIcon size="xs" />
           <span>Sign Out of Admin Console</span>
@@ -46,7 +46,7 @@ export function AdminSettingsView() {
         {/* Left Column (cols 1-7): Admin Identity & Whitelist Security */}
         <div className="lg:col-span-7 space-y-5">
           {/* Admin Identity Card */}
-          <Card className="p-5 bg-white border border-stocky-border-subtle rounded-2xl shadow-2xs space-y-4">
+          <Card className="p-5 bg-stocky-bg-widget border border-stocky-border-subtle rounded-2xl shadow-2xs space-y-4">
             <span className="text-[11px] uppercase font-bold tracking-wider text-stocky-text-sub block">
               Super Administrator Profile
             </span>
@@ -67,10 +67,10 @@ export function AdminSettingsView() {
                     <ShieldIcon size="xs" /> Super Admin
                   </span>
                 </div>
-                <span className="text-xs font-mono text-stocky-text-sub block mt-0.5">
+                <span className="text-xs font-sans text-stocky-text-sub block mt-0.5">
                   {adminEmail}
                 </span>
-                <span className="text-[11px] text-stocky-text-sub block mt-1 font-mono">
+                <span className="text-[11px] text-stocky-text-sub block mt-1 font-sans">
                   UID: {user?.id || '5b01f8c0-1077-4c27-baf4-e60b436093d2'}
                 </span>
               </div>
@@ -78,7 +78,7 @@ export function AdminSettingsView() {
           </Card>
 
           {/* Single-Admin Whitelist Policy Card */}
-          <Card className="p-5 bg-white border border-stocky-border-subtle rounded-2xl shadow-2xs space-y-4">
+          <Card className="p-5 bg-stocky-bg-widget border border-stocky-border-subtle rounded-2xl shadow-2xs space-y-4">
             <div className="flex items-start gap-3">
               <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-stocky-bg-global text-stocky-primary border border-stocky-border-subtle shrink-0">
                 <ShieldIcon size="sm" />
@@ -96,19 +96,19 @@ export function AdminSettingsView() {
             <div className="p-3.5 rounded-xl bg-stocky-bg-global border border-stocky-border-subtle space-y-2">
               <div className="flex items-center justify-between text-xs">
                 <span className="text-stocky-text-sub">Authorized Administrator:</span>
-                <span className="font-mono font-bold text-stocky-text-main">
+                <span className="font-sans font-bold text-stocky-text-main">
                   {ALLOWED_ADMIN_EMAIL}
                 </span>
               </div>
               <div className="flex items-center justify-between text-xs">
                 <span className="text-stocky-text-sub">Database Whitelist Enforcement:</span>
-                <span className="inline-flex items-center gap-1 font-semibold text-emerald-700">
+                <span className="inline-flex items-center gap-1 font-semibold text-stocky-status-success-fg">
                   <CheckCircleIcon size="xs" /> is_stocky_platform_admin()
                 </span>
               </div>
               <div className="flex items-center justify-between text-xs">
                 <span className="text-stocky-text-sub">Client Route Guard:</span>
-                <span className="inline-flex items-center gap-1 font-semibold text-emerald-700">
+                <span className="inline-flex items-center gap-1 font-semibold text-stocky-status-success-fg">
                   <CheckCircleIcon size="xs" /> AdminShellLayout (403 Block)
                 </span>
               </div>
@@ -119,7 +119,7 @@ export function AdminSettingsView() {
         {/* Right Column (cols 8-12): Platform Environment & Localization */}
         <div className="lg:col-span-5 space-y-5">
           {/* Platform Environment Health */}
-          <Card className="p-5 bg-white border border-stocky-border-subtle rounded-2xl shadow-2xs space-y-4">
+          <Card className="p-5 bg-stocky-bg-widget border border-stocky-border-subtle rounded-2xl shadow-2xs space-y-4">
             <span className="text-[11px] uppercase font-bold tracking-wider text-stocky-text-sub block">
               System & Database Telemetry
             </span>
@@ -131,7 +131,7 @@ export function AdminSettingsView() {
               </div>
               <div className="flex items-center justify-between pb-2 border-b border-stocky-border-subtle">
                 <span className="text-stocky-text-sub">Database Cluster:</span>
-                <span className="inline-flex items-center gap-1 text-emerald-700 font-semibold">
+                <span className="inline-flex items-center gap-1 text-stocky-status-success-fg font-semibold">
                   <CheckCircleIcon size="xs" /> Supabase Pooler (eu-west-1)
                 </span>
               </div>
@@ -145,7 +145,7 @@ export function AdminSettingsView() {
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-stocky-text-sub">App Environment:</span>
-                <span className="font-mono text-[11px] bg-stocky-bg-global px-2 py-0.5 rounded border border-stocky-border-subtle">
+                <span className="font-sans text-[11px] bg-stocky-bg-global px-2 py-0.5 rounded border border-stocky-border-subtle">
                   {process.env.NODE_ENV}
                 </span>
               </div>
@@ -153,7 +153,7 @@ export function AdminSettingsView() {
           </Card>
 
           {/* Localization Preferences */}
-          <Card className="p-5 bg-white border border-stocky-border-subtle rounded-2xl shadow-2xs space-y-4">
+          <Card className="p-5 bg-stocky-bg-widget border border-stocky-border-subtle rounded-2xl shadow-2xs space-y-4">
             <span className="text-[11px] uppercase font-bold tracking-wider text-stocky-text-sub block">
               Localization & Cairo Font Preview
             </span>

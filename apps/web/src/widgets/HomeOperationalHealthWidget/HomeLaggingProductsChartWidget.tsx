@@ -204,7 +204,7 @@ export function HomeLaggingProductsChartWidget({
             >
               <FilterIcon size="xs" />
               <span>{t('home.charts.topMovers.filter')}</span>
-              <span className="px-1.5 py-0.5 rounded-full bg-amber-600 text-white text-[10px] font-bold">
+              <span className="px-1.5 py-0.5 rounded-full bg-stocky-status-warning-fg text-stocky-text-inverse text-[10px] font-bold">
                 &gt;{effectiveThreshold}d
               </span>
             </button>
@@ -266,7 +266,7 @@ export function HomeLaggingProductsChartWidget({
                       <span className="font-bold text-stocky-text-main block">{data.name}</span>
                       <span className="text-[10px] text-stocky-text-sub block mb-1.5">{data.category}</span>
                       <div className="space-y-0.5 text-[11px]">
-                        <div className="text-amber-600 font-semibold">
+                        <div className="text-stocky-status-warning-fg font-semibold">
                           {t('home.charts.laggingStock.capitalTiedUp', { amount: data.tiedUpValue.toLocaleString() })}
                         </div>
                         <div className="text-stocky-text-main">
@@ -294,7 +294,7 @@ export function HomeLaggingProductsChartWidget({
                 {chartData.map((_, index) => (
                   <Cell
                     key={`cell-${index}`}
-                    fill={index === 0 ? '#D97706' : '#F59E0B'}
+                    fill={index === 0 ? 'var(--stocky-status-warning-fg)' : 'var(--stocky-status-warning-border)'}
                     opacity={1 - index * 0.12}
                   />
                 ))}
@@ -324,9 +324,9 @@ export function HomeLaggingProductsChartWidget({
                   <td className="py-2.5 px-3 font-medium text-stocky-text-main truncate max-w-[150px]">{item.name}</td>
                   <td className="py-2.5 px-3 text-stocky-text-sub text-[11px]">{item.category}</td>
                   <td className="py-2.5 px-3 text-end font-medium text-stocky-text-main">{item.stockOnHand.toLocaleString()}</td>
-                  <td className="py-2.5 px-3 text-end font-bold text-amber-600">${item.tiedUpValue.toLocaleString()}</td>
+                  <td className="py-2.5 px-3 text-end font-bold text-stocky-status-warning-fg">${item.tiedUpValue.toLocaleString()}</td>
                   <td className="py-2.5 px-3 text-end">
-                    <span className="px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 text-[10px] font-bold border border-amber-200/60">
+                    <span className="px-2 py-0.5 rounded-full bg-stocky-status-warning-bg text-stocky-status-warning-fg text-[10px] font-bold border border-stocky-status-warning-border">
                       {item.daysDormant}d
                     </span>
                   </td>
@@ -342,7 +342,7 @@ export function HomeLaggingProductsChartWidget({
         <span>
           {canViewCommercials && t('home.charts.laggingStock.totalStagnantCapital', { amount: chartData.reduce((sum, item) => sum + item.tiedUpValue, 0).toLocaleString() })}
         </span>
-        <span className="text-amber-600 font-semibold">{t('home.charts.laggingStock.actionRequired')}</span>
+        <span className="text-stocky-status-warning-fg font-semibold">{t('home.charts.laggingStock.actionRequired')}</span>
       </div>
 
       {/* 4. Sliding Window from the Bottom (Filters Bottom Sheet) */}
@@ -368,7 +368,7 @@ export function HomeLaggingProductsChartWidget({
                   onClick={() => setInternalThresholdDays(days)}
                   className={`h-9 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                     internalThresholdDays === days
-                      ? 'bg-amber-600 text-white shadow-xs'
+                      ? 'bg-stocky-status-warning-fg text-stocky-text-inverse shadow-xs'
                       : 'bg-stocky-bg-global text-stocky-text-sub border border-stocky-border-subtle'
                   }`}
                 >

@@ -122,7 +122,7 @@ export function PlatformAccountMenuWidget({
         panelClassName="max-w-md w-full"
       >
         {/* Drawer Header */}
-        <div className="flex items-center justify-between p-4 sm:p-5 border-b border-stocky-border-subtle bg-white">
+        <div className="flex items-center justify-between p-4 sm:p-5 border-b border-stocky-border-subtle bg-stocky-bg-widget">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-lg bg-stocky-primary/10 text-stocky-primary flex items-center justify-center">
               <BoxesIcon size="xs" />
@@ -151,7 +151,7 @@ export function PlatformAccountMenuWidget({
               name={displayName}
               email={userEmail}
               size="md"
-              className="w-12 h-12 rounded-full border border-stocky-border-subtle shrink-0 ring-2 ring-white shadow-2xs"
+              className="w-12 h-12 rounded-full border border-stocky-border-subtle shrink-0 ring-2 ring-stocky-text-inverse shadow-2xs"
             />
             <div className="flex flex-col min-w-0 flex-1">
               <div className="flex items-center gap-2 flex-wrap">
@@ -162,7 +162,7 @@ export function PlatformAccountMenuWidget({
                   {displayTitle}
                 </span>
               </div>
-              <span className="text-xs text-stocky-text-sub truncate font-mono mt-0.5">
+              <span className="text-xs text-stocky-text-sub truncate font-sans mt-0.5">
                 {userEmail}
               </span>
             </div>
@@ -170,7 +170,7 @@ export function PlatformAccountMenuWidget({
 
           {/* Company / Workspace Card */}
           {companyName && (
-            <div className="bg-white border border-stocky-border-subtle rounded-2xl p-3.5 flex items-center justify-between shadow-2xs">
+            <div className="bg-stocky-bg-widget border border-stocky-border-subtle rounded-2xl p-3.5 flex items-center justify-between shadow-2xs">
               <div className="flex items-center gap-3 min-w-0">
                 {companyLogoUrl ? (
                   // eslint-disable-next-line @next/next/no-img-element
@@ -180,7 +180,7 @@ export function PlatformAccountMenuWidget({
                     className="w-8 h-8 object-contain rounded-lg shrink-0 border border-stocky-border-subtle"
                   />
                 ) : (
-                  <div className="w-8 h-8 rounded-lg bg-stocky-primary text-white flex items-center justify-center shrink-0">
+                  <div className="w-8 h-8 rounded-lg bg-stocky-primary text-stocky-text-inverse flex items-center justify-center shrink-0">
                     <BoxesIcon size="xs" />
                   </div>
                 )}
@@ -212,7 +212,7 @@ export function PlatformAccountMenuWidget({
             <button
               type="button"
               onClick={() => handleNavAction(() => (onSettingsClick ? onSettingsClick() : onNavigateToTab?.('settings')))}
-              className="w-full p-3 rounded-xl border border-stocky-border-subtle bg-white hover:bg-stocky-bg-global active:scale-[0.99] transition-all flex items-center justify-between gap-3 text-start cursor-pointer group shadow-2xs"
+              className="w-full p-3 rounded-xl border border-stocky-border-subtle bg-stocky-bg-widget hover:bg-stocky-bg-global active:scale-[0.99] transition-all flex items-center justify-between gap-3 text-start cursor-pointer group shadow-2xs"
             >
               <div className="flex items-center gap-3 min-w-0">
                 <div className="w-9 h-9 rounded-xl bg-stocky-bg-global border border-stocky-border-subtle flex items-center justify-center text-stocky-text-main group-hover:border-stocky-primary/40 group-hover:text-stocky-primary transition-colors shrink-0">
@@ -234,7 +234,7 @@ export function PlatformAccountMenuWidget({
             <button
               type="button"
               onClick={() => handleNavAction(() => onNavigateToTab?.('team'))}
-              className="w-full p-3 rounded-xl border border-stocky-border-subtle bg-white hover:bg-stocky-bg-global active:scale-[0.99] transition-all flex items-center justify-between gap-3 text-start cursor-pointer group shadow-2xs"
+              className="w-full p-3 rounded-xl border border-stocky-border-subtle bg-stocky-bg-widget hover:bg-stocky-bg-global active:scale-[0.99] transition-all flex items-center justify-between gap-3 text-start cursor-pointer group shadow-2xs"
             >
               <div className="flex items-center gap-3 min-w-0">
                 <div className="w-9 h-9 rounded-xl bg-stocky-bg-global border border-stocky-border-subtle flex items-center justify-center text-stocky-text-main group-hover:border-stocky-primary/40 group-hover:text-stocky-primary transition-colors shrink-0">
@@ -256,7 +256,7 @@ export function PlatformAccountMenuWidget({
             <button
               type="button"
               onClick={() => handleNavAction(() => onNavigateToTab?.('locations'))}
-              className="w-full p-3 rounded-xl border border-stocky-border-subtle bg-white hover:bg-stocky-bg-global active:scale-[0.99] transition-all flex items-center justify-between gap-3 text-start cursor-pointer group shadow-2xs"
+              className="w-full p-3 rounded-xl border border-stocky-border-subtle bg-stocky-bg-widget hover:bg-stocky-bg-global active:scale-[0.99] transition-all flex items-center justify-between gap-3 text-start cursor-pointer group shadow-2xs"
             >
               <div className="flex items-center gap-3 min-w-0">
                 <div className="w-9 h-9 rounded-xl bg-stocky-bg-global border border-stocky-border-subtle flex items-center justify-center text-stocky-text-main group-hover:border-stocky-primary/40 group-hover:text-stocky-primary transition-colors shrink-0">
@@ -278,7 +278,7 @@ export function PlatformAccountMenuWidget({
             <button
               type="button"
               onClick={() => handleNavAction(() => onNavigateToTab?.('logs'))}
-              className="w-full p-3 rounded-xl border border-stocky-border-subtle bg-white hover:bg-stocky-bg-global active:scale-[0.99] transition-all flex items-center justify-between gap-3 text-start cursor-pointer group shadow-2xs"
+              className="w-full p-3 rounded-xl border border-stocky-border-subtle bg-stocky-bg-widget hover:bg-stocky-bg-global active:scale-[0.99] transition-all flex items-center justify-between gap-3 text-start cursor-pointer group shadow-2xs"
             >
               <div className="flex items-center gap-3 min-w-0">
                 <div className="w-9 h-9 rounded-xl bg-stocky-bg-global border border-stocky-border-subtle flex items-center justify-center text-stocky-text-main group-hover:border-stocky-primary/40 group-hover:text-stocky-primary transition-colors shrink-0">
@@ -299,11 +299,11 @@ export function PlatformAccountMenuWidget({
         </div>
 
         {/* Drawer Footer with Big Log Out Button */}
-        <div className="p-4 sm:p-5 border-t border-stocky-border-subtle bg-white flex flex-col gap-2.5 shrink-0">
+        <div className="p-4 sm:p-5 border-t border-stocky-border-subtle bg-stocky-bg-widget flex flex-col gap-2.5 shrink-0">
           <button
             type="button"
             onClick={handleSignOut}
-            className="w-full h-11 rounded-xl bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 font-medium text-xs flex items-center justify-center gap-2 cursor-pointer transition-all active:scale-[0.99]"
+            className="w-full h-11 rounded-xl bg-stocky-status-critical-bg hover:bg-stocky-status-critical-bg text-stocky-status-critical-fg border border-stocky-status-critical-border font-medium text-xs flex items-center justify-center gap-2 cursor-pointer transition-all active:scale-[0.99]"
           >
             <LogOutIcon size="xs" />
             <span>{t('nav.logout')}</span>

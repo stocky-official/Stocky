@@ -54,7 +54,7 @@ export function HomeExecutiveKpiStripWidget({
       value: `$${(totalValuation / 1000).toFixed(1)}k`,
       detail: t('home.charts.desktop.unitsCountSuffix', { units: totalUnits.toLocaleString(), branches: totalBranches }),
       valueColor: 'text-stocky-text-main',
-      indicatorBg: 'bg-emerald-500',
+      indicatorBg: 'bg-stocky-status-success-fg',
       action: onOpenStock,
     },
     {
@@ -71,8 +71,8 @@ export function HomeExecutiveKpiStripWidget({
       label: t('home.charts.desktop.kpiDormant'),
       value: `$${dormantCapital.toLocaleString()}`,
       detail: t('home.charts.desktop.slowMovingSkus', { count: dormantSkuCount }),
-      valueColor: dormantCapital > 0 ? 'text-amber-600' : 'text-stocky-text-main',
-      indicatorBg: 'bg-amber-500',
+      valueColor: dormantCapital > 0 ? 'text-stocky-status-warning-fg' : 'text-stocky-text-main',
+      indicatorBg: 'bg-stocky-status-warning-fg',
       action: onOpenStock,
     },
     {
@@ -80,8 +80,8 @@ export function HomeExecutiveKpiStripWidget({
       label: t('home.charts.desktop.kpiRisks'),
       value: t('home.charts.desktop.skusCount', { count: expiringSkuCount + lowStockCount }),
       detail: t('home.charts.desktop.riskSkusDetail', { expiring: expiringSkuCount, lowStock: lowStockCount }),
-      valueColor: expiringSkuCount > 0 ? 'text-rose-600' : 'text-stocky-text-main',
-      indicatorBg: expiringSkuCount > 0 ? 'bg-rose-500' : 'bg-emerald-500',
+      valueColor: expiringSkuCount > 0 ? 'text-stocky-status-critical-fg' : 'text-stocky-text-main',
+      indicatorBg: expiringSkuCount > 0 ? 'bg-stocky-status-critical-fg' : 'bg-stocky-status-success-fg',
       action: onOpenExpiry || onOpenStock,
     },
     {
@@ -89,8 +89,8 @@ export function HomeExecutiveKpiStripWidget({
       label: t('home.charts.desktop.kpiStaff'),
       value: `${attendancePct}%`,
       detail: t('home.charts.desktop.staffOnDutyDetail', { active: activeStaffOnDuty, total: totalStaffCount }),
-      valueColor: attendancePct >= 75 ? 'text-emerald-600' : 'text-amber-600',
-      indicatorBg: attendancePct >= 75 ? 'bg-emerald-500' : 'bg-amber-500',
+      valueColor: attendancePct >= 75 ? 'text-stocky-status-success-fg' : 'text-stocky-status-warning-fg',
+      indicatorBg: attendancePct >= 75 ? 'bg-stocky-status-success-fg' : 'bg-stocky-status-warning-fg',
       action: onOpenAttendance,
     },
   ];

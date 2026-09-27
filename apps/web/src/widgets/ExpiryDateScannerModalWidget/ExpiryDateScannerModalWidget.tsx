@@ -587,19 +587,19 @@ export function ExpiryDateScannerModalWidget({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-[99999] bg-black flex flex-col select-none"
+          className="fixed inset-0 z-[99999] bg-stocky-text-main flex flex-col select-none"
         >
           {/* Top Header Bar */}
-          <div className="relative z-20 flex items-center justify-between px-4 py-3 pt-5 bg-gradient-to-b from-black/90 via-black/60 to-transparent">
+          <div className="relative z-20 flex items-center justify-between px-4 py-3 pt-5 bg-gradient-to-b from-stocky-text-main/90 via-stocky-text-main/60 to-transparent">
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center border border-emerald-500/30">
+              <div className="w-8 h-8 rounded-full bg-stocky-status-success-fg text-stocky-status-success-fg flex items-center justify-center border border-stocky-status-success-border">
                 <CalendarIcon size="sm" />
               </div>
               <div>
-                <h3 className="text-sm font-medium text-white tracking-tight leading-tight">
+                <h3 className="text-sm font-medium text-stocky-text-inverse tracking-tight leading-tight">
                   {t('modals.expiryScanner.title')}
                 </h3>
-                <p className="text-[11px] text-white/60 font-normal">
+                <p className="text-[11px] text-stocky-text-inverse/60 font-normal">
                   {isEngineReady ? t('modals.expiryScanner.inBrowserOcr') : engineStatus}
                 </p>
               </div>
@@ -610,7 +610,7 @@ export function ExpiryDateScannerModalWidget({
                 <button
                   type="button"
                   onClick={handleToggleTorch}
-                  className="w-10 h-10 rounded-full bg-white/15 text-white flex items-center justify-center hover:bg-white/25 active:scale-95 transition-all"
+                  className="w-10 h-10 rounded-full bg-stocky-bg-widget/15 text-stocky-text-inverse flex items-center justify-center hover:bg-stocky-bg-widget/25 active:scale-95 transition-all"
                   aria-label={t('modals.expiryScanner.toggleTorch')}
                 >
                   {isTorchOn ? <ZapIcon size="sm" /> : <ZapOffIcon size="sm" />}
@@ -620,7 +620,7 @@ export function ExpiryDateScannerModalWidget({
               <button
                 type="button"
                 onClick={handleClose}
-                className="w-10 h-10 rounded-full bg-white/15 text-white flex items-center justify-center hover:bg-white/25 active:scale-95 transition-all"
+                className="w-10 h-10 rounded-full bg-stocky-bg-widget/15 text-stocky-text-inverse flex items-center justify-center hover:bg-stocky-bg-widget/25 active:scale-95 transition-all"
                 aria-label={t('modals.expiryScanner.closeScanner')}
               >
                 <XIcon size="sm" />
@@ -630,7 +630,7 @@ export function ExpiryDateScannerModalWidget({
 
           {/* Camera Viewfinder with Tap-To-Focus */}
           <div
-            className="flex-1 relative w-full h-full overflow-hidden bg-black cursor-crosshair"
+            className="flex-1 relative w-full h-full overflow-hidden bg-stocky-text-main cursor-crosshair"
             onClick={handleTapToFocus}
             onTouchStart={handleTapToFocus}
           >
@@ -645,7 +645,7 @@ export function ExpiryDateScannerModalWidget({
 
             {/* Quick Macro Zoom Controls (1x / 2x / 3x) */}
             {zoomRange && zoomRange.max > 1 && (
-              <div className="absolute top-4 left-1/2 -translate-x-1/2 z-30 flex items-center gap-1.5 bg-black/70 backdrop-blur-md px-3 py-1 rounded-full border border-white/20 shadow-xl">
+              <div className="absolute top-4 left-1/2 -translate-x-1/2 z-30 flex items-center gap-1.5 bg-stocky-text-main/70 backdrop-blur-md px-3 py-1 rounded-full border border-stocky-text-inverse/20 shadow-xl">
                 <button
                   type="button"
                   onClick={(e) => {
@@ -654,8 +654,8 @@ export function ExpiryDateScannerModalWidget({
                   }}
                   className={`px-2.5 py-0.5 rounded-full text-xs font-medium transition-all ${
                     Math.abs(currentZoom - 1) < 0.2
-                      ? 'bg-emerald-500 text-white shadow'
-                      : 'text-white/70 hover:text-white'
+                      ? 'bg-stocky-status-success-fg text-stocky-text-inverse shadow'
+                      : 'text-stocky-text-inverse/70 hover:text-stocky-text-inverse'
                   }`}
                 >
                   {t('modals.expiryScanner.macroZoom1')}
@@ -668,8 +668,8 @@ export function ExpiryDateScannerModalWidget({
                   }}
                   className={`px-2.5 py-0.5 rounded-full text-xs font-medium transition-all ${
                     Math.abs(currentZoom - 2) < 0.3
-                      ? 'bg-emerald-500 text-white shadow'
-                      : 'text-white/70 hover:text-white'
+                      ? 'bg-stocky-status-success-fg text-stocky-text-inverse shadow'
+                      : 'text-stocky-text-inverse/70 hover:text-stocky-text-inverse'
                   }`}
                 >
                   {t('modals.expiryScanner.macroZoom2')}
@@ -683,8 +683,8 @@ export function ExpiryDateScannerModalWidget({
                     }}
                     className={`px-2.5 py-0.5 rounded-full text-xs font-medium transition-all ${
                       Math.abs(currentZoom - 3) < 0.3
-                        ? 'bg-emerald-500 text-white shadow'
-                        : 'text-white/70 hover:text-white'
+                        ? 'bg-stocky-status-success-fg text-stocky-text-inverse shadow'
+                        : 'text-stocky-text-inverse/70 hover:text-stocky-text-inverse'
                     }`}
                   >
                     {t('modals.expiryScanner.macroZoom3')}
@@ -705,8 +705,8 @@ export function ExpiryDateScannerModalWidget({
                   style={{ left: focusRing.x, top: focusRing.y }}
                   className="absolute pointer-events-none -translate-x-1/2 -translate-y-1/2 z-30"
                 >
-                  <div className="w-16 h-16 border-2 border-yellow-400 rounded-sm shadow-[0_0_12px_rgba(250,204,21,0.8)] flex items-center justify-center">
-                    <div className="w-1.5 h-1.5 bg-yellow-400 rounded-full" />
+                  <div className="w-16 h-16 border-2 border-stocky-status-warning-fg rounded-sm shadow-bevel-float flex items-center justify-center">
+                    <div className="w-1.5 h-1.5 bg-stocky-status-warning-fg rounded-full" />
                   </div>
                 </motion.div>
               )}
@@ -718,20 +718,20 @@ export function ExpiryDateScannerModalWidget({
                 <div
                   className={`relative w-[86vw] max-w-[340px] h-[110px] rounded-2xl flex items-center justify-center transition-all duration-300 ${
                     detectedResult
-                      ? 'border-2 border-emerald-400 shadow-[0_0_24px_rgba(16,185,129,0.5)] bg-emerald-950/20 backdrop-blur-[2px]'
-                      : 'border-2 border-white/40 shadow-[0_0_16px_rgba(0,0,0,0.5)]'
+                      ? 'border-2 border-stocky-status-success-fg shadow-bevel-float bg-stocky-status-success-bg backdrop-blur-[2px]'
+                      : 'border-2 border-stocky-border-subtle shadow-bevel-float'
                   }`}
                 >
                   {/* High-Contrast Reticle Corners */}
-                  <div className="absolute -top-1 -left-1 w-6 h-6 border-t-3 border-l-3 border-emerald-400 rounded-tl-lg shadow-[0_0_8px_rgba(16,185,129,0.8)]" />
-                  <div className="absolute -top-1 -right-1 w-6 h-6 border-t-3 border-r-3 border-emerald-400 rounded-tr-lg shadow-[0_0_8px_rgba(16,185,129,0.8)]" />
-                  <div className="absolute -bottom-1 -left-1 w-6 h-6 border-b-3 border-l-3 border-emerald-400 rounded-bl-lg shadow-[0_0_8px_rgba(16,185,129,0.8)]" />
-                  <div className="absolute -bottom-1 -right-1 w-6 h-6 border-b-3 border-r-3 border-emerald-400 rounded-br-lg shadow-[0_0_8px_rgba(16,185,129,0.8)]" />
+                  <div className="absolute -top-1 -left-1 w-6 h-6 border-t-3 border-l-3 border-stocky-status-success-fg rounded-tl-lg shadow-bevel-float" />
+                  <div className="absolute -top-1 -right-1 w-6 h-6 border-t-3 border-r-3 border-stocky-status-success-fg rounded-tr-lg shadow-bevel-float" />
+                  <div className="absolute -bottom-1 -left-1 w-6 h-6 border-b-3 border-l-3 border-stocky-status-success-fg rounded-bl-lg shadow-bevel-float" />
+                  <div className="absolute -bottom-1 -right-1 w-6 h-6 border-b-3 border-r-3 border-stocky-status-success-fg rounded-br-lg shadow-bevel-float" />
 
                   {/* Animated Laser Scanning Line (while searching) */}
                   {!detectedResult && (
                     <motion.div
-                      className="w-full h-0.5 bg-emerald-400 shadow-[0_0_12px_rgba(52,211,153,1)]"
+                      className="w-full h-0.5 bg-stocky-status-success-fg shadow-bevel-float"
                       animate={{
                         y: [-45, 45, -45],
                       }}
@@ -748,7 +748,7 @@ export function ExpiryDateScannerModalWidget({
                     <motion.div
                       initial={{ scale: 0, opacity: 0 }}
                       animate={{ scale: 1, opacity: 1 }}
-                      className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/90 text-white shadow-lg text-xs font-medium"
+                      className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-stocky-status-success-fg text-stocky-text-inverse shadow-lg text-xs font-medium"
                     >
                       <CheckCircleIcon size="sm" />
                       <span>{t('modals.expiryScanner.dateLocked')}</span>
@@ -761,16 +761,16 @@ export function ExpiryDateScannerModalWidget({
                   <motion.div
                     initial={{ opacity: 0, y: 5 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="mt-3 px-3 py-1 bg-black/75 backdrop-blur-md rounded-full border border-white/20 text-[11px] text-white/90 max-w-xs truncate shadow-lg flex items-center gap-1.5"
+                    className="mt-3 px-3 py-1 bg-stocky-text-main/75 backdrop-blur-md rounded-full border border-stocky-text-inverse/20 text-[11px] text-stocky-text-inverse/90 max-w-xs truncate shadow-lg flex items-center gap-1.5"
                   >
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping shrink-0" />
-                    <span className="text-emerald-400 font-medium shrink-0">{t('modals.expiryScanner.reading')}</span>
+                    <span className="w-1.5 h-1.5 rounded-full bg-stocky-status-success-fg animate-ping shrink-0" />
+                    <span className="text-stocky-status-success-fg font-medium shrink-0">{t('modals.expiryScanner.reading')}</span>
                     <span className="truncate">&ldquo;{liveOcrText}&rdquo;</span>
                   </motion.div>
                 )}
 
                 {/* Guide Text */}
-                <p className="mt-3 text-xs font-medium text-white/85 text-center drop-shadow-md max-w-xs">
+                <p className="mt-3 text-xs font-medium text-stocky-text-inverse/85 text-center drop-shadow-md max-w-xs">
                   {detectedResult
                     ? t('modals.expiryScanner.guideDetected')
                     : t('modals.expiryScanner.guideScan')}
@@ -781,14 +781,14 @@ export function ExpiryDateScannerModalWidget({
             {/* Camera Error Message */}
             {cameraError && (
               <div className="absolute inset-0 z-30 flex items-center justify-center p-4">
-                <div className="p-6 bg-slate-900/95 rounded-3xl border border-white/10 max-w-xs text-center space-y-3 shadow-2xl text-white">
-                  <AlertCircleIcon size="lg" className="text-red-400 mx-auto" />
+                <div className="p-6 bg-stocky-text-main rounded-3xl border border-stocky-text-inverse/10 max-w-xs text-center space-y-3 shadow-2xl text-stocky-text-inverse">
+                  <AlertCircleIcon size="lg" className="text-stocky-status-critical-fg mx-auto" />
                   <h3 className="text-sm font-medium">{t('modals.expiryScanner.cameraAccessRequired')}</h3>
-                  <p className="text-xs text-white/70 leading-relaxed">{cameraError}</p>
+                  <p className="text-xs text-stocky-text-inverse/70 leading-relaxed">{cameraError}</p>
                   <button
                     type="button"
                     onClick={handleClose}
-                    className="w-full py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-medium rounded-xl transition-colors"
+                    className="w-full py-2 bg-stocky-status-success-fg hover:bg-stocky-status-success-fg text-stocky-text-inverse text-xs font-medium rounded-xl transition-colors"
                   >
                     {t('modals.expiryScanner.close')}
                   </button>
@@ -798,37 +798,37 @@ export function ExpiryDateScannerModalWidget({
           </div>
 
           {/* Bottom Action & Confirmation Dock */}
-          <div className="relative z-20 px-4 py-4 pb-8 bg-gradient-to-t from-black via-black/95 to-transparent flex flex-col items-center">
+          <div className="relative z-20 px-4 py-4 pb-8 bg-gradient-to-t from-stocky-text-main via-stocky-text-main/95 to-transparent flex flex-col items-center">
             {detectedResult ? (
               /* Success Confirmation Card */
               <motion.div
                 initial={{ y: 20, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
-                className="w-full max-w-md bg-slate-900/95 border border-emerald-500/50 rounded-3xl p-4 shadow-2xl backdrop-blur-xl text-white space-y-3"
+                className="w-full max-w-md bg-stocky-text-main border border-stocky-status-success-border rounded-3xl p-4 shadow-2xl backdrop-blur-xl text-stocky-text-inverse space-y-3"
               >
                 <div className="flex items-start justify-between">
                   <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0 border border-emerald-500/30">
+                    <div className="w-8 h-8 rounded-full bg-stocky-status-success-fg text-stocky-status-success-fg flex items-center justify-center shrink-0 border border-stocky-status-success-border">
                       <SparklesIcon size="sm" />
                     </div>
                     <div>
-                      <span className="text-[11px] font-medium uppercase tracking-wider text-emerald-400">
+                      <span className="text-[11px] font-medium uppercase tracking-wider text-stocky-status-success-fg">
                         {t('modals.expiryScanner.expirationDetected')}
                       </span>
-                      <h4 className="text-lg font-medium tracking-tight text-white">
+                      <h4 className="text-lg font-medium tracking-tight text-stocky-text-inverse">
                         {detectedResult.displayDate}
                       </h4>
                     </div>
                   </div>
 
-                  <span className="text-[11px] px-2 py-0.5 rounded-full bg-white/10 text-white/80 font-normal">
+                  <span className="text-[11px] px-2 py-0.5 rounded-full bg-stocky-bg-widget/10 text-stocky-text-inverse/80 font-normal">
                     ISO: {detectedResult.isoDate}
                   </span>
                 </div>
 
-                <div className="flex items-center justify-between text-xs text-white/60 bg-black/40 rounded-xl px-3 py-1.5 border border-white/5">
+                <div className="flex items-center justify-between text-xs text-stocky-text-inverse/60 bg-stocky-text-main/40 rounded-xl px-3 py-1.5 border border-stocky-text-inverse/5">
                   <span className="truncate">{t('modals.expiryScanner.stamp', { text: detectedResult.rawMatch })}</span>
-                  <span className="text-emerald-400 font-medium shrink-0 ml-2">
+                  <span className="text-stocky-status-success-fg font-medium shrink-0 ml-2">
                     {t('modals.expiryScanner.confidence', { confidence: Math.round(detectedResult.confidence * 100) })}
                   </span>
                 </div>
@@ -837,7 +837,7 @@ export function ExpiryDateScannerModalWidget({
                   <button
                     type="button"
                     onClick={handleRescan}
-                    className="py-2.5 px-3 bg-white/10 hover:bg-white/15 active:scale-98 text-white rounded-2xl text-xs font-medium flex items-center justify-center gap-1.5 transition-all"
+                    className="py-2.5 px-3 bg-stocky-bg-widget/10 hover:bg-stocky-bg-widget/15 active:scale-98 text-stocky-text-inverse rounded-2xl text-xs font-medium flex items-center justify-center gap-1.5 transition-all"
                   >
                     <RefreshIcon size="xs" />
                     <span>{t('modals.expiryScanner.rescan')}</span>
@@ -846,7 +846,7 @@ export function ExpiryDateScannerModalWidget({
                   <button
                     type="button"
                     onClick={handleConfirmDate}
-                    className="py-2.5 px-3 bg-emerald-500 hover:bg-emerald-400 active:scale-98 text-white rounded-2xl text-xs font-medium flex items-center justify-center gap-1.5 transition-all shadow-lg shadow-emerald-500/20"
+                    className="py-2.5 px-3 bg-stocky-status-success-fg hover:bg-stocky-status-success-fg active:scale-98 text-stocky-text-inverse rounded-2xl text-xs font-medium flex items-center justify-center gap-1.5 transition-all shadow-lg shadow-stocky-status-success-fg/20"
                   >
                     <CheckCircleIcon size="xs" />
                     <span>
@@ -861,14 +861,14 @@ export function ExpiryDateScannerModalWidget({
               /* Manual Date Entry Fallback Form */
               <form
                 onSubmit={handleManualDateApply}
-                className="w-full max-w-md bg-slate-900/95 border border-white/20 rounded-3xl p-4 shadow-2xl backdrop-blur-xl text-white space-y-3"
+                className="w-full max-w-md bg-stocky-text-main border border-stocky-text-inverse/20 rounded-3xl p-4 shadow-2xl backdrop-blur-xl text-stocky-text-inverse space-y-3"
               >
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-medium text-white">{t('modals.expiryScanner.manualModalTitle')}</span>
+                  <span className="text-xs font-medium text-stocky-text-inverse">{t('modals.expiryScanner.manualModalTitle')}</span>
                   <button
                     type="button"
                     onClick={() => setShowManualInput(false)}
-                    className="text-xs text-white/60 hover:text-white"
+                    className="text-xs text-stocky-text-inverse/60 hover:text-stocky-text-inverse"
                   >
                     {t('modals.expiryScanner.backToCamera')}
                   </button>
@@ -877,20 +877,20 @@ export function ExpiryDateScannerModalWidget({
                   type="date"
                   value={manualDateInput}
                   onChange={(e) => setManualDateInput(e.target.value)}
-                  className="w-full bg-black/50 border border-white/20 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-400"
+                  className="w-full bg-stocky-text-main/50 border border-stocky-text-inverse/20 rounded-xl px-3 py-2 text-sm text-stocky-text-inverse focus:outline-none focus:border-stocky-status-success-border"
                 />
                 <div className="grid grid-cols-2 gap-2 pt-1">
                   <button
                     type="button"
                     onClick={() => setShowManualInput(false)}
-                    className="py-2 px-3 bg-white/10 hover:bg-white/15 text-white rounded-xl text-xs font-medium"
+                    className="py-2 px-3 bg-stocky-bg-widget/10 hover:bg-stocky-bg-widget/15 text-stocky-text-inverse rounded-xl text-xs font-medium"
                   >
                     {t('modals.expiryScanner.cancel')}
                   </button>
                   <button
                     type="submit"
                     disabled={!manualDateInput}
-                    className="py-2 px-3 bg-emerald-500 hover:bg-emerald-400 disabled:opacity-50 text-white rounded-xl text-xs font-medium"
+                    className="py-2 px-3 bg-stocky-status-success-fg hover:bg-stocky-status-success-fg disabled:opacity-50 text-stocky-text-inverse rounded-xl text-xs font-medium"
                   >
                     {t('modals.expiryScanner.confirmDate')}
                   </button>
@@ -906,8 +906,8 @@ export function ExpiryDateScannerModalWidget({
                     onClick={() => setAutoScanEnabled(!autoScanEnabled)}
                     className={`text-[11px] px-3 py-1 rounded-full font-medium transition-all ${
                       autoScanEnabled
-                        ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
-                        : 'bg-white/10 text-white/60 border border-white/15'
+                        ? 'bg-stocky-status-success-fg text-stocky-status-success-fg border border-stocky-status-success-border'
+                        : 'bg-stocky-bg-widget/10 text-stocky-text-inverse/60 border border-stocky-text-inverse/15'
                     }`}
                   >
                     {t('modals.expiryScanner.autoScan', { status: autoScanEnabled ? t('modals.expiryScanner.on') : t('modals.expiryScanner.off') })}
@@ -918,19 +918,19 @@ export function ExpiryDateScannerModalWidget({
                     type="button"
                     onClick={processCurrentFrame}
                     disabled={isScanning || !isEngineReady}
-                    className="w-16 h-16 rounded-full border-4 border-white/80 p-1 flex items-center justify-center hover:scale-105 active:scale-95 transition-all disabled:opacity-50 shadow-xl"
+                    className="w-16 h-16 rounded-full border-4 border-stocky-text-inverse/80 p-1 flex items-center justify-center hover:scale-105 active:scale-95 transition-all disabled:opacity-50 shadow-xl"
                     aria-label={t('modals.expiryScanner.captureAndRead')}
                   >
                     <div
                       className={`w-full h-full rounded-full transition-colors ${
-                        isScanning ? 'bg-emerald-400 animate-pulse' : 'bg-white'
+                        isScanning ? 'bg-stocky-status-success-fg animate-pulse' : 'bg-stocky-bg-widget'
                       }`}
                     />
                   </button>
 
                   <div className="w-16 text-right">
                     {isScanning && (
-                      <span className="text-[10px] text-emerald-400 animate-pulse font-medium">
+                      <span className="text-[10px] text-stocky-status-success-fg animate-pulse font-medium">
                         {t('modals.expiryScanner.scanning')}
                       </span>
                     )}
@@ -938,13 +938,13 @@ export function ExpiryDateScannerModalWidget({
                 </div>
 
                 <div className="flex flex-col items-center gap-1.5">
-                  <p className="text-[11px] text-white/60 text-center">
+                  <p className="text-[11px] text-stocky-text-inverse/60 text-center">
                     {t('modals.expiryScanner.shutterHint')}
                   </p>
                   <button
                     type="button"
                     onClick={() => setShowManualInput(true)}
-                    className="text-[11px] text-emerald-400/90 hover:text-emerald-300 underline underline-offset-2 transition-colors"
+                    className="text-[11px] text-stocky-status-success-fg hover:text-stocky-status-success-fg underline underline-offset-2 transition-colors"
                   >
                     {t('modals.expiryScanner.manualEntryPrompt')}
                   </button>

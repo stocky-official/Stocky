@@ -192,7 +192,7 @@ export function SuppliersTableWidget({
                               <button
                                 type="button"
                                 onClick={() => onLinkProductToSupplier(supplier)}
-                                className="h-8 rounded-full border border-stocky-border-subtle bg-white px-3 text-[11px] font-medium text-stocky-text-main hover:border-stocky-primary hover:text-stocky-primary cursor-pointer inline-flex items-center justify-center transition-colors"
+                                className="h-8 rounded-full border border-stocky-border-subtle bg-stocky-bg-widget px-3 text-[11px] font-medium text-stocky-text-main hover:border-stocky-primary hover:text-stocky-primary cursor-pointer inline-flex items-center justify-center transition-colors"
                               >
                                 {t('suppliers.productAction')}
                               </button>
@@ -230,7 +230,7 @@ export function SuppliersTableWidget({
                       onSelectSupplier(supplier);
                     }
                   }}
-                  className="p-3.5 flex items-center justify-between gap-3 bg-white hover:bg-stocky-bg-global/30 active:bg-stocky-bg-global/60 transition-colors cursor-pointer text-start"
+                  className="p-3.5 flex items-center justify-between gap-3 bg-stocky-bg-widget hover:bg-stocky-bg-global/30 active:bg-stocky-bg-global/60 transition-colors cursor-pointer text-start"
                 >
                   {/* Left Anchor + Center Info */}
                   <div className="flex items-center gap-2.5 min-w-0 flex-1">

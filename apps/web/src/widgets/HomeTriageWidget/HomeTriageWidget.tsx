@@ -69,17 +69,17 @@ export function HomeTriageWidget({
   const getIcon = (type: UrgentTriageItem['type']) => {
     switch (type) {
       case 'expired':
-        return <AlertCircleIcon size="xs" className="text-rose-600" />;
+        return <AlertCircleIcon size="xs" className="text-stocky-status-critical-fg" />;
       case 'expiring':
-        return <ClockIcon size="xs" className="text-amber-600" />;
+        return <ClockIcon size="xs" className="text-stocky-status-warning-fg" />;
       case 'stockout':
-        return <AlertCircleIcon size="xs" className="text-amber-600" />;
+        return <AlertCircleIcon size="xs" className="text-stocky-status-warning-fg" />;
       case 'task_review':
-        return <CheckCircleIcon size="xs" className="text-emerald-600" />;
+        return <CheckCircleIcon size="xs" className="text-stocky-status-success-fg" />;
       case 'transfer_pending':
-        return <ArrowUpDownIcon size="xs" className="text-blue-600" />;
+        return <ArrowUpDownIcon size="xs" className="text-stocky-status-info-fg" />;
       case 'supplier_request':
-        return <TruckIcon size="xs" className="text-purple-600" />;
+        return <TruckIcon size="xs" className="text-stocky-status-hold-fg" />;
     }
   };
 
@@ -101,7 +101,7 @@ export function HomeTriageWidget({
             <button
               type="button"
               onClick={() => onSearch(query.trim())}
-              className="absolute right-2 px-2 py-0.5 rounded-lg bg-stocky-primary text-white text-[11px] font-medium hover:bg-stocky-primary-hover cursor-pointer"
+              className="absolute right-2 px-2 py-0.5 rounded-lg bg-stocky-primary text-stocky-text-inverse text-[11px] font-medium hover:bg-stocky-primary-hover cursor-pointer"
             >
               Search
             </button>
@@ -123,7 +123,7 @@ export function HomeTriageWidget({
             onClick={onOpenCount}
             className="h-8 px-3 rounded-xl bg-stocky-bg-widget hover:bg-stocky-bg-global border border-stocky-border-subtle text-stocky-text-main text-xs font-medium inline-flex items-center gap-1.5 shrink-0 cursor-pointer transition-colors"
           >
-            <CheckCircleIcon size="xs" className="text-emerald-600" />
+            <CheckCircleIcon size="xs" className="text-stocky-status-success-fg" />
             <span>Count audit</span>
           </button>
           <button
@@ -131,7 +131,7 @@ export function HomeTriageWidget({
             onClick={onOpenTransfers}
             className="h-8 px-3 rounded-xl bg-stocky-bg-widget hover:bg-stocky-bg-global border border-stocky-border-subtle text-stocky-text-main text-xs font-medium inline-flex items-center gap-1.5 shrink-0 cursor-pointer transition-colors"
           >
-            <ArrowUpDownIcon size="xs" className="text-blue-600" />
+            <ArrowUpDownIcon size="xs" className="text-stocky-status-info-fg" />
             <span>Transfer</span>
           </button>
         </div>
@@ -176,7 +176,7 @@ export function HomeTriageWidget({
                   <button
                     type="button"
                     onClick={item.onAction}
-                    className="h-7 px-3 rounded-lg bg-stocky-primary hover:bg-stocky-primary-hover text-white text-xs font-medium cursor-pointer transition-colors"
+                    className="h-7 px-3 rounded-lg bg-stocky-primary hover:bg-stocky-primary-hover text-stocky-text-inverse text-xs font-medium cursor-pointer transition-colors"
                   >
                     {item.actionLabel}
                   </button>

@@ -15,8 +15,8 @@ export default function PlatformError({
 
   return (
     <div className="min-h-[50vh] flex flex-col items-center justify-center px-4 text-center">
-      <div className="max-w-md w-full bg-white border border-stocky-border-subtle rounded-2xl p-6 shadow-sm flex flex-col items-center gap-4">
-        <div className="w-12 h-12 rounded-full bg-amber-50 text-amber-600 flex items-center justify-center text-xl font-bold">
+      <div className="max-w-md w-full bg-stocky-bg-widget border border-stocky-border-subtle rounded-2xl p-6 shadow-sm flex flex-col items-center gap-4">
+        <div className="w-12 h-12 rounded-full bg-stocky-status-warning-bg text-stocky-status-warning-fg flex items-center justify-center text-xl font-bold">
           !
         </div>
         <div>
@@ -28,7 +28,7 @@ export default function PlatformError({
         <button
           type="button"
           onClick={() => reset()}
-          className="h-9 px-4 rounded-full bg-stocky-primary text-white text-xs font-medium cursor-pointer hover:opacity-90 transition-opacity"
+          className="h-9 px-4 rounded-full bg-stocky-primary text-stocky-text-inverse text-xs font-medium cursor-pointer hover:opacity-90 transition-opacity"
         >
           Try again
         </button>

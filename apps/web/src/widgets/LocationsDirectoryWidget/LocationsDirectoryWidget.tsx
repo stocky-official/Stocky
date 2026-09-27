@@ -514,7 +514,7 @@ export function LocationsDirectoryWidget({
             }}
             className={`h-8 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
               filterType === 'all'
-                ? 'bg-white text-stocky-text-main shadow-xs'
+                ? 'bg-stocky-bg-widget text-stocky-text-main shadow-xs'
                 : 'text-stocky-text-sub hover:text-stocky-text-main'
             }`}
           >
@@ -528,7 +528,7 @@ export function LocationsDirectoryWidget({
             }}
             className={`h-8 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
               filterType === 'branch'
-                ? 'bg-white text-stocky-text-main shadow-xs'
+                ? 'bg-stocky-bg-widget text-stocky-text-main shadow-xs'
                 : 'text-stocky-text-sub hover:text-stocky-text-main'
             }`}
           >
@@ -542,7 +542,7 @@ export function LocationsDirectoryWidget({
             }}
             className={`h-8 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
               filterType === 'warehouse'
-                ? 'bg-white text-stocky-text-main shadow-xs'
+                ? 'bg-stocky-bg-widget text-stocky-text-main shadow-xs'
                 : 'text-stocky-text-sub hover:text-stocky-text-main'
             }`}
           >
@@ -654,7 +654,7 @@ export function LocationsDirectoryWidget({
   return (
     <div className="stocky-locations-workspace flex flex-col gap-6">
       {/* Unified Workspace Card */}
-      <div className="stocky-stock-unified-card rounded-2xl bg-white border border-stocky-border-subtle shadow-xs flex flex-col relative z-20 overflow-visible">
+      <div className="stocky-stock-unified-card rounded-2xl bg-stocky-bg-widget border border-stocky-border-subtle shadow-xs flex flex-col relative z-20 overflow-visible">
         {/* Integrated Toolbar Header */}
         <div className="p-3 sm:p-3.5 border-b border-stocky-border-subtle relative z-30">
           <StandardToolbarWidget
@@ -694,7 +694,7 @@ export function LocationsDirectoryWidget({
               aria-label={t('locations.filtersTitle')}
             >
               {/* Sticky Header */}
-              <div className="sticky top-0 z-10 flex shrink-0 items-center justify-between border-b border-stocky-border-subtle bg-white px-4 py-2.5">
+              <div className="sticky top-0 z-10 flex shrink-0 items-center justify-between border-b border-stocky-border-subtle bg-stocky-bg-widget px-4 py-2.5">
                 <div className="flex items-center gap-2">
                   <FilterIcon size="xs" className="text-stocky-primary" />
                   <h3 className="text-xs font-semibold text-stocky-text-main">{t('locations.filtersTitle')}</h3>
@@ -729,7 +729,7 @@ export function LocationsDirectoryWidget({
                 <button
                   type="button"
                   onClick={() => setIsFilterPanelOpen(false)}
-                  className="h-7 rounded-full bg-stocky-primary px-3 text-xs font-medium text-white hover:bg-stocky-primary-hover cursor-pointer"
+                  className="h-7 rounded-full bg-stocky-primary px-3 text-xs font-medium text-stocky-text-inverse hover:bg-stocky-primary-hover cursor-pointer"
                 >
                   {t('locations.done')}
                 </button>
@@ -757,7 +757,7 @@ export function LocationsDirectoryWidget({
                 <button
                   type="button"
                   onClick={() => setIsFilterPanelOpen(false)}
-                  className="h-9 px-5 rounded-full bg-stocky-primary text-white text-xs font-semibold cursor-pointer"
+                  className="h-9 px-5 rounded-full bg-stocky-primary text-stocky-text-inverse text-xs font-semibold cursor-pointer"
                 >
                   {t('locations.applyFilters')}
                 </button>
@@ -799,7 +799,7 @@ export function LocationsDirectoryWidget({
                         onOpenStock(location.id);
                       }
                     }}
-                    className="group relative flex flex-col rounded-2xl bg-white border border-stocky-border-subtle p-4 sm:p-5 shadow-2xs hover:border-stocky-border-strong hover:shadow-xs transition-all duration-200 cursor-pointer text-start gap-3.5"
+                    className="group relative flex flex-col rounded-2xl bg-stocky-bg-widget border border-stocky-border-subtle p-4 sm:p-5 shadow-2xs hover:border-stocky-border-strong hover:shadow-xs transition-all duration-200 cursor-pointer text-start gap-3.5"
                   >
                     {/* Header: Facility Identity & Quick Actions */}
                     <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
@@ -822,7 +822,7 @@ export function LocationsDirectoryWidget({
                               }}
                             />
                             {canManage && (
-                              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/thumb:opacity-100 transition-opacity flex items-center justify-center text-white">
+                              <div className="absolute inset-0 bg-stocky-text-main/40 opacity-0 group-hover/thumb:opacity-100 transition-opacity flex items-center justify-center text-stocky-text-inverse">
                                 <CameraIcon size="xs" />
                               </div>
                             )}
@@ -861,7 +861,7 @@ export function LocationsDirectoryWidget({
                                 location.isActive ? 'stocky-status-success' : 'stocky-status-muted'
                               }`}
                             >
-                              <span className={`w-1.5 h-1.5 rounded-full ${location.isActive ? 'bg-emerald-500' : 'bg-neutral-400'}`} />
+                              <span className={`w-1.5 h-1.5 rounded-full ${location.isActive ? 'bg-stocky-status-success-fg' : 'bg-stocky-status-muted-fg'}`} />
                               <span>{location.isActive ? t('locations.active') : t('locations.archived')}</span>
                             </span>
                           </div>
@@ -888,7 +888,7 @@ export function LocationsDirectoryWidget({
                               e.stopPropagation();
                               openEditDrawer(location);
                             }}
-                            className="h-8.5 px-3 rounded-full border border-stocky-border-subtle bg-white text-xs font-medium text-stocky-text-main hover:bg-stocky-bg-global hover:border-stocky-border-strong transition-colors cursor-pointer inline-flex items-center gap-1.5 shadow-2xs"
+                            className="h-8.5 px-3 rounded-full border border-stocky-border-subtle bg-stocky-bg-widget text-xs font-medium text-stocky-text-main hover:bg-stocky-bg-global hover:border-stocky-border-strong transition-colors cursor-pointer inline-flex items-center gap-1.5 shadow-2xs"
                             title={t('locations.editLocationTitle')}
                           >
                             <EditIcon size="xs" />
@@ -901,7 +901,7 @@ export function LocationsDirectoryWidget({
                             e.stopPropagation();
                             setQrLocation(location);
                           }}
-                          className="h-8.5 px-3 rounded-full border border-stocky-border-subtle bg-white text-xs font-medium text-stocky-text-main hover:border-stocky-primary hover:text-stocky-primary transition-colors cursor-pointer inline-flex items-center gap-1.5 shadow-2xs"
+                          className="h-8.5 px-3 rounded-full border border-stocky-border-subtle bg-stocky-bg-widget text-xs font-medium text-stocky-text-main hover:border-stocky-primary hover:text-stocky-primary transition-colors cursor-pointer inline-flex items-center gap-1.5 shadow-2xs"
                           title={t('locations.attendanceQrTitle')}
                         >
                           <QrCodeIcon size="xs" />
@@ -933,10 +933,10 @@ export function LocationsDirectoryWidget({
                               name={manager.full_name}
                               email={manager.email}
                               size="xs"
-                              className="ring-1 ring-white shrink-0"
+                              className="ring-1 ring-stocky-text-inverse shrink-0"
                             />
                           ) : (
-                            <div className="flex h-5 w-5 items-center justify-center rounded-full bg-amber-50 text-amber-600 border border-amber-200 text-[9px] shrink-0">
+                            <div className="flex h-5 w-5 items-center justify-center rounded-full bg-stocky-status-warning-bg text-stocky-status-warning-fg border border-stocky-status-warning-border text-[9px] shrink-0">
                               <UsersIcon size="xs" />
                             </div>
                           )}
@@ -948,7 +948,7 @@ export function LocationsDirectoryWidget({
                               {manager ? (
                                 manager.full_name || manager.email
                               ) : (
-                                <span className="text-amber-700">{t('locations.notAssigned')}</span>
+                                <span className="text-stocky-status-warning-fg">{t('locations.notAssigned')}</span>
                               )}
                             </span>
                           </div>
@@ -983,11 +983,11 @@ export function LocationsDirectoryWidget({
                                     name={member.full_name}
                                     email={member.email}
                                     size="xs"
-                                    className="ring-1 ring-white"
+                                    className="ring-1 ring-stocky-text-inverse"
                                   />
                                 ))}
                                 {assignedStaff.length > 3 && (
-                                  <span className="flex h-5 w-5 items-center justify-center rounded-full bg-white ring-1 ring-stocky-border-subtle text-[8px] font-bold text-stocky-text-sub">
+                                  <span className="flex h-5 w-5 items-center justify-center rounded-full bg-stocky-bg-widget ring-1 ring-stocky-border-subtle text-[8px] font-bold text-stocky-text-sub">
                                     +{assignedStaff.length - 3}
                                   </span>
                                 )}
@@ -1009,8 +1009,8 @@ export function LocationsDirectoryWidget({
                             {t('locations.onDutyNow')}:
                           </span>
                           {activeShiftsNow > 0 ? (
-                            <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200/80 px-2 py-0.5 rounded-full">
-                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                            <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-stocky-status-success-fg bg-stocky-status-success-bg border border-stocky-status-success-border px-2 py-0.5 rounded-full">
+                              <span className="w-1.5 h-1.5 rounded-full bg-stocky-status-success-fg animate-pulse" />
                               <span>{t('locations.workingCount', { count: activeShiftsNow })}</span>
                             </span>
                           ) : (
@@ -1089,7 +1089,7 @@ export function LocationsDirectoryWidget({
                               e.stopPropagation();
                               openEditDrawer(location);
                             }}
-                            className="h-9 px-3 flex-1 rounded-full border border-stocky-border-subtle bg-white text-xs font-medium text-stocky-text-main inline-flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs"
+                            className="h-9 px-3 flex-1 rounded-full border border-stocky-border-subtle bg-stocky-bg-widget text-xs font-medium text-stocky-text-main inline-flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs"
                           >
                             <EditIcon size="xs" />
                             <span>{t('locations.edit')}</span>
@@ -1101,7 +1101,7 @@ export function LocationsDirectoryWidget({
                             e.stopPropagation();
                             setQrLocation(location);
                           }}
-                          className="h-9 px-3 flex-1 rounded-full border border-stocky-border-subtle bg-white text-xs font-medium text-stocky-text-main inline-flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs"
+                          className="h-9 px-3 flex-1 rounded-full border border-stocky-border-subtle bg-stocky-bg-widget text-xs font-medium text-stocky-text-main inline-flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs"
                         >
                           <QrCodeIcon size="xs" />
                           <span>{t('locations.qrPoster')}</span>
@@ -1125,7 +1125,7 @@ export function LocationsDirectoryWidget({
             </div>
           ) : (
             /* Empty State */
-            <div className="rounded-2xl bg-white px-6 py-16 text-center">
+            <div className="rounded-2xl bg-stocky-bg-widget px-6 py-16 text-center">
               <BoxesIcon size="md" className="mx-auto text-stocky-text-sub/50" />
               <h2 className="mt-3 text-base font-semibold text-stocky-text-main">{t('locations.noLocationsFound')}</h2>
               <p className="mt-1 text-sm text-stocky-text-sub">
@@ -1204,7 +1204,7 @@ export function LocationsDirectoryWidget({
                     value={drawerName}
                     onChange={(e) => setDrawerName(e.target.value)}
                     placeholder={t('locations.locationNamePlaceholder')}
-                    className="mt-1 h-9 w-full rounded-xl border border-stocky-border-subtle bg-stocky-bg-global px-3 text-xs text-stocky-text-main focus:border-stocky-primary focus:bg-white focus:outline-none"
+                    className="mt-1 h-9 w-full rounded-xl border border-stocky-border-subtle bg-stocky-bg-global px-3 text-xs text-stocky-text-main focus:border-stocky-primary focus:bg-stocky-bg-widget focus:outline-none"
                   />
                 </label>
               </div>
@@ -1215,7 +1215,7 @@ export function LocationsDirectoryWidget({
                   <select
                     value={drawerType}
                     onChange={(e) => setDrawerType(e.target.value as any)}
-                    className="mt-1 h-9 w-full rounded-xl border border-stocky-border-subtle bg-stocky-bg-global px-3 text-xs text-stocky-text-main focus:border-stocky-primary focus:bg-white focus:outline-none"
+                    className="mt-1 h-9 w-full rounded-xl border border-stocky-border-subtle bg-stocky-bg-global px-3 text-xs text-stocky-text-main focus:border-stocky-primary focus:bg-stocky-bg-widget focus:outline-none"
                   >
                     <option value="branch">{t('locations.typeBranchOption')}</option>
                     <option value="warehouse">{t('locations.typeWarehouseOption')}</option>
@@ -1229,7 +1229,7 @@ export function LocationsDirectoryWidget({
                     value={drawerPhone}
                     onChange={(e) => setDrawerPhone(e.target.value)}
                     placeholder={t('locations.phonePlaceholder')}
-                    className="mt-1 h-9 w-full rounded-xl border border-stocky-border-subtle bg-stocky-bg-global px-3 text-xs text-stocky-text-main focus:border-stocky-primary focus:bg-white focus:outline-none"
+                    className="mt-1 h-9 w-full rounded-xl border border-stocky-border-subtle bg-stocky-bg-global px-3 text-xs text-stocky-text-main focus:border-stocky-primary focus:bg-stocky-bg-widget focus:outline-none"
                   />
                 </label>
               </div>
@@ -1242,7 +1242,7 @@ export function LocationsDirectoryWidget({
                     value={drawerAddress}
                     onChange={(e) => setDrawerAddress(e.target.value)}
                     placeholder={t('locations.addressInputPlaceholder')}
-                    className="mt-1 h-9 w-full rounded-xl border border-stocky-border-subtle bg-stocky-bg-global px-3 text-xs text-stocky-text-main focus:border-stocky-primary focus:bg-white focus:outline-none"
+                    className="mt-1 h-9 w-full rounded-xl border border-stocky-border-subtle bg-stocky-bg-global px-3 text-xs text-stocky-text-main focus:border-stocky-primary focus:bg-stocky-bg-widget focus:outline-none"
                   />
                 </label>
               </div>
@@ -1261,7 +1261,7 @@ export function LocationsDirectoryWidget({
                       setDrawerImageUrl('');
                       setUploadError(null);
                     }}
-                    className="text-[11px] font-medium text-rose-600 hover:underline cursor-pointer"
+                    className="text-[11px] font-medium text-stocky-status-critical-fg hover:underline cursor-pointer"
                   >
                     {t('locations.removePhoto')}
                   </button>
@@ -1270,7 +1270,7 @@ export function LocationsDirectoryWidget({
 
               {/* Uploaded Photo Preview */}
               {drawerImageUrl ? (
-                <div className="relative h-44 w-full overflow-hidden rounded-2xl border border-stocky-border-subtle bg-slate-100 group shadow-xs">
+                <div className="relative h-44 w-full overflow-hidden rounded-2xl border border-stocky-border-subtle bg-stocky-bg-subtle group shadow-xs">
                   <img
                     src={drawerImageUrl}
                     alt={t('locations.coverPreviewAlt')}
@@ -1280,9 +1280,9 @@ export function LocationsDirectoryWidget({
                     }}
                     className="h-full w-full object-cover"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent flex flex-col justify-between p-3.5">
+                  <div className="absolute inset-0 bg-gradient-to-t from-stocky-text-main/75 via-stocky-text-main/20 to-transparent flex flex-col justify-between p-3.5">
                     <div className="flex justify-end">
-                      <span className="inline-flex items-center gap-1.5 rounded-full bg-black/65 backdrop-blur-md px-2.5 py-1 text-[10px] font-medium text-white shadow-xs">
+                      <span className="inline-flex items-center gap-1.5 rounded-full bg-stocky-text-main/65 backdrop-blur-md px-2.5 py-1 text-[10px] font-medium text-stocky-text-inverse shadow-xs">
                         <CheckIcon size="xs" className="text-stocky-accent" />
                         <span>{t('locations.savedToPrivate')}</span>
                       </span>
@@ -1293,7 +1293,7 @@ export function LocationsDirectoryWidget({
                         type="button"
                         onClick={() => fileInputRef.current?.click()}
                         disabled={uploadingImage}
-                        className="rounded-lg bg-white/95 hover:bg-white px-3 py-1.5 text-xs font-semibold text-stocky-text-main shadow-sm transition-all cursor-pointer inline-flex items-center gap-1.5 disabled:opacity-60"
+                        className="rounded-lg bg-stocky-bg-widget/95 hover:bg-stocky-bg-widget px-3 py-1.5 text-xs font-semibold text-stocky-text-main shadow-sm transition-all cursor-pointer inline-flex items-center gap-1.5 disabled:opacity-60"
                       >
                         <CameraIcon size="xs" />
                         <span>{t('locations.replacePhoto')}</span>
@@ -1304,7 +1304,7 @@ export function LocationsDirectoryWidget({
                           setDrawerImageUrl('');
                           setUploadError(null);
                         }}
-                        className="rounded-lg bg-rose-600/90 hover:bg-rose-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition-all cursor-pointer"
+                        className="rounded-lg bg-stocky-status-critical-fg hover:bg-stocky-status-critical-fg px-3 py-1.5 text-xs font-semibold text-stocky-text-inverse shadow-sm transition-colors cursor-pointer"
                       >
                         {t('locations.remove')}
                       </button>
@@ -1332,7 +1332,7 @@ export function LocationsDirectoryWidget({
                       : 'border-stocky-border-subtle bg-stocky-bg-subtle hover:border-stocky-primary/50 hover:bg-stocky-bg-hover'
                   } ${uploadingImage ? 'pointer-events-none opacity-60' : ''}`}
                 >
-                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white shadow-xs border border-stocky-border-subtle text-stocky-primary group-hover:scale-110 transition-transform mb-2">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-stocky-bg-widget shadow-xs border border-stocky-border-subtle text-stocky-primary group-hover:scale-110 transition-transform mb-2">
                     {uploadingImage ? (
                       <div className="h-5 w-5 animate-spin rounded-full border-2 border-stocky-primary border-t-transparent" />
                     ) : (
@@ -1368,8 +1368,8 @@ export function LocationsDirectoryWidget({
 
               {/* Upload Error Banner */}
               {uploadError && (
-                <div className="flex items-center gap-2 rounded-xl bg-rose-50 border border-rose-200 p-2.5 text-xs text-rose-700">
-                  <AlertCircleIcon size="xs" className="shrink-0 text-rose-500" />
+                <div className="flex items-center gap-2 rounded-xl bg-stocky-status-critical-bg border border-stocky-status-critical-border p-2.5 text-xs text-stocky-status-critical-fg">
+                  <AlertCircleIcon size="xs" className="shrink-0 text-stocky-status-critical-fg" />
                   <span>{uploadError}</span>
                 </div>
               )}
@@ -1386,7 +1386,7 @@ export function LocationsDirectoryWidget({
                 <select
                   value={drawerManagerUserId}
                   onChange={(e) => setDrawerManagerUserId(e.target.value)}
-                  className="mt-1 h-9 w-full rounded-xl border border-stocky-border-subtle bg-stocky-bg-global px-3 text-xs text-stocky-text-main focus:border-stocky-primary focus:bg-white focus:outline-none"
+                  className="mt-1 h-9 w-full rounded-xl border border-stocky-border-subtle bg-stocky-bg-global px-3 text-xs text-stocky-text-main focus:border-stocky-primary focus:bg-stocky-bg-widget focus:outline-none"
                 >
                   <option value="">{t('locations.noManagerAssigned')}</option>
                   {availableMembers
@@ -1482,7 +1482,7 @@ export function LocationsDirectoryWidget({
               type="button"
               onClick={closeDrawer}
               disabled={drawerSaving}
-              className="h-10 rounded-full border border-stocky-border-subtle bg-white px-5 text-xs font-medium text-stocky-text-main hover:bg-stocky-bg-global transition-colors cursor-pointer"
+              className="h-10 rounded-full border border-stocky-border-subtle bg-stocky-bg-widget px-5 text-xs font-medium text-stocky-text-main hover:bg-stocky-bg-global transition-colors cursor-pointer"
             >
               {t('locations.cancel')}
             </button>
@@ -1490,7 +1490,7 @@ export function LocationsDirectoryWidget({
               type="submit"
               form="location-drawer-form"
               disabled={drawerSaving || !drawerName.trim()}
-              className="h-10 rounded-full bg-stocky-primary px-6 text-xs font-medium text-white hover:bg-stocky-primary-hover transition-colors shadow-xs disabled:opacity-50 cursor-pointer"
+              className="h-10 rounded-full bg-stocky-primary px-6 text-xs font-medium text-stocky-text-inverse hover:bg-stocky-primary-hover transition-colors shadow-xs disabled:opacity-50 cursor-pointer"
             >
               {drawerSaving
                 ? t('locations.saving')
@@ -1549,9 +1549,9 @@ export function LocationsDirectoryWidget({
                 <img
                   src={`https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=stocky:branch:${qrLocation.id}`}
                   alt={t('locations.qrCodeAlt', { name: qrLocation.name })}
-                  className="w-56 h-56 rounded-xl object-contain bg-white p-2 shadow-xs"
+                  className="w-56 h-56 rounded-xl object-contain bg-stocky-bg-widget p-2 shadow-xs"
                 />
-                <div className="mt-4 text-xs font-mono font-semibold text-stocky-text-sub bg-white border border-stocky-border-subtle px-3 py-1 rounded-full">
+                <div className="mt-4 text-xs font-sans font-semibold text-stocky-text-sub bg-stocky-bg-widget border border-stocky-border-subtle px-3 py-1 rounded-full">
                   {t('locations.branchToken', { token: qrLocation.id.slice(0, 8) })}
                 </div>
               </div>
@@ -1568,7 +1568,7 @@ export function LocationsDirectoryWidget({
             </div>
 
             {/* Footer */}
-            <div className="border-t border-stocky-border-subtle px-5 py-3.5 bg-white flex items-center justify-between shrink-0 gap-2">
+            <div className="border-t border-stocky-border-subtle px-5 py-3.5 bg-stocky-bg-widget flex items-center justify-between shrink-0 gap-2">
               <button
                 type="button"
                 onClick={() => setQrLocation(null)}
@@ -1582,7 +1582,7 @@ export function LocationsDirectoryWidget({
                   download={`${qrLocation.name.toLowerCase().replace(/\s+/g, '-')}-qr-poster.png`}
                   target="_blank"
                   rel="noreferrer"
-                  className="h-9 px-3.5 rounded-full border border-stocky-border-subtle bg-white text-xs font-medium text-stocky-text-main hover:border-stocky-primary hover:text-stocky-primary transition-colors cursor-pointer inline-flex items-center gap-1.5 shadow-2xs"
+                  className="h-9 px-3.5 rounded-full border border-stocky-border-subtle bg-stocky-bg-widget text-xs font-medium text-stocky-text-main hover:border-stocky-primary hover:text-stocky-primary transition-colors cursor-pointer inline-flex items-center gap-1.5 shadow-2xs"
                 >
                   <CloudDownloadIcon size="xs" />
                   <span>{t('locations.downloadPng')}</span>
@@ -1590,7 +1590,7 @@ export function LocationsDirectoryWidget({
                 <button
                   type="button"
                   onClick={() => window.print()}
-                  className="h-9 px-4 rounded-full bg-stocky-primary text-white text-xs font-semibold hover:bg-stocky-primary-hover transition-colors cursor-pointer inline-flex items-center gap-1.5 shadow-sm"
+                  className="h-9 px-4 rounded-full bg-stocky-primary text-stocky-text-inverse text-xs font-semibold hover:bg-stocky-primary-hover transition-colors cursor-pointer inline-flex items-center gap-1.5 shadow-sm"
                 >
                   <QrCodeIcon size="xs" />
                   <span>{t('locations.printPoster')}</span>
@@ -1603,4 +1603,3 @@ export function LocationsDirectoryWidget({
     </div>
   );
 }
-

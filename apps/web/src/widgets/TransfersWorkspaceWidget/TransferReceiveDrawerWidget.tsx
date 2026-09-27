@@ -109,7 +109,7 @@ export function TransferReceiveDrawerWidget({
 
   return (
     <SideDrawer isOpen={isOpen} onClose={onClose} ariaLabel={t('drawers.transferReceive.title')}>
-      <div className="flex h-full flex-col bg-white">
+      <div className="flex h-full flex-col bg-stocky-bg-widget">
         {/* Header */}
         <div className="flex items-center justify-between border-b border-stocky-border-subtle p-4 sm:p-5">
           <div>
@@ -133,7 +133,7 @@ export function TransferReceiveDrawerWidget({
         {/* Form Body */}
         <form onSubmit={handleSubmit} className="flex flex-1 flex-col overflow-y-auto p-4 sm:p-5 gap-5">
           {error && (
-            <div className="rounded-xl border border-red-200 bg-red-50 p-3 text-xs text-red-700">
+            <div className="rounded-xl border border-stocky-status-critical-border bg-stocky-status-critical-bg p-3 text-xs text-stocky-status-critical-fg">
               {error}
             </div>
           )}
@@ -190,7 +190,7 @@ export function TransferReceiveDrawerWidget({
                   Number(receiptQuantities[line.id] || 0) <
                   Math.max(0, (line.quantityApproved ?? line.quantityRequested) - line.quantityReceived)
               ) ? (
-                <span className="text-red-600">{t('drawers.transferReceive.shortageRequired')}</span>
+                <span className="text-stocky-status-critical-fg">{t('drawers.transferReceive.shortageRequired')}</span>
               ) : (
                 <span className="text-stocky-text-sub font-normal">{t('drawers.transferReceive.optional')}</span>
               )}
@@ -214,7 +214,7 @@ export function TransferReceiveDrawerWidget({
             </button>
             <button
               type="submit"
-              className="h-10 rounded-full bg-stocky-primary px-6 text-xs font-medium text-white hover:bg-stocky-primary-hover transition-colors cursor-pointer shadow-sm"
+              className="h-10 rounded-full bg-stocky-primary px-6 text-xs font-medium text-stocky-text-inverse hover:bg-stocky-primary-hover transition-colors cursor-pointer shadow-sm"
             >
               {t('drawers.transferReceive.saveReceipt')}
             </button>

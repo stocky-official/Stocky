@@ -327,9 +327,9 @@ ${locationLabel}`;
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/40 backdrop-blur-sm animate-fade-in">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-stocky-text-main/40 backdrop-blur-sm animate-fade-in">
       <div
-        className="w-full max-w-2xl max-h-[90vh] bg-white rounded-widget border border-stocky-border-subtle flex flex-col overflow-hidden animate-scale-in"
+        className="w-full max-w-2xl max-h-[90vh] bg-stocky-bg-widget rounded-widget border border-stocky-border-subtle flex flex-col overflow-hidden animate-scale-in"
         role="dialog"
         aria-label={t('modals.resupply.composerTitle')}
       >
@@ -359,7 +359,7 @@ ${locationLabel}`;
             <select
               value={selectedSupplierId}
               onChange={(e) => handleSupplierSelect(e.target.value)}
-              className="h-7 px-2 rounded-md border border-stocky-border-subtle bg-white text-xs text-stocky-text-main focus:border-stocky-primary focus:outline-none max-w-[280px]"
+              className="h-7 px-2 rounded-md border border-stocky-border-subtle bg-stocky-bg-widget text-xs text-stocky-text-main focus:border-stocky-primary focus:outline-none max-w-[280px]"
             >
               <option value="">{t('modals.resupply.selectSupplierPlaceholder')}</option>
               {suppliers.map((s) => (
@@ -383,7 +383,7 @@ ${locationLabel}`;
                   <button
                     type="button"
                     onClick={() => handleRemoveEmail('to', email)}
-                    className="text-stocky-text-sub hover:text-red-600"
+                    className="text-stocky-text-sub hover:text-stocky-status-critical-fg"
                   >
                     <XIcon size={10} />
                   </button>
@@ -440,7 +440,7 @@ ${locationLabel}`;
                     <button
                       type="button"
                       onClick={() => handleRemoveEmail('cc', email)}
-                      className="text-stocky-text-sub hover:text-red-600"
+                      className="text-stocky-text-sub hover:text-stocky-status-critical-fg"
                     >
                       <XIcon size={10} />
                     </button>
@@ -478,7 +478,7 @@ ${locationLabel}`;
                     <button
                       type="button"
                       onClick={() => handleRemoveEmail('bcc', email)}
-                      className="text-stocky-text-sub hover:text-red-600"
+                      className="text-stocky-text-sub hover:text-stocky-status-critical-fg"
                     >
                       <XIcon size={10} />
                     </button>
@@ -532,7 +532,7 @@ ${locationLabel}`;
               type="button"
               onClick={handleSend}
               disabled={isSending || sendSuccess}
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-stocky-primary text-white text-xs font-medium hover:bg-stocky-primary-hover transition-colors disabled:opacity-50 cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-stocky-primary text-stocky-text-inverse text-xs font-medium hover:bg-stocky-primary-hover transition-colors disabled:opacity-50 cursor-pointer"
             >
               {sendSuccess ? (
                 <>
@@ -550,13 +550,13 @@ ${locationLabel}`;
             <button
               type="button"
               onClick={handleCopy}
-              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border border-stocky-border-subtle bg-white text-xs font-medium text-stocky-text-main hover:bg-stocky-bg-global transition-colors cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border border-stocky-border-subtle bg-stocky-bg-widget text-xs font-medium text-stocky-text-main hover:bg-stocky-bg-global transition-colors cursor-pointer"
               title={t('modals.resupply.copyTitle')}
             >
               {copied ? (
                 <>
-                  <CheckIcon size="xs" className="text-emerald-600" />
-                  <span className="text-emerald-600">{t('modals.resupply.copiedToClipboard')}</span>
+                  <CheckIcon size="xs" className="text-stocky-status-success-fg" />
+                  <span className="text-stocky-status-success-fg">{t('modals.resupply.copiedToClipboard')}</span>
                 </>
               ) : (
                 <>{t('modals.resupply.copyText')}</>
@@ -573,7 +573,7 @@ ${locationLabel}`;
             <button
               type="button"
               onClick={onClose}
-              className="p-1.5 rounded-md text-stocky-text-sub hover:text-red-600 hover:bg-red-50 transition-colors cursor-pointer"
+              className="p-1.5 rounded-md text-stocky-text-sub hover:text-stocky-status-critical-fg hover:bg-stocky-status-critical-bg transition-colors cursor-pointer"
               title={t('modals.resupply.discardDraft')}
             >
               <TrashIcon size="xs" />

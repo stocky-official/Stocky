@@ -60,7 +60,7 @@ export function ChartFilterBottomSheet({
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
             onClick={onClose}
-            className="fixed inset-0 bg-black/40 backdrop-blur-xs"
+            className="fixed inset-0 bg-stocky-text-main/40 backdrop-blur-xs"
           />
 
           {/* Sliding Window from the Bottom */}
@@ -122,7 +122,7 @@ export function ChartFilterBottomSheet({
                   if (onApply) onApply();
                   onClose();
                 }}
-                className="h-10 px-6 rounded-xl bg-stocky-primary hover:bg-stocky-primary-hover text-white text-xs font-semibold transition-all shadow-sm active:scale-[0.98] cursor-pointer"
+                className="h-10 px-6 rounded-xl bg-stocky-primary hover:bg-stocky-primary-hover text-stocky-text-inverse text-xs font-semibold transition-all shadow-sm active:scale-[0.98] cursor-pointer"
               >
                 {t('filters.apply')}
               </button>

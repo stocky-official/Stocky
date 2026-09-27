@@ -98,7 +98,7 @@ export function LotEditForm({
   t: (key: any, params?: any) => string;
 }) {
   return (
-    <div className="rounded-xl border border-stocky-border-subtle bg-white p-3.5 sm:p-4 shadow-xs flex flex-col gap-3">
+    <div className="rounded-xl border border-stocky-border-subtle bg-stocky-bg-widget p-3.5 sm:p-4 shadow-xs flex flex-col gap-3">
       <div className="flex items-center justify-between border-b border-stocky-border-subtle/80 pb-2.5">
         <div className="flex items-center gap-2">
           <span className="flex h-6 w-6 items-center justify-center rounded-md bg-stocky-primary/10 text-stocky-primary">
@@ -116,7 +116,7 @@ export function LotEditForm({
             {t('drawers.inventoryLots.lotNumberLabel')}
           </label>
           <input
-            className="w-full h-8 px-2.5 rounded-lg border border-stocky-border-subtle bg-stocky-bg-global text-xs text-stocky-text-main focus:border-stocky-primary focus:bg-white focus:outline-none transition-colors"
+            className="w-full h-8 px-2.5 rounded-lg border border-stocky-border-subtle bg-stocky-bg-global text-xs text-stocky-text-main focus:border-stocky-primary focus:bg-stocky-bg-widget focus:outline-none transition-colors"
             value={editDraft.lotNumber}
             onChange={(event) => setEditDraft({ ...editDraft, lotNumber: event.target.value })}
             placeholder={t('drawers.inventoryLots.lotNumberPlaceholder')}
@@ -128,7 +128,7 @@ export function LotEditForm({
             {t('drawers.inventoryLots.supplierLabel')}
           </label>
           <select
-            className="w-full h-8 px-2 rounded-lg border border-stocky-border-subtle bg-stocky-bg-global text-xs text-stocky-text-main focus:border-stocky-primary focus:bg-white focus:outline-none transition-colors cursor-pointer"
+            className="w-full h-8 px-2 rounded-lg border border-stocky-border-subtle bg-stocky-bg-global text-xs text-stocky-text-main focus:border-stocky-primary focus:bg-stocky-bg-widget focus:outline-none transition-colors cursor-pointer"
             value={editDraft.supplierId}
             onChange={(event) => setEditDraft({ ...editDraft, supplierId: event.target.value })}
           >
@@ -146,7 +146,7 @@ export function LotEditForm({
             {t('drawers.inventoryLots.unitCostLabel')}
           </label>
           <input
-            className="w-full h-8 px-2.5 rounded-lg border border-stocky-border-subtle bg-stocky-bg-global text-xs text-stocky-text-main focus:border-stocky-primary focus:bg-white focus:outline-none transition-colors"
+            className="w-full h-8 px-2.5 rounded-lg border border-stocky-border-subtle bg-stocky-bg-global text-xs text-stocky-text-main focus:border-stocky-primary focus:bg-stocky-bg-widget focus:outline-none transition-colors"
             type="number"
             min="0"
             step="0.01"
@@ -160,7 +160,7 @@ export function LotEditForm({
             {t('drawers.inventoryLots.receivedDateLabel')}
           </label>
           <input
-            className="w-full h-8 px-2.5 rounded-lg border border-stocky-border-subtle bg-stocky-bg-global text-xs text-stocky-text-main focus:border-stocky-primary focus:bg-white focus:outline-none transition-colors"
+            className="w-full h-8 px-2.5 rounded-lg border border-stocky-border-subtle bg-stocky-bg-global text-xs text-stocky-text-main focus:border-stocky-primary focus:bg-stocky-bg-widget focus:outline-none transition-colors"
             type="date"
             value={editDraft.receivedDate}
             onChange={(event) => setEditDraft({ ...editDraft, receivedDate: event.target.value })}
@@ -172,7 +172,7 @@ export function LotEditForm({
             {t('drawers.inventoryLots.expiryDateLabel')}
           </label>
           <input
-            className="w-full h-8 px-2.5 rounded-lg border border-stocky-border-subtle bg-stocky-bg-global text-xs text-stocky-text-main focus:border-stocky-primary focus:bg-white focus:outline-none transition-colors"
+            className="w-full h-8 px-2.5 rounded-lg border border-stocky-border-subtle bg-stocky-bg-global text-xs text-stocky-text-main focus:border-stocky-primary focus:bg-stocky-bg-widget focus:outline-none transition-colors"
             type="date"
             value={editDraft.expiryDate}
             onChange={(event) => setEditDraft({ ...editDraft, expiryDate: event.target.value })}
@@ -184,7 +184,7 @@ export function LotEditForm({
             {t('drawers.inventoryLots.alertWindowLabel')}
           </label>
           <input
-            className="w-full h-8 px-2.5 rounded-lg border border-stocky-border-subtle bg-stocky-bg-global text-xs text-stocky-text-main focus:border-stocky-primary focus:bg-white focus:outline-none transition-colors"
+            className="w-full h-8 px-2.5 rounded-lg border border-stocky-border-subtle bg-stocky-bg-global text-xs text-stocky-text-main focus:border-stocky-primary focus:bg-stocky-bg-widget focus:outline-none transition-colors"
             type="number"
             min="0"
             step="1"
@@ -199,7 +199,7 @@ export function LotEditForm({
             {t('drawers.inventoryLots.notesLabel')}
           </label>
           <input
-            className="w-full h-8 px-2.5 rounded-lg border border-stocky-border-subtle bg-stocky-bg-global text-xs text-stocky-text-main focus:border-stocky-primary focus:bg-white focus:outline-none transition-colors"
+            className="w-full h-8 px-2.5 rounded-lg border border-stocky-border-subtle bg-stocky-bg-global text-xs text-stocky-text-main focus:border-stocky-primary focus:bg-stocky-bg-widget focus:outline-none transition-colors"
             value={editDraft.notes}
             onChange={(event) => setEditDraft({ ...editDraft, notes: event.target.value })}
             placeholder={t('drawers.inventoryLots.notesPlaceholder')}
@@ -227,7 +227,7 @@ export function LotEditForm({
           type="button"
           onClick={() => void saveEdit(lot)}
           disabled={savingLotId === lot.id}
-          className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-stocky-primary text-white text-xs font-medium hover:bg-stocky-primary-hover transition-colors disabled:opacity-50 cursor-pointer"
+          className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-stocky-primary text-stocky-text-inverse text-xs font-medium hover:bg-stocky-primary-hover transition-colors disabled:opacity-50 cursor-pointer"
         >
           <CheckIcon size="xs" />
           {savingLotId === lot.id ? t('drawers.inventoryLots.saving') : t('drawers.inventoryLots.saveBatch')}
@@ -407,41 +407,41 @@ export function InventoryProductLotsWidget({ product, lots, locations, suppliers
       {/* Batches / Lots Content */}
       <div className="flex-1 min-h-0 flex flex-col">
         {/* Desktop View: Condensed Table (md and up) */}
-        <div className="hidden md:flex flex-1 min-h-0 overflow-hidden rounded-2xl border border-stocky-border-subtle bg-white shadow-xs flex-col">
+        <div className="hidden md:flex flex-1 min-h-0 overflow-hidden rounded-2xl border border-stocky-border-subtle bg-stocky-bg-widget shadow-xs flex-col">
           <div className="overflow-x-auto overflow-y-auto flex-1">
             <table className="stocky-board-table w-full text-start min-w-[680px] table-fixed border-collapse">
               <colgroup>
-                <col style={{ width: '22%' }} />
-                <col style={{ width: '13%' }} />
-                <col style={{ width: '13%' }} />
-                {canViewCommercials && <col style={{ width: '12%' }} />}
-                <col style={{ width: '17%' }} />
-                <col style={{ width: '12%' }} />
-                <col style={{ width: '11%' }} />
+                <col className="stocky-product-lots__col--lot" />
+                <col className="stocky-product-lots__col--location" />
+                <col className="stocky-product-lots__col--quantity" />
+                {canViewCommercials && <col className="stocky-product-lots__col--cost" />}
+                <col className="stocky-product-lots__col--expiry" />
+                <col className="stocky-product-lots__col--supplier" />
+                <col className="stocky-product-lots__col--actions" />
               </colgroup>
               <thead>
                 <tr className="sticky top-0 z-10 bg-stocky-bg-global text-[10px] uppercase font-semibold text-stocky-text-sub tracking-wider h-10 border-b border-stocky-border-subtle">
-                  <th style={{ width: '22%' }} className="stocky-board-table__header-cell px-3.5 py-2.5 text-start whitespace-nowrap">
+                  <th className="stocky-product-lots__col--lot stocky-board-table__header-cell px-3.5 py-2.5 text-start whitespace-nowrap">
                     {t('drawers.inventoryLots.lotNumberLabel')}
                   </th>
-                  <th style={{ width: '13%' }} className="stocky-board-table__header-cell px-3 py-2.5 text-start whitespace-nowrap">
+                  <th className="stocky-product-lots__col--location stocky-board-table__header-cell px-3 py-2.5 text-start whitespace-nowrap">
                     {t('drawers.inventoryLots.defaultLocation')}
                   </th>
-                  <th style={{ width: '13%' }} className="stocky-board-table__header-cell px-3 py-2.5 text-start whitespace-nowrap">
+                  <th className="stocky-product-lots__col--quantity stocky-board-table__header-cell px-3 py-2.5 text-start whitespace-nowrap">
                     {t('drawers.inventoryLots.quantityOnHand')}
                   </th>
                   {canViewCommercials && (
-                    <th style={{ width: '12%' }} className="stocky-board-table__header-cell px-3 py-2.5 text-start whitespace-nowrap">
+                    <th className="stocky-product-lots__col--cost stocky-board-table__header-cell px-3 py-2.5 text-start whitespace-nowrap">
                       {t('drawers.inventoryLots.unitCost')}
                     </th>
                   )}
-                  <th style={{ width: '17%' }} className="stocky-board-table__header-cell px-3 py-2.5 text-start whitespace-nowrap">
+                  <th className="stocky-product-lots__col--expiry stocky-board-table__header-cell px-3 py-2.5 text-start whitespace-nowrap">
                     {t('drawers.inventoryLots.expiry')}
                   </th>
-                  <th style={{ width: '12%' }} className="stocky-board-table__header-cell px-3 py-2.5 text-start whitespace-nowrap">
+                  <th className="stocky-product-lots__col--supplier stocky-board-table__header-cell px-3 py-2.5 text-start whitespace-nowrap">
                     {t('drawers.inventoryLots.supplier')}
                   </th>
-                  <th style={{ width: '11%' }} className="stocky-board-table__header-cell px-3.5 py-2.5 text-end whitespace-nowrap">
+                  <th className="stocky-product-lots__col--actions stocky-board-table__header-cell px-3.5 py-2.5 text-end whitespace-nowrap">
                     {t('common.actions')}
                   </th>
                 </tr>
@@ -473,7 +473,7 @@ export function InventoryProductLotsWidget({ product, lots, locations, suppliers
                               <TagIcon size="xs" />
                             </span>
                             <div className="min-w-0">
-                              <span className="font-mono text-xs font-semibold text-stocky-text-main block truncate">
+                              <span className="font-sans text-xs font-semibold text-stocky-text-main block truncate">
                                 {lotLabel}
                               </span>
                               {lot.notes && (
@@ -573,14 +573,14 @@ export function InventoryProductLotsWidget({ product, lots, locations, suppliers
                                   type="button"
                                   onClick={() => void confirmDelete(lot)}
                                   disabled={deletingLotId === lot.id}
-                                  className="px-2.5 py-0.5 rounded-md bg-red-600 text-white text-[11px] font-medium hover:bg-red-700 transition-colors cursor-pointer"
+                                  className="px-2.5 py-0.5 rounded-md bg-stocky-status-critical-fg text-stocky-text-inverse text-[11px] font-medium hover:bg-stocky-status-critical-fg transition-colors cursor-pointer"
                                 >
                                   {deletingLotId === lot.id ? t('drawers.inventoryLots.deleting') : t('drawers.inventoryLots.yes')}
                                 </button>
                                 <button
                                   type="button"
                                   onClick={() => setDeleteConfirmLotId(null)}
-                                  className="px-2 py-0.5 rounded-md bg-white text-stocky-text-main border border-stocky-border-subtle text-[11px] hover:bg-stocky-bg-global transition-colors cursor-pointer"
+                                  className="px-2 py-0.5 rounded-md bg-stocky-bg-widget text-stocky-text-main border border-stocky-border-subtle text-[11px] hover:bg-stocky-bg-global transition-colors cursor-pointer"
                                 >
                                   {t('drawers.inventoryLots.cancel')}
                                 </button>
@@ -681,7 +681,7 @@ export function InventoryProductLotsWidget({ product, lots, locations, suppliers
             return (
               <div
                 key={lot.id}
-                className={`rounded-xl border border-stocky-border-subtle bg-white p-3 shadow-2xs transition-colors flex flex-col gap-2.5 ${
+                className={`rounded-xl border border-stocky-border-subtle bg-stocky-bg-widget p-3 shadow-2xs transition-colors flex flex-col gap-2.5 ${
                   isEditing
                     ? 'border-stocky-primary ring-1 ring-stocky-primary/20 bg-stocky-status-info-bg/10'
                     : isConfirmingDelete
@@ -696,7 +696,7 @@ export function InventoryProductLotsWidget({ product, lots, locations, suppliers
                       <TagIcon size="xs" />
                     </span>
                     <div className="min-w-0">
-                      <span className="font-mono text-xs font-semibold text-stocky-text-main block truncate">
+                      <span className="font-sans text-xs font-semibold text-stocky-text-main block truncate">
                         {lotLabel}
                       </span>
                       {lot.notes && (
@@ -718,14 +718,14 @@ export function InventoryProductLotsWidget({ product, lots, locations, suppliers
                           type="button"
                           onClick={() => void confirmDelete(lot)}
                           disabled={deletingLotId === lot.id}
-                          className="px-2 py-0.5 rounded-md bg-red-600 text-white text-[10px] font-medium hover:bg-red-700 transition-colors cursor-pointer"
+                          className="px-2 py-0.5 rounded-md bg-stocky-status-critical-fg text-stocky-text-inverse text-[10px] font-medium hover:bg-stocky-status-critical-fg transition-colors cursor-pointer"
                         >
                           {deletingLotId === lot.id ? t('drawers.inventoryLots.deleting') : t('drawers.inventoryLots.yes')}
                         </button>
                         <button
                           type="button"
                           onClick={() => setDeleteConfirmLotId(null)}
-                          className="px-1.5 py-0.5 rounded-md bg-white text-stocky-text-main border border-stocky-border-subtle text-[10px] cursor-pointer"
+                          className="px-1.5 py-0.5 rounded-md bg-stocky-bg-widget text-stocky-text-main border border-stocky-border-subtle text-[10px] cursor-pointer"
                         >
                           {t('drawers.inventoryLots.cancel')}
                         </button>
@@ -856,7 +856,7 @@ export function InventoryProductLotsWidget({ product, lots, locations, suppliers
           })}
 
           {pageLots.length === 0 && (
-            <div className="stocky-product-lots__empty py-12 rounded-xl border border-stocky-border-subtle bg-white">
+            <div className="stocky-product-lots__empty py-12 rounded-xl border border-stocky-border-subtle bg-stocky-bg-widget">
               <BoxesIcon size="sm" />
               <strong>
                 {search

@@ -79,7 +79,7 @@ function DrawerCompanyLogoAvatar({
         alt={name}
         referrerPolicy="no-referrer"
         onError={() => setFailed(true)}
-        className="h-12 w-12 rounded-2xl object-cover border border-stocky-border-subtle shrink-0 bg-white shadow-2xs"
+        className="h-12 w-12 rounded-2xl object-cover border border-stocky-border-subtle shrink-0 bg-stocky-bg-widget shadow-2xs"
       />
     );
   }
@@ -235,7 +235,7 @@ export function AdminCompanyProfileDrawerWidget({
       ariaLabel={`Company Profile - ${company.name}`}
       widthClassName="md:w-[540px] lg:w-[600px]"
     >
-      <div className="flex flex-col h-full bg-white text-start">
+      <div className="flex flex-col h-full bg-stocky-bg-widget text-start">
         {/* Drawer Header */}
         <div className="p-5 border-b border-stocky-border-subtle flex items-start justify-between gap-4 bg-stocky-bg-global/50">
           <div className="flex items-start gap-3.5 min-w-0">
@@ -249,15 +249,15 @@ export function AdminCompanyProfileDrawerWidget({
                 <span
                   className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[10px] font-semibold border ${
                     isVerified
-                      ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                      ? 'bg-stocky-status-success-bg text-stocky-status-success-fg border-stocky-status-success-border'
                       : isPending
-                      ? 'bg-amber-50 text-amber-800 border-amber-200'
-                      : 'bg-red-50 text-red-700 border-red-200'
+                      ? 'bg-stocky-status-warning-bg text-stocky-status-warning-fg border-stocky-status-warning-border'
+                      : 'bg-stocky-status-critical-bg text-stocky-status-critical-fg border-stocky-status-critical-border'
                   }`}
                 >
                   <span
                     className={`w-1.5 h-1.5 rounded-full ${
-                      isVerified ? 'bg-emerald-500' : isPending ? 'bg-amber-500' : 'bg-red-500'
+                      isVerified ? 'bg-stocky-status-success-fg' : isPending ? 'bg-stocky-status-warning-fg' : 'bg-stocky-status-critical-fg'
                     }`}
                   />
                   <span>{company.status.toUpperCase()}</span>
@@ -265,7 +265,7 @@ export function AdminCompanyProfileDrawerWidget({
               </div>
 
               <p className="text-xs text-stocky-text-sub mt-1 flex items-center gap-2 flex-wrap">
-                <span className="font-mono bg-stocky-bg-widget px-1.5 py-0.5 rounded border border-stocky-border-subtle text-[11px]">
+                <span className="font-sans bg-stocky-bg-widget px-1.5 py-0.5 rounded border border-stocky-border-subtle text-[11px]">
                   {company.code || 'no-slug'}
                 </span>
                 <span>·</span>
@@ -285,7 +285,7 @@ export function AdminCompanyProfileDrawerWidget({
         </div>
 
         {/* Subtabs Rail */}
-        <div className="flex items-center gap-1 px-5 border-b border-stocky-border-subtle bg-white overflow-x-auto scrollbar-none text-xs">
+        <div className="flex items-center gap-1 px-5 border-b border-stocky-border-subtle bg-stocky-bg-widget overflow-x-auto scrollbar-none text-xs">
           <button
             type="button"
             onClick={() => setActiveTab('overview')}
@@ -334,7 +334,7 @@ export function AdminCompanyProfileDrawerWidget({
 
         {/* Action Error Alert */}
         {actionError && (
-          <div className="m-5 mb-0 p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs flex items-center gap-2">
+          <div className="m-5 mb-0 p-3 rounded-xl bg-stocky-status-critical-bg border border-stocky-status-critical-border text-stocky-status-critical-fg text-xs flex items-center gap-2">
             <AlertCircleIcon size="xs" className="shrink-0" />
             <span>{actionError}</span>
           </div>
@@ -352,14 +352,14 @@ export function AdminCompanyProfileDrawerWidget({
                     <span className="text-xs font-bold text-stocky-text-main block">
                       Live Tenant Workspace
                     </span>
-                    <span className="text-[11px] text-stocky-text-sub font-mono block mt-0.5">
+                    <span className="text-[11px] text-stocky-text-sub font-sans block mt-0.5">
                       /{company.code}
                     </span>
                   </div>
                   <Link
                     href={`/${company.code}`}
                     target="_blank"
-                    className="h-8.5 px-3.5 rounded-full border border-stocky-border-subtle bg-white hover:border-stocky-primary hover:text-stocky-primary text-xs font-semibold text-stocky-text-main transition-colors inline-flex items-center gap-1.5 shadow-2xs"
+                    className="h-8.5 px-3.5 rounded-full border border-stocky-border-subtle bg-stocky-bg-widget hover:border-stocky-primary hover:text-stocky-primary text-xs font-semibold text-stocky-text-main transition-colors inline-flex items-center gap-1.5 shadow-2xs"
                   >
                     <span>Launch Workspace</span>
                     <ArrowUpRightIcon size="xs" />
@@ -368,7 +368,7 @@ export function AdminCompanyProfileDrawerWidget({
               )}
 
               {/* Requester Profile Cardlet */}
-              <div className="p-4 rounded-2xl bg-white border border-stocky-border-subtle shadow-2xs space-y-3">
+              <div className="p-4 rounded-2xl bg-stocky-bg-widget border border-stocky-border-subtle shadow-2xs space-y-3">
                 <span className="text-[11px] uppercase font-bold tracking-wider text-stocky-text-sub block">
                   Applicant & Contact Information
                 </span>
@@ -386,7 +386,7 @@ export function AdminCompanyProfileDrawerWidget({
               </div>
 
               {/* Verification Assessment Controls */}
-              <div className="p-4 rounded-2xl bg-white border border-stocky-border-subtle shadow-2xs space-y-4">
+              <div className="p-4 rounded-2xl bg-stocky-bg-widget border border-stocky-border-subtle shadow-2xs space-y-4">
                 <span className="text-[11px] uppercase font-bold tracking-wider text-stocky-text-sub block">
                   Platform Verification Controls
                 </span>
@@ -410,7 +410,7 @@ export function AdminCompanyProfileDrawerWidget({
                       type="button"
                       onClick={() => handleReviewAction('reject')}
                       disabled={isProcessing}
-                      className="h-9 px-4 rounded-full border border-red-200 bg-red-50 text-red-700 hover:bg-red-100 text-xs font-semibold transition-colors inline-flex items-center gap-1.5 cursor-pointer"
+                      className="h-9 px-4 rounded-full border border-stocky-status-critical-border bg-stocky-status-critical-bg text-stocky-status-critical-fg hover:bg-stocky-status-critical-bg text-xs font-semibold transition-colors inline-flex items-center gap-1.5 cursor-pointer"
                     >
                       <XIcon size="xs" />
                       <span>Reject Application</span>
@@ -436,7 +436,7 @@ export function AdminCompanyProfileDrawerWidget({
                       type="button"
                       onClick={handleSuspendCompany}
                       disabled={isProcessing}
-                      className="h-8.5 px-3.5 rounded-full border border-red-200 bg-white text-red-600 hover:bg-red-50 text-xs font-medium transition-colors cursor-pointer"
+                      className="h-8.5 px-3.5 rounded-full border border-stocky-status-critical-border bg-stocky-bg-widget text-stocky-status-critical-fg hover:bg-stocky-status-critical-bg text-xs font-medium transition-colors cursor-pointer"
                     >
                       Suspend Company
                     </button>
@@ -445,7 +445,7 @@ export function AdminCompanyProfileDrawerWidget({
 
                 {isSuspended && (
                   <div className="flex items-center justify-between gap-3 pt-2">
-                    <span className="text-xs text-red-700 font-medium">Access currently suspended.</span>
+                    <span className="text-xs text-stocky-status-critical-fg font-medium">Access currently suspended.</span>
                     <button
                       type="button"
                       onClick={handleReactivateCompany}
@@ -468,7 +468,7 @@ export function AdminCompanyProfileDrawerWidget({
               </span>
 
               {branches.length > 0 ? (
-                <div className="divide-y divide-stocky-border-subtle rounded-2xl border border-stocky-border-subtle bg-white overflow-hidden shadow-2xs">
+                <div className="divide-y divide-stocky-border-subtle rounded-2xl border border-stocky-border-subtle bg-stocky-bg-widget overflow-hidden shadow-2xs">
                   {branches.map((b) => (
                     <div key={b.id} className="p-3.5 flex items-center justify-between gap-3">
                       <div className="flex items-center gap-2.5">
@@ -479,14 +479,14 @@ export function AdminCompanyProfileDrawerWidget({
                           <span className="text-xs font-semibold text-stocky-text-main block">
                             {b.name}
                           </span>
-                          <span className="text-[10px] text-stocky-text-sub font-mono">
+                          <span className="text-[10px] text-stocky-text-sub font-sans">
                             {b.code || 'BR-01'}
                           </span>
                         </div>
                       </div>
                       <span
                         className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border ${
-                          b.is_active ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-slate-50 text-slate-600 border-slate-200'
+                          b.is_active ? 'bg-stocky-status-success-bg text-stocky-status-success-fg border-stocky-status-success-border' : 'bg-stocky-bg-subtle text-stocky-text-sub border-stocky-border-subtle'
                         }`}
                       >
                         {b.is_active ? 'Active' : 'Archived'}
@@ -495,7 +495,7 @@ export function AdminCompanyProfileDrawerWidget({
                   ))}
                 </div>
               ) : (
-                <div className="p-5 rounded-2xl border border-stocky-border-subtle bg-white text-center text-xs text-stocky-text-sub">
+                <div className="p-5 rounded-2xl border border-stocky-border-subtle bg-stocky-bg-widget text-center text-xs text-stocky-text-sub">
                   Initial primary branch: <strong>{company.initialBranchName || 'Main Branch'}</strong> (provisions upon approval)
                 </div>
               )}
@@ -510,7 +510,7 @@ export function AdminCompanyProfileDrawerWidget({
               </span>
 
               {users.length > 0 ? (
-                <div className="divide-y divide-stocky-border-subtle rounded-2xl border border-stocky-border-subtle bg-white overflow-hidden shadow-2xs">
+                <div className="divide-y divide-stocky-border-subtle rounded-2xl border border-stocky-border-subtle bg-stocky-bg-widget overflow-hidden shadow-2xs">
                   {users.map((u) => (
                     <div key={u.id} className="p-3.5 flex items-center justify-between gap-3">
                       <div className="flex items-center gap-2.5 min-w-0">
@@ -531,7 +531,7 @@ export function AdminCompanyProfileDrawerWidget({
                   ))}
                 </div>
               ) : (
-                <div className="p-5 rounded-2xl border border-stocky-border-subtle bg-white text-center text-xs text-stocky-text-sub">
+                <div className="p-5 rounded-2xl border border-stocky-border-subtle bg-stocky-bg-widget text-center text-xs text-stocky-text-sub">
                   Primary Owner: <strong>{company.requestedEmail}</strong> (registered as owner upon approval)
                 </div>
               )}
@@ -546,7 +546,7 @@ export function AdminCompanyProfileDrawerWidget({
               </span>
 
               {products.length > 0 ? (
-                <div className="divide-y divide-stocky-border-subtle rounded-2xl border border-stocky-border-subtle bg-white overflow-hidden shadow-2xs">
+                <div className="divide-y divide-stocky-border-subtle rounded-2xl border border-stocky-border-subtle bg-stocky-bg-widget overflow-hidden shadow-2xs">
                   {products.map((p) => (
                     <div key={p.id} className="p-3.5 flex items-center justify-between gap-3">
                       <div className="flex items-center gap-2.5 min-w-0">
@@ -557,7 +557,7 @@ export function AdminCompanyProfileDrawerWidget({
                           <span className="text-xs font-semibold text-stocky-text-main block truncate">
                             {p.name}
                           </span>
-                          <span className="text-[10px] text-stocky-text-sub font-mono">
+                          <span className="text-[10px] text-stocky-text-sub font-sans">
                             SKU: {p.sku || 'N/A'}
                           </span>
                         </div>
@@ -574,7 +574,7 @@ export function AdminCompanyProfileDrawerWidget({
                   ))}
                 </div>
               ) : (
-                <div className="p-8 rounded-2xl border border-stocky-border-subtle bg-white text-center text-xs text-stocky-text-sub">
+                <div className="p-8 rounded-2xl border border-stocky-border-subtle bg-stocky-bg-widget text-center text-xs text-stocky-text-sub">
                   No catalog products imported yet.
                 </div>
               )}

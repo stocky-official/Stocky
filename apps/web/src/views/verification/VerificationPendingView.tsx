@@ -134,7 +134,7 @@ export function VerificationPendingView() {
 
       <PageContent className="flex-1 flex items-center justify-center p-6">
         <Card className="max-w-lg w-full p-8 text-center space-y-5">
-          <div className={`w-14 h-14 rounded-full mx-auto flex items-center justify-center ${isBlocked ? 'bg-amber-50 text-amber-600' : 'bg-emerald-50 text-emerald-600'}`}>
+          <div className={`w-14 h-14 rounded-full mx-auto flex items-center justify-center ${isBlocked ? 'bg-stocky-status-warning-bg text-stocky-status-warning-fg' : 'bg-stocky-status-success-bg text-stocky-status-success-fg'}`}>
             {isBlocked ? <AlertCircleIcon size="lg" /> : <CheckCircleIcon size="lg" />}
           </div>
           <div className="space-y-2">

@@ -225,7 +225,7 @@ export function HomeTeamAttendanceChartWidget({
             >
               <FilterIcon size="xs" />
               <span>{t('home.charts.topMovers.filter')}</span>
-              <span className="px-1.5 py-0.5 rounded-full bg-stocky-primary text-white text-[10px] font-bold">
+              <span className="px-1.5 py-0.5 rounded-full bg-stocky-primary text-stocky-text-inverse text-[10px] font-bold">
                 {analysisMode === 'branch' ? t('home.charts.teamAttendance.byBranch') : t('home.charts.teamAttendance.byPerson')} • {effectiveDays}D
               </span>
             </button>
@@ -299,10 +299,10 @@ export function HomeTeamAttendanceChartWidget({
                     <div className="bg-stocky-bg-widget border border-stocky-border-default rounded-xl p-2.5 shadow-md text-xs">
                       <span className="font-bold text-stocky-text-main block">{label}</span>
                       <div className="space-y-1 mt-1 text-[11px]">
-                        <div className="text-emerald-600 font-medium">
+                        <div className="text-stocky-status-success-fg font-medium">
                           {t('home.charts.teamAttendance.presentOnDuty', { count: data.Present })}
                         </div>
-                        <div className="text-amber-600 font-medium">
+                        <div className="text-stocky-status-warning-fg font-medium">
                           {t('home.charts.teamAttendance.lateArrival', { count: data.Late })}
                         </div>
                         <div className="text-stocky-text-muted font-medium">
@@ -339,7 +339,7 @@ export function HomeTeamAttendanceChartWidget({
                 <th className="py-2.5 px-3 text-end">{t('home.charts.teamAttendance.turnout')}</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-stocky-border-subtle font-mono text-[11px]">
+            <tbody className="divide-y divide-stocky-border-subtle font-sans text-[11px]">
               {chartData.map((row) => {
                 const total = row.Present + row.Late + row['Off / Leave'];
                 const turnout = total > 0 ? Math.round(((row.Present + row.Late) / total) * 100) : 0;
@@ -347,15 +347,15 @@ export function HomeTeamAttendanceChartWidget({
                   <tr key={row.date} className="hover:bg-stocky-bg-global/50 transition-colors">
                     <td className="py-2 px-3 text-start font-sans font-medium text-stocky-text-main">
                       {row.label}
-                      <span className="block text-[10px] text-stocky-text-sub font-mono">{row.date}</span>
+                      <span className="block text-[10px] text-stocky-text-sub font-sans">{row.date}</span>
                     </td>
-                    <td className="py-2 px-3 text-center text-emerald-600 font-semibold">{row.Present}</td>
-                    <td className="py-2 px-3 text-center text-amber-600 font-semibold">{row.Late}</td>
+                    <td className="py-2 px-3 text-center text-stocky-status-success-fg font-semibold">{row.Present}</td>
+                    <td className="py-2 px-3 text-center text-stocky-status-warning-fg font-semibold">{row.Late}</td>
                     <td className="py-2 px-3 text-center text-stocky-text-muted">{row['Off / Leave']}</td>
                     <td className="py-2 px-3 text-end font-medium text-stocky-text-main">{row.hoursLogged}h</td>
                     <td className="py-2 px-3 text-end">
                       <span className={`px-1.5 py-0.5 rounded text-[10px] font-semibold ${
-                        turnout >= 80 ? 'bg-emerald-50 text-emerald-700' : turnout >= 60 ? 'bg-amber-50 text-amber-700' : 'bg-rose-50 text-rose-700'
+                        turnout >= 80 ? 'bg-stocky-status-success-bg text-stocky-status-success-fg' : turnout >= 60 ? 'bg-stocky-status-warning-bg text-stocky-status-warning-fg' : 'bg-stocky-status-critical-bg text-stocky-status-critical-fg'
                       }`}>
                         {turnout}%
                       </span>
@@ -371,7 +371,7 @@ export function HomeTeamAttendanceChartWidget({
       {/* 4. Footer Summary */}
       <div className="flex items-center justify-between text-[11px] text-stocky-text-sub pt-2 border-t border-stocky-border-subtle font-medium">
         <span>{t('home.charts.teamAttendance.showingTrend', { days: effectiveDays })}</span>
-        <span className="text-emerald-600 font-semibold">
+        <span className="text-stocky-status-success-fg font-semibold">
           {t('home.charts.teamAttendance.totalPresentShifts', { count: totalPresent })}
         </span>
       </div>
@@ -399,7 +399,7 @@ export function HomeTeamAttendanceChartWidget({
                 onClick={() => setAnalysisMode('branch')}
                 className={`h-10 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                   analysisMode === 'branch'
-                    ? 'bg-stocky-primary text-white shadow-xs'
+                    ? 'bg-stocky-primary text-stocky-text-inverse shadow-xs'
                     : 'bg-stocky-bg-global text-stocky-text-sub border border-stocky-border-subtle'
                 }`}
               >
@@ -410,7 +410,7 @@ export function HomeTeamAttendanceChartWidget({
                 onClick={() => setAnalysisMode('person')}
                 className={`h-10 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                   analysisMode === 'person'
-                    ? 'bg-stocky-primary text-white shadow-xs'
+                    ? 'bg-stocky-primary text-stocky-text-inverse shadow-xs'
                     : 'bg-stocky-bg-global text-stocky-text-sub border border-stocky-border-subtle'
                 }`}
               >
@@ -464,7 +464,7 @@ export function HomeTeamAttendanceChartWidget({
                   onClick={() => setInternalTimeframeDays(days)}
                   className={`h-9 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                     internalTimeframeDays === days
-                      ? 'bg-stocky-primary text-white shadow-xs'
+                      ? 'bg-stocky-primary text-stocky-text-inverse shadow-xs'
                       : 'bg-stocky-bg-global text-stocky-text-sub border border-stocky-border-subtle'
                   }`}
                 >

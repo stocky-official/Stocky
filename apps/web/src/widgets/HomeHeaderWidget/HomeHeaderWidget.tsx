@@ -87,7 +87,7 @@ export function HomeHeaderWidget({
           >
             <BellIcon size="sm" />
             {unreadNotificationsCount > 0 && (
-              <span className="absolute top-2.5 right-2.5 w-2 h-2 rounded-full bg-rose-500 ring-2 ring-white" />
+              <span className="absolute top-2.5 right-2.5 w-2 h-2 rounded-full bg-stocky-status-critical-fg ring-2 ring-stocky-text-inverse" />
             )}
           </button>
         )}

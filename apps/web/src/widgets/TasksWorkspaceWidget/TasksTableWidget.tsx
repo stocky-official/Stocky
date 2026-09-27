@@ -34,7 +34,7 @@ export interface TasksTableWidgetProps {
   products: Product[];
   locations: Location[];
   members: TeamMember[];
-  userRole: CompanyUserRole;
+  canManageTasks: boolean;
   currentUserId?: string | null;
   searchQuery: string;
   activeQueue?: 'ongoing' | 'completed';
@@ -114,7 +114,7 @@ export function TasksTableWidget({
   taskItems,
   locations,
   members,
-  userRole,
+  canManageTasks,
   currentUserId,
   searchQuery,
   canAssignTask,
@@ -141,7 +141,7 @@ export function TasksTableWidget({
       onOpenRunner(task);
       return;
     }
-    const canReview = userRole !== 'staff' && task.status === 'submitted';
+    const canReview = canManageTasks && task.status === 'submitted';
     if (canReview) {
       onOpenReview(task);
       return;
@@ -170,7 +170,7 @@ export function TasksTableWidget({
           <button
             type="button"
             onClick={onAssignTask}
-            className="mt-4 inline-flex h-9 items-center gap-1.5 rounded-full bg-stocky-primary hover:bg-stocky-primary-hover px-4 text-xs font-medium text-white transition-colors cursor-pointer"
+            className="mt-4 inline-flex h-9 items-center gap-1.5 rounded-full bg-stocky-primary hover:bg-stocky-primary-hover px-4 text-xs font-medium text-stocky-text-inverse transition-colors cursor-pointer"
           >
             <PlusIcon size="xs" />
             <span>{t('tasks.assignTask') || 'Assign task'}</span>
@@ -210,7 +210,7 @@ export function TasksTableWidget({
               const canRun =
                 task.assignedToCompanyUserId === currentUserId &&
                 ['assigned', 'in_progress', 'rejected'].includes(task.status);
-              const canReview = userRole !== 'staff' && task.status === 'submitted';
+              const canReview = canManageTasks && task.status === 'submitted';
 
               return (
                 <tr
@@ -234,7 +234,7 @@ export function TasksTableWidget({
                             ? 'stocky-status-info'
                             : task.taskType === 'expiry'
                             ? 'stocky-status-warning'
-                            : 'bg-blue-50 text-blue-600 border-blue-200'
+                            : 'bg-stocky-status-info-bg text-stocky-status-info-fg border-stocky-status-info-border'
                         }`}
                       >
                         {task.taskType === 'count' ? (
@@ -322,7 +322,7 @@ export function TasksTableWidget({
                             event.stopPropagation();
                             onOpenRunner(task);
                           }}
-                          className="inline-flex h-8 items-center gap-1 rounded-full bg-stocky-primary hover:bg-stocky-primary-hover px-3 text-xs font-medium text-white transition-colors cursor-pointer"
+                          className="inline-flex h-8 items-center gap-1 rounded-full bg-stocky-primary hover:bg-stocky-primary-hover px-3 text-xs font-medium text-stocky-text-inverse transition-colors cursor-pointer"
                         >
                           <span>
                             {task.status === 'assigned'
@@ -342,7 +342,7 @@ export function TasksTableWidget({
                             event.stopPropagation();
                             onOpenReview(task);
                           }}
-                          className="inline-flex h-8 items-center gap-1 rounded-full bg-stocky-primary hover:bg-stocky-primary-hover px-3 text-xs font-medium text-white transition-colors cursor-pointer"
+                          className="inline-flex h-8 items-center gap-1 rounded-full bg-stocky-primary hover:bg-stocky-primary-hover px-3 text-xs font-medium text-stocky-text-inverse transition-colors cursor-pointer"
                         >
                           <span>{t('common.review') || 'Review'}</span>
                           <ChevronRightIcon size="xs" className="rtl:rotate-180" />
@@ -393,17 +393,17 @@ export function TasksTableWidget({
                   handleTaskClick(task);
                 }
               }}
-              className="p-3.5 flex items-center justify-between gap-3 bg-white hover:bg-stocky-bg-global/30 active:bg-stocky-bg-global/60 transition-colors cursor-pointer text-start"
+              className="p-3.5 flex items-center justify-between gap-3 bg-stocky-bg-widget hover:bg-stocky-bg-global/30 active:bg-stocky-bg-global/60 transition-colors cursor-pointer text-start"
             >
               {/* Left Anchor + Center Info Stack */}
               <div className="flex items-center gap-2.5 min-w-0 flex-1">
                 <span
                   className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border ${
                     isCount
-                      ? 'stocky-status-info bg-emerald-50 text-emerald-600 border-emerald-200'
+                      ? 'stocky-status-info bg-stocky-status-success-bg text-stocky-status-success-fg border-stocky-status-success-border'
                       : isExpiry
-                      ? 'stocky-status-warning bg-amber-50 text-amber-600 border-amber-200'
-                      : 'bg-blue-50 text-blue-600 border-blue-200'
+                      ? 'stocky-status-warning bg-stocky-status-warning-bg text-stocky-status-warning-fg border-stocky-status-warning-border'
+                      : 'bg-stocky-status-info-bg text-stocky-status-info-fg border-stocky-status-info-border'
                   }`}
                 >
                   {isCount ? (
@@ -445,7 +445,7 @@ export function TasksTableWidget({
       </div>
 
       {/* Table Footer / Counter */}
-      <div className="flex items-center justify-between border-t border-stocky-border-subtle px-4 py-3 text-xs text-stocky-text-sub bg-white rounded-b-2xl">
+      <div className="flex items-center justify-between border-t border-stocky-border-subtle px-4 py-3 text-xs text-stocky-text-sub bg-stocky-bg-widget rounded-b-2xl">
         <span>{t('common.showing')} {tasks.length} {t('tasks.title')}</span>
       </div>
     </div>

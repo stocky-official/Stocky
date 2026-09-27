@@ -176,7 +176,7 @@ export function PlatformTopBarWidget({
 
   return (
     <header
-      className={`stocky-topbar relative w-full shrink-0 bg-white/95 backdrop-blur-md border-b border-stocky-border-subtle z-40 select-none transition-transform duration-300 ease-out pt-[env(safe-area-inset-top,0px)] md:hidden ${
+      className={`stocky-topbar relative w-full shrink-0 bg-stocky-bg-widget/95 backdrop-blur-md border-b border-stocky-border-subtle z-40 select-none transition-transform duration-300 ease-out pt-[env(safe-area-inset-top,0px)] md:hidden ${
         hidden ? 'stocky-topbar--hidden' : 'translate-y-0'
       }`}
     >
@@ -215,7 +215,7 @@ export function PlatformTopBarWidget({
                   className={`absolute top-1 right-1 w-2 h-2 rounded-full ${
                     isNotificationsOpen || activeTab === 'notifications'
                       ? 'bg-stocky-text-main ring-1 ring-stocky-primary'
-                      : 'bg-stocky-primary ring-2 ring-white'
+                      : 'bg-stocky-primary ring-2 ring-stocky-text-inverse'
                   }`}
                 />
               )}
@@ -252,7 +252,7 @@ export function PlatformTopBarWidget({
 
       {/* 2. Row 2: Integrated Contextual Subnav Pill Rail (h-11 / 44px, centered with exact 6px top/bottom space) */}
       {activeGroup && activeGroup.items.length > 1 && (
-        <div className="w-full h-11 border-t border-stocky-border-subtle/70 flex items-center px-3.5 bg-white">
+        <div className="w-full h-11 border-t border-stocky-border-subtle/70 flex items-center px-3.5 bg-stocky-bg-widget">
           <div className="stocky-mobile-pill-rail flex items-center gap-1.5 overflow-x-auto w-full h-full py-0">
             <div className="flex items-center gap-2 shrink-0 pr-1">
               <span className="text-xs font-bold text-stocky-text-main">{groupTitle}</span>
