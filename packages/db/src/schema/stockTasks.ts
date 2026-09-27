@@ -32,6 +32,7 @@ export const stockTasks = pgTable('stock_tasks', {
   assignedToCompanyUserId: uuid('assigned_to_company_user_id').references(() => companyUsers.id, { onDelete: 'restrict' }).notNull(),
   createdByCompanyUserId: uuid('created_by_company_user_id').references(() => companyUsers.id, { onDelete: 'set null' }),
   notes: text('notes'),
+  reviewNote: text('review_note'),
   scheduledStartAt: timestamp('scheduled_start_at', { withTimezone: true }),
   scheduledEndAt: timestamp('scheduled_end_at', { withTimezone: true }),
   startedAt: timestamp('started_at', { withTimezone: true }),

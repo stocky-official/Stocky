@@ -56,7 +56,7 @@ export function StockTaskAssignmentWidget({
 
   const assignees = useMemo(() => {
     const allowedRoles: CompanyUserRole[] = userRole === 'manager' ? ['staff'] : ['manager', 'staff'];
-    const candidates = members.filter((member) => allowedRoles.includes(member.role) && member.status !== 'disabled');
+    const candidates = members.filter((member) => allowedRoles.includes(member.role) && member.status === 'active');
     if (!locationId) return candidates;
     const location = locations.find((candidate) => candidate.id === locationId);
     const assignedIds = new Set(assignments.filter((assignment) => assignment.location_id === locationId).map((assignment) => assignment.user_id));
@@ -234,7 +234,7 @@ export function StockTaskAssignmentWidget({
                 value={taskTitle}
                 onChange={(event) => { setTaskTitle(event.target.value); setError(null); }}
                 placeholder={t('tasks.taskTitlePlaceholder')}
-                className="mt-1.5 h-10 w-full rounded-xl border border-stocky-border-subtle bg-white px-3 text-xs text-stocky-text-main placeholder:text-stocky-text-sub focus:border-stocky-primary focus:outline-none"
+                className="mt-1.5 h-10 w-full rounded-xl border border-stocky-border-subtle bg-stocky-bg-widget px-3 text-xs text-stocky-text-main placeholder:text-stocky-text-sub focus:border-stocky-primary focus:outline-none"
               />
             </div>
             <div>
@@ -246,7 +246,7 @@ export function StockTaskAssignmentWidget({
                 onChange={(event) => { setTaskDetails(event.target.value); setError(null); }}
                 rows={4}
                 placeholder={t('tasks.taskDetailsPlaceholder')}
-                className="mt-1.5 w-full resize-none rounded-xl border border-stocky-border-subtle bg-white px-3 py-2 text-xs text-stocky-text-main placeholder:text-stocky-text-sub focus:border-stocky-primary focus:outline-none"
+                className="mt-1.5 w-full resize-none rounded-xl border border-stocky-border-subtle bg-stocky-bg-widget px-3 py-2 text-xs text-stocky-text-main placeholder:text-stocky-text-sub focus:border-stocky-primary focus:outline-none"
               />
             </div>
           </div>
@@ -267,7 +267,7 @@ export function StockTaskAssignmentWidget({
             <ChevronDownIcon size="xs" className="shrink-0 text-stocky-text-sub" />
           </button>
           {locationMenuOpen && (
-            <div role="listbox" className="stocky-account-menu stocky-dropdown-panel absolute left-0 right-0 top-full z-10 mt-1 max-h-52 overflow-y-auto rounded-xl border border-stocky-border-subtle bg-white p-1 shadow-lg">
+            <div role="listbox" className="stocky-account-menu stocky-dropdown-panel absolute left-0 right-0 top-full z-10 mt-1 max-h-52 overflow-y-auto rounded-xl border border-stocky-border-subtle bg-stocky-bg-widget p-1 shadow-lg">
               <button
                 type="button"
                 role="option"
@@ -312,7 +312,7 @@ export function StockTaskAssignmentWidget({
             <ChevronDownIcon size="xs" className="shrink-0 text-stocky-text-sub" />
           </button>
           {assigneeMenuOpen && assignees.length > 0 && (
-            <div role="listbox" className="stocky-account-menu stocky-dropdown-panel absolute left-0 right-0 top-full z-10 mt-1 max-h-52 overflow-y-auto rounded-xl border border-stocky-border-subtle bg-white p-1 shadow-lg">
+            <div role="listbox" className="stocky-account-menu stocky-dropdown-panel absolute left-0 right-0 top-full z-10 mt-1 max-h-52 overflow-y-auto rounded-xl border border-stocky-border-subtle bg-stocky-bg-widget p-1 shadow-lg">
               {assignees.map((member) => (
                 <button
                   key={member.id}
@@ -363,7 +363,7 @@ export function StockTaskAssignmentWidget({
                   type="datetime-local"
                   value={scheduledStartAt}
                   onChange={(event) => setScheduledStartAt(event.target.value)}
-                  className="mt-1 h-9 w-full rounded-lg border border-stocky-border-subtle bg-white px-2 text-xs focus:border-stocky-primary focus:outline-none"
+                  className="mt-1 h-9 w-full rounded-lg border border-stocky-border-subtle bg-stocky-bg-widget px-2 text-xs focus:border-stocky-primary focus:outline-none"
                 />
               </label>
               <label className="text-[11px] font-medium text-stocky-text-main">
@@ -372,7 +372,7 @@ export function StockTaskAssignmentWidget({
                   type="datetime-local"
                   value={scheduledEndAt}
                   onChange={(event) => setScheduledEndAt(event.target.value)}
-                  className="mt-1 h-9 w-full rounded-lg border border-stocky-border-subtle bg-white px-2 text-xs focus:border-stocky-primary focus:outline-none"
+                  className="mt-1 h-9 w-full rounded-lg border border-stocky-border-subtle bg-stocky-bg-widget px-2 text-xs focus:border-stocky-primary focus:outline-none"
                 />
               </label>
             </div>
@@ -393,11 +393,11 @@ export function StockTaskAssignmentWidget({
                 onChange={(event) => { setProductSearch(event.target.value); setProductMenuOpen(true); }}
                 onFocus={() => setProductMenuOpen(true)}
                 placeholder={t('tasks.searchProducts')}
-                className="h-9 w-full rounded-lg border border-stocky-border-subtle bg-white ps-8 pe-3 text-xs text-stocky-text-main placeholder:text-stocky-text-sub focus:border-stocky-primary focus:outline-none"
+                className="h-9 w-full rounded-lg border border-stocky-border-subtle bg-stocky-bg-widget ps-8 pe-3 text-xs text-stocky-text-main placeholder:text-stocky-text-sub focus:border-stocky-primary focus:outline-none"
                 aria-label={t('tasks.searchProducts')}
               />
               {productMenuOpen && (
-                <div className="stocky-dropdown-panel absolute left-0 right-0 top-full z-20 mt-1 max-h-48 overflow-y-auto rounded-lg border border-stocky-border-subtle bg-white p-1 shadow-lg">
+                <div className="stocky-dropdown-panel absolute left-0 right-0 top-full z-20 mt-1 max-h-48 overflow-y-auto rounded-lg border border-stocky-border-subtle bg-stocky-bg-widget p-1 shadow-lg">
                   {availableProducts.length > 0 ? (
                     availableProducts.map((product) => (
                       <button
@@ -424,7 +424,7 @@ export function StockTaskAssignmentWidget({
             <div className="mt-2 max-h-44 space-y-1 overflow-y-auto">
               {selectedProducts.length > 0 ? (
                 selectedProducts.map((product) => (
-                  <div key={product.id} className="flex items-center gap-2 rounded-lg bg-white px-2.5 py-2">
+                  <div key={product.id} className="flex items-center gap-2 rounded-lg bg-stocky-bg-widget px-2.5 py-2">
                     <span className="flex h-6 w-6 items-center justify-center rounded-full stocky-status-info">
                       <CheckCircleIcon size="xs" />
                     </span>
@@ -478,7 +478,7 @@ export function StockTaskAssignmentWidget({
           type="submit"
           form="stock-task-assignment-form"
           disabled={saving || assignees.length === 0}
-          className="h-10 flex-1 rounded-full bg-stocky-primary text-xs font-medium text-white hover:bg-stocky-primary-hover transition-colors disabled:opacity-60"
+          className="h-10 flex-1 rounded-full bg-stocky-primary text-xs font-medium text-stocky-text-inverse hover:bg-stocky-primary-hover transition-colors disabled:opacity-60"
         >
           {saving ? t('tasks.creatingTask') : t('tasks.assignTask')}
         </button>

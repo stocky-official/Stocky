@@ -53,7 +53,7 @@ export function TasksToolbarWidget({
         onClick={() => onViewModeChange('table')}
         className={`h-9 px-2.5 sm:px-3 rounded-full text-xs font-medium inline-flex items-center gap-1.5 transition-colors cursor-pointer ${
           viewMode === 'table'
-            ? 'bg-white text-stocky-text-main shadow-xs font-semibold'
+            ? 'bg-stocky-bg-widget text-stocky-text-main shadow-xs font-semibold'
             : 'text-stocky-text-sub hover:text-stocky-text-main'
         }`}
         title="Table view"
@@ -67,7 +67,7 @@ export function TasksToolbarWidget({
         onClick={() => onViewModeChange('kanban')}
         className={`h-9 px-2.5 sm:px-3 rounded-full text-xs font-medium inline-flex items-center gap-1.5 transition-colors cursor-pointer ${
           viewMode === 'kanban'
-            ? 'bg-white text-stocky-text-main shadow-xs font-semibold'
+            ? 'bg-stocky-bg-widget text-stocky-text-main shadow-xs font-semibold'
             : 'text-stocky-text-sub hover:text-stocky-text-main'
         }`}
         title="Kanban view"

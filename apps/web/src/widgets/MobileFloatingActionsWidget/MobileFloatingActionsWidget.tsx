@@ -53,22 +53,21 @@ export function MobileFloatingActionsWidget({
             transition={{ type: 'spring', stiffness: 450, damping: 28 }}
             aria-label={isClockedIn ? t('floatingActions.clockOutAria') : t('floatingActions.clockInAria')}
             title={isClockedIn ? t('floatingActions.clockOutAria') : t('floatingActions.clockInAria')}
-            className={`relative rounded-full flex items-center justify-center ring-[2.5px] ring-white shadow-xl transition-colors focus:outline-none cursor-pointer ${
+            className={`stocky-mobile-fab relative rounded-full flex items-center justify-center ring-[2.5px] ring-stocky-text-inverse shadow-bevel-float transition-colors focus:outline-none cursor-pointer ${
               isClockedIn
-                ? 'bg-emerald-500 text-white shadow-emerald-500/30'
-                : 'bg-stocky-accent text-stocky-text-main hover:bg-stocky-accent-hover active:bg-[#C9EE00]'
+                ? 'bg-stocky-status-success-fg text-stocky-text-inverse'
+                : 'bg-stocky-accent text-stocky-text-main hover:bg-stocky-accent-hover active:bg-stocky-accent-hover'
             }`}
-            style={{ width: '52px', height: '52px' }}
           >
             {/* Active Shift Glow Ring & Indicator */}
             {isClockedIn && (
               <>
-                <span className="absolute -inset-1 rounded-full border-2 border-emerald-400 animate-ping opacity-35 pointer-events-none" />
-                <span className="absolute top-1 ltr:right-1 rtl:left-1 w-2.5 h-2.5 rounded-full bg-white border-2 border-emerald-500 shadow-2xs" />
+                <span className="absolute -inset-1 rounded-full border-2 border-stocky-status-success-fg animate-ping opacity-35 pointer-events-none" />
+                <span className="absolute top-1 ltr:right-1 rtl:left-1 w-2.5 h-2.5 rounded-full bg-stocky-text-inverse border-2 border-stocky-status-success-fg shadow-2xs" />
               </>
             )}
 
-            <ClockIcon size="md" className={isClockedIn ? 'text-white' : 'text-stocky-text-main'} />
+            <ClockIcon size="md" className={isClockedIn ? 'text-stocky-text-inverse' : 'text-stocky-text-main'} />
           </motion.button>
         )}
       </AnimatePresence>
@@ -86,10 +85,9 @@ export function MobileFloatingActionsWidget({
           transition={{ type: 'spring', stiffness: 450, damping: 28 }}
           aria-label={t('floatingActions.scanBarcodeAria')}
           title={t('floatingActions.scanBarcodeAria')}
-          className="bg-stocky-text-main text-white rounded-full flex items-center justify-center ring-[2.5px] ring-white shadow-xl hover:bg-black active:bg-neutral-800 transition-all focus:outline-none cursor-pointer"
-          style={{ width: '52px', height: '52px' }}
+          className="stocky-mobile-fab bg-stocky-text-main text-stocky-text-inverse rounded-full flex items-center justify-center ring-[2.5px] ring-stocky-text-inverse shadow-bevel-float hover:bg-stocky-text-sub active:bg-stocky-text-sub transition-all focus:outline-none cursor-pointer"
         >
-          <BarcodeIcon size="md" className="text-white" />
+          <BarcodeIcon size="md" className="text-stocky-text-inverse" />
         </motion.button>
       )}
     </div>

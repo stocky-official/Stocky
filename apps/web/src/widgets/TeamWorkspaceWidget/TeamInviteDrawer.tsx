@@ -102,7 +102,7 @@ export function TeamInviteDrawer({
           className="flex-1 overflow-y-auto p-6 space-y-4 text-start"
         >
           {error && (
-            <div className="rounded-xl border border-red-200 bg-red-50 p-3 text-xs text-red-700">
+            <div className="rounded-xl border border-stocky-status-critical-border bg-stocky-status-critical-bg p-3 text-xs text-stocky-status-critical-fg">
               {error}
             </div>
           )}
@@ -115,7 +115,7 @@ export function TeamInviteDrawer({
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder={t('drawers.teamInvite.emailPlaceholder')}
-              className="mt-1.5 h-10 w-full rounded-xl border border-stocky-border-subtle bg-white px-3 text-xs text-stocky-text-main focus:border-stocky-primary focus:outline-none"
+              className="mt-1.5 h-10 w-full rounded-xl border border-stocky-border-subtle bg-stocky-bg-widget px-3 text-xs text-stocky-text-main focus:border-stocky-primary focus:outline-none"
             />
           </label>
 
@@ -126,7 +126,7 @@ export function TeamInviteDrawer({
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
               placeholder={t('drawers.teamInvite.fullNamePlaceholder')}
-              className="mt-1.5 h-10 w-full rounded-xl border border-stocky-border-subtle bg-white px-3 text-xs text-stocky-text-main focus:border-stocky-primary focus:outline-none"
+              className="mt-1.5 h-10 w-full rounded-xl border border-stocky-border-subtle bg-stocky-bg-widget px-3 text-xs text-stocky-text-main focus:border-stocky-primary focus:outline-none"
             />
           </label>
 
@@ -137,7 +137,7 @@ export function TeamInviteDrawer({
               value={jobTitle}
               onChange={(e) => setJobTitle(e.target.value)}
               placeholder={t('drawers.teamInvite.jobTitlePlaceholder')}
-              className="mt-1.5 h-10 w-full rounded-xl border border-stocky-border-subtle bg-white px-3 text-xs text-stocky-text-main focus:border-stocky-primary focus:outline-none"
+              className="mt-1.5 h-10 w-full rounded-xl border border-stocky-border-subtle bg-stocky-bg-widget px-3 text-xs text-stocky-text-main focus:border-stocky-primary focus:outline-none"
             />
           </label>
 
@@ -147,7 +147,7 @@ export function TeamInviteDrawer({
               <select
                 value={role}
                 onChange={(e) => setRole(e.target.value as CompanyUserRole)}
-                className="mt-1.5 h-10 w-full rounded-xl border border-stocky-border-subtle bg-white px-3 text-xs text-stocky-text-main focus:border-stocky-primary focus:outline-none"
+                className="mt-1.5 h-10 w-full rounded-xl border border-stocky-border-subtle bg-stocky-bg-widget px-3 text-xs text-stocky-text-main focus:border-stocky-primary focus:outline-none"
               >
                 <option value="staff">{t('drawers.teamInvite.roles.staff')}</option>
                 <option value="manager">{t('drawers.teamInvite.roles.manager')}</option>
@@ -160,7 +160,7 @@ export function TeamInviteDrawer({
               <select
                 value={locationId}
                 onChange={(e) => setLocationId(e.target.value)}
-                className="mt-1.5 h-10 w-full rounded-xl border border-stocky-border-subtle bg-white px-3 text-xs text-stocky-text-main focus:border-stocky-primary focus:outline-none"
+                className="mt-1.5 h-10 w-full rounded-xl border border-stocky-border-subtle bg-stocky-bg-widget px-3 text-xs text-stocky-text-main focus:border-stocky-primary focus:outline-none"
               >
                 <option value="">{t('drawers.teamInvite.assignLater')}</option>
                 {locations.map((loc) => (
@@ -177,7 +177,7 @@ export function TeamInviteDrawer({
             <select
               value={reportsTo}
               onChange={(e) => setReportsTo(e.target.value)}
-              className="mt-1.5 h-10 w-full rounded-xl border border-stocky-border-subtle bg-white px-3 text-xs text-stocky-text-main focus:border-stocky-primary focus:outline-none"
+              className="mt-1.5 h-10 w-full rounded-xl border border-stocky-border-subtle bg-stocky-bg-widget px-3 text-xs text-stocky-text-main focus:border-stocky-primary focus:outline-none"
             >
               <option value="">{t('drawers.teamInvite.reportsToNone')}</option>
               {allMembers.map((m) => (
@@ -195,7 +195,7 @@ export function TeamInviteDrawer({
             type="button"
             onClick={onClose}
             disabled={saving}
-            className="h-10 rounded-full border border-stocky-border-subtle bg-white px-5 text-xs font-medium text-stocky-text-main hover:bg-stocky-bg-global transition-colors cursor-pointer"
+            className="h-10 rounded-full border border-stocky-border-subtle bg-stocky-bg-widget px-5 text-xs font-medium text-stocky-text-main hover:bg-stocky-bg-global transition-colors cursor-pointer"
           >
             {t('drawers.teamInvite.cancel')}
           </button>
@@ -203,7 +203,7 @@ export function TeamInviteDrawer({
             type="submit"
             form="team-invite-form"
             disabled={saving || !email.trim()}
-            className="h-10 rounded-full bg-stocky-primary px-6 text-xs font-medium text-white hover:bg-stocky-primary-hover transition-colors shadow-xs disabled:opacity-50 cursor-pointer"
+            className="h-10 rounded-full bg-stocky-primary px-6 text-xs font-medium text-stocky-text-inverse hover:bg-stocky-primary-hover transition-colors shadow-xs disabled:opacity-50 cursor-pointer"
           >
             {saving ? t('drawers.teamInvite.sending') : t('drawers.teamInvite.sendInvite')}
           </button>

@@ -202,7 +202,7 @@ export function InventoryTableColumnFilterPopover({
           exit={{ opacity: 0, y: -6, scale: 0.98 }}
           transition={{ duration: 0.15, ease: 'easeOut' }}
           style={{ top: position.top, left: position.left }}
-          className="fixed z-50 w-72 sm:w-80 rounded-2xl border border-stocky-border-subtle bg-white shadow-xl flex flex-col overflow-hidden text-start"
+          className="fixed z-50 w-72 sm:w-80 rounded-2xl border border-stocky-border-subtle bg-stocky-bg-widget shadow-xl flex flex-col overflow-hidden text-start"
         >
           {/* Header */}
           <header className="flex items-center justify-between border-b border-stocky-border-subtle px-4 py-3 bg-stocky-bg-global/50">
@@ -245,7 +245,7 @@ export function InventoryTableColumnFilterPopover({
                     value={searchValue}
                     onChange={(e) => setSearchValue(e.target.value)}
                     placeholder={t('inventory.filterValuesPlaceholder', { label: columnLabel })}
-                    className="h-8 w-full rounded-xl border border-stocky-border-subtle bg-stocky-bg-global/50 ps-8 pe-7 text-xs text-stocky-text-main placeholder:text-stocky-text-sub/60 focus:border-stocky-primary focus:bg-white focus:outline-none"
+                    className="h-8 w-full rounded-xl border border-stocky-border-subtle bg-stocky-bg-global/50 ps-8 pe-7 text-xs text-stocky-text-main placeholder:text-stocky-text-sub/60 focus:border-stocky-primary focus:bg-stocky-bg-widget focus:outline-none"
                   />
                   {searchValue && (
                     <button
@@ -301,8 +301,8 @@ export function InventoryTableColumnFilterPopover({
                             <span
                               className={`flex h-4 w-4 shrink-0 items-center justify-center rounded border transition-colors ${
                                 isChecked
-                                  ? 'bg-stocky-primary border-stocky-primary text-white'
-                                  : 'border-stocky-border-default bg-white'
+                                  ? 'bg-stocky-primary border-stocky-primary text-stocky-text-inverse'
+                                  : 'border-stocky-border-default bg-stocky-bg-widget'
                               }`}
                             >
                               {isChecked && <CheckIcon size="xs" />}
@@ -372,7 +372,7 @@ export function InventoryTableColumnFilterPopover({
                         value={filters.quantityMin || ''}
                         onChange={(e) => onUpdateFilter('quantityMin', e.target.value)}
                         placeholder="0"
-                        className="h-8 w-full rounded-xl border border-stocky-border-subtle bg-white px-2.5 text-xs text-stocky-text-main focus:border-stocky-primary focus:outline-none"
+                        className="h-8 w-full rounded-xl border border-stocky-border-subtle bg-stocky-bg-widget px-2.5 text-xs text-stocky-text-main focus:border-stocky-primary focus:outline-none"
                       />
                     </div>
                     <div>
@@ -383,7 +383,7 @@ export function InventoryTableColumnFilterPopover({
                         value={filters.quantityMax || ''}
                         onChange={(e) => onUpdateFilter('quantityMax', e.target.value)}
                         placeholder={t('inventory.noLimit')}
-                        className="h-8 w-full rounded-xl border border-stocky-border-subtle bg-white px-2.5 text-xs text-stocky-text-main focus:border-stocky-primary focus:outline-none"
+                        className="h-8 w-full rounded-xl border border-stocky-border-subtle bg-stocky-bg-widget px-2.5 text-xs text-stocky-text-main focus:border-stocky-primary focus:outline-none"
                       />
                     </div>
                   </div>
@@ -441,7 +441,7 @@ export function InventoryTableColumnFilterPopover({
                         value={filters.priceMin || ''}
                         onChange={(e) => onUpdateFilter('priceMin', e.target.value)}
                         placeholder="0.00"
-                        className="h-8 w-full rounded-xl border border-stocky-border-subtle bg-white px-2.5 text-xs text-stocky-text-main focus:border-stocky-primary focus:outline-none"
+                        className="h-8 w-full rounded-xl border border-stocky-border-subtle bg-stocky-bg-widget px-2.5 text-xs text-stocky-text-main focus:border-stocky-primary focus:outline-none"
                       />
                     </div>
                     <div>
@@ -452,7 +452,7 @@ export function InventoryTableColumnFilterPopover({
                         value={filters.priceMax || ''}
                         onChange={(e) => onUpdateFilter('priceMax', e.target.value)}
                         placeholder={t('inventory.noLimit')}
-                        className="h-8 w-full rounded-xl border border-stocky-border-subtle bg-white px-2.5 text-xs text-stocky-text-main focus:border-stocky-primary focus:outline-none"
+                        className="h-8 w-full rounded-xl border border-stocky-border-subtle bg-stocky-bg-widget px-2.5 text-xs text-stocky-text-main focus:border-stocky-primary focus:outline-none"
                       />
                     </div>
                   </div>
@@ -523,8 +523,8 @@ export function InventoryTableColumnFilterPopover({
                           <span
                             className={`flex h-4 w-4 shrink-0 items-center justify-center rounded border transition-colors ${
                               isChecked
-                                ? 'bg-stocky-primary border-stocky-primary text-white'
-                                : 'border-stocky-border-default bg-white'
+                                ? 'bg-stocky-primary border-stocky-primary text-stocky-text-inverse'
+                                : 'border-stocky-border-default bg-stocky-bg-widget'
                             }`}
                           >
                             {isChecked && <CheckIcon size="xs" />}
@@ -604,8 +604,8 @@ export function InventoryTableColumnFilterPopover({
                           <span
                             className={`flex h-4 w-4 shrink-0 items-center justify-center rounded border transition-colors ${
                               isChecked
-                                ? 'bg-stocky-primary border-stocky-primary text-white'
-                                : 'border-stocky-border-default bg-white'
+                                ? 'bg-stocky-primary border-stocky-primary text-stocky-text-inverse'
+                                : 'border-stocky-border-default bg-stocky-bg-widget'
                             }`}
                           >
                             {isChecked && <CheckIcon size="xs" />}
@@ -650,7 +650,7 @@ export function InventoryTableColumnFilterPopover({
             <button
               type="button"
               onClick={onClose}
-              className="h-8 px-4 rounded-full bg-stocky-text-main text-white hover:bg-black text-xs font-medium transition-colors cursor-pointer"
+              className="h-8 px-4 rounded-full bg-stocky-text-main text-stocky-text-inverse hover:bg-stocky-text-main text-xs font-medium transition-colors cursor-pointer"
             >
               {t('inventory.doneBtn')}
             </button>

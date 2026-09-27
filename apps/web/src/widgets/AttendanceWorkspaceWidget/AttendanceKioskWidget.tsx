@@ -156,9 +156,8 @@ export function AttendanceKioskWidget({
 
   return (
     <div
-      className="flex flex-col w-full p-4 sm:p-6"
+      className={`flex flex-col w-full p-4 sm:p-6 ${isRtl ? 'font-cairo' : ''}`}
       dir={isRtl ? 'rtl' : 'ltr'}
-      style={{ fontFamily: isRtl ? 'Cairo, sans-serif' : undefined }}
     >
       {/* Kiosk Mode Switcher */}
       <div className="flex items-center justify-between pb-4 mb-6 border-b border-stocky-border-subtle flex-wrap gap-3">
@@ -263,7 +262,7 @@ export function AttendanceKioskWidget({
             <button
               type="button"
               onClick={() => window.print()}
-              className="h-10 px-5 rounded-full bg-stocky-primary text-white text-xs font-medium hover:bg-stocky-primary-hover transition-colors cursor-pointer"
+              className="h-10 px-5 rounded-full bg-stocky-primary text-stocky-text-inverse text-xs font-medium hover:bg-stocky-primary-hover transition-colors cursor-pointer"
             >
               {t('modals.kiosk.printPoster')}
             </button>
@@ -306,7 +305,7 @@ export function AttendanceKioskWidget({
           <div className="w-full bg-stocky-bg-global border border-stocky-border-subtle rounded-card p-6 text-center flex flex-col items-center">
             <div
               id="stocky-kiosk-scanner-container"
-              className="w-full max-w-sm h-64 bg-black rounded-widget overflow-hidden mb-4"
+              className="w-full max-w-sm h-64 bg-stocky-text-main rounded-widget overflow-hidden mb-4"
             />
 
             {scannerError && (

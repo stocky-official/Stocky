@@ -24,6 +24,7 @@ export interface TasksPlatformViewProps {
   members: any[];
   assignments?: Array<{ user_id: string; location_id: string }>;
   userRole: CompanyUserRole;
+  canManageTasks?: boolean;
   currentUserId?: string | null;
   scanQuery?: string;
   activeTaskTab?: 'ongoing' | 'completed';
@@ -75,6 +76,7 @@ export function TasksPlatformView(props: TasksPlatformViewProps) {
     >
       <TasksWorkspaceWidget
         {...props}
+        canManageTasks={props.canManageTasks ?? platform?.canManageTasks ?? false}
         activeTaskTab={activeTaskTab}
         onTaskTabChange={onTaskTabChange}
         onCreateTask={onCreateTask}

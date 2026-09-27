@@ -133,7 +133,7 @@ export function PlatformVerificationView() {
             </p>
           </div>
           {errorMessage && (
-            <div className="p-3 rounded-widget bg-red-50 border border-red-200 text-red-700 text-xs">
+            <div className="p-3 rounded-widget bg-stocky-status-critical-bg border border-stocky-status-critical-border text-stocky-status-critical-fg text-xs">
               {errorMessage}
             </div>
           )}
@@ -152,7 +152,7 @@ export function PlatformVerificationView() {
     return (
       <PageLayout className="flex items-center justify-center p-6">
         <Card className="max-w-md w-full text-center space-y-4 p-8">
-          <AlertCircleIcon size="lg" className="mx-auto text-amber-600" />
+          <AlertCircleIcon size="lg" className="mx-auto text-stocky-status-warning-fg" />
           <h1 className="text-xl font-medium text-stocky-text-main">Stocky admin access required</h1>
           <p className="text-sm text-stocky-text-sub">This area is reserved for platform verification staff.</p>
           <Button variant="outline" onClick={() => router.replace('/platform')}>Return to platform</Button>
@@ -188,7 +188,7 @@ export function PlatformVerificationView() {
         </div>
 
         {errorMessage && (
-          <div className="p-3 rounded-widget bg-red-50 border border-red-200 text-red-700 text-xs">
+          <div className="p-3 rounded-widget bg-stocky-status-critical-bg border border-stocky-status-critical-border text-stocky-status-critical-fg text-xs">
             {errorMessage}
           </div>
         )}
@@ -209,7 +209,7 @@ export function PlatformVerificationView() {
                       </p>
                       <p className="text-xs text-stocky-text-sub">Requested by {application.requested_email}</p>
                     </div>
-                    <span className={`text-xs px-2.5 py-1 rounded-full border ${isPending ? 'bg-amber-50 text-amber-700 border-amber-200' : application.status === 'approved' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-slate-50 text-slate-600 border-slate-200'}`}>
+                    <span className={`text-xs px-2.5 py-1 rounded-full border ${isPending ? 'bg-stocky-status-warning-bg text-stocky-status-warning-fg border-stocky-status-warning-border' : application.status === 'approved' ? 'bg-stocky-status-success-bg text-stocky-status-success-fg border-stocky-status-success-border' : 'bg-stocky-bg-subtle text-stocky-text-sub border-stocky-border-subtle'}`}>
                       {application.status}
                     </span>
                   </div>

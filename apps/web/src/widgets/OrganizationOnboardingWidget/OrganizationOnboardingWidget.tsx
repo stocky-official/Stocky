@@ -194,14 +194,14 @@ export function OrganizationOnboardingWidget({
 
         {/* Form Alerts */}
         {errorMsg && (
-          <div className="p-3 rounded-widget bg-red-50 border border-red-200 text-red-700 flex items-center gap-2 text-xs">
+          <div className="p-3 rounded-widget bg-stocky-status-critical-bg border border-stocky-status-critical-border text-stocky-status-critical-fg flex items-center gap-2 text-xs">
             <AlertCircleIcon size="xs" className="shrink-0" />
             <span>{errorMsg}</span>
           </div>
         )}
 
         {successMsg && (
-          <div className="p-3 rounded-widget bg-green-50 border border-green-200 text-green-700 flex items-center gap-2 text-xs">
+          <div className="p-3 rounded-widget bg-stocky-status-success-bg border border-stocky-status-success-border text-stocky-status-success-fg flex items-center gap-2 text-xs">
             <CheckCircleIcon size="xs" className="shrink-0" />
             <span>{successMsg}</span>
           </div>
@@ -212,7 +212,7 @@ export function OrganizationOnboardingWidget({
           {/* Organization Name */}
           <div className="space-y-1.5">
             <label className="font-medium text-stocky-text-main block">
-              Company Name <span className="text-red-500">*</span>
+              Company Name <span className="text-stocky-status-critical-fg">*</span>
             </label>
             <input
               type="text"
@@ -229,7 +229,7 @@ export function OrganizationOnboardingWidget({
             <div className="space-y-1.5">
               <label className="font-medium text-stocky-text-main block flex items-center justify-between">
                 <span>Workspace URL Slug</span>
-                <span className="text-[10px] text-stocky-text-sub font-mono font-normal">/{orgCode || 'company'}</span>
+                <span className="text-[10px] text-stocky-text-sub font-sans font-normal">/{orgCode || 'company'}</span>
               </label>
               <input
                 type="text"
@@ -240,7 +240,7 @@ export function OrganizationOnboardingWidget({
                   setOrgCode(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''));
                 }}
                 placeholder="e.g. appleco"
-                className="w-full bg-stocky-bg-global border border-stocky-border-subtle rounded-widget px-3 py-2.5 text-xs text-stocky-text-main focus:outline-none focus:border-stocky-primary transition-colors font-mono lowercase"
+                className="w-full bg-stocky-bg-global border border-stocky-border-subtle rounded-widget px-3 py-2.5 text-xs text-stocky-text-main focus:outline-none focus:border-stocky-primary transition-colors font-sans lowercase"
               />
             </div>
 
@@ -267,7 +267,7 @@ export function OrganizationOnboardingWidget({
 
             {logoPreview ? (
               <div className="flex items-center gap-3 p-3 rounded-widget bg-stocky-bg-global border border-stocky-border-subtle">
-                <div className="w-12 h-12 rounded-widget overflow-hidden border border-stocky-border-subtle bg-white flex items-center justify-center shrink-0">
+                <div className="w-12 h-12 rounded-widget overflow-hidden border border-stocky-border-subtle bg-stocky-bg-widget flex items-center justify-center shrink-0">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={logoPreview}
@@ -288,7 +288,7 @@ export function OrganizationOnboardingWidget({
                 <button
                   type="button"
                   onClick={handleRemoveLogo}
-                  className="w-7 h-7 rounded-widget hover:bg-stocky-bg-widget border border-stocky-border-subtle flex items-center justify-center text-stocky-text-sub hover:text-red-600 transition-colors cursor-pointer"
+                  className="w-7 h-7 rounded-widget hover:bg-stocky-bg-widget border border-stocky-border-subtle flex items-center justify-center text-stocky-text-sub hover:text-stocky-status-critical-fg transition-colors cursor-pointer"
                   title="Remove logo"
                 >
                   <XIcon size="xs" />

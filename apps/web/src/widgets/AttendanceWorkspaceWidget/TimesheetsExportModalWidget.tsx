@@ -244,12 +244,11 @@ export function TimesheetsExportModalWidget({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/40 backdrop-blur-sm animate-fade-in"
+      className={`fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-stocky-text-main/40 backdrop-blur-sm animate-fade-in ${isRtl ? 'font-cairo' : ''}`}
       role="dialog"
       aria-modal="true"
       aria-labelledby="export-modal-title"
       dir={isRtl ? 'rtl' : 'ltr'}
-      style={{ fontFamily: isRtl ? 'Cairo, sans-serif' : undefined }}
     >
       <div className="w-full max-w-xl bg-stocky-bg-widget rounded-card border border-stocky-border-subtle shadow-bevel-float flex flex-col max-h-[90vh] overflow-hidden animate-scale-in">
         {/* Modal Header */}
@@ -308,7 +307,7 @@ export function TimesheetsExportModalWidget({
                   onClick={() => handlePresetSelect(p.id)}
                   className={`h-7 px-3 rounded-full text-xs font-medium cursor-pointer transition-colors ${
                     preset === p.id
-                      ? 'bg-stocky-primary text-white shadow-sm'
+                      ? 'bg-stocky-primary text-stocky-text-inverse shadow-sm'
                       : 'border border-stocky-border-subtle bg-stocky-bg-widget text-stocky-text-main hover:border-stocky-primary/50'
                   }`}
                 >
@@ -428,7 +427,7 @@ export function TimesheetsExportModalWidget({
                         </div>
                         <div
                           className={`w-4 h-4 rounded flex items-center justify-center shrink-0 ${
-                            isSelected ? 'bg-stocky-primary text-white' : 'border border-stocky-border-subtle'
+                            isSelected ? 'bg-stocky-primary text-stocky-text-inverse' : 'border border-stocky-border-subtle'
                           }`}
                         >
                           {isSelected && <CheckIcon size="xs" />}
@@ -549,7 +548,7 @@ export function TimesheetsExportModalWidget({
                           </div>
                           <div
                             className={`w-4 h-4 rounded flex items-center justify-center shrink-0 ${
-                              isSelected ? 'bg-stocky-primary text-white' : 'border border-stocky-border-subtle'
+                              isSelected ? 'bg-stocky-primary text-stocky-text-inverse' : 'border border-stocky-border-subtle'
                             }`}
                           >
                             {isSelected && <CheckIcon size="xs" />}
@@ -611,7 +610,7 @@ export function TimesheetsExportModalWidget({
             type="button"
             disabled={matchingShifts.length === 0}
             onClick={handleExecuteExport}
-            className="inline-flex items-center justify-center gap-2 h-10 px-5 rounded-full bg-stocky-primary text-white text-xs font-medium hover:bg-stocky-primary-hover disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-sm cursor-pointer"
+            className="inline-flex items-center justify-center gap-2 h-10 px-5 rounded-full bg-stocky-primary text-stocky-text-inverse text-xs font-medium hover:bg-stocky-primary-hover disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-sm cursor-pointer"
           >
             <FileSpreadsheetIcon size="xs" />
             <span>{t('modals.exportTimesheets.downloadBtn')}</span>

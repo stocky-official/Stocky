@@ -74,8 +74,8 @@ export function TasksFilterPanelWidget({
       className={
         className ||
         (isMobile
-          ? "flex flex-col min-h-0 bg-white"
-          : "stocky-filter-panel rounded-2xl border border-stocky-border-subtle bg-white p-4 shadow-bevel-float sm:p-5")
+          ? "flex flex-col min-h-0 bg-stocky-bg-widget"
+          : "stocky-filter-panel rounded-2xl border border-stocky-border-subtle bg-stocky-bg-widget p-4 shadow-bevel-float sm:p-5")
       }
     >
       {/* Header (Desktop only) */}
@@ -176,7 +176,7 @@ export function TasksFilterPanelWidget({
           <select
             value={filters.locationId}
             onChange={(e) => onFilterChange({ ...filters, locationId: e.target.value })}
-            className="w-full h-9 rounded-xl border border-stocky-border-subtle bg-white px-3 text-xs text-stocky-text-main focus:border-stocky-primary focus:outline-none transition-colors"
+            className="w-full h-9 rounded-xl border border-stocky-border-subtle bg-stocky-bg-widget px-3 text-xs text-stocky-text-main focus:border-stocky-primary focus:outline-none transition-colors"
           >
             <option value="all">{t('filters.allLocations')}</option>
             {locations.map((loc) => (
@@ -195,7 +195,7 @@ export function TasksFilterPanelWidget({
           <select
             value={filters.assigneeId}
             onChange={(e) => onFilterChange({ ...filters, assigneeId: e.target.value })}
-            className="w-full h-9 rounded-xl border border-stocky-border-subtle bg-white px-3 text-xs text-stocky-text-main focus:border-stocky-primary focus:outline-none transition-colors"
+            className="w-full h-9 rounded-xl border border-stocky-border-subtle bg-stocky-bg-widget px-3 text-xs text-stocky-text-main focus:border-stocky-primary focus:outline-none transition-colors"
           >
             <option value="all">{t('tasks.allTeamMembers')}</option>
             {members.map((member) => (
@@ -214,7 +214,7 @@ export function TasksFilterPanelWidget({
           <select
             value={filters.status}
             onChange={(e) => onFilterChange({ ...filters, status: e.target.value as any })}
-            className="w-full h-9 rounded-xl border border-stocky-border-subtle bg-white px-3 text-xs text-stocky-text-main capitalize focus:border-stocky-primary focus:outline-none transition-colors"
+            className="w-full h-9 rounded-xl border border-stocky-border-subtle bg-stocky-bg-widget px-3 text-xs text-stocky-text-main capitalize focus:border-stocky-primary focus:outline-none transition-colors"
           >
             <option value="all">{t('inventory.allStatuses') || 'All statuses'}</option>
             <option value="assigned">{t('tasks.statusAssigned') || 'Assigned'}</option>
@@ -241,7 +241,7 @@ export function TasksFilterPanelWidget({
         <button
           type="button"
           onClick={onClose}
-          className="h-9 px-5 rounded-full bg-stocky-text-main text-xs font-medium text-white hover:bg-black transition-colors cursor-pointer"
+          className="h-9 px-5 rounded-full bg-stocky-text-main text-xs font-medium text-stocky-text-inverse hover:bg-stocky-text-main transition-colors cursor-pointer"
         >
           {t('common.done') || 'Done'}
         </button>

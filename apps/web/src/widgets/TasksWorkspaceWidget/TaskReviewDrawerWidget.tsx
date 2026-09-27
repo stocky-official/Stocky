@@ -135,7 +135,7 @@ export function TaskReviewDrawerWidget({
                   return (
                     <div
                       key={item.id}
-                      className="rounded-xl border border-stocky-border-subtle p-3 bg-white"
+                      className="rounded-xl border border-stocky-border-subtle p-3 bg-stocky-bg-widget"
                     >
                       <div className="flex items-start justify-between gap-3">
                         <div>
@@ -234,7 +234,7 @@ export function TaskReviewDrawerWidget({
               type="button"
               onClick={() => handleReview(false)}
               disabled={saving}
-              className="h-10 flex-1 rounded-full border border-red-200 text-xs font-medium text-red-700 hover:bg-red-50 transition-colors cursor-pointer disabled:opacity-60"
+              className="h-10 flex-1 rounded-full border border-stocky-status-critical-border text-xs font-medium text-stocky-status-critical-fg hover:bg-stocky-status-critical-bg transition-colors cursor-pointer disabled:opacity-60"
             >
               {saving ? t('common.loading') : t('tasks.sendBackForCorrection')}
             </button>
@@ -242,7 +242,7 @@ export function TaskReviewDrawerWidget({
               type="button"
               onClick={() => handleReview(true)}
               disabled={saving}
-              className="h-10 flex-1 rounded-full bg-stocky-primary hover:bg-stocky-primary-hover px-6 text-xs font-medium text-white transition-colors cursor-pointer disabled:opacity-60 shadow-sm"
+              className="h-10 flex-1 rounded-full bg-stocky-primary hover:bg-stocky-primary-hover px-6 text-xs font-medium text-stocky-text-inverse transition-colors cursor-pointer disabled:opacity-60 shadow-sm"
             >
               {saving ? t('common.loading') : t('tasks.approveTask')}
             </button>

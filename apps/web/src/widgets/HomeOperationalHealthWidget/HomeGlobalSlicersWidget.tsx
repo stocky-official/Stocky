@@ -105,7 +105,7 @@ export function HomeGlobalSlicersWidget({
               data-testid="export-all-workbook-btn"
               onClick={onExportAll}
               disabled={isExporting}
-              className="h-8 px-3 rounded-lg bg-stocky-primary hover:bg-stocky-primary-hover text-white text-xs font-semibold flex items-center gap-1.5 shadow-xs transition-all cursor-pointer disabled:opacity-50"
+              className="h-8 px-3 rounded-lg bg-stocky-primary hover:bg-stocky-primary-hover text-stocky-text-inverse text-xs font-semibold flex items-center gap-1.5 shadow-xs transition-all cursor-pointer disabled:opacity-50"
               title={t('home.charts.desktop.exportAll')}
             >
               <FileSpreadsheetIcon size="xs" />

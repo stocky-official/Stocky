@@ -156,7 +156,7 @@ export function AdminDashboardView() {
       {/* Primary KPI Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 sm:gap-4">
         {/* Total Companies */}
-        <Card className="p-4 sm:p-5 bg-white border-stocky-border-subtle rounded-2xl shadow-2xs space-y-3">
+        <Card className="p-4 sm:p-5 bg-stocky-bg-widget border-stocky-border-subtle rounded-2xl shadow-2xs space-y-3">
           <div className="flex items-center justify-between">
             <span className="text-[11px] font-bold uppercase tracking-wider text-stocky-text-sub">
               Total Companies
@@ -170,9 +170,9 @@ export function AdminDashboardView() {
               {loading ? '—' : stats.total_companies}
             </span>
             <div className="flex items-center gap-2 mt-1 text-[11px] text-stocky-text-sub">
-              <span className="text-emerald-700 font-medium">{stats.verified_companies} verified</span>
+              <span className="text-stocky-status-success-fg font-medium">{stats.verified_companies} verified</span>
               <span>·</span>
-              <span className={stats.pending_companies > 0 ? 'text-amber-700 font-bold' : ''}>
+              <span className={stats.pending_companies > 0 ? 'text-stocky-status-warning-fg font-bold' : ''}>
                 {stats.pending_companies} pending
               </span>
             </div>
@@ -180,7 +180,7 @@ export function AdminDashboardView() {
         </Card>
 
         {/* Total Platform Users */}
-        <Card className="p-4 sm:p-5 bg-white border-stocky-border-subtle rounded-2xl shadow-2xs space-y-3">
+        <Card className="p-4 sm:p-5 bg-stocky-bg-widget border-stocky-border-subtle rounded-2xl shadow-2xs space-y-3">
           <div className="flex items-center justify-between">
             <span className="text-[11px] font-bold uppercase tracking-wider text-stocky-text-sub">
               Platform Members
@@ -200,7 +200,7 @@ export function AdminDashboardView() {
         </Card>
 
         {/* Total Facilities */}
-        <Card className="p-4 sm:p-5 bg-white border-stocky-border-subtle rounded-2xl shadow-2xs space-y-3">
+        <Card className="p-4 sm:p-5 bg-stocky-bg-widget border-stocky-border-subtle rounded-2xl shadow-2xs space-y-3">
           <div className="flex items-center justify-between">
             <span className="text-[11px] font-bold uppercase tracking-wider text-stocky-text-sub">
               Active Facilities
@@ -220,7 +220,7 @@ export function AdminDashboardView() {
         </Card>
 
         {/* Catalog SKUs & Batches */}
-        <Card className="p-4 sm:p-5 bg-white border-stocky-border-subtle rounded-2xl shadow-2xs space-y-3">
+        <Card className="p-4 sm:p-5 bg-stocky-bg-widget border-stocky-border-subtle rounded-2xl shadow-2xs space-y-3">
           <div className="flex items-center justify-between">
             <span className="text-[11px] font-bold uppercase tracking-wider text-stocky-text-sub">
               Tracked Inventory
@@ -242,23 +242,23 @@ export function AdminDashboardView() {
 
       {/* Pending Verifications Banner */}
       {stats.pending_companies > 0 && (
-        <div className="p-4 sm:p-5 rounded-2xl bg-amber-50 border border-amber-200 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="p-4 sm:p-5 rounded-2xl bg-stocky-status-warning-bg border border-stocky-status-warning-border shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-start gap-3 min-w-0">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-100 text-amber-800 shrink-0">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-stocky-status-warning-bg text-stocky-status-warning-fg shrink-0">
               <AlertCircleIcon size="sm" />
             </div>
             <div className="min-w-0">
-              <h2 className="text-sm font-bold text-amber-950">
+              <h2 className="text-sm font-bold text-stocky-status-warning-fg">
                 {stats.pending_companies} Company Application{stats.pending_companies > 1 ? 's' : ''} Awaiting Review
               </h2>
-              <p className="text-xs text-amber-800 mt-0.5">
+              <p className="text-xs text-stocky-status-warning-fg mt-0.5">
                 New organizations have registered and require administrator verification before accessing platform operations.
               </p>
             </div>
           </div>
           <Link
             href="/admin/companies?status=pending"
-            className="h-9 px-4 rounded-full bg-amber-800 hover:bg-amber-900 text-white text-xs font-semibold transition-colors shrink-0 inline-flex items-center justify-center gap-1.5 shadow-2xs"
+            className="h-9 px-4 rounded-full bg-stocky-status-warning-fg hover:bg-stocky-status-warning-fg text-stocky-text-inverse text-xs font-semibold transition-colors shrink-0 inline-flex items-center justify-center gap-1.5 shadow-2xs"
           >
             <span>Review Applications</span>
             <ChevronRightIcon size="xs" className="rtl:rotate-180" />
@@ -283,7 +283,7 @@ export function AdminDashboardView() {
             </Link>
           </div>
 
-          <Card className="p-0 bg-white border border-stocky-border-subtle rounded-2xl shadow-2xs overflow-hidden">
+          <Card className="p-0 bg-stocky-bg-widget border border-stocky-border-subtle rounded-2xl shadow-2xs overflow-hidden">
             {pendingApplications.length === 0 ? (
               <div className="p-8 text-center text-xs text-stocky-text-sub">
                 No company applications recorded yet.
@@ -303,10 +303,10 @@ export function AdminDashboardView() {
                         <span
                           className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium border ${
                             app.status === 'pending'
-                              ? 'bg-amber-50 text-amber-700 border-amber-200'
+                              ? 'bg-stocky-status-warning-bg text-stocky-status-warning-fg border-stocky-status-warning-border'
                               : app.status === 'approved'
-                              ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                              : 'bg-slate-50 text-slate-600 border-slate-200'
+                              ? 'bg-stocky-status-success-bg text-stocky-status-success-fg border-stocky-status-success-border'
+                              : 'bg-stocky-bg-subtle text-stocky-text-sub border-stocky-border-subtle'
                           }`}
                         >
                           {app.status}
@@ -323,7 +323,7 @@ export function AdminDashboardView() {
                       </span>
                       <Link
                         href={`/admin/companies?id=${app.id}`}
-                        className="h-8 px-3 rounded-full border border-stocky-border-subtle bg-white hover:border-stocky-primary hover:text-stocky-primary text-xs font-medium text-stocky-text-main transition-colors inline-flex items-center gap-1 shadow-2xs"
+                        className="h-8 px-3 rounded-full border border-stocky-border-subtle bg-stocky-bg-widget hover:border-stocky-primary hover:text-stocky-primary text-xs font-medium text-stocky-text-main transition-colors inline-flex items-center gap-1 shadow-2xs"
                       >
                         <span>Inspect</span>
                         <ArrowUpRightIcon size="xs" />
@@ -342,7 +342,7 @@ export function AdminDashboardView() {
             Security & System Guard
           </h2>
 
-          <Card className="p-4 sm:p-5 bg-white border border-stocky-border-subtle rounded-2xl shadow-2xs space-y-4">
+          <Card className="p-4 sm:p-5 bg-stocky-bg-widget border border-stocky-border-subtle rounded-2xl shadow-2xs space-y-4">
             <div className="flex items-start gap-3 pb-3 border-b border-stocky-border-subtle">
               <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-stocky-bg-global text-stocky-primary border border-stocky-border-subtle shrink-0">
                 <ShieldIcon size="sm" />
@@ -354,7 +354,7 @@ export function AdminDashboardView() {
                 <p className="text-[11px] text-stocky-text-sub mt-0.5 leading-relaxed">
                   Platform admin privileges are locked exclusively to:
                 </p>
-                <code className="text-[11px] font-mono font-semibold text-stocky-primary bg-stocky-primary/10 px-2 py-0.5 rounded-md mt-1 inline-block">
+                <code className="text-[11px] font-sans font-semibold text-stocky-primary bg-stocky-primary/10 px-2 py-0.5 rounded-md mt-1 inline-block">
                   {ALLOWED_ADMIN_EMAIL}
                 </code>
               </div>
@@ -363,13 +363,13 @@ export function AdminDashboardView() {
             <div className="space-y-2.5 text-xs text-stocky-text-sub">
               <div className="flex items-center justify-between">
                 <span>PostgreSQL RLS Multi-Tenant:</span>
-                <span className="inline-flex items-center gap-1 font-semibold text-emerald-700">
+                <span className="inline-flex items-center gap-1 font-semibold text-stocky-status-success-fg">
                   <CheckCircleIcon size="xs" /> Enforced
                 </span>
               </div>
               <div className="flex items-center justify-between">
                 <span>Admin RPC Security Definer:</span>
-                <span className="inline-flex items-center gap-1 font-semibold text-emerald-700">
+                <span className="inline-flex items-center gap-1 font-semibold text-stocky-status-success-fg">
                   <CheckCircleIcon size="xs" /> Active
                 </span>
               </div>

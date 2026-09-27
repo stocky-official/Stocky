@@ -6,11 +6,7 @@ import {
   ClockIcon,
   ListTodoIcon,
 } from '@stocky/icons';
-import type {
-  CompanyUserRole,
-  StockTask,
-  StockTaskItem,
-} from '@stocky/types';
+import type { StockTask, StockTaskItem } from '@stocky/types';
 import { UserAvatar } from '@/components/ui/UserAvatar';
 import { useTranslation } from '@/lib/i18n';
 
@@ -25,7 +21,7 @@ export interface TaskKanbanCardProps {
     avatar_url?: string | null;
   } | null;
   currentUserId?: string | null;
-  userRole: CompanyUserRole;
+  canManageTasks: boolean;
   onOpenRunner: (task: StockTask) => void;
   onOpenReview: (task: StockTask) => void;
   onOpenDetails: (task: StockTask) => void;
@@ -46,7 +42,7 @@ export function TaskKanbanCard({
   locationName,
   assignee,
   currentUserId,
-  userRole,
+  canManageTasks,
   onOpenRunner,
   onOpenReview,
   onOpenDetails,
@@ -59,9 +55,9 @@ export function TaskKanbanCard({
   const completedCount = items.filter((item) => item.status !== 'pending').length;
 
   const canRun =
-    (task.assignedToCompanyUserId === currentUserId || userRole !== 'staff') &&
+    task.assignedToCompanyUserId === currentUserId &&
     ['assigned', 'in_progress', 'rejected'].includes(task.status);
-  const canReview = userRole !== 'staff' && task.status === 'submitted';
+  const canReview = canManageTasks && task.status === 'submitted';
 
   const handleClick = () => {
     if (dragOccurredRef.current) {
@@ -112,10 +108,10 @@ export function TaskKanbanCard({
           handleClick();
         }
       }}
-      className={`group relative flex flex-col justify-between rounded-xl bg-white p-2.5 select-none text-start cursor-grab active:cursor-grabbing transition-all duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stocky-primary ${
+      className={`group relative flex flex-col justify-between rounded-xl bg-stocky-bg-widget p-2.5 select-none text-start cursor-grab active:cursor-grabbing transition-all duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stocky-primary ${
         isDragging
           ? 'opacity-30 scale-[0.97] border-2 border-dashed border-stocky-border-subtle bg-stocky-bg-global/50 shadow-none'
-          : 'border border-stocky-border-subtle/80 shadow-[0_1px_3px_rgba(0,0,0,0.03)] hover:-translate-y-0.5 hover:shadow-[0_8px_18px_-6px_rgba(0,0,0,0.08),0_2px_6px_-2px_rgba(0,0,0,0.03)] hover:border-slate-300 active:scale-[0.985] active:translate-y-0 active:shadow-[0_1px_2px_rgba(0,0,0,0.04)]'
+          : 'border border-stocky-border-subtle/80 shadow-bevel hover:-translate-y-0.5 hover:shadow-bevel-hover hover:border-stocky-border-default active:scale-[0.985] active:translate-y-0 active:shadow-bevel'
       }`}
     >
       <div>
@@ -124,14 +120,14 @@ export function TaskKanbanCard({
           <div className="flex items-center gap-1.5 min-w-0 flex-1">
             <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-md bg-stocky-bg-global text-stocky-text-sub group-hover:bg-stocky-bg-global/70 transition-colors">
               {task.taskType === 'count' ? (
-                <CheckCircleIcon size="xs" className="text-emerald-600" />
+                <CheckCircleIcon size="xs" className="text-stocky-status-success-fg" />
               ) : task.taskType === 'expiry' ? (
-                <ClockIcon size="xs" className="text-amber-500" />
+                <ClockIcon size="xs" className="text-stocky-status-warning-fg" />
               ) : (
-                <ListTodoIcon size="xs" className="text-blue-600" />
+                <ListTodoIcon size="xs" className="text-stocky-status-info-fg" />
               )}
             </div>
-            <h4 className="truncate text-xs font-semibold text-stocky-text-main group-hover:text-black transition-colors">
+            <h4 className="truncate text-xs font-semibold text-stocky-text-main group-hover:text-stocky-text-main transition-colors">
               {task.title}
             </h4>
           </div>

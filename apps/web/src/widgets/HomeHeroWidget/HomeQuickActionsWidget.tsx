@@ -43,7 +43,7 @@ export function HomeQuickActionsWidget({
       title: t('home.settings'),
       description: t('home.settingsDesc'),
       icon: <SettingsIcon size="xs" />,
-      badgeClass: 'bg-slate-100 text-slate-700 border border-slate-200/70',
+      badgeClass: 'bg-stocky-bg-subtle text-stocky-text-sub border border-stocky-border-subtle',
       action: onOpenSettings,
     },
     {
@@ -51,7 +51,7 @@ export function HomeQuickActionsWidget({
       title: t('home.team'),
       description: t('home.teamDesc'),
       icon: <UsersIcon size="xs" />,
-      badgeClass: 'bg-blue-50 text-blue-700 border border-blue-200/70',
+      badgeClass: 'bg-stocky-status-info-bg text-stocky-status-info-fg border border-stocky-status-info-border',
       action: onOpenTeam,
     },
     {
@@ -59,7 +59,7 @@ export function HomeQuickActionsWidget({
       title: t('home.locations'),
       description: t('home.locationsDesc'),
       icon: <WarehouseIcon size="xs" />,
-      badgeClass: 'bg-emerald-50 text-emerald-700 border border-emerald-200/70',
+      badgeClass: 'bg-stocky-status-success-bg text-stocky-status-success-fg border border-stocky-status-success-border',
       action: onOpenLocations,
     },
     {
@@ -67,7 +67,7 @@ export function HomeQuickActionsWidget({
       title: t('home.logs'),
       description: t('home.logsDesc'),
       icon: <ActivityIcon size="xs" />,
-      badgeClass: 'bg-purple-50 text-purple-700 border border-purple-200/70',
+      badgeClass: 'bg-stocky-status-hold-bg text-stocky-status-hold-fg border border-stocky-status-hold-border',
       action: onOpenLogs,
     },
   ];

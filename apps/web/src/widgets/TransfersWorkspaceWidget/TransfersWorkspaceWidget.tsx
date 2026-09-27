@@ -273,13 +273,13 @@ export function TransfersWorkspaceWidget({
       aria-label={t('transfers.filterTransfers')}
       className={
         isMobile
-          ? "flex flex-col min-h-0 bg-white"
-          : "w-full rounded-2xl bg-white border border-stocky-border-subtle shadow-bevel-float overflow-hidden flex flex-col z-50 text-left select-none"
+          ? "flex flex-col min-h-0 bg-stocky-bg-widget"
+          : "w-full rounded-2xl bg-stocky-bg-widget border border-stocky-border-subtle shadow-bevel-float overflow-hidden flex flex-col z-50 text-left select-none"
       }
     >
       {/* Header (Desktop only) */}
       {!isMobile && (
-        <div className="flex items-center justify-between px-5 py-3.5 border-b border-stocky-border-subtle bg-white shrink-0">
+        <div className="flex items-center justify-between px-5 py-3.5 border-b border-stocky-border-subtle bg-stocky-bg-widget shrink-0">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-lg bg-stocky-primary/10 text-stocky-primary flex items-center justify-center shrink-0">
               <FilterIcon size="xs" />
@@ -288,7 +288,7 @@ export function TransfersWorkspaceWidget({
               <div className="flex items-center gap-2">
                 <h2 className="text-sm font-semibold text-stocky-text-main">{t('transfers.filterTransfers')}</h2>
                 {activeFilterCount > 0 && (
-                  <span className="rounded-full bg-stocky-primary px-2 py-0.5 text-[10px] font-semibold text-white">
+                  <span className="rounded-full bg-stocky-primary px-2 py-0.5 text-[10px] font-semibold text-stocky-text-inverse">
                     {t('transfers.activeFilters', { count: activeFilterCount })}
                   </span>
                 )}
@@ -317,7 +317,7 @@ export function TransfersWorkspaceWidget({
               <button
                 type="button"
                 onClick={() => setFilterStatuses([])}
-                className="text-[11px] text-stocky-text-sub hover:text-red-500 cursor-pointer"
+                className="text-[11px] text-stocky-text-sub hover:text-stocky-status-critical-fg cursor-pointer"
               >
                 {t('common.clear')}
               </button>
@@ -348,7 +348,7 @@ export function TransfersWorkspaceWidget({
                   className={`h-8 px-3 rounded-xl text-xs font-medium border transition-colors cursor-pointer flex items-center gap-1.5 ${
                     isChecked
                       ? 'bg-stocky-primary/10 border-stocky-primary/40 text-stocky-primary font-semibold'
-                      : 'bg-white border-stocky-border-subtle text-stocky-text-sub hover:text-stocky-text-main'
+                      : 'bg-stocky-bg-widget border-stocky-border-subtle text-stocky-text-sub hover:text-stocky-text-main'
                   }`}
                 >
                   {isChecked && <CheckIcon size="xs" />}
@@ -370,7 +370,7 @@ export function TransfersWorkspaceWidget({
               <button
                 type="button"
                 onClick={() => setFilterOriginId('')}
-                className="text-[11px] text-stocky-text-sub hover:text-red-500 cursor-pointer"
+                className="text-[11px] text-stocky-text-sub hover:text-stocky-status-critical-fg cursor-pointer"
               >
                 {t('common.clear')}
               </button>
@@ -379,7 +379,7 @@ export function TransfersWorkspaceWidget({
           <select
             value={filterOriginId}
             onChange={(e) => setFilterOriginId(e.target.value)}
-            className="w-full h-10 px-3 rounded-xl bg-white border border-stocky-border-subtle text-xs text-stocky-text-main focus:border-stocky-primary focus:outline-none cursor-pointer"
+            className="w-full h-10 px-3 rounded-xl bg-stocky-bg-widget border border-stocky-border-subtle text-xs text-stocky-text-main focus:border-stocky-primary focus:outline-none cursor-pointer"
           >
             <option value="">{t('transfers.allOriginLocations')}</option>
             {locations.map((loc) => (
@@ -401,7 +401,7 @@ export function TransfersWorkspaceWidget({
               <button
                 type="button"
                 onClick={() => setFilterDestinationId('')}
-                className="text-[11px] text-stocky-text-sub hover:text-red-500 cursor-pointer"
+                className="text-[11px] text-stocky-text-sub hover:text-stocky-status-critical-fg cursor-pointer"
               >
                 {t('common.clear')}
               </button>
@@ -410,7 +410,7 @@ export function TransfersWorkspaceWidget({
           <select
             value={filterDestinationId}
             onChange={(e) => setFilterDestinationId(e.target.value)}
-            className="w-full h-10 px-3 rounded-xl bg-white border border-stocky-border-subtle text-xs text-stocky-text-main focus:border-stocky-primary focus:outline-none cursor-pointer"
+            className="w-full h-10 px-3 rounded-xl bg-stocky-bg-widget border border-stocky-border-subtle text-xs text-stocky-text-main focus:border-stocky-primary focus:outline-none cursor-pointer"
           >
             <option value="">{t('transfers.allDestinationLocations')}</option>
             {locations.map((loc) => (
@@ -423,7 +423,7 @@ export function TransfersWorkspaceWidget({
       </div>
 
       {/* Footer */}
-      <div className={`px-5 py-3.5 border-t border-stocky-border-subtle bg-white flex items-center justify-between shrink-0 ${isMobile ? 'mt-auto' : ''}`}>
+      <div className={`px-5 py-3.5 border-t border-stocky-border-subtle bg-stocky-bg-widget flex items-center justify-between shrink-0 ${isMobile ? 'mt-auto' : ''}`}>
         <span className="text-xs text-stocky-text-sub">
           {t('transfers.showingTransfers', { count: filteredTransfers.length })}
         </span>
@@ -432,7 +432,7 @@ export function TransfersWorkspaceWidget({
             <button
               type="button"
               onClick={handleResetFilters}
-              className="h-8 px-3 rounded-full text-xs font-medium text-stocky-text-sub hover:text-red-600 hover:bg-red-50 transition-colors cursor-pointer"
+              className="h-8 px-3 rounded-full text-xs font-medium text-stocky-text-sub hover:text-stocky-status-critical-fg hover:bg-stocky-status-critical-bg transition-colors cursor-pointer"
             >
               {t('common.reset')}
             </button>
@@ -440,7 +440,7 @@ export function TransfersWorkspaceWidget({
           <button
             type="button"
             onClick={() => setIsFilterDrawerOpen(false)}
-            className="h-8 px-5 rounded-full bg-stocky-text-main text-white text-xs font-semibold hover:opacity-90 transition-opacity cursor-pointer shadow-sm"
+            className="h-8 px-5 rounded-full bg-stocky-text-main text-stocky-text-inverse text-xs font-semibold hover:opacity-90 transition-opacity cursor-pointer shadow-sm"
           >
             {t('transfers.done')}
           </button>
@@ -452,7 +452,7 @@ export function TransfersWorkspaceWidget({
   return (
     <div className="stocky-transfers-workspace flex flex-col gap-4">
       {operationError && (
-        <div className="flex items-start justify-between gap-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700" role="alert">
+        <div className="flex items-start justify-between gap-3 rounded-xl border border-stocky-status-critical-border bg-stocky-status-critical-bg px-4 py-3 text-sm text-stocky-status-critical-fg" role="alert">
           <span>{operationError}</span>
           <button type="button" onClick={() => setOperationError(null)} className="text-xs font-semibold underline">
             {t('common.close')}
@@ -460,7 +460,7 @@ export function TransfersWorkspaceWidget({
         </div>
       )}
       {/* Unified Table Workspace Card (stocky-page-redesign standard) */}
-      <div className="stocky-stock-unified-card rounded-xl bg-white border border-stocky-border-subtle shadow-none flex flex-col relative z-20 overflow-visible">
+      <div className="stocky-stock-unified-card rounded-xl bg-stocky-bg-widget border border-stocky-border-subtle shadow-none flex flex-col relative z-20 overflow-visible">
         {/* 1. Integrated Toolbar Header */}
         <div className="p-3 sm:p-3.5 border-b border-stocky-border-subtle relative z-30">
           <TransfersToolbarWidget

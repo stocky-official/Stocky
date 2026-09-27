@@ -34,7 +34,7 @@ export function Skeleton({
   const animationStyles = {
     shimmer: 'stocky-skeleton-shimmer',
     'shimmer-subtle': 'stocky-skeleton-shimmer-subtle',
-    none: 'bg-stone-200/70',
+    none: 'bg-stocky-bg-hover',
   }[animation];
 
   const inlineStyles: React.CSSProperties = {
@@ -74,18 +74,18 @@ export function SkeletonToolbar({
     <div className={`flex flex-col gap-2.5 sm:gap-3 w-full ${className}`}>
       {/* Mobile Toolbar (<sm): Split search bar + circular filter button */}
       <div className="flex sm:hidden items-center gap-2 w-full">
-        <div className="flex-1 h-10 rounded-full bg-white border border-stocky-border-subtle shadow-2xs flex items-center px-3.5 gap-2.5">
+        <div className="flex-1 h-10 rounded-full bg-stocky-bg-widget border border-stocky-border-subtle shadow-2xs flex items-center px-3.5 gap-2.5">
           <Skeleton variant="circular" width={16} height={16} animation="shimmer-subtle" />
           <Skeleton variant="text" width={110} animation="shimmer-subtle" />
         </div>
-        <div className="w-10 h-10 rounded-full bg-white border border-stocky-border-subtle shadow-2xs flex items-center justify-center shrink-0">
+        <div className="w-10 h-10 rounded-full bg-stocky-bg-widget border border-stocky-border-subtle shadow-2xs flex items-center justify-center shrink-0">
           <Skeleton variant="circular" width={18} height={18} animation="shimmer-subtle" />
         </div>
       </div>
 
       {/* Desktop Toolbar (sm+): Search input + action buttons */}
       <div className="hidden sm:flex items-center justify-between gap-3">
-        <div className="flex-1 max-w-md h-10 rounded-full bg-white border border-stocky-border-subtle shadow-2xs flex items-center px-3.5 gap-2.5">
+        <div className="flex-1 max-w-md h-10 rounded-full bg-stocky-bg-widget border border-stocky-border-subtle shadow-2xs flex items-center px-3.5 gap-2.5">
           <Skeleton variant="circular" width={16} height={16} animation="shimmer-subtle" />
           <Skeleton variant="text" width={140} animation="shimmer-subtle" />
           <div className="w-px h-4 bg-stocky-border-subtle ml-auto shrink-0" />
@@ -140,7 +140,7 @@ export function SkeletonCard({
   if (variant === 'metric') {
     return (
       <div
-        className={`bg-white border border-stocky-border-subtle rounded-2xl p-4 shadow-card flex flex-col gap-3 ${className}`}
+        className={`bg-stocky-bg-widget border border-stocky-border-subtle rounded-2xl p-4 shadow-card flex flex-col gap-3 ${className}`}
       >
         <div className="flex items-center justify-between">
           <Skeleton variant="text" width={96} animation="shimmer-subtle" />
@@ -155,7 +155,7 @@ export function SkeletonCard({
   if (variant === 'location') {
     return (
       <div
-        className={`bg-white border border-stocky-border-subtle rounded-2xl p-4 sm:p-5 shadow-2xs flex flex-col gap-3.5 ${className}`}
+        className={`bg-stocky-bg-widget border border-stocky-border-subtle rounded-2xl p-4 sm:p-5 shadow-2xs flex flex-col gap-3.5 ${className}`}
       >
         {/* Header: Avatar + Title/Sub + Actions */}
         <div className="flex items-start justify-between gap-3">
@@ -197,7 +197,7 @@ export function SkeletonCard({
   if (variant === 'item') {
     return (
       <div
-        className={`bg-white border border-stocky-border-subtle rounded-2xl p-3.5 shadow-2xs flex items-center justify-between gap-3 ${className}`}
+        className={`bg-stocky-bg-widget border border-stocky-border-subtle rounded-2xl p-3.5 shadow-2xs flex items-center justify-between gap-3 ${className}`}
       >
         <div className="flex items-center gap-3 min-w-0 flex-1">
           <Skeleton variant="rounded" width={44} height={44} className="rounded-xl shrink-0" />
@@ -214,7 +214,7 @@ export function SkeletonCard({
   // Default container card
   return (
     <div
-      className={`bg-white border border-stocky-border-subtle rounded-2xl p-5 shadow-card flex flex-col gap-4 ${className}`}
+      className={`bg-stocky-bg-widget border border-stocky-border-subtle rounded-2xl p-5 shadow-card flex flex-col gap-4 ${className}`}
     >
       <div className="flex items-center justify-between pb-3 border-b border-stocky-border-subtle/70">
         <Skeleton variant="text" width={140} height={18} />
@@ -249,7 +249,7 @@ export function SkeletonTable({
   return (
     <div className={`w-full ${className}`}>
       {/* Desktop Multi-column Table (hidden on mobile) */}
-      <div className="hidden md:block bg-white border border-stocky-border-subtle rounded-2xl shadow-card overflow-hidden">
+      <div className="hidden md:block bg-stocky-bg-widget border border-stocky-border-subtle rounded-2xl shadow-card overflow-hidden">
         <table className="w-full text-left text-xs border-collapse">
           <thead>
             <tr className="border-b border-stocky-border-subtle bg-stocky-bg-global/70 text-[10px] uppercase tracking-wide text-stocky-text-sub">
@@ -300,7 +300,7 @@ export function SkeletonTable({
           {Array.from({ length: Math.min(rowsCount, 6) }).map((_, idx) => (
             <div
               key={idx}
-              className="bg-white border border-stocky-border-subtle rounded-2xl p-3.5 shadow-2xs flex flex-col gap-2.5"
+              className="bg-stocky-bg-widget border border-stocky-border-subtle rounded-2xl p-3.5 shadow-2xs flex flex-col gap-2.5"
             >
               {/* Top Row: Thumbnail (44x44) + Title & Subtitle + Status Pill */}
               <div className="flex items-start justify-between gap-3">
@@ -318,7 +318,7 @@ export function SkeletonTable({
               <div className="flex items-center justify-between pt-2 border-t border-stocky-border-subtle/70 text-xs">
                 <div className="flex items-center gap-3">
                   <Skeleton variant="text" width={64} animation="shimmer-subtle" />
-                  <span className="text-stone-300">·</span>
+                  <span className="text-stocky-text-placeholder">·</span>
                   <Skeleton variant="text" width={56} animation="shimmer-subtle" />
                 </div>
                 <Skeleton variant="circular" width={20} height={20} animation="shimmer-subtle" />
@@ -349,7 +349,7 @@ export function SkeletonCalendar({
   return (
     <div className={`flex flex-col gap-5 w-full ${className}`}>
       {/* Month Calendar Card */}
-      <div className="bg-white border border-stocky-border-subtle rounded-2xl p-4 sm:p-5 shadow-card flex flex-col gap-4">
+      <div className="bg-stocky-bg-widget border border-stocky-border-subtle rounded-2xl p-4 sm:p-5 shadow-card flex flex-col gap-4">
         {/* Month Header Navigation */}
         <div className="flex items-center justify-between">
           <Skeleton variant="text" width={140} height={22} />
@@ -390,9 +390,9 @@ export function SkeletonCalendar({
                 />
                 {hasEvents && (
                   <div className="flex items-center gap-1 mt-1">
-                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                    <div className="w-1.5 h-1.5 rounded-full bg-stocky-status-success-fg" />
                     {idx % 2 === 0 && (
-                      <div className="w-1.5 h-1.5 rounded-full bg-amber-400" />
+                      <div className="w-1.5 h-1.5 rounded-full bg-stocky-status-warning-fg" />
                     )}
                   </div>
                 )}
@@ -417,7 +417,7 @@ export function SkeletonCalendar({
           {Array.from({ length: selectedDayShiftsCount }).map((_, idx) => (
             <div
               key={idx}
-              className="bg-white border border-stocky-border-subtle rounded-2xl p-4 shadow-2xs flex items-center justify-between gap-4 border-l-4 border-l-stocky-primary"
+              className="bg-stocky-bg-widget border border-stocky-border-subtle rounded-2xl p-4 shadow-2xs flex items-center justify-between gap-4 border-l-4 border-l-stocky-primary"
             >
               <div className="flex items-center gap-3 min-w-0 flex-1">
                 <Skeleton variant="circular" width={38} height={38} />
@@ -445,7 +445,7 @@ export function SkeletonCalendar({
 export function SkeletonSidebar({ className = '' }: { className?: string }) {
   return (
     <aside
-      className={`hidden md:flex flex-col justify-between h-full bg-white border-r border-stocky-border-subtle p-2.5 shrink-0 w-[var(--stocky-sidebar-rail-width,4.5rem)] z-20 select-none ${className}`}
+      className={`hidden md:flex flex-col justify-between h-full bg-stocky-bg-widget border-r border-stocky-border-subtle p-2.5 shrink-0 w-[var(--stocky-sidebar-rail-width,4.5rem)] z-20 select-none ${className}`}
       aria-hidden="true"
     >
       <div className="flex flex-col items-center gap-5 w-full">

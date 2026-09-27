@@ -62,7 +62,7 @@ export function TransfersToolbarWidget({
               onClick={onToggleFilterPanel}
                 className={`absolute end-1.5 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full flex items-center justify-center transition-colors cursor-pointer ${
                 filterPanelOpen || isFilterActive || activeFilterCount > 0
-                  ? 'bg-stocky-primary text-white hover:bg-stocky-primary-hover'
+                  ? 'bg-stocky-primary text-stocky-text-inverse hover:bg-stocky-primary-hover'
                   : 'text-stocky-text-sub hover:bg-stocky-bg-hover hover:text-stocky-text-main'
               }`}
               title={t('transfers.filterTransfers')}

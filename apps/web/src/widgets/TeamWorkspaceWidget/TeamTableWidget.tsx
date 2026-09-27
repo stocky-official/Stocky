@@ -183,7 +183,7 @@ export function TeamTableWidget({
                         onChange={(e) => {
                           if (e.target.value) onAssignLocation(member.id, e.target.value);
                         }}
-                        className="h-6 rounded-full border border-stocky-border-subtle bg-white px-2 text-[10px] text-stocky-text-sub hover:text-stocky-text-main cursor-pointer"
+                        className="h-6 rounded-full border border-stocky-border-subtle bg-stocky-bg-widget px-2 text-[10px] text-stocky-text-sub hover:text-stocky-text-main cursor-pointer"
                       >
                         <option value="">{t('team.assignLocationBtn')}</option>
                         {locations
@@ -233,7 +233,7 @@ export function TeamTableWidget({
                   <button
                     type="button"
                     onClick={() => onSelectMember(member)}
-                    className="h-8 px-3 rounded-full border border-stocky-border-subtle bg-white text-xs font-medium text-stocky-text-main hover:border-stocky-primary hover:text-stocky-primary inline-flex items-center gap-1.5 transition-colors cursor-pointer"
+                    className="h-8 px-3 rounded-full border border-stocky-border-subtle bg-stocky-bg-widget text-xs font-medium text-stocky-text-main hover:border-stocky-primary hover:text-stocky-primary inline-flex items-center gap-1.5 transition-colors cursor-pointer"
                   >
                     <EditIcon size="xs" />
                     <span>{t('team.editBtn')}</span>
@@ -304,7 +304,7 @@ export function TeamTableWidget({
                 >
                   <span
                     className={`w-1.5 h-1.5 rounded-full me-1 ${
-                      member.status === 'active' ? 'bg-emerald-500' : 'bg-amber-500'
+                      member.status === 'active' ? 'bg-stocky-status-success-fg' : 'bg-stocky-status-warning-fg'
                     }`}
                   />
                   {member.status === 'invited' ? t('team.statusInvited') : t('team.statusActive')}

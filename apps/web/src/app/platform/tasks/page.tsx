@@ -1,13 +1,23 @@
 'use client';
 
-import { usePlatform } from '@/views/platform/PlatformContext';
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+
+import { canOpenTab, usePlatform } from '@/views/platform/PlatformContext';
 import { TasksPlatformView } from '@/views/platform/pages/TasksPlatformView';
 import { PlatformWorkspaceSkeleton } from '@/widgets';
 
 export default function TasksRoutePage() {
   const platform = usePlatform();
+  const router = useRouter();
 
-  if (platform.loading) {
+  useEffect(() => {
+    if (!platform.loading && !canOpenTab(platform.userRole, 'tasks', platform.userPermissions)) {
+      router.replace(platform.tenantPrefix || '/platform');
+    }
+  }, [platform.loading, platform.tenantPrefix, platform.userPermissions, platform.userRole, router]);
+
+  if (platform.loading || !canOpenTab(platform.userRole, 'tasks', platform.userPermissions)) {
     return <PlatformWorkspaceSkeleton variant="tasks" />;
   }
 
@@ -21,6 +31,7 @@ export default function TasksRoutePage() {
       members={platform.teamMembers}
       assignments={platform.teamAssignments}
       userRole={platform.userRole}
+      canManageTasks={platform.canManageTasks}
       currentUserId={platform.companyUserId}
       scanQuery={platform.taskScanQuery}
       onStartTask={platform.startStockTask}

@@ -113,12 +113,12 @@ export function SupplierEmailModal({
 
   return createPortal(
     <div
-      className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/60 p-4 backdrop-blur-sm animate-in fade-in duration-150"
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-stocky-text-main p-4 backdrop-blur-sm animate-in fade-in duration-150"
       role="dialog"
       aria-modal="true"
       aria-labelledby="email-modal-title"
     >
-      <div className="flex max-h-[92vh] w-full max-w-xl flex-col overflow-hidden rounded-2xl border border-stocky-border-subtle bg-white shadow-2xl">
+      <div className="flex max-h-[92vh] w-full max-w-xl flex-col overflow-hidden rounded-2xl border border-stocky-border-subtle bg-stocky-bg-widget shadow-2xl">
         {/* Header */}
         <header className="flex items-center justify-between border-b border-stocky-border-subtle px-5 py-4">
           <div className="flex items-center gap-2.5">
@@ -207,7 +207,7 @@ export function SupplierEmailModal({
             <button
               type="button"
               onClick={handleCopy}
-              className="flex h-9 items-center gap-1.5 rounded-full border border-stocky-border-subtle bg-white px-3.5 text-xs font-medium text-stocky-text-main hover:bg-stocky-bg-global transition-colors cursor-pointer"
+              className="flex h-9 items-center gap-1.5 rounded-full border border-stocky-border-subtle bg-stocky-bg-widget px-3.5 text-xs font-medium text-stocky-text-main hover:bg-stocky-bg-global transition-colors cursor-pointer"
             >
               {copied ? (
                 <>
@@ -223,13 +223,13 @@ export function SupplierEmailModal({
               <button
                 type="button"
                 onClick={onClose}
-                className="h-9 rounded-full border border-stocky-border-subtle bg-white px-4 text-xs font-medium text-stocky-text-main hover:bg-stocky-bg-global transition-colors cursor-pointer"
+                className="h-9 rounded-full border border-stocky-border-subtle bg-stocky-bg-widget px-4 text-xs font-medium text-stocky-text-main hover:bg-stocky-bg-global transition-colors cursor-pointer"
               >
                 {t('common.cancel')}
               </button>
               <button
                 type="submit"
-                className="flex h-9 items-center gap-1.5 rounded-full bg-stocky-primary px-4 text-xs font-medium text-white hover:bg-stocky-primary-hover shadow-sm transition-colors cursor-pointer"
+                className="flex h-9 items-center gap-1.5 rounded-full bg-stocky-primary px-4 text-xs font-medium text-stocky-text-inverse hover:bg-stocky-primary-hover shadow-sm transition-colors cursor-pointer"
               >
                 <MailIcon size="xs" />
                 <span>{t('supplierEmail.openMailClient')}</span>

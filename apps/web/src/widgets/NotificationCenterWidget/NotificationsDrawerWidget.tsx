@@ -37,7 +37,7 @@ export function NotificationsDrawerWidget({
     >
       <div className="flex flex-col h-full bg-stocky-bg-widget select-none">
         {/* Facebook-style Drawer Top Bar */}
-        <div className="flex items-center justify-between px-5 py-3.5 border-b border-stocky-border-subtle bg-white shrink-0">
+        <div className="flex items-center justify-between px-5 py-3.5 border-b border-stocky-border-subtle bg-stocky-bg-widget shrink-0">
           <div className="flex items-center gap-2.5 min-w-0">
             <div className="w-8 h-8 rounded-full bg-stocky-primary/10 border border-stocky-primary/20 text-stocky-primary flex items-center justify-center shrink-0">
               <BellIcon size="xs" className="w-4 h-4" />
@@ -47,7 +47,7 @@ export function NotificationsDrawerWidget({
                 {t('notifications.title')}
               </h2>
               {unreadCount > 0 && (
-                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-600 text-white">
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-stocky-status-info-fg text-stocky-text-inverse">
                   {unreadCount}
                 </span>
               )}

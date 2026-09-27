@@ -68,7 +68,7 @@ export function ActionsBottomSheet({
                 action.disabled
                   ? 'opacity-40 cursor-not-allowed'
                   : isCritical
-                  ? 'hover:bg-red-50 active:bg-red-100/70 text-red-600'
+                  ? 'hover:bg-stocky-status-critical-bg active:bg-stocky-status-critical-bg text-stocky-status-critical-fg'
                   : 'hover:bg-stocky-bg-global active:bg-stocky-border-subtle/50 text-stocky-text-main'
               }`}
             >
@@ -76,7 +76,7 @@ export function ActionsBottomSheet({
                 <div
                   className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 transition-colors ${
                     isCritical
-                      ? 'bg-red-100 text-red-600'
+                      ? 'bg-stocky-status-critical-bg text-stocky-status-critical-fg'
                       : 'bg-stocky-bg-global text-stocky-text-main border border-stocky-border-subtle'
                   }`}
                 >
@@ -87,7 +87,7 @@ export function ActionsBottomSheet({
               <div className="flex-1 min-w-0">
                 <div
                   className={`text-xs font-semibold truncate ${
-                    isCritical ? 'text-red-600' : 'text-stocky-text-main'
+                    isCritical ? 'text-stocky-status-critical-fg' : 'text-stocky-text-main'
                   }`}
                 >
                   {action.label}

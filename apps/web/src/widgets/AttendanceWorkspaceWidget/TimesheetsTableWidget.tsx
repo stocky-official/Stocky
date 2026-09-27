@@ -322,7 +322,7 @@ export function TimesheetsTableWidget({
                       onSelectShift(shift);
                     }
                   }}
-                  className="p-3.5 flex items-center justify-between gap-3 bg-white hover:bg-stocky-bg-global/30 active:bg-stocky-bg-global/60 transition-colors cursor-pointer text-start"
+                  className="p-3.5 flex items-center justify-between gap-3 bg-stocky-bg-widget hover:bg-stocky-bg-global/30 active:bg-stocky-bg-global/60 transition-colors cursor-pointer text-start"
                 >
                   {/* Left Anchor + Center Info Stack */}
                   <div className="flex items-center gap-2.5 min-w-0 flex-1">

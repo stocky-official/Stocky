@@ -211,6 +211,7 @@ export interface StockTask {
   assignedToCompanyUserId: string;
   createdByCompanyUserId?: string | null;
   notes?: string | null;
+  reviewNote?: string | null;
   scheduledStartAt?: string | null;
   scheduledEndAt?: string | null;
   startedAt?: string | null;

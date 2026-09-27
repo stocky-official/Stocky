@@ -111,7 +111,7 @@ export function AdminSidebarNavWidget({
                 </span>
                 <span className="flex-1 text-start">{item.label}</span>
                 {typeof item.badge === 'number' && item.badge > 0 && (
-                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-300">
+                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-stocky-status-warning-bg text-stocky-status-warning-fg border border-stocky-status-warning-border">
                     {item.badge}
                   </span>
                 )}
@@ -148,7 +148,7 @@ export function AdminSidebarNavWidget({
               type="button"
               onClick={signOut}
               title="Sign out of Admin Portal"
-              className="flex h-8 w-8 items-center justify-center rounded-full text-stocky-text-sub hover:text-red-600 hover:bg-red-50 transition-colors cursor-pointer shrink-0"
+              className="flex h-8 w-8 items-center justify-center rounded-full text-stocky-text-sub hover:text-stocky-status-critical-fg hover:bg-stocky-status-critical-bg transition-colors cursor-pointer shrink-0"
             >
               <LogOutIcon size="xs" />
             </button>

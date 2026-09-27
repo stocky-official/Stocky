@@ -256,11 +256,11 @@ export function SupplierRequestDrawerWidget({
 
             {selectedProduct && (
               <div className="mt-2 flex flex-wrap items-center gap-2 rounded-lg border border-stocky-border-subtle bg-stocky-bg-global/50 p-2.5 text-xs text-stocky-text-sub">
-                <span className="rounded bg-white px-2 py-0.5 text-[11px] font-medium text-stocky-text-main border border-stocky-border-subtle">
+                <span className="rounded bg-stocky-bg-widget px-2 py-0.5 text-[11px] font-medium text-stocky-text-main border border-stocky-border-subtle">
                   {selectedProduct.categoryName}
                 </span>
                 {selectedProduct.barcode && (
-                  <span className="font-mono text-[10px]">BC: {selectedProduct.barcode}</span>
+                  <span className="font-sans text-[10px]">BC: {selectedProduct.barcode}</span>
                 )}
                 <span className="text-stocky-primary font-medium">
                   ${selectedProduct.unitCost.toFixed(2)} / {selectedProduct.unitName || 'unit'}
@@ -384,7 +384,7 @@ export function SupplierRequestDrawerWidget({
             </button>
             <button
               type="submit"
-              className="h-10 rounded-full bg-stocky-primary px-6 text-xs font-medium text-white hover:bg-stocky-primary-hover transition-colors cursor-pointer shadow-sm"
+              className="h-10 rounded-full bg-stocky-primary px-6 text-xs font-medium text-stocky-text-inverse hover:bg-stocky-primary-hover transition-colors cursor-pointer shadow-sm"
             >
               {t('drawers.supplierRequest.save')}
             </button>

@@ -66,49 +66,49 @@ function getCategoryConfig(type?: NotificationType, severity?: string): Category
   switch (type) {
     case 'expiry':
       return {
-        cornerBadgeBg: severity === 'critical' ? 'bg-rose-500' : 'bg-amber-500',
-        cornerIcon: <AlertTriangleIcon size="xs" className="w-2.5 h-2.5 text-white stroke-[2.5]" />,
-        fallbackAvatarBg: 'bg-rose-50 text-rose-600 border border-rose-100',
+        cornerBadgeBg: severity === 'critical' ? 'bg-stocky-status-critical-fg' : 'bg-stocky-status-warning-fg',
+        cornerIcon: <AlertTriangleIcon size="xs" className="w-2.5 h-2.5 text-stocky-text-inverse stroke-[2.5]" />,
+        fallbackAvatarBg: 'bg-stocky-status-critical-bg text-stocky-status-critical-fg border border-stocky-status-critical-border',
         fallbackAvatarIcon: <AlertCircleIcon size="sm" />,
         defaultEntity: 'Stock Expiry',
       };
     case 'low_stock':
       return {
-        cornerBadgeBg: 'bg-amber-500',
-        cornerIcon: <BoxIcon size="xs" className="w-2.5 h-2.5 text-white stroke-[2.5]" />,
-        fallbackAvatarBg: 'bg-amber-50 text-amber-600 border border-amber-100',
+        cornerBadgeBg: 'bg-stocky-status-warning-fg',
+        cornerIcon: <BoxIcon size="xs" className="w-2.5 h-2.5 text-stocky-text-inverse stroke-[2.5]" />,
+        fallbackAvatarBg: 'bg-stocky-status-warning-bg text-stocky-status-warning-fg border border-stocky-status-warning-border',
         fallbackAvatarIcon: <BoxIcon size="sm" />,
         defaultEntity: 'Inventory Alert',
       };
     case 'transfer':
       return {
-        cornerBadgeBg: 'bg-blue-500',
-        cornerIcon: <TruckIcon size="xs" className="w-2.5 h-2.5 text-white stroke-[2.5]" />,
-        fallbackAvatarBg: 'bg-blue-50 text-blue-600 border border-blue-100',
+        cornerBadgeBg: 'bg-stocky-status-info-fg',
+        cornerIcon: <TruckIcon size="xs" className="w-2.5 h-2.5 text-stocky-text-inverse stroke-[2.5]" />,
+        fallbackAvatarBg: 'bg-stocky-status-info-bg text-stocky-status-info-fg border border-stocky-status-info-border',
         fallbackAvatarIcon: <TruckIcon size="sm" />,
         defaultEntity: 'Stock Transfer',
       };
     case 'task':
       return {
-        cornerBadgeBg: 'bg-emerald-500',
-        cornerIcon: <CheckCircleIcon size="xs" className="w-2.5 h-2.5 text-white stroke-[2.5]" />,
-        fallbackAvatarBg: 'bg-emerald-50 text-emerald-600 border border-emerald-100',
+        cornerBadgeBg: 'bg-stocky-status-success-fg',
+        cornerIcon: <CheckCircleIcon size="xs" className="w-2.5 h-2.5 text-stocky-text-inverse stroke-[2.5]" />,
+        fallbackAvatarBg: 'bg-stocky-status-success-bg text-stocky-status-success-fg border border-stocky-status-success-border',
         fallbackAvatarIcon: <CheckCircleIcon size="sm" />,
         defaultEntity: 'Audit Task',
       };
     case 'supplier':
       return {
-        cornerBadgeBg: 'bg-purple-500',
-        cornerIcon: <WarehouseIcon size="xs" className="w-2.5 h-2.5 text-white stroke-[2.5]" />,
-        fallbackAvatarBg: 'bg-purple-50 text-purple-600 border border-purple-100',
+        cornerBadgeBg: 'bg-stocky-status-hold-fg',
+        cornerIcon: <WarehouseIcon size="xs" className="w-2.5 h-2.5 text-stocky-text-inverse stroke-[2.5]" />,
+        fallbackAvatarBg: 'bg-stocky-status-hold-bg text-stocky-status-hold-fg border border-stocky-status-hold-border',
         fallbackAvatarIcon: <WarehouseIcon size="sm" />,
         defaultEntity: 'Supplier Order',
       };
     default:
       return {
-        cornerBadgeBg: 'bg-stone-500',
-        cornerIcon: <BellIcon size="xs" className="w-2.5 h-2.5 text-white stroke-[2.5]" />,
-        fallbackAvatarBg: 'bg-stone-100 text-stone-600 border border-stone-200',
+        cornerBadgeBg: 'bg-stocky-text-main',
+        cornerIcon: <BellIcon size="xs" className="w-2.5 h-2.5 text-stocky-text-inverse stroke-[2.5]" />,
+        fallbackAvatarBg: 'bg-stocky-bg-subtle text-stocky-text-sub border border-stocky-border-subtle',
         fallbackAvatarIcon: <BellIcon size="sm" />,
         defaultEntity: 'Stocky Notice',
       };
@@ -171,7 +171,7 @@ export function FacebookNotificationItem({
       }}
       className={`group relative flex items-start gap-3.5 p-3 sm:p-3.5 rounded-2xl transition-all cursor-pointer select-none text-start w-full outline-none focus-visible:ring-2 focus-visible:ring-stocky-primary ${
         isRead
-          ? 'bg-transparent hover:bg-black/[0.03]'
+          ? 'bg-transparent hover:bg-stocky-text-main/[0.03]'
           : 'bg-stocky-primary/[0.04] hover:bg-stocky-primary/[0.08]'
       }`}
     >
@@ -197,7 +197,7 @@ export function FacebookNotificationItem({
 
         {/* Floating Category Corner Badge */}
         <span
-          className={`absolute -bottom-0.5 -right-0.5 w-5 h-5 rounded-full ring-2 ring-white flex items-center justify-center shadow-xs ${config.cornerBadgeBg}`}
+          className={`absolute -bottom-0.5 -right-0.5 w-5 h-5 rounded-full ring-2 ring-stocky-text-inverse flex items-center justify-center shadow-xs ${config.cornerBadgeBg}`}
           aria-hidden="true"
         >
           {config.cornerIcon}
@@ -235,7 +235,7 @@ export function FacebookNotificationItem({
         {/* Unread Blue Indicator Dot (Facebook Style) */}
         {!isRead && (
           <span
-            className="w-2.5 h-2.5 rounded-full bg-blue-600 ring-2 ring-blue-600/20 shrink-0"
+            className="w-2.5 h-2.5 rounded-full bg-stocky-status-info-fg ring-2 ring-stocky-status-info-border shrink-0"
             title="Unread notification"
             aria-label="Unread"
           />
@@ -247,14 +247,14 @@ export function FacebookNotificationItem({
             type="button"
             onClick={() => setMenuOpen(!menuOpen)}
             aria-label="Notification options"
-            className="w-8 h-8 rounded-full flex items-center justify-center text-stocky-text-sub hover:text-stocky-text-main hover:bg-black/[0.06] transition-colors opacity-70 group-hover:opacity-100 sm:opacity-0 sm:group-hover:opacity-100 focus:opacity-100 cursor-pointer"
+            className="w-8 h-8 rounded-full flex items-center justify-center text-stocky-text-sub hover:text-stocky-text-main hover:bg-stocky-text-main/[0.06] transition-colors opacity-70 group-hover:opacity-100 sm:opacity-0 sm:group-hover:opacity-100 focus:opacity-100 cursor-pointer"
           >
             <MoreHorizontalIcon size="xs" className="w-4 h-4" />
           </button>
 
           {/* Floating Dropdown Menu */}
           {menuOpen && (
-            <div className="absolute end-0 top-9 w-48 bg-white border border-stocky-border-subtle rounded-xl shadow-lg p-1 z-30 flex flex-col text-xs text-stocky-text-main animate-in fade-in zoom-in-95 duration-100">
+            <div className="absolute end-0 top-9 w-48 bg-stocky-bg-widget border border-stocky-border-subtle rounded-xl shadow-lg p-1 z-30 flex flex-col text-xs text-stocky-text-main animate-in fade-in zoom-in-95 duration-100">
               <button
                 type="button"
                 onClick={() => {
@@ -272,9 +272,9 @@ export function FacebookNotificationItem({
                   onDismiss(item.id);
                   setMenuOpen(false);
                 }}
-                className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-rose-50 text-rose-600 transition-colors cursor-pointer text-start w-full"
+                className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-stocky-status-critical-bg text-stocky-status-critical-fg transition-colors cursor-pointer text-start w-full"
               >
-                <TrashIcon size="xs" className="w-3.5 h-3.5 text-rose-500" />
+                <TrashIcon size="xs" className="w-3.5 h-3.5 text-stocky-status-critical-fg" />
                 <span>{t('notifications.remove')}</span>
               </button>
             </div>
@@ -373,14 +373,14 @@ export function FacebookNotificationFeed({
   return (
     <div className={`flex flex-col h-full ${className}`}>
       {/* Feed Sub-Header: Filter Tabs ("All", "Unread") + "Mark All Read" */}
-      <div className="flex items-center justify-between px-4 sm:px-5 py-3 border-b border-stocky-border-subtle bg-white shrink-0 gap-2">
+      <div className="flex items-center justify-between px-4 sm:px-5 py-3 border-b border-stocky-border-subtle bg-stocky-bg-widget shrink-0 gap-2">
         <div className="flex items-center gap-1.5">
           <button
             type="button"
             onClick={() => setFilterTab('all')}
             className={`px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all cursor-pointer ${
               filterTab === 'all'
-                ? 'bg-stocky-primary text-white shadow-2xs'
+                ? 'bg-stocky-primary text-stocky-text-inverse shadow-2xs'
                 : 'bg-stocky-bg-global text-stocky-text-sub hover:text-stocky-text-main'
             }`}
           >
@@ -391,7 +391,7 @@ export function FacebookNotificationFeed({
             onClick={() => setFilterTab('unread')}
             className={`px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer ${
               filterTab === 'unread'
-                ? 'bg-stocky-primary text-white shadow-2xs'
+                ? 'bg-stocky-primary text-stocky-text-inverse shadow-2xs'
                 : 'bg-stocky-bg-global text-stocky-text-sub hover:text-stocky-text-main'
             }`}
           >
@@ -400,8 +400,8 @@ export function FacebookNotificationFeed({
               <span
                 className={`px-1.5 py-0.2 rounded-full text-[10px] font-bold ${
                   filterTab === 'unread'
-                    ? 'bg-white/20 text-white'
-                    : 'bg-blue-600 text-white'
+                    ? 'bg-stocky-bg-widget/20 text-stocky-text-inverse'
+                    : 'bg-stocky-status-info-fg text-stocky-text-inverse'
                 }`}
               >
                 {unreadCount}
@@ -427,7 +427,7 @@ export function FacebookNotificationFeed({
       <div className="flex-1 overflow-y-auto px-2 sm:px-3 py-2 space-y-4">
         {displayedItems.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
-            <div className="w-14 h-14 rounded-full bg-emerald-50 border border-emerald-100 text-emerald-600 flex items-center justify-center mb-3 shadow-2xs">
+            <div className="w-14 h-14 rounded-full bg-stocky-status-success-bg border border-stocky-status-success-border text-stocky-status-success-fg flex items-center justify-center mb-3 shadow-2xs">
               <CheckCircleIcon size="md" className="w-7 h-7 stroke-[2]" />
             </div>
             <h3 className="text-sm font-semibold text-stocky-text-main">
@@ -517,7 +517,7 @@ export function FacebookNotificationFeed({
             <button
               type="button"
               onClick={onCloseDrawer}
-              className="h-7 px-3 rounded-full border border-stocky-border-subtle bg-white hover:bg-stocky-bg-global text-xs font-medium text-stocky-text-main transition-colors cursor-pointer"
+              className="h-7 px-3 rounded-full border border-stocky-border-subtle bg-stocky-bg-widget hover:bg-stocky-bg-global text-xs font-medium text-stocky-text-main transition-colors cursor-pointer"
             >
               {t('notifications.close')}
             </button>
@@ -539,7 +539,7 @@ export function NotificationCenterWidget({
 }: NotificationCenterWidgetProps) {
   return (
     <div className={`stocky-notifications-workspace flex flex-col gap-6 ${className}`}>
-      <div className="rounded-2xl bg-white border border-stocky-border-subtle overflow-hidden shadow-xs">
+      <div className="rounded-2xl bg-stocky-bg-widget border border-stocky-border-subtle overflow-hidden shadow-xs">
         <FacebookNotificationFeed
           items={items}
           onMarkAllRead={onMarkAllRead}

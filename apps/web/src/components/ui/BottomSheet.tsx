@@ -95,7 +95,7 @@ export function BottomSheet({
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
             onClick={onClose}
-            className="fixed inset-0 bg-black/40 backdrop-blur-xs cursor-pointer"
+            className="fixed inset-0 bg-stocky-text-main/40 backdrop-blur-xs cursor-pointer"
             aria-hidden="true"
           />
 
@@ -106,7 +106,7 @@ export function BottomSheet({
             animate={{ y: 0 }}
             exit={{ y: '100%' }}
             transition={{ type: 'spring', stiffness: 350, damping: 32, mass: 0.8 }}
-            className={`relative w-full sm:max-w-md bg-white border-t sm:border border-stocky-border-default rounded-t-3xl sm:rounded-2xl shadow-2xl z-10 flex flex-col max-h-[85dvh] overflow-hidden ${panelClassName}`}
+            className={`relative w-full sm:max-w-md bg-stocky-bg-widget border-t sm:border border-stocky-border-default rounded-t-3xl sm:rounded-2xl shadow-2xl z-10 flex flex-col max-h-[85dvh] overflow-hidden ${panelClassName}`}
             onClick={(e) => e.stopPropagation()}
           >
             {/* Grab Handle */}
@@ -116,7 +116,7 @@ export function BottomSheet({
 
             {/* Optional Header */}
             {title && (
-              <div className="px-4 py-3 border-b border-stocky-border-subtle flex items-center justify-between shrink-0 bg-white">
+              <div className="px-4 py-3 border-b border-stocky-border-subtle flex items-center justify-between shrink-0 bg-stocky-bg-widget">
                 <div className="min-w-0 flex-1 pr-2">
                   <div className="flex items-center gap-2">
                     <div className="text-sm font-bold text-stocky-text-main truncate">

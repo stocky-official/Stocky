@@ -135,7 +135,7 @@ export function SupplierRequestsTableWidget({
                       <td className="px-4 py-3">
                         <span
                           className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[10px] font-medium capitalize ${
-                            statusBadgeClasses[request.status] || 'bg-slate-100 text-slate-700'
+                            statusBadgeClasses[request.status] || 'bg-stocky-bg-subtle text-stocky-text-sub'
                           }`}
                         >
                           {statusLabels[request.status] || request.status}
@@ -147,7 +147,7 @@ export function SupplierRequestsTableWidget({
                             type="button"
                             onClick={() => setEmailRequest(request)}
                             title={t('suppliers.emailSupplier')}
-                            className="h-8 w-8 rounded-full border border-stocky-border-subtle bg-white text-stocky-text-sub hover:border-stocky-primary hover:text-stocky-primary inline-flex items-center justify-center transition-colors cursor-pointer"
+                            className="h-8 w-8 rounded-full border border-stocky-border-subtle bg-stocky-bg-widget text-stocky-text-sub hover:border-stocky-primary hover:text-stocky-primary inline-flex items-center justify-center transition-colors cursor-pointer"
                             aria-label={t('suppliers.emailSupplier')}
                           >
                             <MailIcon size="xs" />
@@ -159,7 +159,7 @@ export function SupplierRequestsTableWidget({
                             <button
                               type="button"
                               onClick={() => onStatusChange(request, nextStatus)}
-                              className="h-8 rounded-full border border-stocky-border-subtle bg-white px-3 text-[11px] font-medium text-stocky-text-main hover:border-stocky-primary hover:text-stocky-primary cursor-pointer inline-flex items-center justify-center transition-colors"
+                              className="h-8 rounded-full border border-stocky-border-subtle bg-stocky-bg-widget px-3 text-[11px] font-medium text-stocky-text-main hover:border-stocky-primary hover:text-stocky-primary cursor-pointer inline-flex items-center justify-center transition-colors"
                             >
                               {t('suppliers.markStatus', { status: statusLabels[nextStatus] || nextStatus })}
                             </button>
@@ -186,7 +186,7 @@ export function SupplierRequestsTableWidget({
                   : null;
 
               return (
-                <article key={request.id} className="p-3.5 flex items-center justify-between gap-3 bg-white hover:bg-stocky-bg-global/30 transition-colors text-start">
+                <article key={request.id} className="p-3.5 flex items-center justify-between gap-3 bg-stocky-bg-widget hover:bg-stocky-bg-global/30 transition-colors text-start">
                   {/* Left Anchor + Center Info */}
                   <div className="flex items-center gap-2.5 min-w-0 flex-1">
                     <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-stocky-border-subtle bg-stocky-bg-global text-stocky-text-sub">
@@ -214,7 +214,7 @@ export function SupplierRequestsTableWidget({
                   <div className="shrink-0 flex flex-col items-end gap-1">
                     <span
                       className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[10px] font-semibold capitalize ${
-                        statusBadgeClasses[request.status] || 'bg-slate-100 text-slate-700'
+                        statusBadgeClasses[request.status] || 'bg-stocky-bg-subtle text-stocky-text-sub'
                       }`}
                     >
                       {statusLabels[request.status] || request.status}
@@ -224,7 +224,7 @@ export function SupplierRequestsTableWidget({
                         type="button"
                         onClick={() => setEmailRequest(request)}
                         title={t('suppliers.emailSupplier')}
-                        className="h-6 w-6 rounded-full border border-stocky-border-subtle bg-white text-stocky-text-sub hover:text-stocky-primary hover:border-stocky-primary inline-flex items-center justify-center transition-colors cursor-pointer"
+                        className="h-6 w-6 rounded-full border border-stocky-border-subtle bg-stocky-bg-widget text-stocky-text-sub hover:text-stocky-primary hover:border-stocky-primary inline-flex items-center justify-center transition-colors cursor-pointer"
                         aria-label={t('suppliers.emailSupplier')}
                       >
                         <MailIcon size="xs" />
@@ -236,7 +236,7 @@ export function SupplierRequestsTableWidget({
                         <button
                           type="button"
                           onClick={() => onStatusChange(request, nextStatus)}
-                          className="h-6 px-2 rounded-full border border-stocky-border-subtle bg-white text-[10px] font-medium text-stocky-text-main hover:border-stocky-primary hover:text-stocky-primary cursor-pointer transition-colors shadow-2xs"
+                          className="h-6 px-2 rounded-full border border-stocky-border-subtle bg-stocky-bg-widget text-[10px] font-medium text-stocky-text-main hover:border-stocky-primary hover:text-stocky-primary cursor-pointer transition-colors shadow-2xs"
                         >
                           → {statusLabels[nextStatus] || nextStatus}
                         </button>

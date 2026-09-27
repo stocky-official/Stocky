@@ -27,10 +27,10 @@ export function StockCountReviewWidget({ counts, locations, products, userRole, 
         <h1 className="text-2xl sm:text-3xl font-medium tracking-tight text-stocky-text-main mt-1">{t('stockCount.managerReviewTitle')}</h1>
         <p className="text-sm text-stocky-text-sub mt-1">{t('stockCount.managerReviewSubtitle')}</p>
       </div>
-      <div className="rounded-2xl bg-white border border-stocky-border-subtle overflow-hidden">
+      <div className="rounded-2xl bg-stocky-bg-widget border border-stocky-border-subtle overflow-hidden">
         {submitted.length === 0 ? (
           <div className="px-6 py-16 text-center">
-            <CheckCircleIcon size="md" className="mx-auto text-emerald-600/60" />
+            <CheckCircleIcon size="md" className="mx-auto text-stocky-status-success-fg" />
             <h2 className="mt-3 text-base font-medium text-stocky-text-main">{t('stockCount.noCountsReview')}</h2>
             <p className="mt-1 text-sm text-stocky-text-sub">{t('stockCount.noCountsReviewDesc')}</p>
           </div>
@@ -76,14 +76,14 @@ export function StockCountReviewWidget({ counts, locations, products, userRole, 
                           <button
                             type="button"
                             onClick={() => onReview(count.id, false)}
-                            className="h-9 px-3 rounded-lg border border-red-200 text-red-700 text-xs cursor-pointer"
+                            className="h-9 px-3 rounded-lg border border-stocky-status-critical-border text-stocky-status-critical-fg text-xs cursor-pointer"
                           >
                             {t('stockCount.reject')}
                           </button>
                           <button
                             type="button"
                             onClick={() => onReview(count.id, true)}
-                            className="h-9 px-3 rounded-lg bg-stocky-primary text-white text-xs font-medium cursor-pointer"
+                            className="h-9 px-3 rounded-lg bg-stocky-primary text-stocky-text-inverse text-xs font-medium cursor-pointer"
                           >
                             {t('stockCount.approveDifferences')}
                           </button>
@@ -106,7 +106,7 @@ export function StockCountReviewWidget({ counts, locations, products, userRole, 
                             <div className="grid grid-cols-[minmax(0,1fr)_auto_auto] gap-3 text-xs">
                               <span className="font-medium text-stocky-text-main truncate">{product?.name || t('inventory.productName')}</span>
                               <span className="text-stocky-text-sub">{line.expected_quantity}</span>
-                              <span className={variance === 0 ? 'text-stocky-text-sub' : variance > 0 ? 'text-emerald-700 font-medium' : 'text-red-700 font-medium'}>
+                              <span className={variance === 0 ? 'text-stocky-text-sub' : variance > 0 ? 'text-stocky-status-success-fg font-medium' : 'text-stocky-status-critical-fg font-medium'}>
                                 {line.counted_quantity} {variance !== 0 ? `(${variance > 0 ? '+' : ''}${variance})` : ''}
                               </span>
                             </div>

@@ -111,13 +111,13 @@ export function AttendanceToolbarWidget({
       aria-label="Attendance filters"
       className={
         isMobile
-          ? "flex flex-col min-h-0 bg-white"
-          : "w-full rounded-2xl bg-white border border-stocky-border-subtle shadow-bevel-float overflow-hidden flex flex-col z-50 text-left select-none"
+          ? "flex flex-col min-h-0 bg-stocky-bg-widget"
+          : "w-full rounded-2xl bg-stocky-bg-widget border border-stocky-border-subtle shadow-bevel-float overflow-hidden flex flex-col z-50 text-left select-none"
       }
     >
       {/* Desktop Header */}
       {!isMobile && (
-        <div className="flex items-center justify-between px-5 py-3.5 border-b border-stocky-border-subtle bg-white shrink-0">
+        <div className="flex items-center justify-between px-5 py-3.5 border-b border-stocky-border-subtle bg-stocky-bg-widget shrink-0">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-lg bg-stocky-primary/10 text-stocky-primary flex items-center justify-center shrink-0">
               <FilterIcon size="xs" />
@@ -126,7 +126,7 @@ export function AttendanceToolbarWidget({
               <div className="flex items-center gap-2">
                 <h2 className="text-sm font-semibold text-stocky-text-main">Filter Timesheets</h2>
                 {activeFilterCount > 0 && (
-                  <span className="rounded-full bg-stocky-primary px-2 py-0.5 text-[10px] font-semibold text-white">
+                  <span className="rounded-full bg-stocky-primary px-2 py-0.5 text-[10px] font-semibold text-stocky-text-inverse">
                     {activeFilterCount} active
                   </span>
                 )}
@@ -160,7 +160,7 @@ export function AttendanceToolbarWidget({
               <button
                 type="button"
                 onClick={() => onLocationFilterChange?.('all')}
-                className="text-[11px] text-stocky-text-sub hover:text-red-500 cursor-pointer"
+                className="text-[11px] text-stocky-text-sub hover:text-stocky-status-critical-fg cursor-pointer"
               >
                 Clear
               </button>
@@ -169,7 +169,7 @@ export function AttendanceToolbarWidget({
           <select
             value={locationFilter}
             onChange={(e) => onLocationFilterChange?.(e.target.value)}
-            className="w-full h-10 px-3 rounded-xl bg-white border border-stocky-border-subtle text-xs text-stocky-text-main focus:border-stocky-primary focus:outline-none cursor-pointer"
+            className="w-full h-10 px-3 rounded-xl bg-stocky-bg-widget border border-stocky-border-subtle text-xs text-stocky-text-main focus:border-stocky-primary focus:outline-none cursor-pointer"
           >
             <option value="all">All Locations</option>
             {locations.map((loc) => (
@@ -188,7 +188,7 @@ export function AttendanceToolbarWidget({
               <button
                 type="button"
                 onClick={() => onStatusFilterChange?.('all')}
-                className="text-[11px] text-stocky-text-sub hover:text-red-500 cursor-pointer"
+                className="text-[11px] text-stocky-text-sub hover:text-stocky-status-critical-fg cursor-pointer"
               >
                 Clear
               </button>
@@ -211,7 +211,7 @@ export function AttendanceToolbarWidget({
                   className={`h-8 px-3 rounded-xl text-xs font-medium border transition-colors cursor-pointer flex items-center gap-1.5 ${
                     isChecked
                       ? 'bg-stocky-primary/10 border-stocky-primary/40 text-stocky-primary font-semibold'
-                      : 'bg-white border-stocky-border-subtle text-stocky-text-sub hover:text-stocky-text-main'
+                      : 'bg-stocky-bg-widget border-stocky-border-subtle text-stocky-text-sub hover:text-stocky-text-main'
                   }`}
                 >
                   {isChecked && <CheckIcon size="xs" />}
@@ -225,7 +225,7 @@ export function AttendanceToolbarWidget({
 
       {/* Desktop Footer */}
       {!isMobile && (
-        <div className="px-5 py-3.5 border-t border-stocky-border-subtle bg-white flex items-center justify-between shrink-0">
+        <div className="px-5 py-3.5 border-t border-stocky-border-subtle bg-stocky-bg-widget flex items-center justify-between shrink-0">
           <span className="text-xs text-stocky-text-sub">
             {activeFilterCount > 0 ? (
               <span><strong className="font-semibold text-stocky-text-main">{activeFilterCount}</strong> active filters</span>
@@ -238,7 +238,7 @@ export function AttendanceToolbarWidget({
               <button
                 type="button"
                 onClick={handleResetFilters}
-                className="h-8 px-3 rounded-full text-xs font-medium text-stocky-text-sub hover:text-red-600 hover:bg-red-50 transition-colors cursor-pointer"
+                className="h-8 px-3 rounded-full text-xs font-medium text-stocky-text-sub hover:text-stocky-status-critical-fg hover:bg-stocky-status-critical-bg transition-colors cursor-pointer"
               >
                 Reset
               </button>
@@ -246,7 +246,7 @@ export function AttendanceToolbarWidget({
             <button
               type="button"
               onClick={() => setIsFilterDrawerOpen(false)}
-              className="h-8 px-5 rounded-full bg-stocky-text-main text-white text-xs font-semibold hover:opacity-90 transition-opacity cursor-pointer shadow-sm"
+              className="h-8 px-5 rounded-full bg-stocky-text-main text-stocky-text-inverse text-xs font-semibold hover:opacity-90 transition-opacity cursor-pointer shadow-sm"
             >
               Done
             </button>

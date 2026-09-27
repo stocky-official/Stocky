@@ -438,7 +438,7 @@ export function InventoryWorkspaceWidget({
       >
         <div className="flex h-full min-h-0 flex-col text-start">
           {/* Header with Product Image next to Product Name */}
-          <div className="shrink-0 border-b border-stocky-border-subtle bg-white px-4 py-3 sm:px-5 sm:py-4">
+          <div className="shrink-0 border-b border-stocky-border-subtle bg-stocky-bg-widget px-4 py-3 sm:px-5 sm:py-4">
             <div className="flex items-start justify-between gap-3">
               <div className="flex min-w-0 items-center gap-2.5 sm:gap-3">
                 {/* Rounded square product image */}
@@ -469,7 +469,7 @@ export function InventoryWorkspaceWidget({
                       {activeDetailRow.product.categoryName || t('drawers.inventoryLots.generalCategory')}
                     </span>
                     {activeDetailRow.product.barcode && (
-                      <span className="inline-flex items-center gap-1 font-mono text-[11px] text-stocky-text-sub">
+                      <span className="inline-flex items-center gap-1 font-sans text-[11px] text-stocky-text-sub">
                         <BarcodeIcon size="xs" /> {activeDetailRow.product.barcode}
                       </span>
                     )}
@@ -488,7 +488,7 @@ export function InventoryWorkspaceWidget({
                   <button
                     type="button"
                     onClick={() => onEditProduct(activeDetailRow.product)}
-                    className="inline-flex items-center gap-1.5 rounded-lg border border-stocky-border-subtle bg-white px-2.5 py-1.5 text-xs font-medium text-stocky-text-main hover:bg-stocky-bg-global transition-colors cursor-pointer"
+                    className="inline-flex items-center gap-1.5 rounded-lg border border-stocky-border-subtle bg-stocky-bg-widget px-2.5 py-1.5 text-xs font-medium text-stocky-text-main hover:bg-stocky-bg-global transition-colors cursor-pointer"
                     aria-label={t('drawers.inventoryLots.editProduct')}
                     title={t('drawers.inventoryLots.editProduct')}
                   >
@@ -621,7 +621,7 @@ export function InventoryWorkspaceWidget({
 
   const filterPanelElement = (isMobile = false) => (
     <InventoryFilterPanelWidget
-      className={isMobile ? "flex-1 flex flex-col min-h-0 bg-white border-0 shadow-none rounded-none" : undefined}
+      className={isMobile ? "flex-1 flex flex-col min-h-0 bg-stocky-bg-widget border-0 shadow-none rounded-none" : undefined}
       selectedColumns={selectedColumns}
       onToggleColumn={(column) =>
         setSelectedColumns((prev) => ({ ...prev, [column]: !prev[column] }))
@@ -699,7 +699,7 @@ export function InventoryWorkspaceWidget({
       </section>}
 
       {/* Unified Table Workspace Card */}
-      <div className="stocky-stock-unified-card rounded-xl bg-white border border-stocky-border-subtle shadow-none flex flex-col relative z-20 overflow-visible">
+      <div className="stocky-stock-unified-card rounded-xl bg-stocky-bg-widget border border-stocky-border-subtle shadow-none flex flex-col relative z-20 overflow-visible">
         {/* 1. Integrated Toolbar Header */}
         <div ref={filterBarRef} className="p-3 sm:p-3.5 border-b border-stocky-border-subtle relative z-30">
           {stockToolbarContent}
@@ -745,7 +745,7 @@ export function InventoryWorkspaceWidget({
           title="Inventory Filters"
           subtitle={`Showing ${rows.length} of ${products.length} items`}
         >
-          <div className="flex h-full flex-col min-h-0 bg-white">
+          <div className="flex h-full flex-col min-h-0 bg-stocky-bg-widget">
             {filterPanelElement(true)}
           </div>
         </BottomSheet>

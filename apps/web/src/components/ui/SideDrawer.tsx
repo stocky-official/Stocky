@@ -136,7 +136,7 @@ export function SideDrawer({
             onClick={(event) => event.stopPropagation()}
             ref={panelRef}
             tabIndex={-1}
-            className={`fixed inset-y-0 right-0 flex h-dvh w-full flex-col overflow-hidden border-l border-stocky-border-subtle bg-white shadow-none ${widthClassName} ${panelClassName}`}
+            className={`fixed inset-y-0 right-0 flex h-dvh w-full flex-col overflow-hidden border-l border-stocky-border-subtle bg-stocky-bg-widget shadow-none ${widthClassName} ${panelClassName}`}
           >
             {children as any}
           </motion.aside>

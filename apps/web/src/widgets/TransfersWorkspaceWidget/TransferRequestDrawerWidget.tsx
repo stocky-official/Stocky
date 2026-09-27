@@ -188,7 +188,7 @@ export function TransferRequestDrawerWidget({
 
   return (
     <SideDrawer isOpen={isOpen} onClose={onClose} ariaLabel={t('drawers.transferRequest.title')}>
-      <div className="flex h-full flex-col bg-white">
+      <div className="flex h-full flex-col bg-stocky-bg-widget">
         {/* Header */}
         <div className="flex items-center justify-between border-b border-stocky-border-subtle p-4 sm:p-5">
           <div>
@@ -210,7 +210,7 @@ export function TransferRequestDrawerWidget({
         {/* Scrollable Form Body */}
         <form onSubmit={handleSubmit} className="flex flex-1 flex-col overflow-y-auto p-4 sm:p-5 gap-5">
           {error && (
-            <div className="rounded-xl border border-red-200 bg-red-50 p-3 text-xs text-red-700">
+            <div className="rounded-xl border border-stocky-status-critical-border bg-stocky-status-critical-bg p-3 text-xs text-stocky-status-critical-fg">
               {error}
             </div>
           )}
@@ -228,7 +228,7 @@ export function TransferRequestDrawerWidget({
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 items-center relative">
               {/* Source Location Card */}
-              <div className="rounded-xl border border-stocky-border-subtle bg-white p-3 flex flex-col gap-1.5 focus-within:border-stocky-primary transition-colors shadow-2xs">
+              <div className="rounded-xl border border-stocky-border-subtle bg-stocky-bg-widget p-3 flex flex-col gap-1.5 focus-within:border-stocky-primary transition-colors shadow-2xs">
                 <div className="flex items-center justify-between">
                   <label className="text-[11px] font-semibold text-stocky-text-sub uppercase tracking-wider flex items-center gap-1">
                     <WarehouseIcon size="xs" className="text-stocky-primary" />
@@ -265,12 +265,12 @@ export function TransferRequestDrawerWidget({
               </div>
 
               {/* Directional arrow between them */}
-              <div className="hidden sm:flex absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 z-10 w-7 h-7 rounded-full bg-white border border-stocky-border-subtle shadow-2xs items-center justify-center text-stocky-primary">
+              <div className="hidden sm:flex absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 z-10 w-7 h-7 rounded-full bg-stocky-bg-widget border border-stocky-border-subtle shadow-2xs items-center justify-center text-stocky-primary">
                 <ArrowRightIcon size="xs" className="rtl:rotate-180" />
               </div>
 
               {/* Destination Location Card */}
-              <div className="rounded-xl border border-stocky-border-subtle bg-white p-3 flex flex-col gap-1.5 focus-within:border-stocky-primary transition-colors shadow-2xs">
+              <div className="rounded-xl border border-stocky-border-subtle bg-stocky-bg-widget p-3 flex flex-col gap-1.5 focus-within:border-stocky-primary transition-colors shadow-2xs">
                 <div className="flex items-center justify-between">
                   <label className="text-[11px] font-semibold text-stocky-text-sub uppercase tracking-wider flex items-center gap-1">
                     <WarehouseIcon size="xs" className="text-stocky-accent" />
@@ -305,7 +305,7 @@ export function TransferRequestDrawerWidget({
           </div>
 
           {/* Lines Section (TASK-TRF-03) */}
-          <div className="rounded-2xl border border-stocky-border-subtle overflow-hidden bg-white">
+          <div className="rounded-2xl border border-stocky-border-subtle overflow-hidden bg-stocky-bg-widget">
             <div className="flex items-center justify-between bg-stocky-bg-global px-4 py-3 border-b border-stocky-border-subtle">
               <div>
                 <span className="text-xs font-semibold text-stocky-text-main">
@@ -318,7 +318,7 @@ export function TransferRequestDrawerWidget({
               <button
                 type="button"
                 onClick={addLine}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-stocky-border-subtle text-xs font-medium text-stocky-primary hover:border-stocky-primary transition-colors cursor-pointer shadow-2xs"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-stocky-bg-widget border border-stocky-border-subtle text-xs font-medium text-stocky-primary hover:border-stocky-primary transition-colors cursor-pointer shadow-2xs"
               >
                 <PlusIcon size="xs" /> {t('drawers.transferRequest.addProduct')}
               </button>
@@ -331,7 +331,7 @@ export function TransferRequestDrawerWidget({
                 return (
                   <div
                     key={index}
-                    className="rounded-xl border border-stocky-border-subtle bg-white p-3.5 flex flex-col gap-3 shadow-2xs"
+                    className="rounded-xl border border-stocky-border-subtle bg-stocky-bg-widget p-3.5 flex flex-col gap-3 shadow-2xs"
                   >
                     {/* Top: Product Selection & Stock Badge */}
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
@@ -385,7 +385,7 @@ export function TransferRequestDrawerWidget({
                               if (current > 1) updateLine(index, 'quantity', String(current - 1));
                             }}
                             disabled={!line.quantity || parseInt(line.quantity, 10) <= 1}
-                            className="h-8 w-8 rounded-lg bg-white border border-stocky-border-subtle/80 flex items-center justify-center text-stocky-text-main hover:bg-stocky-bg-hover disabled:opacity-40 cursor-pointer font-bold text-sm"
+                            className="h-8 w-8 rounded-lg bg-stocky-bg-widget border border-stocky-border-subtle/80 flex items-center justify-center text-stocky-text-main hover:bg-stocky-bg-hover disabled:opacity-40 cursor-pointer font-bold text-sm"
                             aria-label={t('drawers.transferRequest.decreaseQuantity')}
                           >
                             -
@@ -417,7 +417,7 @@ export function TransferRequestDrawerWidget({
                                 updateLine(index, 'quantity', String(current + 1));
                             }}
                             disabled={Boolean(available && parseInt(line.quantity || '0', 10) >= available)}
-                            className="h-8 w-8 rounded-lg bg-white border border-stocky-border-subtle/80 flex items-center justify-center text-stocky-text-main hover:bg-stocky-bg-hover disabled:opacity-40 cursor-pointer font-bold text-sm"
+                            className="h-8 w-8 rounded-lg bg-stocky-bg-widget border border-stocky-border-subtle/80 flex items-center justify-center text-stocky-text-main hover:bg-stocky-bg-hover disabled:opacity-40 cursor-pointer font-bold text-sm"
                             aria-label={t('drawers.transferRequest.increaseQuantity')}
                           >
                             +
@@ -473,7 +473,7 @@ export function TransferRequestDrawerWidget({
             </button>
             <button
               type="submit"
-              className="h-10 rounded-full bg-stocky-primary px-6 text-xs font-medium text-white hover:bg-stocky-primary-hover transition-colors cursor-pointer shadow-sm"
+              className="h-10 rounded-full bg-stocky-primary px-6 text-xs font-medium text-stocky-text-inverse hover:bg-stocky-primary-hover transition-colors cursor-pointer shadow-sm"
             >
               {t('drawers.transferRequest.sendRequest')}
             </button>

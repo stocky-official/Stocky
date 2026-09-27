@@ -233,9 +233,8 @@ export function AttendanceCalendarWidget({
 
   return (
     <div
-      className="flex flex-col w-full bg-stocky-bg-widget"
+      className={`flex flex-col w-full bg-stocky-bg-widget ${isRtl ? 'font-cairo' : ''}`}
       dir={isRtl ? 'rtl' : 'ltr'}
-      style={{ fontFamily: isRtl ? 'Cairo, sans-serif' : undefined }}
     >
       {/* ─────────────────────────────────────────────────────────────
           MOBILE: SAMSUNG CALENDAR EXPERIENCE (< sm)
@@ -309,7 +308,7 @@ export function AttendanceCalendarWidget({
               <button
                 type="button"
                 onClick={onRequestLeave}
-                className="h-8 px-3 rounded-full bg-stocky-primary text-white text-[11px] font-semibold inline-flex items-center justify-center gap-1 whitespace-nowrap cursor-pointer shadow-xs hover:bg-stocky-primary-hover transition-colors shrink-0"
+                className="h-8 px-3 rounded-full bg-stocky-primary text-stocky-text-inverse text-[11px] font-semibold inline-flex items-center justify-center gap-1 whitespace-nowrap cursor-pointer shadow-xs hover:bg-stocky-primary-hover transition-colors shrink-0"
               >
                 <PlusIcon size="xs" />
                 <span>{t('calendar.leave')}</span>
@@ -351,7 +350,7 @@ export function AttendanceCalendarWidget({
                   <div
                     className={`w-8 h-8 rounded-full flex items-center justify-center text-xs transition-all ${
                       isSelected
-                        ? 'bg-stocky-primary text-white font-bold shadow-sm'
+                        ? 'bg-stocky-primary text-stocky-text-inverse font-bold shadow-sm'
                         : cell.isToday
                         ? 'ring-1.5 ring-stocky-primary text-stocky-primary font-bold'
                         : cell.isCurrentMonth
@@ -392,7 +391,7 @@ export function AttendanceCalendarWidget({
                 {selectedDateTitle}
               </span>
               {isSelectedToday && (
-                <span className="px-2 py-0.5 rounded-full bg-stocky-primary text-white text-[10px] font-semibold">
+                <span className="px-2 py-0.5 rounded-full bg-stocky-primary text-stocky-text-inverse text-[10px] font-semibold">
                   {t('calendar.today')}
                 </span>
               )}
@@ -441,10 +440,10 @@ export function AttendanceCalendarWidget({
                   .slice(0, 2);
 
                 const accentBorder = isOngoing
-                  ? 'border-s-blue-500 bg-blue-50/10'
+                  ? 'border-s-blue-500 bg-stocky-status-info-bg'
                   : shift.status === 'late'
-                  ? 'border-s-amber-500 bg-amber-50/10'
-                  : 'border-s-emerald-500 bg-emerald-50/10';
+                  ? 'border-s-amber-500 bg-stocky-status-warning-bg'
+                  : 'border-s-emerald-500 bg-stocky-status-success-bg';
 
                 return (
                   <article
@@ -521,23 +520,23 @@ export function AttendanceCalendarWidget({
                   <article
                     key={leave.id}
                     onClick={() => onSelectLeave?.(leave)}
-                    className="p-3 rounded-2xl border border-stocky-border-subtle bg-stocky-bg-widget hover:bg-stocky-bg-global/40 transition-colors cursor-pointer flex flex-col gap-2 border-s-4 border-s-purple-500 bg-purple-50/10 shadow-2xs"
+                    className="p-3 rounded-2xl border border-stocky-border-subtle bg-stocky-bg-widget hover:bg-stocky-bg-global/40 transition-colors cursor-pointer flex flex-col gap-2 border-s-4 border-s-purple-500 bg-stocky-status-hold-bg shadow-2xs"
                   >
                     <div className="flex items-center justify-between text-xs">
                       <div className="flex items-center gap-1.5">
-                        <CalendarIcon size="xs" className="text-purple-600 shrink-0" />
+                        <CalendarIcon size="xs" className="text-stocky-status-hold-fg shrink-0" />
                         <span className="font-semibold text-stocky-text-main">
                           {leave.startDate} <span className="rtl:rotate-180 inline-block">→</span> {leave.endDate}
                         </span>
                       </div>
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider bg-purple-50 text-purple-700 border border-purple-200">
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider bg-stocky-status-hold-bg text-stocky-status-hold-fg border border-stocky-status-hold-border">
                         {leave.leaveType}
                       </span>
                     </div>
 
                     <div className="flex items-center justify-between pt-0.5 border-t border-stocky-border-subtle/50">
                       <div className="flex items-center gap-2 min-w-0 flex-1">
-                        <div className="w-6 h-6 rounded-full bg-purple-100 text-purple-700 flex items-center justify-center text-[10px] font-bold shrink-0">
+                        <div className="w-6 h-6 rounded-full bg-stocky-status-hold-bg text-stocky-status-hold-fg flex items-center justify-center text-[10px] font-bold shrink-0">
                           {memberInitials}
                         </div>
                         <div className="min-w-0 flex items-center gap-1.5 flex-wrap">
@@ -696,7 +695,7 @@ export function AttendanceCalendarWidget({
                       <span
                         className={`text-xs font-semibold inline-flex items-center justify-center w-6 h-6 rounded-full ${
                           cell.isToday
-                            ? 'bg-stocky-primary text-white'
+                            ? 'bg-stocky-primary text-stocky-text-inverse'
                             : cell.isCurrentMonth
                             ? 'text-stocky-text-main'
                             : 'text-stocky-text-sub'
@@ -804,7 +803,7 @@ export function AttendanceCalendarWidget({
                       </div>
                     </div>
                     {isToday && (
-                      <span className="px-2 py-0.5 rounded-full bg-stocky-primary text-white text-[10px] font-semibold">
+                      <span className="px-2 py-0.5 rounded-full bg-stocky-primary text-stocky-text-inverse text-[10px] font-semibold">
                         {t('calendar.today')}
                       </span>
                     )}

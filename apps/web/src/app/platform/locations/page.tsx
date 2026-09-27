@@ -1,13 +1,22 @@
 'use client';
 
-import { usePlatform } from '@/views/platform/PlatformContext';
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { canOpenTab, usePlatform } from '@/views/platform/PlatformContext';
 import { LocationsPlatformView } from '@/views/platform/pages/LocationsPlatformView';
 import { PlatformWorkspaceSkeleton } from '@/widgets';
 
 export default function LocationsRoutePage() {
   const platform = usePlatform();
+  const router = useRouter();
 
-  if (platform.loading) {
+  useEffect(() => {
+    if (!platform.loading && !canOpenTab(platform.userRole, 'locations', platform.userPermissions)) {
+      router.replace(platform.tenantPrefix || '/platform');
+    }
+  }, [platform.loading, platform.tenantPrefix, platform.userPermissions, platform.userRole, router]);
+
+  if (platform.loading || !canOpenTab(platform.userRole, 'locations', platform.userPermissions)) {
     return <PlatformWorkspaceSkeleton variant="locations" />;
   }
 

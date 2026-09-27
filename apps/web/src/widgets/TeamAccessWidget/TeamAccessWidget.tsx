@@ -76,7 +76,7 @@ export function TeamAccessWidget({ members, locations, assignments, canManage, i
               aria-label="Explain team roles"
               aria-expanded={roleHelpVisible}
               title="Role definitions"
-              className="flex h-8 w-8 items-center justify-center rounded-full border border-stocky-border-subtle bg-white text-stocky-text-sub hover:border-stocky-primary hover:text-stocky-primary cursor-pointer transition-colors"
+              className="flex h-8 w-8 items-center justify-center rounded-full border border-stocky-border-subtle bg-stocky-bg-widget text-stocky-text-sub hover:border-stocky-primary hover:text-stocky-primary cursor-pointer transition-colors"
             >
               <InfoIcon size="xs" />
             </button>
@@ -84,7 +84,7 @@ export function TeamAccessWidget({ members, locations, assignments, canManage, i
               <div
                 onMouseEnter={() => setRoleHelpOpen(true)}
                 onMouseLeave={() => setRoleHelpOpen(false)}
-                className="absolute right-0 top-[calc(100%+8px)] z-20 w-72 rounded-xl border border-stocky-border-subtle bg-white p-2 shadow-xl"
+                className="absolute right-0 top-[calc(100%+8px)] z-20 w-72 rounded-xl border border-stocky-border-subtle bg-stocky-bg-widget p-2 shadow-xl"
               >
                 <p className="px-2 py-1 text-[10px] font-medium uppercase tracking-[0.12em] text-stocky-primary">
                   Role definitions
@@ -102,7 +102,7 @@ export function TeamAccessWidget({ members, locations, assignments, canManage, i
       )}
 
       {effectiveShowInvite && (
-        <form onSubmit={invite} className="grid grid-cols-1 gap-3 rounded-2xl border border-stocky-border-subtle bg-white p-4 md:grid-cols-2 xl:grid-cols-4">
+        <form onSubmit={invite} className="grid grid-cols-1 gap-3 rounded-2xl border border-stocky-border-subtle bg-stocky-bg-widget p-4 md:grid-cols-2 xl:grid-cols-4">
           <label className="text-xs font-medium text-stocky-text-main">
             Email
             <input required type="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="name@company.com" className="mt-1.5 h-9 w-full rounded-xl border border-stocky-border-subtle px-3 text-xs focus:border-stocky-primary focus:outline-none" />
@@ -127,14 +127,14 @@ export function TeamAccessWidget({ members, locations, assignments, canManage, i
             </select>
           </label>
           <div className="flex items-center justify-end gap-2 md:col-span-2 xl:col-span-4">
-            {error && <p className="mr-auto text-xs text-red-700">{error}</p>}
+            {error && <p className="mr-auto text-xs text-stocky-status-critical-fg">{error}</p>}
             <button type="button" onClick={closeInvite} className="h-9 rounded-full border border-stocky-border-subtle px-3 text-xs cursor-pointer">Cancel</button>
-            <button type="submit" disabled={saving} className="h-9 rounded-full bg-stocky-primary px-3 text-xs font-medium text-white disabled:opacity-60 cursor-pointer">{saving ? 'Inviting...' : 'Send invite'}</button>
+            <button type="submit" disabled={saving} className="h-9 rounded-full bg-stocky-primary px-3 text-xs font-medium text-stocky-text-inverse disabled:opacity-60 cursor-pointer">{saving ? 'Inviting...' : 'Send invite'}</button>
           </div>
         </form>
       )}
 
-      <div className="stocky-team-table-shell overflow-hidden rounded-2xl border border-stocky-border-subtle bg-white">
+      <div className="stocky-team-table-shell overflow-hidden rounded-2xl border border-stocky-border-subtle bg-stocky-bg-widget">
         {members.length === 0 ? (
           <div className="px-6 py-16 text-center">
             <UsersIcon size="md" className="mx-auto text-stocky-text-sub/50" />

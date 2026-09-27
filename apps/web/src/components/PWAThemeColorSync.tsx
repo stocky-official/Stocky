@@ -3,9 +3,9 @@
 import { useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 
-export const PWA_THEME_COLORS = {
-  home: '#14261C',
-  default: '#FFFFFF',
+export const PWA_THEME_VARIABLES = {
+  home: '--stocky-pwa-home-theme',
+  default: '--stocky-pwa-default-theme',
 } as const;
 
 export const PWA_STATUS_BAR_STYLES = {
@@ -60,7 +60,8 @@ export function isHomeRoute(pathname: string | null): boolean {
 export function syncPWATheme(isHome: boolean) {
   if (typeof document === 'undefined') return;
 
-  const targetColor = isHome ? PWA_THEME_COLORS.home : PWA_THEME_COLORS.default;
+  const themeVariable = isHome ? PWA_THEME_VARIABLES.home : PWA_THEME_VARIABLES.default;
+  const targetColor = getComputedStyle(document.documentElement).getPropertyValue(themeVariable).trim() || 'transparent';
   const targetAppleStatusBarStyle = isHome ? PWA_STATUS_BAR_STYLES.home : PWA_STATUS_BAR_STYLES.default;
 
   // 1. Synchronize <meta name="theme-color"> (Android Chrome, modern Safari)

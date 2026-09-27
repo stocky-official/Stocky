@@ -16,7 +16,7 @@ export function Card({
   children,
   ...props
 }: CardProps) {
-  let baseStyles = 'bg-white rounded-3xl border border-slate-100/90 shadow-bevel transition-all duration-200';
+  let baseStyles = 'bg-stocky-bg-widget rounded-3xl border border-stocky-border-subtle shadow-bevel transition-all duration-200';
   if (variant === 'glass') {
     baseStyles = 'bevel-glass-dock rounded-3xl';
   } else if (variant === 'default') {

@@ -42,6 +42,7 @@ export interface TasksWorkspaceWidgetProps {
   }>;
   assignments?: Array<{ user_id: string; location_id: string }>;
   userRole: CompanyUserRole;
+  canManageTasks?: boolean;
   currentUserId?: string | null;
   scanQuery?: string;
   activeTaskTab?: 'ongoing' | 'completed';
@@ -80,6 +81,7 @@ export function TasksWorkspaceWidget({
   members,
   assignments = [],
   userRole,
+  canManageTasks = false,
   currentUserId,
   scanQuery = '',
   activeTaskTab: controlledTab,
@@ -225,11 +227,18 @@ export function TasksWorkspaceWidget({
     return count;
   }, [filters]);
 
-  const canAssignTask = userRole !== 'staff';
+  const canAssignTask = canManageTasks;
 
   const handleTaskDrop = async (taskId: string, targetColumn: KanbanColumnId) => {
     const task = tasks.find((t) => t.id === taskId);
     if (!task) return;
+
+    if (!canManageTasks && task.assignedToCompanyUserId !== currentUserId) {
+      setRunnerTask(null);
+      setReviewTask(null);
+      setDetailsTask(task);
+      return;
+    }
 
     // Determine current column
     const currentColumn: KanbanColumnId =
@@ -276,7 +285,7 @@ export function TasksWorkspaceWidget({
     // Target: rejected (Needs Correction)
     if (targetColumn === 'rejected') {
       if (task.status === 'submitted') {
-        if (userRole !== 'staff') {
+        if (canManageTasks) {
           try {
             await onReviewTask(task.id, false, 'Correction required');
           } catch (err: unknown) {
@@ -307,7 +316,7 @@ export function TasksWorkspaceWidget({
     // Target: completed
     if (targetColumn === 'completed') {
       if (task.status === 'submitted') {
-        if (userRole !== 'staff') {
+        if (canManageTasks) {
           try {
             await onReviewTask(task.id, true, 'Approved via Kanban');
           } catch (err: unknown) {
@@ -348,7 +357,7 @@ export function TasksWorkspaceWidget({
   return (
     <div className="stocky-task-workspace flex flex-col gap-4">
       {/* Unified Workspace Card */}
-      <div className="stocky-stock-unified-card rounded-2xl bg-white border border-stocky-border-subtle shadow-sm flex flex-col relative z-20 overflow-visible">
+      <div className="stocky-stock-unified-card rounded-2xl bg-stocky-bg-widget border border-stocky-border-subtle shadow-sm flex flex-col relative z-20 overflow-visible">
         {/* Integrated Toolbar Header */}
         <div className="p-3 sm:p-3.5 border-b border-stocky-border-subtle relative z-30">
           <TasksToolbarWidget
@@ -416,7 +425,7 @@ export function TasksWorkspaceWidget({
               products={products}
               locations={locations}
               members={members}
-              userRole={userRole}
+              canManageTasks={canManageTasks}
               currentUserId={currentUserId}
               searchQuery={searchQuery}
               canAssignTask={canAssignTask}
@@ -444,7 +453,7 @@ export function TasksWorkspaceWidget({
               products={products}
               locations={locations}
               members={members}
-              userRole={userRole}
+              canManageTasks={canManageTasks}
               currentUserId={currentUserId}
               searchQuery={searchQuery}
               canAssignTask={canAssignTask}

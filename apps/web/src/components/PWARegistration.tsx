@@ -75,7 +75,7 @@ export function PWARegistration() {
     <>
       {/* Offline Status Bar */}
       {isOffline && (
-          <div className="stocky-pwa-offline-banner fixed top-0 left-0 right-0 z-50 bg-amber-600 text-white text-xs py-1.5 px-4 text-center font-medium shadow-md flex items-center justify-center gap-2">
+          <div className="stocky-pwa-offline-banner fixed top-0 left-0 right-0 z-50 bg-stocky-status-warning-fg text-stocky-text-inverse text-xs py-1.5 px-4 text-center font-medium shadow-md flex items-center justify-center gap-2">
             <span>You are currently offline. Cached stock records remain available.</span>
           </div>
       )}
@@ -84,7 +84,7 @@ export function PWARegistration() {
       {showInstallBanner && (
           <div className="stocky-pwa-install-banner fixed bottom-4 left-4 right-4 md:left-auto md:right-4 md:w-96 z-50 bg-stocky-bg-widget/95 backdrop-blur-md border border-stocky-border-subtle rounded-widget p-4 shadow-2xl flex items-center gap-3">
             <div className="w-10 h-10 rounded-lg bg-stocky-primary flex items-center justify-center shrink-0 shadow-md">
-              <StockyLogoIcon size="sm" className="text-[#11120F]" />
+              <StockyLogoIcon size="sm" className="text-stocky-text-main" />
             </div>
 
             <div className="flex-1 min-w-0">
@@ -100,7 +100,7 @@ export function PWARegistration() {
               <button
                 type="button"
                 onClick={handleInstallClick}
-                className="px-3 py-1.5 bg-stocky-primary hover:bg-stocky-primary-hover text-white text-xs font-medium rounded-widget transition-colors flex items-center gap-1 cursor-pointer"
+                className="px-3 py-1.5 bg-stocky-primary hover:bg-stocky-primary-hover text-stocky-text-inverse text-xs font-medium rounded-widget transition-colors flex items-center gap-1 cursor-pointer"
               >
                 <ArrowDownIcon size="xs" />
                 Install

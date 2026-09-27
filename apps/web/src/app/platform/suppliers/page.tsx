@@ -1,13 +1,22 @@
 'use client';
 
-import { usePlatform } from '@/views/platform/PlatformContext';
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { canOpenTab, usePlatform } from '@/views/platform/PlatformContext';
 import { SuppliersPlatformView } from '@/views/platform/pages/SuppliersPlatformView';
 import { PlatformWorkspaceSkeleton } from '@/widgets';
 
 export default function SuppliersRoutePage() {
   const platform = usePlatform();
+  const router = useRouter();
 
-  if (platform.loading) {
+  useEffect(() => {
+    if (!platform.loading && !canOpenTab(platform.userRole, 'suppliers', platform.userPermissions)) {
+      router.replace(platform.tenantPrefix || '/platform');
+    }
+  }, [platform.loading, platform.tenantPrefix, platform.userPermissions, platform.userRole, router]);
+
+  if (platform.loading || !canOpenTab(platform.userRole, 'suppliers', platform.userPermissions)) {
     return <PlatformWorkspaceSkeleton variant="suppliers" />;
   }
 

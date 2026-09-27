@@ -264,7 +264,7 @@ export function PlatformWorkspaceSkeleton({
             {Array.from({ length: 2 }).map((_, i) => (
               <div
                 key={i}
-                className="bg-white border border-stocky-border-subtle rounded-2xl p-5 shadow-card flex flex-col gap-4"
+                className="bg-stocky-bg-widget border border-stocky-border-subtle rounded-2xl p-5 shadow-card flex flex-col gap-4"
               >
                 <div className="flex items-center justify-between pb-3 border-b border-stocky-border-subtle">
                   <Skeleton variant="text" width={140} height={18} />
@@ -315,7 +315,7 @@ export function PlatformWorkspaceSkeleton({
           </div>
 
           {/* Punch Clock Status Bar */}
-          <div className="bg-white border border-stocky-border-subtle rounded-2xl p-4 shadow-2xs flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+          <div className="bg-stocky-bg-widget border border-stocky-border-subtle rounded-2xl p-4 shadow-2xs flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
             <div className="flex items-center gap-3">
               <Skeleton variant="circular" width={40} height={40} />
               <div className="flex flex-col gap-1.5">
@@ -356,7 +356,7 @@ export function PlatformWorkspaceSkeleton({
           />
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className="bg-white border border-stocky-border-subtle rounded-2xl p-5 shadow-card flex flex-col gap-4">
+              <div key={i} className="bg-stocky-bg-widget border border-stocky-border-subtle rounded-2xl p-5 shadow-card flex flex-col gap-4">
                 <div className="flex items-center gap-3">
                   <Skeleton variant="rounded" width={44} height={44} className="rounded-xl shrink-0" />
                   <div className="flex flex-col gap-1.5 min-w-0 flex-1">
@@ -396,21 +396,21 @@ export function PlatformWorkspaceSkeleton({
       {(pageType === 'expiring' || pageType === 'expiry') && (
         <div className="flex flex-col gap-4">
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
-            <div className="bg-white border border-stocky-border-subtle rounded-2xl p-4 shadow-card flex items-center justify-between">
+            <div className="bg-stocky-bg-widget border border-stocky-border-subtle rounded-2xl p-4 shadow-card flex items-center justify-between">
               <div className="flex flex-col gap-1">
                 <Skeleton variant="text" width={80} animation="shimmer-subtle" />
                 <Skeleton variant="rounded" width={48} height={24} />
               </div>
               <Skeleton variant="rounded" width={72} height={22} className="rounded-full" />
             </div>
-            <div className="bg-white border border-stocky-border-subtle rounded-2xl p-4 shadow-card flex items-center justify-between">
+            <div className="bg-stocky-bg-widget border border-stocky-border-subtle rounded-2xl p-4 shadow-card flex items-center justify-between">
               <div className="flex flex-col gap-1">
                 <Skeleton variant="text" width={80} animation="shimmer-subtle" />
                 <Skeleton variant="rounded" width={48} height={24} />
               </div>
               <Skeleton variant="rounded" width={72} height={22} className="rounded-full" />
             </div>
-            <div className="bg-white border border-stocky-border-subtle rounded-2xl p-4 shadow-card flex items-center justify-between">
+            <div className="bg-stocky-bg-widget border border-stocky-border-subtle rounded-2xl p-4 shadow-card flex items-center justify-between">
               <div className="flex flex-col gap-1">
                 <Skeleton variant="text" width={80} animation="shimmer-subtle" />
                 <Skeleton variant="rounded" width={48} height={24} />
@@ -434,7 +434,7 @@ export function PlatformWorkspaceSkeleton({
           />
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {Array.from({ length: 4 }).map((_, i) => (
-              <div key={i} className="bg-white border border-stocky-border-subtle rounded-2xl p-5 shadow-card flex flex-col gap-4">
+              <div key={i} className="bg-stocky-bg-widget border border-stocky-border-subtle rounded-2xl p-5 shadow-card flex flex-col gap-4">
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex items-center gap-3">
                     <Skeleton variant="rounded" width={36} height={36} className="rounded-xl shrink-0" />
@@ -501,8 +501,8 @@ export function PlatformWorkspaceSkeleton({
             queueTabs={['All Activity', 'Stock Movements', 'System Events']}
             actionButtonsCount={1}
           />
-          <div className="bg-white border border-stocky-border-subtle rounded-2xl p-5 shadow-card flex flex-col gap-4">
-            <Skeleton variant="text" width={112} className="font-mono" />
+          <div className="bg-stocky-bg-widget border border-stocky-border-subtle rounded-2xl p-5 shadow-card flex flex-col gap-4">
+            <Skeleton variant="text" width={112} className="font-sans" />
             <div className="flex flex-col gap-3 divide-y divide-stocky-border-subtle/70">
               {Array.from({ length: 6 }).map((_, i) => (
                 <div key={i} className="pt-3 first:pt-0 flex items-center justify-between gap-4">
@@ -524,9 +524,9 @@ export function PlatformWorkspaceSkeleton({
       {/* K. NOTIFICATIONS VIEW (Facebook-Style Social Media Feed Skeleton) */}
       {pageType === 'notifications' && (
         <div className="flex flex-col gap-4 w-full">
-          <div className="rounded-2xl bg-white border border-stocky-border-subtle overflow-hidden shadow-xs">
+          <div className="rounded-2xl bg-stocky-bg-widget border border-stocky-border-subtle overflow-hidden shadow-xs">
             {/* Feed Sub-Header: Filter Tabs ("All", "Unread") */}
-            <div className="flex items-center justify-between px-4 sm:px-5 py-3 border-b border-stocky-border-subtle bg-white">
+            <div className="flex items-center justify-between px-4 sm:px-5 py-3 border-b border-stocky-border-subtle bg-stocky-bg-widget">
               <div className="flex items-center gap-2">
                 <Skeleton variant="rounded" width={52} height={28} className="rounded-full" />
                 <Skeleton variant="rounded" width={68} height={28} className="rounded-full" animation="shimmer-subtle" />
@@ -541,7 +541,7 @@ export function PlatformWorkspaceSkeleton({
                   {/* Left Avatar + floating corner badge */}
                   <div className="relative shrink-0 mt-0.5">
                     <Skeleton variant="circular" width={48} height={48} />
-                    <div className="absolute -bottom-0.5 -right-0.5 w-5 h-5 rounded-full ring-2 ring-white overflow-hidden">
+                    <div className="absolute -bottom-0.5 -right-0.5 w-5 h-5 rounded-full ring-2 ring-stocky-text-inverse overflow-hidden">
                       <Skeleton variant="circular" width={20} height={20} />
                     </div>
                   </div>
@@ -558,7 +558,7 @@ export function PlatformWorkspaceSkeleton({
 
                   {/* Right Status (blue unread dot + 3-dot menu placeholder) */}
                   <div className="flex items-center gap-2 shrink-0 self-center">
-                    {i < 2 && <Skeleton variant="circular" width={10} height={10} className="bg-blue-300" />}
+                    {i < 2 && <Skeleton variant="circular" width={10} height={10} className="bg-stocky-status-info-fg" />}
                     <Skeleton variant="circular" width={28} height={28} animation="shimmer-subtle" />
                   </div>
                 </div>
@@ -571,7 +571,7 @@ export function PlatformWorkspaceSkeleton({
       {/* L. SETTINGS VIEW */}
       {pageType === 'settings' && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="bg-white border border-stocky-border-subtle rounded-2xl p-6 shadow-card flex flex-col gap-5">
+          <div className="bg-stocky-bg-widget border border-stocky-border-subtle rounded-2xl p-6 shadow-card flex flex-col gap-5">
             <Skeleton variant="text" width={160} height={20} />
             <div className="flex items-center gap-4">
               <Skeleton variant="circular" width={64} height={64} />
@@ -591,7 +591,7 @@ export function PlatformWorkspaceSkeleton({
               </div>
             </div>
           </div>
-          <div className="bg-white border border-stocky-border-subtle rounded-2xl p-6 shadow-card flex flex-col gap-5">
+          <div className="bg-stocky-bg-widget border border-stocky-border-subtle rounded-2xl p-6 shadow-card flex flex-col gap-5">
             <Skeleton variant="text" width={192} height={20} />
             <div className="flex flex-col gap-4">
               {Array.from({ length: 3 }).map((_, i) => (

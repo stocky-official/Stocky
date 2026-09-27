@@ -1,9 +1,10 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   BarcodeIcon,
   BellIcon,
+  CheckIcon,
   ChevronDownIcon,
   ArrowUpRightIcon,
   SearchIcon,
@@ -24,6 +25,111 @@ export interface HomeHeroWidgetProps {
   onOpenScanner?: () => void;
   onOpenNotifications?: () => void;
   unreadNotificationsCount?: number;
+}
+
+interface BranchSwitcherProps {
+  locations: Location[];
+  selectedLocationId: string;
+  onSelectLocation: (id: string) => void;
+  mobile?: boolean;
+}
+
+function BranchSwitcher({
+  locations,
+  selectedLocationId,
+  onSelectLocation,
+  mobile = false,
+}: BranchSwitcherProps) {
+  const { t } = useTranslation();
+  const [isOpen, setIsOpen] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handlePointerDown = (event: PointerEvent) => {
+      if (!containerRef.current?.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setIsOpen(false);
+      }
+    };
+
+    document.addEventListener('pointerdown', handlePointerDown);
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('pointerdown', handlePointerDown);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isOpen]);
+
+  const handleSelect = (locationId: string) => {
+    onSelectLocation(locationId);
+    setIsOpen(false);
+  };
+
+  return (
+    <div ref={containerRef} className="relative shrink-0">
+      <button
+        type="button"
+        onClick={() => setIsOpen((open) => !open)}
+        aria-haspopup="listbox"
+        aria-expanded={isOpen}
+        aria-controls="stocky-branch-menu"
+        className={mobile
+          ? 'inline-flex items-center gap-1 text-[11px] font-medium text-stocky-accent hover:text-stocky-accent/80 cursor-pointer transition-colors'
+          : 'stocky-home-hero__glass-surface inline-flex items-center gap-1.5 text-xs font-medium text-stocky-accent hover:text-stocky-accent/80 cursor-pointer px-3 py-1.5 rounded-full transition-colors'}
+      >
+        <span className="inline-flex items-center gap-1">
+          <ArrowUpRightIcon size="xs" className="rtl:rotate-180" />
+          {t('home.switchBranch')}
+        </span>
+        <ChevronDownIcon
+          size="xs"
+          className={`transition-transform ${isOpen ? 'rotate-180' : ''}`}
+        />
+      </button>
+
+      {isOpen && (
+        <div
+          id="stocky-branch-menu"
+          role="listbox"
+          aria-label={t('home.switchBranch')}
+          className="absolute end-0 top-full z-50 mt-2 min-w-[220px] rounded-2xl border border-stocky-border-subtle bg-stocky-bg-widget p-1.5 text-start shadow-bevel-float"
+        >
+          <div className="px-3 py-2 text-[10px] font-semibold uppercase tracking-[0.12em] text-stocky-text-sub">
+            {t('home.switchBranch')}
+          </div>
+          <button
+            type="button"
+            role="option"
+            aria-selected={selectedLocationId === 'all'}
+            onClick={() => handleSelect('all')}
+            className="flex w-full items-center justify-between gap-3 rounded-xl px-3 py-2.5 text-sm text-stocky-text-main transition-colors hover:bg-stocky-bg-global"
+          >
+            <span>{t('home.allLocationsNetwork')}</span>
+            {selectedLocationId === 'all' && <CheckIcon size="xs" className="text-stocky-accent" />}
+          </button>
+          {locations.map((location) => (
+            <button
+              key={location.id}
+              type="button"
+              role="option"
+              aria-selected={selectedLocationId === location.id}
+              onClick={() => handleSelect(location.id)}
+              className="flex w-full items-center justify-between gap-3 rounded-xl px-3 py-2.5 text-sm text-stocky-text-main transition-colors hover:bg-stocky-bg-global"
+            >
+              <span className="truncate">{location.name}</span>
+              {selectedLocationId === location.id && <CheckIcon size="xs" className="text-stocky-accent" />}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
 }
 
 /**
@@ -67,13 +173,13 @@ export function HomeHeroWidget({
   };
 
   return (
-    <div className="stocky-home-hero select-none relative overflow-hidden">
+    <div className="stocky-home-hero select-none relative overflow-visible">
       <div className="w-full max-w-[var(--stocky-page-max-width)] mx-auto px-4 sm:px-6 lg:px-8 pt-[max(1.25rem,calc(env(safe-area-inset-top,0px)+0.5rem))] pb-8 sm:pb-12 flex flex-col gap-4 sm:gap-5 relative z-10">
         {/* Row 1: Fully Circular Account Badge (Company Logo) + Greeting Typography */}
         <div className="flex items-center justify-between gap-4 w-full">
           <div className="flex items-center gap-3.5 sm:gap-4 min-w-0">
             {/* Fully Circular Company Logo Badge */}
-            <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-white p-1.5 shadow-md border border-white/30 flex items-center justify-center shrink-0 overflow-hidden">
+            <div className="stocky-home-hero__logo-shell w-12 h-12 sm:w-14 sm:h-14 rounded-full p-1.5 shadow-md flex items-center justify-center shrink-0 overflow-hidden">
               {companyLogoUrl && !logoFailed ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
@@ -84,7 +190,7 @@ export function HomeHeroWidget({
                   className="w-full h-full object-contain rounded-full"
                 />
               ) : (
-                <div className="w-full h-full rounded-full bg-stocky-primary text-white flex items-center justify-center font-bold text-base sm:text-lg tracking-tight">
+                <div className="w-full h-full rounded-full bg-stocky-primary text-stocky-text-inverse flex items-center justify-center font-bold text-base sm:text-lg tracking-tight">
                   {companyName ? companyName.charAt(0).toUpperCase() : 'K'}
                 </div>
               )}
@@ -92,10 +198,10 @@ export function HomeHeroWidget({
 
             {/* Greeting Editorial */}
             <div className="flex flex-col min-w-0">
-              <h2 className="text-xl sm:text-2xl lg:text-3xl text-white font-normal tracking-tight leading-snug">
+              <h2 className="text-xl sm:text-2xl lg:text-3xl text-stocky-text-inverse font-normal tracking-tight leading-snug">
                 {t('home.greeting', { name: '' })}<bdi>{firstName}</bdi>
               </h2>
-              <p className="text-white/80 text-xs sm:text-sm font-normal mt-0.5">
+              <p className="stocky-home-hero__soft-text text-xs sm:text-sm font-normal mt-0.5">
                 {t('home.liveStatus', { location: '' })}<bdi>{displayLocation}</bdi>
               </p>
             </div>
@@ -106,28 +212,11 @@ export function HomeHeroWidget({
             <div className="relative hidden sm:flex items-center gap-2 shrink-0">
               <LanguageSwitcher variant="compact" />
               {locations.length > 1 && (
-                <>
-              <select
-                value={selectedLocationId || 'all'}
-                onChange={(e) => onSelectLocation(e.target.value)}
-                aria-label="Switch location"
-                className="opacity-0 focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-stocky-accent absolute inset-0 w-full h-full cursor-pointer z-10"
-              >
-                <option value="all">{t('home.allLocationsNetwork')}</option>
-                {locations.map((loc) => (
-                  <option key={loc.id} value={loc.id} className="text-gray-900 bg-white">
-                    {loc.name}
-                  </option>
-                ))}
-              </select>
-              <button
-                type="button"
-                className="inline-flex items-center gap-1.5 text-xs font-medium text-stocky-accent hover:underline cursor-pointer bg-white/10 hover:bg-white/15 px-3 py-1.5 rounded-full border border-white/15 transition-colors backdrop-blur-md"
-              >
-                <span className="inline-flex items-center gap-1"><ArrowUpRightIcon size="xs" className="rtl:rotate-180" />{t('home.switchBranch')}</span>
-                <ChevronDownIcon size="xs" />
-              </button>
-                </>
+                <BranchSwitcher
+                  locations={locations}
+                  selectedLocationId={selectedLocationId || 'all'}
+                  onSelectLocation={onSelectLocation}
+                />
               )}
             </div>
           )}
@@ -135,40 +224,26 @@ export function HomeHeroWidget({
 
         {/* Row 2 (Mobile only): Clean Location & Branch Switcher */}
         {locations && locations.length > 0 && onSelectLocation && (
-          <div className="flex sm:hidden items-center justify-between text-xs px-1 text-white/80">
-            <span className="font-medium text-white">{activeLocation ? activeLocation.name : displayLocation}</span>
+          <div className="stocky-home-hero__soft-text flex sm:hidden items-center justify-between text-xs px-1">
+            <span className="font-medium text-stocky-text-inverse">{activeLocation ? activeLocation.name : displayLocation}</span>
             <div className="relative flex items-center gap-2">
               <LanguageSwitcher variant="compact" />
-              {locations.length > 1 && <>
-              <select
-                value={selectedLocationId || 'all'}
-                onChange={(e) => onSelectLocation(e.target.value)}
-                aria-label="Switch location"
-                className="opacity-0 focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-stocky-accent absolute inset-0 w-full h-full cursor-pointer z-10"
-              >
-                <option value="all">{t('home.allLocationsNetwork')}</option>
-                {locations.map((loc) => (
-                  <option key={loc.id} value={loc.id} className="text-gray-900 bg-white">
-                    {loc.name}
-                  </option>
-                ))}
-              </select>
-              <button
-                type="button"
-                className="inline-flex items-center gap-1 text-[11px] font-medium text-stocky-accent hover:underline cursor-pointer"
-              >
-                <span className="inline-flex items-center gap-1"><ArrowUpRightIcon size="xs" className="rtl:rotate-180" />{t('home.switchBranch')}</span>
-                <ChevronDownIcon size="xs" />
-              </button>
-              </>}
+              {locations.length > 1 && (
+                <BranchSwitcher
+                  locations={locations}
+                  selectedLocationId={selectedLocationId || 'all'}
+                  onSelectLocation={onSelectLocation}
+                  mobile
+                />
+              )}
             </div>
           </div>
         )}
 
         {/* Row 3: Frosted Search Bar with Embedded Scanner & Notification Bell (Below Greeting) */}
         <div className="flex items-center gap-2.5 w-full pt-1">
-          <div className="relative flex-1 flex items-center bg-white/10 hover:bg-white/15 focus-within:bg-white/20 rounded-full border border-white/15 focus-within:border-white/30 backdrop-blur-md transition-all shadow-xs">
-            <SearchIcon size="sm" className="absolute left-3.5 rtl:left-auto rtl:right-3.5 text-white/60 pointer-events-none" />
+          <div className="stocky-home-hero__search-shell relative flex-1 flex items-center rounded-full transition-all shadow-xs">
+            <SearchIcon size="sm" className="stocky-home-hero__muted-text absolute left-3.5 rtl:left-auto rtl:right-3.5 pointer-events-none" />
             <input
               type="text"
               value={searchQuery}
@@ -176,7 +251,7 @@ export function HomeHeroWidget({
               onKeyDown={handleKeyDown}
               placeholder={t('home.searchPlaceholder')}
               aria-label={t('home.searchPlaceholder')}
-              className="w-full h-11 pl-10 pr-12 rtl:pl-12 rtl:pr-10 rounded-full text-xs font-medium text-white placeholder:text-white/50 outline-none bg-transparent"
+              className="stocky-home-hero__search-input w-full h-11 pl-10 pr-12 rtl:pl-12 rtl:pr-10 rounded-full text-xs font-medium outline-none"
             />
 
             {/* Embedded Barcode Scan Icon Button */}
@@ -194,7 +269,7 @@ export function HomeHeroWidget({
               }}
               title={t('common.scan')}
               aria-label={t('common.scan')}
-              className="absolute right-2 rtl:right-auto rtl:left-2 w-7 h-7 rounded-full bg-white/15 hover:bg-white/25 active:scale-95 text-white flex items-center justify-center transition-all cursor-pointer"
+              className="stocky-home-hero__icon-button absolute right-2 rtl:right-auto rtl:left-2 w-7 h-7 rounded-full active:scale-95 flex items-center justify-center transition-all cursor-pointer"
             >
               <BarcodeIcon size="xs" />
             </button>
@@ -208,11 +283,11 @@ export function HomeHeroWidget({
               onClick={onOpenNotifications}
               title={t('nav.notifications')}
               aria-label={`${t('nav.notifications')}${unreadNotificationsCount > 0 ? `, ${unreadNotificationsCount} unread` : ''}`}
-              className="relative w-11 h-11 rounded-full bg-white/10 hover:bg-white/20 active:scale-95 border border-white/15 text-white flex items-center justify-center transition-all backdrop-blur-md shrink-0 cursor-pointer shadow-xs"
+              className="stocky-home-hero__glass-surface relative w-11 h-11 rounded-full active:scale-95 text-stocky-text-inverse flex items-center justify-center transition-all shrink-0 cursor-pointer shadow-xs"
             >
               <BellIcon size="sm" />
               {unreadNotificationsCount > 0 && (
-                <span className="absolute top-2.5 right-2.5 rtl:right-auto rtl:left-2.5 w-2.5 h-2.5 rounded-full bg-rose-500 ring-2 ring-black/40" />
+                <span className="stocky-home-hero__notification-dot absolute top-2.5 right-2.5 rtl:right-auto rtl:left-2.5 w-2.5 h-2.5 rounded-full" />
               )}
             </button>
           )}
@@ -226,8 +301,7 @@ export function HomeHeroWidget({
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
           preserveAspectRatio="none"
-          className="w-full h-6 sm:h-9 block"
-          style={{ color: 'var(--stocky-bg-global, #FAFAFA)' }}
+          className="w-full h-6 sm:h-9 block text-stocky-bg-global"
         >
           <path
             d="M0,18 C220,38 460,38 720,22 C980,6 1220,20 1440,24 L1440,64 L0,64 Z"

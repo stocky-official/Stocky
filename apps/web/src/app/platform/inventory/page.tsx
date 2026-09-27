@@ -1,13 +1,22 @@
 'use client';
 
-import { usePlatform } from '@/views/platform/PlatformContext';
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { canOpenTab, usePlatform } from '@/views/platform/PlatformContext';
 import { InventoryPlatformView } from '@/views/platform/pages/InventoryPlatformView';
 import { PlatformWorkspaceSkeleton } from '@/widgets';
 
 export default function InventoryRoutePage() {
   const platform = usePlatform();
+  const router = useRouter();
 
-  if (platform.loading) {
+  useEffect(() => {
+    if (!platform.loading && !canOpenTab(platform.userRole, 'inventory', platform.userPermissions)) {
+      router.replace(platform.tenantPrefix || '/platform');
+    }
+  }, [platform.loading, platform.tenantPrefix, platform.userPermissions, platform.userRole, router]);
+
+  if (platform.loading || !canOpenTab(platform.userRole, 'inventory', platform.userPermissions)) {
     return <PlatformWorkspaceSkeleton variant="stock" />;
   }
 

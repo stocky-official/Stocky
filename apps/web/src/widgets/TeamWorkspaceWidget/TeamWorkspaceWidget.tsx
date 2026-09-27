@@ -204,7 +204,7 @@ export function TeamWorkspaceWidget({
             className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors cursor-pointer ${
               searchFields.name
                 ? 'border-stocky-primary bg-stocky-primary/10 text-stocky-primary font-semibold'
-                : 'border-stocky-border-subtle bg-white text-stocky-text-sub hover:text-stocky-text-main'
+                : 'border-stocky-border-subtle bg-stocky-bg-widget text-stocky-text-sub hover:text-stocky-text-main'
             }`}
           >
             {t('team.name')}
@@ -215,7 +215,7 @@ export function TeamWorkspaceWidget({
             className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors cursor-pointer ${
               searchFields.email
                 ? 'border-stocky-primary bg-stocky-primary/10 text-stocky-primary font-semibold'
-                : 'border-stocky-border-subtle bg-white text-stocky-text-sub hover:text-stocky-text-main'
+                : 'border-stocky-border-subtle bg-stocky-bg-widget text-stocky-text-sub hover:text-stocky-text-main'
             }`}
           >
             {t('team.email')}
@@ -226,7 +226,7 @@ export function TeamWorkspaceWidget({
             className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors cursor-pointer ${
               searchFields.title
                 ? 'border-stocky-primary bg-stocky-primary/10 text-stocky-primary font-semibold'
-                : 'border-stocky-border-subtle bg-white text-stocky-text-sub hover:text-stocky-text-main'
+                : 'border-stocky-border-subtle bg-stocky-bg-widget text-stocky-text-sub hover:text-stocky-text-main'
             }`}
           >
             {t('team.jobTitle')}
@@ -262,7 +262,7 @@ export function TeamWorkspaceWidget({
                 className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors cursor-pointer ${
                   isSelected
                     ? 'border-stocky-primary bg-stocky-primary/10 text-stocky-primary font-semibold'
-                    : 'border-stocky-border-subtle bg-white text-stocky-text-sub hover:text-stocky-text-main'
+                    : 'border-stocky-border-subtle bg-stocky-bg-widget text-stocky-text-sub hover:text-stocky-text-main'
                 }`}
               >
                 {label} ({count})
@@ -283,7 +283,7 @@ export function TeamWorkspaceWidget({
               className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors cursor-pointer ${
                 locationFilter === 'all'
                   ? 'border-stocky-primary bg-stocky-primary/10 text-stocky-primary font-semibold'
-                  : 'border-stocky-border-subtle bg-white text-stocky-text-sub hover:text-stocky-text-main'
+                  : 'border-stocky-border-subtle bg-stocky-bg-widget text-stocky-text-sub hover:text-stocky-text-main'
               }`}
             >
               {t('team.allLocations')}
@@ -296,7 +296,7 @@ export function TeamWorkspaceWidget({
                 className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors cursor-pointer ${
                   locationFilter === loc.id
                     ? 'border-stocky-primary bg-stocky-primary/10 text-stocky-primary font-semibold'
-                    : 'border-stocky-border-subtle bg-white text-stocky-text-sub hover:text-stocky-text-main'
+                    : 'border-stocky-border-subtle bg-stocky-bg-widget text-stocky-text-sub hover:text-stocky-text-main'
                 }`}
               >
                 {loc.name}
@@ -318,7 +318,7 @@ export function TeamWorkspaceWidget({
               className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors cursor-pointer ${
                 statusFilter === s
                   ? 'border-stocky-primary bg-stocky-primary/10 text-stocky-primary font-semibold'
-                  : 'border-stocky-border-subtle bg-white text-stocky-text-sub hover:text-stocky-text-main'
+                  : 'border-stocky-border-subtle bg-stocky-bg-widget text-stocky-text-sub hover:text-stocky-text-main'
               }`}
             >
               {s === 'all' ? t('team.allStatuses') : s === 'active' ? t('team.statusActive') : t('team.statusInvitedPending')}
@@ -332,7 +332,7 @@ export function TeamWorkspaceWidget({
   return (
     <div className="stocky-team-workspace flex flex-col gap-6">
       {/* Unified Workspace Card */}
-      <div className="stocky-stock-unified-card rounded-2xl bg-white border border-stocky-border-subtle shadow-xs flex flex-col relative z-20 overflow-visible">
+      <div className="stocky-stock-unified-card rounded-2xl bg-stocky-bg-widget border border-stocky-border-subtle shadow-xs flex flex-col relative z-20 overflow-visible">
         {/* Integrated Toolbar Header */}
         <div className="p-3 sm:p-3.5 border-b border-stocky-border-subtle relative z-30">
           <StandardToolbarWidget
@@ -351,7 +351,7 @@ export function TeamWorkspaceWidget({
                   onClick={() => setViewMode('table')}
                   className={`h-8 px-2.5 sm:px-3 rounded-full text-xs font-semibold inline-flex items-center gap-1.5 transition-all cursor-pointer ${
                     viewMode === 'table'
-                      ? 'bg-white text-stocky-text-main shadow-xs'
+                      ? 'bg-stocky-bg-widget text-stocky-text-main shadow-xs'
                       : 'text-stocky-text-sub hover:text-stocky-text-main'
                   }`}
                   title={t('team.tableView')}
@@ -366,7 +366,7 @@ export function TeamWorkspaceWidget({
                   onClick={() => setViewMode('org')}
                   className={`h-8 px-2.5 sm:px-3 rounded-full text-xs font-semibold inline-flex items-center gap-1.5 transition-all cursor-pointer ${
                     viewMode === 'org'
-                      ? 'bg-white text-stocky-text-main shadow-xs'
+                      ? 'bg-stocky-bg-widget text-stocky-text-main shadow-xs'
                       : 'text-stocky-text-sub hover:text-stocky-text-main'
                   }`}
                   title={t('team.orgStructure')}
@@ -406,7 +406,7 @@ export function TeamWorkspaceWidget({
               aria-label={t('team.filtersTitle')}
             >
               {/* Sticky Header */}
-              <div className="sticky top-0 z-10 flex shrink-0 items-center justify-between border-b border-stocky-border-subtle bg-white px-4 py-2.5">
+              <div className="sticky top-0 z-10 flex shrink-0 items-center justify-between border-b border-stocky-border-subtle bg-stocky-bg-widget px-4 py-2.5">
                 <div className="flex items-center gap-2">
                   <FilterIcon size="xs" className="text-stocky-primary" />
                   <h3 className="text-xs font-semibold text-stocky-text-main">{t('team.filtersTitle')}</h3>
@@ -439,7 +439,7 @@ export function TeamWorkspaceWidget({
                 <button
                   type="button"
                   onClick={() => setIsFilterPanelOpen(false)}
-                  className="h-7 rounded-full bg-stocky-primary px-3 text-xs font-medium text-white hover:bg-stocky-primary-hover cursor-pointer"
+                  className="h-7 rounded-full bg-stocky-primary px-3 text-xs font-medium text-stocky-text-inverse hover:bg-stocky-primary-hover cursor-pointer"
                 >
                   {t('team.done')}
                 </button>
@@ -465,7 +465,7 @@ export function TeamWorkspaceWidget({
                 <button
                   type="button"
                   onClick={() => setIsFilterPanelOpen(false)}
-                  className="h-9 px-5 rounded-full bg-stocky-primary text-white text-xs font-semibold cursor-pointer"
+                  className="h-9 px-5 rounded-full bg-stocky-primary text-stocky-text-inverse text-xs font-semibold cursor-pointer"
                 >
                   {t('team.applyFilters')}
                 </button>

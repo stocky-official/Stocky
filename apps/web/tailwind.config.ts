@@ -21,7 +21,7 @@ const config: Config = {
         xs: ['0.75rem', { lineHeight: '1rem' }],       // 12px
         sm: ['0.875rem', { lineHeight: '1.25rem' }],   // 14px
         base: ['1rem', { lineHeight: '1.5rem' }],      // 16px
-        md: ['1.125rem', { lineHeight: '1.625rem' }],  // 18px
+        md: ['var(--stocky-font-md)', { lineHeight: '1.625rem' }],  // 18px
         lg: ['1.25rem', { lineHeight: '1.75rem' }],    // 20px
         xl: ['1.5rem', { lineHeight: '2rem' }],        // 24px
         '2xl': ['2rem', { lineHeight: '2.5rem' }],     // 32px
@@ -32,18 +32,14 @@ const config: Config = {
             global: 'var(--stocky-bg-global)',
             widget: 'var(--stocky-bg-widget)',
             subtle: 'var(--stocky-bg-subtle)',
-            muted: 'var(--stocky-bg-muted)',
             hover: 'var(--stocky-bg-hover)',
-            active: 'var(--stocky-bg-active)',
           },
           text: {
             main: 'var(--stocky-text-main)',
             sub: 'var(--stocky-text-sub)',
             muted: 'var(--stocky-text-muted)',
             placeholder: 'var(--stocky-text-placeholder)',
-            disabled: 'var(--stocky-text-disabled)',
             inverse: 'var(--stocky-text-inverse)',
-            primary: 'var(--stocky-text-primary)',
           },
           primary: {
             DEFAULT: 'var(--stocky-primary)',
@@ -57,9 +53,7 @@ const config: Config = {
           border: {
             subtle: 'var(--stocky-border-subtle)',
             default: 'var(--stocky-border-default)',
-            hover: 'var(--stocky-border-hover)',
             focus: 'var(--stocky-border-focus)',
-            active: 'var(--stocky-border-active)',
           },
           status: {
             info: {
@@ -103,12 +97,11 @@ const config: Config = {
       },
       borderRadius: {
         none: '0px',
-        xs: 'var(--stocky-radius-xs)',
         sm: 'var(--stocky-radius-sm)',
         widget: 'var(--stocky-radius-widget)',
         card: 'var(--stocky-radius-card)',
         xl: 'var(--stocky-radius-xl)',
-        '3xl': '1.5rem',
+        '3xl': 'var(--stocky-radius-xl)',
         pill: 'var(--stocky-radius-full)',
         full: 'var(--stocky-radius-full)',
         DEFAULT: 'var(--stocky-radius-widget)',
@@ -116,25 +109,8 @@ const config: Config = {
       boxShadow: {
         bevel: 'var(--stocky-shadow-bevel)',
         'bevel-hover': 'var(--stocky-shadow-bevel-hover)',
-        'bevel-dock': 'var(--stocky-shadow-bevel-dock)',
         'bevel-float': 'var(--stocky-shadow-bevel-float)',
-        drawer: 'var(--stocky-shadow-drawer)',
         none: 'none',
-      },
-      zIndex: {
-        sticky: 'var(--stocky-z-sticky-nav)',
-        dropdown: 'var(--stocky-z-dropdown)',
-        dock: 'var(--stocky-z-dock)',
-        drawer: 'var(--stocky-z-drawer)',
-        modal: 'var(--stocky-z-modal)',
-        toast: 'var(--stocky-z-toast)',
-        tooltip: 'var(--stocky-z-tooltip)',
-      },
-      spacing: {
-        gutter: '1rem',
-      },
-      maxWidth: {
-        view: '1600px',
       },
     },
   },

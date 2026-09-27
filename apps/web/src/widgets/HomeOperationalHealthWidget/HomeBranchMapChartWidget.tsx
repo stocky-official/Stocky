@@ -176,7 +176,7 @@ export function HomeBranchMapChartWidget({
           >
             <FilterIcon size="xs" />
             <span>{t('common.filter')}</span>
-            <span className="px-1.5 py-0.5 rounded-full bg-stocky-primary text-white text-[10px] font-bold">
+            <span className="px-1.5 py-0.5 rounded-full bg-stocky-primary text-stocky-text-inverse text-[10px] font-bold">
               {dateRangePreset}
             </span>
           </button>
@@ -207,13 +207,7 @@ export function HomeBranchMapChartWidget({
       {/* 2. Interactive Styled Map Canvas */}
       <div className="relative w-full flex-1 my-3 bg-stocky-bg-global/60 rounded-xl border border-stocky-border-subtle/80 overflow-hidden select-none min-h-[260px]">
         {/* Subtle grid pattern background */}
-        <div
-          className="absolute inset-0 opacity-[0.04] pointer-events-none"
-          style={{
-            backgroundImage: 'radial-gradient(var(--stocky-text-main) 1px, transparent 1px)',
-            backgroundSize: '16px 16px',
-          }}
-        />
+        <div className="stocky-branch-map-grid absolute inset-0 opacity-[0.04] pointer-events-none" />
 
         {/* Geographic Regional Guide Labels */}
         <span className="absolute top-4 left-6 text-[10px] font-bold uppercase tracking-widest text-stocky-text-muted/60">
@@ -259,8 +253,8 @@ export function HomeBranchMapChartWidget({
               <div
                 className={`rounded-full flex items-center justify-center transition-transform group-hover:scale-110 shadow-sm border ${
                   isSelected
-                    ? 'bg-stocky-primary text-white border-white'
-                    : 'bg-stocky-primary/90 text-white border-white/80 hover:bg-stocky-primary'
+                    ? 'bg-stocky-primary text-stocky-text-inverse border-stocky-text-inverse'
+                    : 'bg-stocky-primary/90 text-stocky-text-inverse border-stocky-text-inverse/80 hover:bg-stocky-primary'
                 }`}
                 style={{
                   width: `${radius * 2}px`,
@@ -335,7 +329,7 @@ export function HomeBranchMapChartWidget({
                 <span className="text-[10px] text-stocky-text-sub font-medium">{t('home.charts.branchMap.inventoryDelta')}</span>
                 <span
                   className={`text-xs font-bold ${
-                    selectedBranch.changePct >= 0 ? 'text-emerald-600' : 'text-amber-600'
+                    selectedBranch.changePct >= 0 ? 'text-stocky-status-success-fg' : 'text-stocky-status-warning-fg'
                   }`}
                 >
                   {selectedBranch.changePct >= 0 ? `+${selectedBranch.changePct}%` : `${selectedBranch.changePct}%`}
@@ -347,7 +341,7 @@ export function HomeBranchMapChartWidget({
               <button
                 type="button"
                 onClick={() => onSelectLocation(selectedBranch.id)}
-                className="w-full mt-3 h-8 rounded-lg bg-stocky-primary hover:bg-stocky-primary-hover text-white text-[11px] font-semibold flex items-center justify-center gap-1 transition-colors cursor-pointer"
+                className="w-full mt-3 h-8 rounded-lg bg-stocky-primary hover:bg-stocky-primary-hover text-stocky-text-inverse text-[11px] font-semibold flex items-center justify-center gap-1 transition-colors cursor-pointer"
               >
                 <span>{t('home.charts.branchMap.viewBranchStock')}</span>
                 <ChevronRightIcon size="xs" />
@@ -385,7 +379,7 @@ export function HomeBranchMapChartWidget({
                   onClick={() => handlePresetChange(preset)}
                   className={`h-9 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                     dateRangePreset === preset
-                      ? 'bg-stocky-primary text-white shadow-xs'
+                      ? 'bg-stocky-primary text-stocky-text-inverse shadow-xs'
                       : 'bg-stocky-bg-global text-stocky-text-sub border border-stocky-border-subtle'
                   }`}
                 >

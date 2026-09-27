@@ -34,7 +34,7 @@ export interface TasksKanbanWidgetProps {
   products: Product[];
   locations: Location[];
   members: TeamMember[];
-  userRole: CompanyUserRole;
+  canManageTasks: boolean;
   currentUserId?: string | null;
   searchQuery: string;
   canAssignTask: boolean;
@@ -57,7 +57,7 @@ export function TasksKanbanWidget({
   taskItems,
   locations,
   members,
-  userRole,
+  canManageTasks,
   currentUserId,
   searchQuery,
   canAssignTask,
@@ -75,31 +75,31 @@ export function TasksKanbanWidget({
       {
         id: 'assigned',
         title: t('tasks.statusAssigned'),
-        dotColorClass: 'bg-slate-400',
+        dotColorClass: 'bg-stocky-text-main',
         emptyText: t('tasks.kanbanEmptyAssigned'),
       },
       {
         id: 'in_progress',
         title: t('tasks.statusInProgress'),
-        dotColorClass: 'bg-amber-500',
+        dotColorClass: 'bg-stocky-status-warning-fg',
         emptyText: t('tasks.kanbanEmptyInProgress'),
       },
       {
         id: 'submitted',
         title: t('tasks.statusSubmitted'),
-        dotColorClass: 'bg-blue-500',
+        dotColorClass: 'bg-stocky-status-info-fg',
         emptyText: t('tasks.kanbanEmptySubmitted'),
       },
       {
         id: 'rejected',
         title: t('tasks.statusRejected'),
-        dotColorClass: 'bg-rose-500',
+        dotColorClass: 'bg-stocky-status-critical-fg',
         emptyText: t('tasks.kanbanEmptyRejected'),
       },
       {
         id: 'completed',
         title: t('tasks.completed'),
-        dotColorClass: 'bg-emerald-500',
+        dotColorClass: 'bg-stocky-status-success-fg',
         emptyText: t('tasks.kanbanEmptyCompleted'),
       },
     ],
@@ -234,7 +234,7 @@ export function TasksKanbanWidget({
                         locationName={locationMap.get(task.locationId)}
                         assignee={memberMap.get(task.assignedToCompanyUserId)}
                         currentUserId={currentUserId}
-                        userRole={userRole}
+                        canManageTasks={canManageTasks}
                         onOpenRunner={onOpenRunner}
                         onOpenReview={onOpenReview}
                         onOpenDetails={onOpenDetails}
@@ -278,7 +278,7 @@ export function TasksKanbanWidget({
                     {column.title}
                   </span>
                 </div>
-                <span className="rounded-md bg-white px-1.5 py-0.2 text-[10px] font-bold text-stocky-text-sub shadow-2xs border border-stocky-border-subtle/60">
+                <span className="rounded-md bg-stocky-bg-widget px-1.5 py-0.2 text-[10px] font-bold text-stocky-text-sub shadow-2xs border border-stocky-border-subtle/60">
                   {colTasks.length}
                 </span>
               </div>
@@ -301,7 +301,7 @@ export function TasksKanbanWidget({
                       locationName={locationMap.get(task.locationId)}
                       assignee={memberMap.get(task.assignedToCompanyUserId)}
                       currentUserId={currentUserId}
-                      userRole={userRole}
+                      canManageTasks={canManageTasks}
                       onOpenRunner={onOpenRunner}
                       onOpenReview={onOpenReview}
                       onOpenDetails={onOpenDetails}

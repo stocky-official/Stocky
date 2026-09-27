@@ -95,7 +95,7 @@ export function SupplierProductLinkDrawerWidget({
     <SideDrawer isOpen={isOpen} onClose={handleClose} ariaLabel={t('drawers.supplierProductLink.title')}>
       <div className="flex h-full flex-col">
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-stocky-border-subtle p-5 sm:p-6 shrink-0 bg-white">
+        <div className="flex items-center justify-between border-b border-stocky-border-subtle p-5 sm:p-6 shrink-0 bg-stocky-bg-widget">
           <div className="flex min-w-0 items-center gap-3">
             <div className="relative flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-stocky-border-subtle bg-stocky-bg-global text-stocky-text-sub select-none font-medium">
               {supplier?.imageUrl ? (
@@ -135,14 +135,14 @@ export function SupplierProductLinkDrawerWidget({
         {/* Form Body */}
         <form onSubmit={handleSubmit} className="flex flex-1 flex-col overflow-y-auto p-5 sm:p-6 gap-4">
           {error && (
-            <div className="rounded-xl border border-red-200 bg-red-50 p-3 text-xs text-red-700">
+            <div className="rounded-xl border border-stocky-status-critical-border bg-stocky-status-critical-bg p-3 text-xs text-stocky-status-critical-fg">
               {error}
             </div>
           )}
 
           <div>
             <label className="block text-xs font-medium text-stocky-text-main">
-              {t('drawers.supplierProductLink.product')} <span className="text-red-500">*</span>
+              {t('drawers.supplierProductLink.product')} <span className="text-stocky-status-critical-fg">*</span>
             </label>
             <select
               required
@@ -200,7 +200,7 @@ export function SupplierProductLinkDrawerWidget({
             <button
               type="submit"
               disabled={isSaving}
-              className="h-10 rounded-full bg-stocky-primary px-6 text-xs font-medium text-white hover:bg-stocky-primary-hover transition-colors cursor-pointer shadow-sm disabled:opacity-50"
+              className="h-10 rounded-full bg-stocky-primary px-6 text-xs font-medium text-stocky-text-inverse hover:bg-stocky-primary-hover transition-colors cursor-pointer shadow-sm disabled:opacity-50"
             >
               {isSaving ? t('drawers.supplierProductLink.saving') : t('drawers.supplierProductLink.save')}
             </button>

@@ -267,7 +267,7 @@ export function SupplierCreateDrawerWidget({
             <button
               type="submit"
               disabled={isSaving}
-              className="h-10 rounded-full bg-stocky-primary px-6 text-xs font-medium text-white hover:bg-stocky-primary-hover transition-colors cursor-pointer shadow-sm disabled:opacity-50"
+              className="h-10 rounded-full bg-stocky-primary px-6 text-xs font-medium text-stocky-text-inverse hover:bg-stocky-primary-hover transition-colors cursor-pointer shadow-sm disabled:opacity-50"
             >
               {isSaving ? t('drawers.supplierCreate.saving') : t('drawers.supplierCreate.save')}
             </button>

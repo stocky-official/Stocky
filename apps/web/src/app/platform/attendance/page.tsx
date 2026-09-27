@@ -1,14 +1,22 @@
 'use client';
 
-import React from 'react';
-import { usePlatform } from '@/views/platform/PlatformContext';
+import React, { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { canOpenTab, usePlatform } from '@/views/platform/PlatformContext';
 import { AttendancePlatformView } from '@/views/platform/pages/AttendancePlatformView';
 import { PlatformWorkspaceSkeleton } from '@/widgets';
 
 export default function AttendanceRoutePage() {
   const platform = usePlatform();
+  const router = useRouter();
 
-  if (platform.loading) {
+  useEffect(() => {
+    if (!platform.loading && !canOpenTab(platform.userRole, 'attendance', platform.userPermissions)) {
+      router.replace(platform.tenantPrefix || '/platform');
+    }
+  }, [platform.loading, platform.tenantPrefix, platform.userPermissions, platform.userRole, router]);
+
+  if (platform.loading || !canOpenTab(platform.userRole, 'attendance', platform.userPermissions)) {
     return <PlatformWorkspaceSkeleton variant="attendance" />;
   }
 

@@ -9,7 +9,7 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
 
 /**
  * Button Component (v0.1.0 Design System)
- * Primary: #0057FF background, 12px radius, weight 500, NO shadows.
+ * Primary actions use the shared Stocky accent/primary tokens and avoid shadows.
  */
 export function Button({
   variant = 'primary',
@@ -31,7 +31,7 @@ export function Button({
 
   const variants = {
     primary:
-      'bg-stocky-primary text-white hover:bg-stocky-primary-hover',
+      'bg-stocky-primary text-stocky-text-inverse hover:bg-stocky-primary-hover',
     secondary:
       'bg-stocky-bg-global text-stocky-text-main hover:bg-stocky-bg-hover border border-stocky-border-subtle',
     outline:
