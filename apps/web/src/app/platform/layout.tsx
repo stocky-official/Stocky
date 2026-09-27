@@ -7,6 +7,7 @@ import { PageLayout } from '@/components/ui/PageLayout';
 import { HydrationFadeWrapper } from '@/components/ui/Skeleton';
 import { signOutUser } from '@/lib/auth';
 import { syncPWATheme } from '@/components/PWAThemeColorSync';
+import { AlertTriangleIcon } from '@stocky/icons';
 import {
   AttendanceQrScannerModal,
   BarcodeScannerWidget,
@@ -106,6 +107,38 @@ function PlatformShell({ children }: { children?: React.ReactNode }) {
                 Go to Onboarding
               </button>
             )}
+            <button
+              type="button"
+              onClick={() => signOutUser()}
+              className="w-full py-2.5 px-4 rounded-xl border border-stocky-border-subtle text-xs font-medium text-stocky-text-sub hover:bg-stocky-bg-global transition-colors cursor-pointer"
+            >
+              Sign Out / Switch Account
+            </button>
+          </div>
+        </div>
+      </PageLayout>
+    );
+  }
+
+  if (platform.membershipLoadError) {
+    return (
+      <PageLayout className="stocky-platform-shell flex items-center justify-center min-h-screen p-4 bg-stocky-bg-global select-none">
+        <div className="max-w-md w-full bg-stocky-bg-widget border border-stocky-border-subtle rounded-2xl p-6 shadow-bevel text-center space-y-4">
+          <div className="w-12 h-12 rounded-full bg-stocky-status-warning-bg border border-stocky-status-warning-border text-stocky-status-warning-fg flex items-center justify-center mx-auto">
+            <AlertTriangleIcon size="lg" />
+          </div>
+          <div className="space-y-1">
+            <h2 className="text-base font-semibold text-stocky-text-main">Workspace Verification Unavailable</h2>
+            <p className="text-xs text-stocky-text-sub leading-relaxed">{platform.membershipLoadError}</p>
+          </div>
+          <div className="pt-2 flex flex-col gap-2">
+            <button
+              type="button"
+              onClick={() => window.location.reload()}
+              className="w-full py-2.5 px-4 rounded-xl bg-stocky-primary text-stocky-text-inverse text-xs font-medium hover:opacity-95 transition-opacity cursor-pointer shadow-sm"
+            >
+              Retry
+            </button>
             <button
               type="button"
               onClick={() => signOutUser()}
